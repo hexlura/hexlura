@@ -1,0 +1,182 @@
+export interface Profile {
+    id: string;
+    full_name: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    role: 'user' | 'organiser' | 'admin';
+    is_verified: boolean;
+    referral_code: string | null;
+    referred_by: string | null;
+    credit_balance: number;
+    created_at: string;
+}
+
+export interface OrganiserProfile {
+    id: string;
+    user_id: string;
+    org_name: string;
+    slug: string;
+    description: string | null;
+    website: string | null;
+    logo_url: string | null;
+    vat_number: string | null;
+    vat_registered: boolean;
+    stripe_account_id: string | null;
+    is_approved: boolean;
+    approved_at: string | null;
+    approved_by: string | null;
+    created_at: string;
+}
+
+export interface Event {
+    id: string;
+    organiser_id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    category: 'Music' | 'Sports' | 'Comedy' | 'Theatre' | 'Festival' | 'Corporate' | 'Family' | 'Culture' | 'Other';
+    tags: string[] | null;
+    venue_name: string | null;
+    venue_address: string | null;
+    venue_postcode: string | null;
+    lat: number | null;
+    lng: number | null;
+    start_at: string;
+    end_at: string | null;
+    banner_url: string | null;
+    status: 'draft' | 'published' | 'cancelled' | 'archived';
+    is_featured: boolean;
+    min_age: number;
+    max_tickets_per_order: number;
+    refund_policy: string | null;
+    total_capacity: number | null;
+    created_at: string;
+    organiser?: OrganiserProfile;
+    ticket_types?: TicketType[];
+}
+
+export interface TicketType {
+    id: string;
+    event_id: string;
+    name: string;
+    description: string | null;
+    price_pence: number;
+    quantity_total: number;
+    quantity_sold: number;
+    sale_starts_at: string | null;
+    sale_ends_at: string | null;
+    max_per_order: number;
+    sort_order: number;
+    is_visible: boolean;
+}
+
+export interface PromoCode {
+    id: string;
+    event_id: string | null;
+    code: string;
+    organiser_id: string | null;
+    discount_type: 'percent' | 'fixed';
+    discount_value: number;
+    min_order_pence: number;
+    max_uses: number | null;
+    uses_count: number;
+    valid_from: string | null;
+    valid_to: string | null;
+    created_at: string;
+}
+
+export interface Booking {
+    id: string;
+    user_id: string | null;
+    event_id: string;
+    booking_ref: string;
+    status: 'pending' | 'confirmed' | 'cancelled' | 'refunded';
+    subtotal_pence: number | null;
+    platform_fee_pence: number | null;
+    total_pence: number | null;
+    promo_code_id: string | null;
+    discount_pence: number;
+    stripe_payment_intent_id: string | null;
+    stripe_charge_id: string | null;
+    payment_method: string | null;
+    created_at: string;
+    confirmed_at: string | null;
+    event?: Event;
+    items?: BookingItem[];
+}
+
+export interface BookingItem {
+    id: string;
+    booking_id: string;
+    ticket_type_id: string | null;
+    quantity: number;
+    unit_price_pence: number;
+    attendee_name: string | null;
+    attendee_email: string | null;
+    qr_code: string | null;
+    ticket_type?: TicketType;
+}
+
+export interface Payout {
+    id: string;
+    organiser_id: string;
+    event_id: string | null;
+    gross_pence: number | null;
+    fee_pence: number | null;
+    net_pence: number | null;
+    status: 'pending' | 'processing' | 'paid' | 'failed';
+    stripe_transfer_id: string | null;
+    scheduled_at: string | null;
+    paid_at: string | null;
+    created_at: string;
+}
+
+export interface Checkin {
+    id: string;
+    booking_item_id: string;
+    qr_token: string;
+    checked_in_at: string;
+    checked_in_by: string | null;
+}
+
+export interface Waitlist {
+    id: string;
+    event_id: string;
+    ticket_type_id: string;
+    user_id: string;
+    email: string;
+    notified_at: string | null;
+    created_at: string;
+}
+
+export interface Review {
+    id: string;
+    event_id: string;
+    user_id: string;
+    rating: number | null;
+    comment: string | null;
+    is_visible: boolean;
+    created_at: string;
+    user?: Profile;
+}
+
+export interface Notification {
+    id: string;
+    user_id: string;
+    type: string | null;
+    title: string | null;
+    body: string | null;
+    is_read: boolean;
+    link: string | null;
+    created_at: string;
+}
+
+export interface AuditLog {
+    id: string;
+    actor_id: string | null;
+    action: string;
+    entity_type: string | null;
+    entity_id: string | null;
+    metadata: any | null;
+    created_at: string;
+}

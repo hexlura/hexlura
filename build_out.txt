@@ -1,0 +1,29 @@
+
+> hexlura@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./app/(public)/events/page.tsx
+168:97  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+168:105  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./app/(public)/events/[slug]/page.tsx
+134:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(public)/organisers/[slug]/page.tsx
+26:38  Error: 'eventsErr' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+107:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+113:82  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./app/(public)/page.tsx
+64:47  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
