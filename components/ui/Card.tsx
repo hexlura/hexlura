@@ -7,9 +7,10 @@ interface CardProps {
 }
 
 export function Card({ children, className = '', hover = false }: CardProps) {
-    // TODO: implement card styles with bg-card, border, hover effects
     return (
-        <div className={`data-hover-${hover} ${className}`}>
+        <div
+            className={`bg-card border border-border rounded-xl p-6 ${hover ? 'hover:bg-[#22223A] transition-colors cursor-pointer' : ''} ${className}`}
+        >
             {children}
         </div>
     )

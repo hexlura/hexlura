@@ -43,6 +43,10 @@ export async function updateSession(request: NextRequest) {
 
     const pathname = request.nextUrl.pathname
 
+    // Routes exempt from organiser role check (accessible by any authenticated user)
+    const isOrganiserApplyRoute = pathname === '/organiser/apply'
+    const isOrganiserPendingRoute = pathname === '/organiser/pending'
+
     // Protected routes that require authentication
     const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
     const isOrganiserRoute = pathname.startsWith('/organiser')
@@ -67,11 +71,14 @@ export async function updateSession(request: NextRequest) {
 
         const role = profile?.role || 'user'
 
-        // Organiser routes: must have organiser role
-        if (isOrganiserRoute && role !== 'organiser' && role !== 'admin') {
-            const homeUrl = request.nextUrl.clone()
-            homeUrl.pathname = '/'
-            return NextResponse.redirect(homeUrl)
+        // /organiser/apply is accessible to any authenticated user
+        // /organiser/pending is accessible to organisers (approved or not)
+        if (isOrganiserRoute && !isOrganiserApplyRoute && !isOrganiserPendingRoute) {
+            if (role !== 'organiser' && role !== 'admin') {
+                const homeUrl = request.nextUrl.clone()
+                homeUrl.pathname = '/'
+                return NextResponse.redirect(homeUrl)
+            }
         }
 
         // Admin routes: must have admin role

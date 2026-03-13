@@ -1,0 +1,64 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { Resend } from 'resend'
+
+export async function POST(req: Request) {
+    try {
+        const { eventId, subject, message } = await req.json()
+
+        if (!eventId || !subject || !message) {
+            return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+        }
+
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+        // Verify organiser owns this event
+        const { data: organiser } = await supabase
+            .from('organiser_profiles').select('id').eq('user_id', user.id).single()
+        if (!organiser) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+        const { data: event } = await supabase
+            .from('events').select('id, title').eq('id', eventId).eq('organiser_id', organiser.id).single()
+        if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+        // Fetch all confirmed attendee emails
+        const { data: bookings } = await supabase
+            .from('bookings').select('id').eq('event_id', eventId).eq('status', 'confirmed')
+
+        const bookingIds = (bookings || []).map(b => b.id)
+        if (!bookingIds.length) return NextResponse.json({ sent: 0 })
+
+        const { data: items } = await supabase
+            .from('booking_items').select('attendee_email').in('booking_id', bookingIds)
+
+        const emails = Array.from(new Set((items || []).map(i => i.attendee_email).filter(Boolean)))
+
+        if (!emails.length) return NextResponse.json({ sent: 0 })
+
+        const resend = new Resend(process.env.RESEND_API_KEY || 'placeholder')
+        await resend.emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: user.email || 'support@hexlura.com',
+            to: emails as string[],
+            subject: `[${event.title}] ${subject}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
+                    <p style="color: #888; font-size: 12px; margin-bottom: 16px;">
+                        Message from the organiser of ${event.title}
+                    </p>
+                    <div style="white-space: pre-wrap; font-size: 14px; color: #333;">${message}</div>
+                    <p style="color: #888; font-size: 11px; margin-top: 24px;">
+                        You received this because you have a booking for ${event.title}.
+                    </p>
+                </div>
+            `,
+        })
+
+        return NextResponse.json({ sent: emails.length })
+    } catch (err) {
+        console.error('Announcement error:', err)
+        return NextResponse.json({ error: 'Failed to send' }, { status: 500 })
+    }
+}
