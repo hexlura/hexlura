@@ -91,18 +91,31 @@ export interface Booking {
     event_id: string;
     booking_ref: string;
     status: 'pending' | 'confirmed' | 'cancelled' | 'refunded';
-    subtotal_pence: number | null;
-    platform_fee_pence: number | null;
+    ticket_subtotal_pence: number | null;
+    booking_fee_pence: number | null;
     total_pence: number | null;
     promo_code_id: string | null;
     discount_pence: number;
     stripe_payment_intent_id: string | null;
     stripe_charge_id: string | null;
     payment_method: string | null;
+    needs_manual_payout: boolean;
     created_at: string;
     confirmed_at: string | null;
     event?: Event;
     items?: BookingItem[];
+}
+
+export interface RefundRequest {
+    id: string;
+    booking_id: string;
+    user_id: string;
+    reason: string;
+    message: string | null;
+    status: 'pending' | 'approved' | 'rejected';
+    admin_note: string | null;
+    created_at: string;
+    resolved_at: string | null;
 }
 
 export interface BookingItem {
@@ -177,6 +190,6 @@ export interface AuditLog {
     action: string;
     entity_type: string | null;
     entity_id: string | null;
-    metadata: any | null;
+    metadata: Record<string, unknown> | null;
     created_at: string;
 }
