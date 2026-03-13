@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import UserMenu from './UserMenu'
 
 export async function Navbar() {
     const supabase = createClient()
@@ -17,7 +18,6 @@ export async function Navbar() {
         fullName = profile?.full_name || null
     }
 
-    const dashboardHref = role === 'admin' ? '/admin' : role === 'organiser' ? '/organiser' : '/account'
     const initials = fullName
         ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : user?.email?.[0]?.toUpperCase() || '?'
@@ -35,15 +35,7 @@ export async function Navbar() {
                 </nav>
                 <div className="flex items-center gap-4">
                     {user ? (
-                        <Link
-                            href={dashboardHref}
-                            className="flex items-center gap-2 text-sm font-medium text-text bg-surface border border-border px-3 py-2 rounded-lg hover:bg-surface/80 transition"
-                        >
-                            <span className="w-7 h-7 rounded-full bg-accent/20 text-accent text-xs font-bold flex items-center justify-center">
-                                {initials}
-                            </span>
-                            <span className="hidden sm:inline">{fullName || 'Account'}</span>
-                        </Link>
+                        <UserMenu initials={initials} fullName={fullName} role={role} />
                     ) : (
                         <Link
                             href="/auth/login"

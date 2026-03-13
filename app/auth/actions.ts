@@ -112,7 +112,7 @@ export async function signInWithGoogle() {
 export async function signOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    redirect('/auth/login')
+    redirect('/')
 }
 
 export async function resetPassword(formData: FormData) {
