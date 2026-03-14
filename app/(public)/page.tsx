@@ -41,8 +41,23 @@ export default async function HomePage() {
 
     const totalTicketsSold = ticketTypes?.reduce((acc, curr) => acc + (curr.quantity_sold || 0), 0) || 0;
 
-    // Mock unique cities count for now (or could aggregate from DB)
-    const ukCitiesCovered = 15;
+    // Fetch upcoming published events for city counts (one query, count in JS)
+    const { data: upcomingCityEvents } = await supabase
+        .from('events')
+        .select('venue_address, venue_name')
+        .eq('status', 'published')
+        .gt('start_at', new Date().toISOString());
+
+    const UK_CITY_LIST = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham'];
+    const cityCounts = UK_CITY_LIST.map(city => ({
+        name: city,
+        count: (upcomingCityEvents || []).filter(e => {
+            const haystack = `${e.venue_address || ''} ${e.venue_name || ''}`.toLowerCase();
+            return haystack.includes(city.toLowerCase());
+        }).length,
+    }));
+
+    const ukCitiesCovered = cityCounts.filter(c => c.count > 0).length || 15;
 
     const featuredEvents = (featuredEventsRaw || []) as Event[];
     const allEvents = (allEventsRaw || []) as Event[];
@@ -87,6 +102,29 @@ export default async function HomePage() {
                     <div className="flex flex-col items-center justify-center space-y-2">
                         <span className="text-4xl font-bold">{ukCitiesCovered}</span>
                         <span className="text-sm text-gray-400 uppercase tracking-wider">UK Cities</span>
+                    </div>
+                </div>
+            </section>
+
+            {/* Cities Discovery Section */}
+            <section className="bg-background py-12 px-4">
+                <div className="max-w-7xl mx-auto">
+                    <h2 className="font-heading text-3xl text-text tracking-wide mb-8">EXPLORE BY CITY</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {cityCounts.map(({ name, count }) => (
+                            <a
+                                key={name}
+                                href={`/events?city=${encodeURIComponent(name)}`}
+                                className="group bg-card border border-border rounded-xl p-5 hover:border-accent transition-colors"
+                            >
+                                <p className="font-heading text-2xl text-text tracking-wide group-hover:text-accent transition-colors">{name.toUpperCase()}</p>
+                                {count > 0 ? (
+                                    <p className="text-xs text-muted mt-1">{count} upcoming event{count !== 1 ? 's' : ''}</p>
+                                ) : (
+                                    <p className="text-xs text-muted mt-1">Coming soon</p>
+                                )}
+                            </a>
+                        ))}
                     </div>
                 </div>
             </section>

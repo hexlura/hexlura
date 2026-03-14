@@ -17,7 +17,7 @@ export default async function BrowseEventsPage({
 
     const query = searchParams.q as string;
     const category = searchParams.category as string;
-    const location = searchParams.location as string;
+    const location = (searchParams.location || searchParams.city) as string;
     const sort = (searchParams.sort as string) || 'soonest';
     const minPrice = parseInt((searchParams.minPrice as string) || '0', 10);
     const maxPrice = parseInt((searchParams.maxPrice as string) || '500', 10);
@@ -159,7 +159,9 @@ export default async function BrowseEventsPage({
             {/* Main Content Area */}
             <main className="flex-1 space-y-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h1 className="text-3xl font-bold tracking-tight">Browse Events</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        {location && location !== 'Any' ? `Events in ${location}` : 'Browse Events'}
+                    </h1>
                     <span className="text-muted-foreground">{events.length} results found</span>
                 </div>
 

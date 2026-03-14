@@ -15,13 +15,23 @@ export default async function OrganiserApplyPage() {
     if (profile?.role === 'admin') redirect('/admin')
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-6">
-            <div className="max-w-xl w-full">
-                <div className="font-heading text-3xl text-accent tracking-widest text-center mb-8">HEXLURA</div>
-                <div className="bg-card border border-border rounded-2xl p-8">
-                    <h1 className="font-heading text-3xl text-text tracking-wide mb-2">BECOME AN ORGANISER</h1>
-                    <p className="text-muted text-sm mb-8">Tell us about your events and we&apos;ll get you set up.</p>
-                    <ApplyForm userId={user.id} userEmail={user.email || ''} />
+        <div className="min-h-screen bg-background">
+            {/* Header */}
+            <header className="flex items-center justify-between px-6 py-4 border-b border-border">
+                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA</a>
+                <a href="/account" className="flex items-center gap-1.5 text-sm text-muted hover:text-text transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    Back to Dashboard
+                </a>
+            </header>
+
+            <div className="flex items-center justify-center p-6 py-12">
+                <div className="max-w-xl w-full">
+                    <div className="bg-card border border-border rounded-2xl p-8">
+                        <h1 className="font-heading text-3xl text-text tracking-wide mb-2">BECOME AN ORGANISER</h1>
+                        <p className="text-muted text-sm mb-8">Tell us about your events and we&apos;ll get you set up.</p>
+                        <ApplyForm userId={user.id} userEmail={user.email || ''} />
+                    </div>
                 </div>
             </div>
         </div>
