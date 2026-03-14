@@ -12,8 +12,8 @@ export default async function AccountPage() {
         redirect('/auth/login')
     }
 
-    // Fetch profile, bookings in parallel
-    const [{ data: profile }, { data: bookingsRaw }] = await Promise.all([
+    // Fetch profile, bookings, and organiser status in parallel
+    const [{ data: profile }, { data: bookingsRaw }, { data: organiserProfile }] = await Promise.all([
         supabase
             .from('profiles')
             .select('full_name, email, avatar_url, role, created_at')
@@ -24,7 +24,16 @@ export default async function AccountPage() {
             .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url)')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false }),
+        supabase
+            .from('organiser_profiles')
+            .select('is_approved')
+            .eq('user_id', user.id)
+            .maybeSingle(),
     ])
+
+    if (profile?.role === 'admin') {
+        redirect('/admin')
+    }
 
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'there'
     const email = user.email || ''
@@ -47,6 +56,20 @@ export default async function AccountPage() {
 
     return (
         <section className="max-w-4xl mx-auto space-y-8">
+            {/* Organiser Portal banner */}
+            {profile?.role === 'organiser' && organiserProfile?.is_approved && (
+                <Link
+                    href="/organiser"
+                    className="flex items-center justify-between gap-4 bg-accent/10 border border-accent/30 rounded-xl px-6 py-4 hover:bg-accent/15 transition group"
+                >
+                    <div>
+                        <p className="font-heading text-lg text-accent tracking-wide">ORGANISER PORTAL</p>
+                        <p className="text-sm text-muted mt-0.5">Manage your events, tickets, and payouts</p>
+                    </div>
+                    <span className="text-accent text-xl group-hover:translate-x-1 transition-transform">&rarr;</span>
+                </Link>
+            )}
+
             {/* Welcome */}
             <div>
                 <h1 className="font-heading text-4xl text-text">WELCOME BACK, {fullName.toUpperCase()}</h1>

@@ -71,6 +71,13 @@ export async function updateSession(request: NextRequest) {
 
         const role = profile?.role || 'user'
 
+        // Admin visiting /account/* → redirect to admin panel
+        if (isAccountRoute && role === 'admin') {
+            const adminUrl = request.nextUrl.clone()
+            adminUrl.pathname = '/admin'
+            return NextResponse.redirect(adminUrl)
+        }
+
         // /organiser/apply is accessible to any authenticated user
         // /organiser/pending is accessible to organisers (approved or not)
         if (isOrganiserRoute && !isOrganiserApplyRoute && !isOrganiserPendingRoute) {
