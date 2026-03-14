@@ -1,10 +1,14 @@
 export interface Profile {
     id: string;
+    email: string | null;
     full_name: string | null;
     phone: string | null;
     avatar_url: string | null;
     role: 'user' | 'organiser' | 'admin';
     is_verified: boolean;
+    is_suspended: boolean;
+    email_marketing_opt_out: boolean;
+    unsubscribe_token: string | null;
     referral_code: string | null;
     referred_by: string | null;
     credit_balance: number;
@@ -23,6 +27,7 @@ export interface OrganiserProfile {
     vat_registered: boolean;
     stripe_account_id: string | null;
     is_approved: boolean;
+    is_suspended: boolean;
     approved_at: string | null;
     approved_by: string | null;
     created_at: string;
@@ -46,6 +51,7 @@ export interface Event {
     banner_url: string | null;
     status: 'draft' | 'published' | 'cancelled' | 'archived';
     is_featured: boolean;
+    featured_order: number;
     min_age: number;
     max_tickets_per_order: number;
     refund_policy: string | null;
