@@ -1,26 +1,114 @@
-import Link from 'next/link'
+'use client'
 
-export function AdminSidebar() {
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+
+interface AdminSidebarProps {
+    adminName: string
+    pendingOrganisers: number
+}
+
+const NAV_SECTIONS = [
+    {
+        title: 'MAIN',
+        links: [
+            { href: '/admin', label: 'Dashboard', exact: true, badge: false },
+            { href: '/admin/users', label: 'Users', exact: false, badge: false },
+            { href: '/admin/organisers', label: 'Organisers', exact: false, badge: true },
+            { href: '/admin/events', label: 'Events', exact: false, badge: false },
+            { href: '/admin/bookings', label: 'Bookings', exact: false, badge: false },
+        ],
+    },
+    {
+        title: 'FINANCE',
+        links: [
+            { href: '/admin/financials', label: 'Financials', exact: false, badge: false },
+            { href: '/admin/payouts', label: 'Payouts', exact: false, badge: false },
+        ],
+    },
+    {
+        title: 'PLATFORM',
+        links: [
+            { href: '/admin/settings', label: 'Settings', exact: false, badge: false },
+            { href: '/admin/audit-log', label: 'Audit Log', exact: false, badge: false },
+        ],
+    },
+]
+
+export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps) {
+    const pathname = usePathname()
+    const router = useRouter()
+
+    const isActive = (href: string, exact: boolean) => {
+        if (exact) return pathname === href
+        return pathname.startsWith(href)
+    }
+
+    const handleSignOut = async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        router.push('/')
+        router.refresh()
+    }
+
     return (
-        <aside className="w-64 border-r border-border bg-surface flex flex-col">
-            <div className="h-16 flex items-center px-6 border-b border-border">
-                <span className="font-heading text-xl text-accent tracking-wider">ADMIN</span>
+        <aside
+            className="fixed left-0 top-0 h-full flex flex-col z-50"
+            style={{ width: '240px', background: '#0A0A0F', borderRight: '1px solid #2A2A3A' }}
+        >
+            <div className="px-6 py-5 border-b border-border">
+                <div className="font-heading text-xl text-accent tracking-widest">HEXLURA</div>
+                <div className="text-xs text-muted mt-0.5">Admin Console</div>
             </div>
-            <nav className="flex-1 px-4 py-6 flex flex-col gap-2">
-                <Link href="/admin" className="block px-4 py-2 rounded-lg text-text hover:bg-card transition">
-                    Dashboard
-                </Link>
-                <Link href="/admin/users" className="block px-4 py-2 rounded-lg text-muted hover:text-text hover:bg-card transition">
-                    Users
-                </Link>
-                <Link href="/admin/events" className="block px-4 py-2 rounded-lg text-muted hover:text-text hover:bg-card transition">
-                    Events & Moderation
-                </Link>
+
+            <nav className="flex-1 px-3 py-4 flex flex-col gap-5 overflow-y-auto">
+                {NAV_SECTIONS.map((section) => (
+                    <div key={section.title}>
+                        <p className="text-[10px] text-muted font-medium tracking-widest px-3 mb-2">
+                            {section.title}
+                        </p>
+                        <div className="flex flex-col gap-0.5">
+                            {section.links.map((link) => {
+                                const active = isActive(link.href, link.exact)
+                                return (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative ${
+                                            active
+                                                ? 'text-text bg-card font-medium'
+                                                : 'text-muted hover:text-text hover:bg-card'
+                                        }`}
+                                    >
+                                        {active && (
+                                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent" />
+                                        )}
+                                        <span className={active ? 'text-accent' : ''}>{link.label}</span>
+                                        {link.badge && pendingOrganisers > 0 && (
+                                            <span className="text-[10px] font-bold bg-gold text-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                                                {pendingOrganisers}
+                                            </span>
+                                        )}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    </div>
+                ))}
             </nav>
-            <div className="p-4 border-t border-border mt-auto">
-                <Link href="/" className="text-sm text-muted hover:text-text transition">
-                    ← Back to Main site
-                </Link>
+
+            <div className="p-4 border-t border-border">
+                <div className="text-sm text-text font-medium truncate mb-3">{adminName}</div>
+                <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors"
+                >
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                        <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                    </svg>
+                    Sign Out
+                </button>
             </div>
         </aside>
     )
