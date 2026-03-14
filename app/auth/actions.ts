@@ -90,7 +90,15 @@ export async function signIn(formData: FormData) {
     if (role === 'admin') {
         return { redirectTo: '/admin' }
     } else if (role === 'organiser') {
-        return { redirectTo: '/organiser' }
+        const { data: organiserProfile } = await serviceClient
+            .from('organiser_profiles')
+            .select('is_approved')
+            .eq('user_id', user.id)
+            .maybeSingle()
+        if (organiserProfile?.is_approved) {
+            return { redirectTo: '/organiser' }
+        }
+        return { redirectTo: '/organiser/pending' }
     } else {
         return { redirectTo: '/account' }
     }

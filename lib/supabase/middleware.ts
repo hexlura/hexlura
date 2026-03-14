@@ -74,7 +74,7 @@ export async function updateSession(request: NextRequest) {
         const loginUrl = request.nextUrl.clone()
         loginUrl.pathname = '/auth/login'
         loginUrl.searchParams.set('next', pathname)
-        return NextResponse.redirect(loginUrl)
+        return redirectWithCookies(loginUrl, response)
     }
 
     // For authenticated users on protected or auth routes: fetch role once
@@ -102,7 +102,18 @@ export async function updateSession(request: NextRequest) {
         // Authenticated user visiting an auth page → redirect to their dashboard
         if (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback')) {
             const dest = request.nextUrl.clone()
-            dest.pathname = role === 'admin' ? '/admin' : role === 'organiser' ? '/organiser' : '/account'
+            if (role === 'admin') {
+                dest.pathname = '/admin'
+            } else if (role === 'organiser') {
+                const { data: orgProfile } = await serviceClient
+                    .from('organiser_profiles')
+                    .select('is_approved')
+                    .eq('user_id', user.id)
+                    .maybeSingle()
+                dest.pathname = orgProfile?.is_approved ? '/organiser' : '/organiser/pending'
+            } else {
+                dest.pathname = '/account'
+            }
             return redirectWithCookies(dest, response)
         }
 

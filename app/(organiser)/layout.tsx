@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { OrganiserSidebar } from '@/components/layout/OrganiserSidebar'
 
 export default async function OrganiserLayout({
@@ -12,13 +13,21 @@ export default async function OrganiserLayout({
 
     if (!user) redirect('/auth/login')
 
+    const serviceClient = createServiceClient()
     const [profileRes, organiserRes] = await Promise.all([
-        supabase.from('profiles').select('full_name').eq('id', user.id).single(),
-        supabase.from('organiser_profiles').select('org_name, is_approved').eq('user_id', user.id).single(),
+        serviceClient.from('profiles').select('full_name, role').eq('id', user.id).single(),
+        serviceClient.from('organiser_profiles').select('org_name, is_approved').eq('user_id', user.id).maybeSingle(),
     ])
 
-    // Redirect to pending if organiser account not yet approved
-    if (!organiserRes.data?.is_approved) {
+    const role = profileRes.data?.role || 'user'
+
+    // Only organisers and admins can access organiser routes
+    if (role !== 'organiser' && role !== 'admin') {
+        redirect('/')
+    }
+
+    // Redirect unapproved organisers to pending (admins bypass this)
+    if (role === 'organiser' && !organiserRes.data?.is_approved) {
         redirect('/organiser/pending')
     }
 
