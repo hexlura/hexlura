@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
@@ -7,7 +8,9 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: adminProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const adminClient = createAdminClient()
+
+    const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const body = await request.json() as {
@@ -19,7 +22,7 @@ export async function POST(request: NextRequest) {
         valid_to: string | null
     }
 
-    const { data: promo, error } = await supabase.from('promo_codes').insert({
+    const { data: promo, error } = await adminClient.from('promo_codes').insert({
         code: body.code,
         discount_type: body.discount_type,
         discount_value: body.discount_value,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -7,13 +8,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: adminProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const adminClient = createAdminClient()
+
+    const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { role } = await request.json() as { role: string }
-    const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', params.id).single()
+    const { data: currentProfile } = await adminClient.from('profiles').select('role').eq('id', params.id).single()
 
-    await supabase.from('profiles').update({ role }).eq('id', params.id)
+    await adminClient.from('profiles').update({ role }).eq('id', params.id)
 
     await logAuditAction({
         actorId: user.id,

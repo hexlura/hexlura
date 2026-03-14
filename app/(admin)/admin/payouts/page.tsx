@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { PayoutsClient } from './payouts-client'
 
@@ -11,11 +12,13 @@ export default async function AdminPayoutsPage({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const adminClient = createAdminClient()
+
     // Due payouts: pending AND event ended 2+ days ago
     const twoDaysAgo = new Date()
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
 
-    const { data: dueData } = await supabase
+    const { data: dueData } = await adminClient
         .from('payouts')
         .select('id, gross_pence, net_pence, status, scheduled_at, created_at, organiser_id, event_id, organiser_profiles(org_name, profiles(full_name, email)), events(title, end_at, start_at)')
         .eq('status', 'pending')
@@ -45,7 +48,7 @@ export default async function AdminPayoutsPage({
     const pageSize = 25
     const offset = (page - 1) * pageSize
 
-    let query = supabase
+    let query = adminClient
         .from('payouts')
         .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, paid_at, stripe_transfer_id, created_at, organiser_id, event_id, organiser_profiles(org_name), events(title)', { count: 'exact' })
         .order('created_at', { ascending: false })

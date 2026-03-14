@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { FinancialsClient } from './financials-client'
@@ -9,12 +10,14 @@ export default async function AdminFinancialsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const { data: allBookings } = await supabase
+    const adminClient = createAdminClient()
+
+    const { data: allBookings } = await adminClient
         .from('bookings')
         .select('total_pence, booking_fee_pence, confirmed_at')
         .eq('status', 'confirmed')
 
-    const { data: allPayouts } = await supabase
+    const { data: allPayouts } = await adminClient
         .from('payouts')
         .select('net_pence, gross_pence, paid_at, status')
         .eq('status', 'paid')

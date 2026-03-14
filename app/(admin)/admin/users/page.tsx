@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { UsersClient } from './users-client'
 
@@ -11,11 +12,13 @@ export default async function AdminUsersPage({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const adminClient = createAdminClient()
+
     const page = Math.max(1, parseInt(searchParams.page ?? '1'))
     const pageSize = 25
     const offset = (page - 1) * pageSize
 
-    let query = supabase
+    let query = adminClient
         .from('profiles')
         .select('id, full_name, email, role, is_suspended, is_verified, created_at', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -49,7 +52,7 @@ export default async function AdminUsersPage({
     const userIds = (profiles || []).map((p: { id: string }) => p.id)
     const bookingStats: Record<string, { count: number; total: number }> = {}
     if (userIds.length > 0) {
-        const { data: bkgs } = await supabase
+        const { data: bkgs } = await adminClient
             .from('bookings')
             .select('user_id, total_pence')
             .in('user_id', userIds)
@@ -80,7 +83,7 @@ export default async function AdminUsersPage({
         total_spent_pence: bookingStats[p.id]?.total ?? 0,
     }))
 
-    const { count: totalCount } = await supabase
+    const { count: totalCount } = await adminClient
         .from('profiles')
         .select('id', { count: 'exact', head: true })
 

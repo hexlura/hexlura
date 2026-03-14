@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { SettingsClient } from './settings-client'
 
@@ -7,7 +8,9 @@ export default async function AdminSettingsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const { data: settingsData } = await supabase
+    const adminClient = createAdminClient()
+
+    const { data: settingsData } = await adminClient
         .from('platform_settings')
         .select('key, value')
 
@@ -17,7 +20,7 @@ export default async function AdminSettingsPage() {
     }
 
     // Get all platform-wide promo codes (event_id = null)
-    const { data: promoCodes } = await supabase
+    const { data: promoCodes } = await adminClient
         .from('promo_codes')
         .select('id, code, discount_type, discount_value, max_uses, uses_count, valid_from, valid_to, created_at')
         .is('event_id', null)

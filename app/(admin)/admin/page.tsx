@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
@@ -9,8 +10,10 @@ export default async function AdminDashboardPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const adminClient = createAdminClient()
+
     // KPI: GMV and platform revenue from confirmed bookings
-    const { data: bookings } = await supabase
+    const { data: bookings } = await adminClient
         .from('bookings')
         .select('total_pence, booking_fee_pence, confirmed_at, created_at')
         .eq('status', 'confirmed')
@@ -21,19 +24,19 @@ export default async function AdminDashboardPage() {
     const revenuePence = allBookings.reduce((s, b) => s + (b.booking_fee_pence || 0), 0)
 
     // KPI: Total users (role='user')
-    const { count: totalUsers } = await supabase
+    const { count: totalUsers } = await adminClient
         .from('profiles')
         .select('id', { count: 'exact', head: true })
         .eq('role', 'user')
 
     // KPI: Total approved organisers
-    const { count: totalOrganisers } = await supabase
+    const { count: totalOrganisers } = await adminClient
         .from('organiser_profiles')
         .select('id', { count: 'exact', head: true })
         .eq('is_approved', true)
 
     // KPI: Live events
-    const { count: liveEvents } = await supabase
+    const { count: liveEvents } = await adminClient
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published')
@@ -42,13 +45,13 @@ export default async function AdminDashboardPage() {
     // KPI: Tickets sold today
     const todayMidnight = new Date()
     todayMidnight.setHours(0, 0, 0, 0)
-    const { data: todayItems } = await supabase
+    const { data: todayItems } = await adminClient
         .from('booking_items')
         .select('quantity, booking_id')
         .gte('created_at', todayMidnight.toISOString())
 
     // We need to join with confirmed bookings. Fetch confirmed booking IDs for today
-    const { data: confirmedTodayBookings } = await supabase
+    const { data: confirmedTodayBookings } = await adminClient
         .from('bookings')
         .select('id')
         .eq('status', 'confirmed')
@@ -62,13 +65,13 @@ export default async function AdminDashboardPage() {
     // KPI: New users this week
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
-    const { count: newUsersWeek } = await supabase
+    const { count: newUsersWeek } = await adminClient
         .from('profiles')
         .select('id', { count: 'exact', head: true })
         .gte('created_at', weekAgo.toISOString())
 
     // KPI: Pending applications
-    const { count: pendingApps } = await supabase
+    const { count: pendingApps } = await adminClient
         .from('organiser_profiles')
         .select('id', { count: 'exact', head: true })
         .eq('is_approved', false)
@@ -89,7 +92,7 @@ export default async function AdminDashboardPage() {
     const gmvChartData = Object.entries(chartMap).map(([date, revenue]) => ({ date, revenue }))
 
     // Bookings by category
-    const { data: eventsWithBookings } = await supabase
+    const { data: eventsWithBookings } = await adminClient
         .from('bookings')
         .select('total_pence, event:events(category)')
         .eq('status', 'confirmed')
@@ -102,7 +105,7 @@ export default async function AdminDashboardPage() {
     const categoryChartData = Object.entries(byCat).map(([category, count]) => ({ category, count }))
 
     // Pending organiser applications (up to 5)
-    const { data: pendingOrgs } = await supabase
+    const { data: pendingOrgs } = await adminClient
         .from('organiser_profiles')
         .select('id, org_name, created_at, user_id, profiles(full_name, email)')
         .eq('is_approved', false)
@@ -119,7 +122,7 @@ export default async function AdminDashboardPage() {
     const pendingOrgList = (pendingOrgs || []) as unknown as PendingOrg[]
 
     // Recent refund requests (up to 5)
-    const { data: refundReqs } = await supabase
+    const { data: refundReqs } = await adminClient
         .from('refund_requests')
         .select('id, status, created_at, booking:bookings(booking_ref, total_pence)')
         .eq('status', 'pending')

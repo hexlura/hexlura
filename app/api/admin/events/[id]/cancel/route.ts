@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 
 export async function POST(_request: NextRequest, { params }: { params: { id: string } }) {
@@ -7,10 +8,12 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: adminProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const adminClient = createAdminClient()
+
+    const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    await supabase.from('events').update({ status: 'cancelled' }).eq('id', params.id)
+    await adminClient.from('events').update({ status: 'cancelled' }).eq('id', params.id)
 
     // Get all confirmed bookings for this event and mark as refunded
     const { data: bookings } = await supabase
@@ -32,7 +35,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
                 // Continue even if Stripe refund fails
             }
         }
-        await supabase.from('bookings').update({ status: 'refunded' }).eq('id', booking.id)
+        await adminClient.from('bookings').update({ status: 'refunded' }).eq('id', booking.id)
         refundedCount++
         totalRefundedPence += booking.total_pence || 0
     }

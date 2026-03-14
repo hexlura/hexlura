@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 
 export async function POST(_request: NextRequest, { params }: { params: { id: string } }) {
@@ -7,7 +8,9 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: adminProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const adminClient = createAdminClient()
+
+    const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { data: payout } = await supabase
@@ -43,7 +46,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         }
     }
 
-    await supabase.from('payouts').update({
+    await adminClient.from('payouts').update({
         status: transferId ? 'paid' : 'failed',
         paid_at: transferId ? new Date().toISOString() : null,
         stripe_transfer_id: transferId,

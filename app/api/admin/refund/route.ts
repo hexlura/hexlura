@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
@@ -7,8 +8,9 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: profile } = await supabase
-        .from('profiles').select('role').eq('id', user.id).single()
+    const adminClient = createAdminClient()
+
+    const { data: profile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!profile || profile.role !== 'admin') {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
     const { booking_id, type, amount_pence, refund_request_id } = body
 
-    const { data: booking } = await supabase
+    const { data: booking } = await adminClient
         .from('bookings')
         .select('id, booking_ref, total_pence, stripe_payment_intent_id, status')
         .eq('id', booking_id)
@@ -45,13 +47,13 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    await supabase
+    await adminClient
         .from('bookings')
         .update({ status: 'refunded' })
         .eq('id', booking_id)
 
     if (refund_request_id) {
-        await supabase
+        await adminClient
             .from('refund_requests')
             .update({ status: 'approved', resolved_at: new Date().toISOString() })
             .eq('id', refund_request_id)

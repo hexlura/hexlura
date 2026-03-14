@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { AdminBookingsClient } from './bookings-client'
 
@@ -11,13 +12,15 @@ export default async function AdminBookingsPage({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const adminClient = createAdminClient()
+
     const tab = searchParams.tab ?? 'all'
     const page = Math.max(1, parseInt(searchParams.page ?? '1'))
     const pageSize = 25
     const offset = (page - 1) * pageSize
 
     if (tab === 'refunds') {
-        const { data: refunds, count } = await supabase
+        const { data: refunds, count } = await adminClient
             .from('refund_requests')
             .select('id, status, reason, message, created_at, booking:bookings(id, booking_ref, total_pence, user_id, profiles(full_name, email), event:events(title))', { count: 'exact' })
             .eq('status', 'pending')
@@ -36,7 +39,7 @@ export default async function AdminBookingsPage({
         )
     }
 
-    let query = supabase
+    let query = adminClient
         .from('bookings')
         .select('id, booking_ref, status, total_pence, ticket_subtotal_pence, booking_fee_pence, payment_method, created_at, confirmed_at, user_id, profiles(full_name, email), event:events(title)', { count: 'exact' })
         .order('created_at', { ascending: false })

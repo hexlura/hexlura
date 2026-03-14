@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { OrganisersClient } from './organisers-client'
 
@@ -11,15 +12,17 @@ export default async function AdminOrganisersPage({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const adminClient = createAdminClient()
+
     // Pending organisers
-    const { data: pendingData } = await supabase
+    const { data: pendingData } = await adminClient
         .from('organiser_profiles')
         .select('id, org_name, slug, description, website, vat_registered, created_at, user_id, profiles(full_name, email, phone)')
         .eq('is_approved', false)
         .order('created_at', { ascending: true })
 
     // Active organisers - with event count and revenue
-    const { data: activeData } = await supabase
+    const { data: activeData } = await adminClient
         .from('organiser_profiles')
         .select('id, org_name, slug, stripe_account_id, is_suspended, created_at, approved_at, user_id, profiles(full_name, email)')
         .eq('is_approved', true)
@@ -27,7 +30,7 @@ export default async function AdminOrganisersPage({
         .order('created_at', { ascending: false })
 
     // Suspended organisers
-    const { data: suspendedData } = await supabase
+    const { data: suspendedData } = await adminClient
         .from('organiser_profiles')
         .select('id, org_name, is_suspended, created_at, user_id, profiles(full_name, email)')
         .eq('is_approved', true)
@@ -39,12 +42,12 @@ export default async function AdminOrganisersPage({
     const orgStats: Record<string, { events: number; revenue: number }> = {}
 
     if (activeIds.length > 0) {
-        const { data: eventsData } = await supabase
+        const { data: eventsData } = await adminClient
             .from('events')
             .select('id, organiser_id')
             .in('organiser_id', activeIds)
 
-        const { data: bookingsData } = await supabase
+        const { data: bookingsData } = await adminClient
             .from('bookings')
             .select('ticket_subtotal_pence, event:events(organiser_id)')
             .eq('status', 'confirmed')

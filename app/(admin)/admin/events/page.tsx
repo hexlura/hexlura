@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { AdminEventsClient } from './events-client'
 
@@ -11,12 +12,14 @@ export default async function AdminEventsPage({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const adminClient = createAdminClient()
+
     const tab = searchParams.tab ?? 'all'
     const page = Math.max(1, parseInt(searchParams.page ?? '1'))
     const pageSize = 25
     const offset = (page - 1) * pageSize
 
-    let query = supabase
+    let query = adminClient
         .from('events')
         .select('id, title, slug, category, status, start_at, is_featured, featured_order, organiser_id, organiser_profiles(org_name), ticket_types(quantity_sold, price_pence)', { count: 'exact' })
         .order('created_at', { ascending: false })
