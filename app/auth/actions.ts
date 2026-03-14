@@ -37,7 +37,6 @@ export async function signUp(formData: FormData) {
         return { error: error.message }
     }
 
-    // Insert into profiles table
     if (data.user) {
         const { error: profileError } = await supabase.from('profiles').upsert({
             id: data.user.id,
@@ -68,13 +67,13 @@ export async function signIn(formData: FormData) {
         return { error: error.message }
     }
 
-    // Fetch profile to determine redirect destination
+    // Get the authenticated user
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Authentication failed.' }
     }
 
-    // Service client bypasses RLS so role is always readable
+    // Service client bypasses RLS for reliable role lookup
     const serviceClient = createServiceClient()
     const { data: profile } = await serviceClient
         .from('profiles')
@@ -84,24 +83,21 @@ export async function signIn(formData: FormData) {
 
     const role = profile?.role || 'user'
 
-    // Return the destination so the client can drive the navigation.
-    // Calling redirect() inside a server action invoked from a client-side
-    // async handler is unreliable — the client must use router.push() instead.
+    // Return redirectTo — client uses router.push(), never call redirect() here
     if (role === 'admin') {
         return { redirectTo: '/admin' }
-    } else if (role === 'organiser') {
-        const { data: organiserProfile } = await serviceClient
+    }
+
+    if (role === 'organiser') {
+        const { data: org } = await serviceClient
             .from('organiser_profiles')
             .select('is_approved')
             .eq('user_id', user.id)
             .maybeSingle()
-        if (organiserProfile?.is_approved) {
-            return { redirectTo: '/organiser' }
-        }
-        return { redirectTo: '/organiser/pending' }
-    } else {
-        return { redirectTo: '/account' }
+        return { redirectTo: org?.is_approved ? '/organiser' : '/organiser/pending' }
     }
+
+    return { redirectTo: '/account' }
 }
 
 export async function signInWithGoogle() {

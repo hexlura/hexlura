@@ -35,14 +35,6 @@ export default async function AccountPage() {
             .maybeSingle(),
     ])
 
-    if (profile?.role === 'admin') {
-        redirect('/admin')
-    }
-
-    if (profile?.role === 'organiser' && organiserProfile?.is_approved) {
-        redirect('/organiser')
-    }
-
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'there'
     const email = user.email || ''
     const bookings = (bookingsRaw || []) as Booking[]

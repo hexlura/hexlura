@@ -48,7 +48,14 @@ export default async function OrganiserPendingPage() {
                             </a>
                         </div>
 
-                        <form action="/auth/signout" method="post">
+                        <form action={async () => {
+                            'use server'
+                            const { createClient } = await import('@/lib/supabase/server')
+                            const { redirect } = await import('next/navigation')
+                            const supabase = createClient()
+                            await supabase.auth.signOut()
+                            redirect('/')
+                        }}>
                             <button
                                 type="submit"
                                 className="px-6 py-2.5 bg-surface border border-border rounded-lg text-sm text-muted hover:text-text transition-colors"

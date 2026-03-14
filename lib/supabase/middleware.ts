@@ -2,26 +2,10 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 
-/** Copy all cookies from a (possibly refreshed) session response into a redirect. */
-function redirectWithCookies(destination: URL, sessionResponse: NextResponse): NextResponse {
-    const redirectResponse = NextResponse.redirect(destination)
-    sessionResponse.cookies.getAll().forEach((cookie) => {
-        redirectResponse.cookies.set(cookie.name, cookie.value, {
-            httpOnly: cookie.httpOnly,
-            sameSite: cookie.sameSite,
-            secure: cookie.secure,
-            maxAge: cookie.maxAge,
-            path: cookie.path,
-        })
-    })
-    return redirectResponse
-}
-
 export async function updateSession(request: NextRequest) {
-    let response = NextResponse.next({
-        request: {
-            headers: request.headers,
-        },
+    // Step 1: Create response and Supabase client to refresh session
+    let supabaseResponse = NextResponse.next({
+        request: { headers: request.headers },
     })
 
     const supabase = createServerClient(
@@ -34,120 +18,116 @@ export async function updateSession(request: NextRequest) {
                 },
                 set(name: string, value: string, options: CookieOptions) {
                     request.cookies.set({ name, value, ...options })
-                    response = NextResponse.next({
-                        request: {
-                            headers: request.headers,
-                        },
+                    supabaseResponse = NextResponse.next({
+                        request: { headers: request.headers },
                     })
-                    response.cookies.set({ name, value, ...options })
+                    supabaseResponse.cookies.set({ name, value, ...options })
                 },
                 remove(name: string, options: CookieOptions) {
                     request.cookies.set({ name, value: '', ...options })
-                    response = NextResponse.next({
-                        request: {
-                            headers: request.headers,
-                        },
+                    supabaseResponse = NextResponse.next({
+                        request: { headers: request.headers },
                     })
-                    response.cookies.set({ name, value: '', ...options })
+                    supabaseResponse.cookies.set({ name, value: '', ...options })
                 },
             },
         }
     )
 
-    // Refresh the session
+    // Step 2: Refresh session and get user
     const { data: { user } } = await supabase.auth.getUser()
 
     const pathname = request.nextUrl.pathname
 
-    // Routes exempt from organiser role check (accessible by any authenticated user)
-    const isOrganiserApplyRoute = pathname === '/organiser/apply'
-    const isOrganiserPendingRoute = pathname === '/organiser/pending'
-
-    // Protected routes that require authentication
-    const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
-    const isOrganiserRoute = pathname.startsWith('/organiser')
+    // Classify routes
     const isAdminRoute = pathname.startsWith('/admin')
-    const isProtectedRoute = isAccountRoute || isOrganiserRoute || isAdminRoute
+    const isOrganiserRoute = pathname.startsWith('/organiser')
+    const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
+    const isAuthRoute = (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register'))
+    const isProtectedRoute = isAdminRoute || isOrganiserRoute || isAccountRoute
 
-    // If not authenticated and trying to access a protected route, redirect to login
-    if (!user && isProtectedRoute) {
-        const loginUrl = request.nextUrl.clone()
-        loginUrl.pathname = '/auth/login'
-        loginUrl.searchParams.set('next', pathname)
-        return redirectWithCookies(loginUrl, response)
+    // Helper: redirect while preserving session cookies
+    function redirectTo(path: string): NextResponse {
+        const url = request.nextUrl.clone()
+        url.pathname = path
+        const redirectRes = NextResponse.redirect(url)
+        supabaseResponse.cookies.getAll().forEach(cookie => {
+            redirectRes.cookies.set(cookie)
+        })
+        return redirectRes
     }
 
-    // For authenticated users on protected or auth routes: fetch role once
-    const needsRoleCheck =
-        (user && isProtectedRoute) ||
-        (user && pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
+    // Unauthenticated users trying to access protected routes → login
+    if (!user && isProtectedRoute) {
+        return redirectTo('/auth/login')
+    }
 
-    if (needsRoleCheck && user) {
-        // Use the service-role client so the role lookup bypasses RLS.
-        // The anon-key client's JWT may not be forwarded to PostgREST in all
-        // edge environments, making auth.uid() null and every RLS policy fail.
-        const serviceClient = createSupabaseClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-            { auth: { persistSession: false } }
-        )
-        const { data: profile } = await serviceClient
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
+    // No role checks needed for unauthenticated users on public/auth routes
+    if (!user) {
+        return supabaseResponse
+    }
 
-        const role = profile?.role || 'user'
+    // Step 3: Authenticated user — fetch role
+    const serviceClient = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } }
+    )
 
-        // Authenticated user visiting an auth page → redirect to their dashboard
-        if (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback')) {
-            const dest = request.nextUrl.clone()
-            if (role === 'admin') {
-                dest.pathname = '/admin'
-            } else if (role === 'organiser') {
-                const { data: orgProfile } = await serviceClient
+    const { data: profile } = await serviceClient
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    const role = profile?.role || 'user'
+
+    // Authenticated user on auth pages → redirect to their dashboard
+    if (isAuthRoute) {
+        if (role === 'admin') return redirectTo('/admin')
+        if (role === 'organiser') {
+            const { data: org } = await serviceClient
+                .from('organiser_profiles')
+                .select('is_approved')
+                .eq('user_id', user.id)
+                .maybeSingle()
+            return redirectTo(org?.is_approved ? '/organiser' : '/organiser/pending')
+        }
+        return redirectTo('/account')
+    }
+
+    // Admin routes: must be admin
+    if (isAdminRoute) {
+        if (role !== 'admin') return redirectTo('/')
+    }
+
+    // Organiser routes (except /organiser/pending and /organiser/apply)
+    if (isOrganiserRoute) {
+        const isExempt = pathname === '/organiser/pending' || pathname === '/organiser/apply'
+
+        if (pathname === '/organiser/pending') {
+            // Only allow unapproved organisers on pending page
+            if (role === 'organiser') {
+                const { data: org } = await serviceClient
                     .from('organiser_profiles')
                     .select('is_approved')
                     .eq('user_id', user.id)
                     .maybeSingle()
-                dest.pathname = orgProfile?.is_approved ? '/organiser' : '/organiser/pending'
+                if (org?.is_approved) return redirectTo('/organiser')
+                // Unapproved organiser → allow through
             } else {
-                dest.pathname = '/account'
+                return redirectTo('/organiser')
             }
-            return redirectWithCookies(dest, response)
-        }
-
-        // Admin visiting /account/* → redirect to admin panel
-        if (isAccountRoute && role === 'admin') {
-            const dest = request.nextUrl.clone()
-            dest.pathname = '/admin'
-            return redirectWithCookies(dest, response)
-        }
-
-        // Organiser visiting /account/* → redirect to organiser portal
-        if (isAccountRoute && role === 'organiser') {
-            const dest = request.nextUrl.clone()
-            dest.pathname = '/organiser'
-            return redirectWithCookies(dest, response)
-        }
-
-        // /organiser/apply is accessible to any authenticated user
-        // /organiser/pending is accessible to organisers (approved or not)
-        if (isOrganiserRoute && !isOrganiserApplyRoute && !isOrganiserPendingRoute) {
+        } else if (!isExempt) {
+            // Regular organiser routes: must be organiser or admin
             if (role !== 'organiser' && role !== 'admin') {
-                const dest = request.nextUrl.clone()
-                dest.pathname = '/'
-                return redirectWithCookies(dest, response)
+                return redirectTo('/')
             }
-        }
-
-        // Admin routes: must have admin role
-        if (isAdminRoute && role !== 'admin') {
-            const dest = request.nextUrl.clone()
-            dest.pathname = '/'
-            return redirectWithCookies(dest, response)
         }
     }
 
-    return response
+    // Account routes: already checked auth above, allow through
+    // All other routes: allow through
+
+    return supabaseResponse
 }
