@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /** Copy all cookies from a (possibly refreshed) session response into a redirect. */
@@ -82,7 +83,15 @@ export async function updateSession(request: NextRequest) {
         (user && pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
 
     if (needsRoleCheck && user) {
-        const { data: profile } = await supabase
+        // Use the service-role client so the role lookup bypasses RLS.
+        // The anon-key client's JWT may not be forwarded to PostgREST in all
+        // edge environments, making auth.uid() null and every RLS policy fail.
+        const serviceClient = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            { auth: { persistSession: false } }
+        )
+        const { data: profile } = await serviceClient
             .from('profiles')
             .select('role')
             .eq('id', user.id)

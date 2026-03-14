@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 
 export async function signUp(formData: FormData) {
@@ -73,7 +74,9 @@ export async function signIn(formData: FormData) {
         return { error: 'Authentication failed.' }
     }
 
-    const { data: profile } = await supabase
+    // Service client bypasses RLS so role is always readable
+    const serviceClient = createServiceClient()
+    const { data: profile } = await serviceClient
         .from('profiles')
         .select('role')
         .eq('id', user.id)

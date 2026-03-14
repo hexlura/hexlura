@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import UserMenu from './UserMenu'
 
 export async function Navbar() {
@@ -9,7 +10,9 @@ export async function Navbar() {
     let role = 'user'
     let fullName: string | null = null
     if (user) {
-        const { data: profile } = await supabase
+        // Service client bypasses RLS so the profile read always succeeds
+        const serviceClient = createServiceClient()
+        const { data: profile } = await serviceClient
             .from('profiles')
             .select('role, full_name')
             .eq('id', user.id)

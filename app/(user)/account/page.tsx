@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { Booking } from '@/types'
@@ -12,9 +13,12 @@ export default async function AccountPage() {
         redirect('/auth/login')
     }
 
+    // Service client for profile reads — bypasses RLS so role is always correct
+    const serviceClient = createServiceClient()
+
     // Fetch profile, bookings, and organiser status in parallel
     const [{ data: profile }, { data: bookingsRaw }, { data: organiserProfile }] = await Promise.all([
-        supabase
+        serviceClient
             .from('profiles')
             .select('full_name, email, avatar_url, role, created_at')
             .eq('id', user.id)
@@ -24,7 +28,7 @@ export default async function AccountPage() {
             .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url)')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false }),
-        supabase
+        serviceClient
             .from('organiser_profiles')
             .select('is_approved')
             .eq('user_id', user.id)
