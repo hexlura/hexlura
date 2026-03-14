@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
@@ -7,7 +8,8 @@ export default async function OrganiserAttendeesPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const { data: organiser } = await supabase
+    const serviceClient = createServiceClient()
+    const { data: organiser } = await serviceClient
         .from('organiser_profiles').select('id').eq('user_id', user.id).single()
     if (!organiser) redirect('/organiser/pending')
 
