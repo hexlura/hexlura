@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner'
@@ -13,15 +14,30 @@ export default async function AdminLayout({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const { data: profile } = await supabase
+    // Use service role client to bypass RLS — anon client may fail to read
+    // profiles in layout context due to RLS policy evaluation
+    const serviceClient = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } }
+    )
+
+    const { data: profile, error: profileError } = await serviceClient
         .from('profiles')
         .select('id, full_name, role')
         .eq('id', user.id)
         .single()
 
-    if (!profile || profile.role !== 'admin') redirect('/')
+    if (profileError) {
+        console.error('[AdminLayout] profile fetch failed:', profileError.message, profileError)
+    }
 
-    const { count: pendingCount } = await supabase
+    if (!profile || profile.role !== 'admin') {
+        console.error('[AdminLayout] access denied — user:', user.id, 'role:', profile?.role ?? 'null')
+        redirect('/')
+    }
+
+    const { count: pendingCount } = await serviceClient
         .from('organiser_profiles')
         .select('id', { count: 'exact', head: true })
         .eq('is_approved', false)
@@ -31,7 +47,7 @@ export default async function AdminLayout({
 
     let impersonatedName: string | null = null
     if (impersonatingId) {
-        const { data: imp } = await supabase
+        const { data: imp } = await serviceClient
             .from('profiles')
             .select('full_name')
             .eq('id', impersonatingId)
