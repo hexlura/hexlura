@@ -67,7 +67,7 @@ export async function signIn(formData: FormData) {
         return { error: error.message }
     }
 
-    // Fetch profile to determine redirect
+    // Fetch profile to determine redirect destination
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { error: 'Authentication failed.' }
@@ -81,12 +81,15 @@ export async function signIn(formData: FormData) {
 
     const role = profile?.role || 'user'
 
+    // Return the destination so the client can drive the navigation.
+    // Calling redirect() inside a server action invoked from a client-side
+    // async handler is unreliable — the client must use router.push() instead.
     if (role === 'admin') {
-        redirect('/admin')
+        return { redirectTo: '/admin' }
     } else if (role === 'organiser') {
-        redirect('/organiser')
+        return { redirectTo: '/organiser' }
     } else {
-        redirect('/account')
+        return { redirectTo: '/account' }
     }
 }
 

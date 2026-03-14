@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, signInWithGoogle } from '../actions'
 
 export default function LoginPage() {
+    const router = useRouter()
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -16,6 +18,8 @@ export default function LoginPage() {
         if (result?.error) {
             setError(result.error)
             setLoading(false)
+        } else if (result?.redirectTo) {
+            router.push(result.redirectTo)
         }
     }
 

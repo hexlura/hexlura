@@ -1,6 +1,21 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
+/** Copy all cookies from a (possibly refreshed) session response into a redirect. */
+function redirectWithCookies(destination: URL, sessionResponse: NextResponse): NextResponse {
+    const redirectResponse = NextResponse.redirect(destination)
+    sessionResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value, {
+            httpOnly: cookie.httpOnly,
+            sameSite: cookie.sameSite,
+            secure: cookie.secure,
+            maxAge: cookie.maxAge,
+            path: cookie.path,
+        })
+    })
+    return redirectResponse
+}
+
 export async function updateSession(request: NextRequest) {
     let response = NextResponse.next({
         request: {
@@ -61,8 +76,12 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(loginUrl)
     }
 
-    // Role-based access control for authenticated users
-    if (user && isProtectedRoute) {
+    // For authenticated users on protected or auth routes: fetch role once
+    const needsRoleCheck =
+        (user && isProtectedRoute) ||
+        (user && pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback'))
+
+    if (needsRoleCheck && user) {
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -71,51 +90,43 @@ export async function updateSession(request: NextRequest) {
 
         const role = profile?.role || 'user'
 
+        // Authenticated user visiting an auth page → redirect to their dashboard
+        if (pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback')) {
+            const dest = request.nextUrl.clone()
+            dest.pathname = role === 'admin' ? '/admin' : role === 'organiser' ? '/organiser' : '/account'
+            return redirectWithCookies(dest, response)
+        }
+
         // Admin visiting /account/* → redirect to admin panel
         if (isAccountRoute && role === 'admin') {
-            const adminUrl = request.nextUrl.clone()
-            adminUrl.pathname = '/admin'
-            return NextResponse.redirect(adminUrl)
+            const dest = request.nextUrl.clone()
+            dest.pathname = '/admin'
+            return redirectWithCookies(dest, response)
+        }
+
+        // Organiser visiting /account/* → redirect to organiser portal
+        if (isAccountRoute && role === 'organiser') {
+            const dest = request.nextUrl.clone()
+            dest.pathname = '/organiser'
+            return redirectWithCookies(dest, response)
         }
 
         // /organiser/apply is accessible to any authenticated user
         // /organiser/pending is accessible to organisers (approved or not)
         if (isOrganiserRoute && !isOrganiserApplyRoute && !isOrganiserPendingRoute) {
             if (role !== 'organiser' && role !== 'admin') {
-                const homeUrl = request.nextUrl.clone()
-                homeUrl.pathname = '/'
-                return NextResponse.redirect(homeUrl)
+                const dest = request.nextUrl.clone()
+                dest.pathname = '/'
+                return redirectWithCookies(dest, response)
             }
         }
 
         // Admin routes: must have admin role
         if (isAdminRoute && role !== 'admin') {
-            const homeUrl = request.nextUrl.clone()
-            homeUrl.pathname = '/'
-            return NextResponse.redirect(homeUrl)
+            const dest = request.nextUrl.clone()
+            dest.pathname = '/'
+            return redirectWithCookies(dest, response)
         }
-    }
-
-    // If authenticated and visiting auth pages, redirect to their dashboard
-    if (user && pathname.startsWith('/auth/') && !pathname.startsWith('/auth/callback')) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        const role = profile?.role || 'user'
-        const redirectUrl = request.nextUrl.clone()
-
-        if (role === 'admin') {
-            redirectUrl.pathname = '/admin'
-        } else if (role === 'organiser') {
-            redirectUrl.pathname = '/organiser'
-        } else {
-            redirectUrl.pathname = '/account'
-        }
-
-        return NextResponse.redirect(redirectUrl)
     }
 
     return response
