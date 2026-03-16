@@ -14,9 +14,18 @@ interface RichTextEditorProps {
 export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
     const editor = useEditor({
         extensions: [
-            StarterKit,
+            StarterKit.configure({
+                heading: { levels: [2, 3] },
+                bulletList: {},
+                orderedList: {},
+                listItem: {},
+                horizontalRule: {},
+            }),
             Underline,
-            Link.configure({ openOnClick: false }),
+            Link.configure({
+                openOnClick: false,
+                HTMLAttributes: { class: 'text-red-500 underline' },
+            }),
         ],
         content,
         onUpdate: ({ editor }) => onChange(editor.getHTML()),

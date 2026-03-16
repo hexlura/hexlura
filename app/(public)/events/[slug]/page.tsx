@@ -42,8 +42,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         <div className="max-w-7xl mx-auto px-4 py-8">
             {/* Event Header Banner */}
             <div className="relative w-full h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
-                {event.banner_url ? (
-                    <Image src={event.banner_url} alt={event.title} fill className="object-cover" priority />
+                {event.banner_url?.startsWith('http') ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover" />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-r from-neutral-800 to-neutral-900 flex items-center justify-center">
                         <span className="text-white text-xl">No image provided</span>

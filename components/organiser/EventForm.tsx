@@ -34,6 +34,7 @@ interface TicketTypeRow {
     sale_starts_at: string
     sale_ends_at: string
     priceStr: string
+    qtyStr: string
 }
 
 interface PromoCodeRow {
@@ -55,9 +56,12 @@ interface EventFormProps {
     promoCodes?: PromoCode[]
 }
 
-function utcToLondonInput(utcStr: string): string {
-    const s = new Date(utcStr).toLocaleString('sv-SE', { timeZone: 'Europe/London' })
-    return s.slice(0, 16).replace(' ', 'T')
+function toDatetimeLocal(utcString: string): string {
+    if (!utcString) return ''
+    const date = new Date(utcString)
+    const offset = date.getTimezoneOffset()
+    const local = new Date(date.getTime() - offset * 60000)
+    return local.toISOString().slice(0, 16)
 }
 
 function toSlug(title: string) {
@@ -88,14 +92,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
 
     // Section 02
     const [slug, setSlug] = useState(event?.slug || '')
-    const [startAt, setStartAt] = useState(event?.start_at ? utcToLondonInput(event.start_at) : '')
-    const [endAt, setEndAt] = useState(event?.end_at ? utcToLondonInput(event.end_at) : '')
+    const [startAt, setStartAt] = useState(event?.start_at ? toDatetimeLocal(event.start_at) : '')
+    const [endAt, setEndAt] = useState(event?.end_at ? toDatetimeLocal(event.end_at) : '')
     const [venueName, setVenueName] = useState(event?.venue_name || '')
     // Parse city from stored venue_address (saved as "street, city")
     const _fullAddr = event?.venue_address || ''
     const _lastComma = _fullAddr.lastIndexOf(', ')
-    const _candidateCity = _lastComma !== -1 ? _fullAddr.slice(_lastComma + 2) : ''
-    const _initCity = UK_CITIES.includes(_candidateCity) ? _candidateCity : ''
+    const _initCity = _lastComma !== -1 ? _fullAddr.slice(_lastComma + 2) : ''
     const _initAddr = _initCity ? _fullAddr.slice(0, _lastComma) : _fullAddr
     const [venueAddress, setVenueAddress] = useState(_initAddr)
     const [venueCity, setVenueCity] = useState(_initCity)
@@ -104,7 +107,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     // Section 03 — Ticket Types
     const defaultTicket: TicketTypeRow = {
         name: 'General Admission', description: '', price_pence: 0, priceStr: '',
-        quantity_total: 100, max_per_order: 10, is_visible: true, sort_order: 0,
+        quantity_total: 100, qtyStr: '100', max_per_order: 10, is_visible: true, sort_order: 0,
         sale_starts_at: '', sale_ends_at: '',
     }
     const [tickets, setTickets] = useState<TicketTypeRow[]>(
@@ -115,6 +118,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             price_pence: tt.price_pence,
             priceStr: (tt.price_pence / 100).toFixed(2),
             quantity_total: tt.quantity_total,
+            qtyStr: String(tt.quantity_total || ''),
             max_per_order: tt.max_per_order,
             is_visible: tt.is_visible,
             sort_order: tt.sort_order,
@@ -458,10 +462,17 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     </div>
                     <div>
                         <label className={labelClass}>City</label>
-                        <select value={venueCity} onChange={e => setVenueCity(e.target.value)} className={inputClass}>
-                            <option value="">Select city...</option>
-                            {UK_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
+                        <input
+                            type="text"
+                            value={venueCity}
+                            onChange={e => setVenueCity(e.target.value)}
+                            placeholder="e.g. Manchester"
+                            list="uk-cities"
+                            className={inputClass}
+                        />
+                        <datalist id="uk-cities">
+                            {UK_CITIES.map(c => <option key={c} value={c} />)}
+                        </datalist>
                     </div>
                     <div>
                         <label className={labelClass}>Postcode *</label>
@@ -509,7 +520,17 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 </div>
                                 <div>
                                     <label className={labelClass}>Total Quantity</label>
-                                    <input type="number" min="1" max="10000" value={tt.quantity_total} onChange={e => updateTicket(i, { quantity_total: parseInt(e.target.value) || 1 })} placeholder="e.g. 100" className={inputClass} />
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={tt.qtyStr}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/\D/g, '')
+                                            updateTicket(i, { qtyStr: val, quantity_total: parseInt(val) || 1 })
+                                        }}
+                                        placeholder="e.g. 200"
+                                        className={inputClass}
+                                    />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Max per Order</label>
