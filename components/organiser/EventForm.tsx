@@ -56,12 +56,11 @@ interface EventFormProps {
     promoCodes?: PromoCode[]
 }
 
-function toDatetimeLocal(utcString: string): string {
-    if (!utcString) return ''
-    const date = new Date(utcString)
-    const offset = date.getTimezoneOffset()
-    const local = new Date(date.getTime() - offset * 60000)
-    return local.toISOString().slice(0, 16)
+function toDatetimeLocal(utcStr: string | null | undefined): string {
+    if (!utcStr) return ''
+    const d = new Date(utcStr)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function toSlug(title: string) {
@@ -92,8 +91,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
 
     // Section 02
     const [slug, setSlug] = useState(event?.slug || '')
-    const [startAt, setStartAt] = useState(event?.start_at ? toDatetimeLocal(event.start_at) : '')
-    const [endAt, setEndAt] = useState(event?.end_at ? toDatetimeLocal(event.end_at) : '')
+    const [startAt, setStartAt] = useState(toDatetimeLocal(event?.start_at))
+    const [endAt, setEndAt] = useState(toDatetimeLocal(event?.end_at))
     const [venueName, setVenueName] = useState(event?.venue_name || '')
     // Parse city from stored venue_address (saved as "street, city")
     const _fullAddr = event?.venue_address || ''
@@ -185,7 +184,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 venue_name: venueName,
                 venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
                 venue_postcode: venuePostcode,
-                start_at: startAt ? new Date(startAt).toISOString() : new Date().toISOString(),
+                start_at: startAt ? new Date(startAt).toISOString() : null,
                 end_at: endAt ? new Date(endAt).toISOString() : null,
                 banner_url: bannerUrl || null,
                 status: 'draft',
@@ -215,7 +214,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             venue_name: venueName,
             venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
             venue_postcode: venuePostcode,
-            start_at: startAt ? new Date(startAt).toISOString() : new Date().toISOString(),
+            start_at: startAt ? new Date(startAt).toISOString() : null,
             end_at: endAt ? new Date(endAt).toISOString() : null,
             banner_url: bannerUrl || null,
             min_age: minAge,
@@ -438,15 +437,15 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className={labelClass}>Start Date & Time *</label>
-                        <input type="datetime-local" value={startAt} onChange={e => setStartAt(e.target.value)} className={inputClass} required />
+                        <input type="datetime-local" value={startAt} onChange={e => setStartAt(e.target.value)} min={new Date().toISOString().slice(0, 16)} className={inputClass} required />
                     </div>
                     <div>
                         <label className={labelClass}>End Date & Time</label>
-                        <input type="datetime-local" value={endAt} onChange={e => setEndAt(e.target.value)} className={inputClass} />
+                        <input type="datetime-local" value={endAt} onChange={e => setEndAt(e.target.value)} min={startAt || new Date().toISOString().slice(0, 16)} className={inputClass} />
                     </div>
                     <div>
                         <label className={labelClass}>Timezone</label>
-                        <input type="text" value="Europe/London" readOnly className={`${inputClass} opacity-60`} />
+                        <input type="text" value="Europe/London (UK Time)" readOnly className={`${inputClass} opacity-60`} />
                     </div>
                     <div>
                         <label className={labelClass}>Event Slug</label>
