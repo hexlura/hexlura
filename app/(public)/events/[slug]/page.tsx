@@ -37,7 +37,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
     const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' };
     const startTime = new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date(event.start_at));
-    const endTime = event.end_at ? new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date(event.end_at)) : null;
+    const endTime = event.end_at && event.end_at !== event.start_at
+        ? new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date(event.end_at))
+        : null;
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">

@@ -49,6 +49,7 @@ export default function EventCard({ event, showOrganiser = false }: EventCardPro
         day: 'numeric',
         month: 'short',
         year: 'numeric',
+        timeZone: 'Europe/London',
     }).format(new Date(event.start_at));
 
     return (
