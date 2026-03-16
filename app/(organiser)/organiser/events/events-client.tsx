@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { formatPence } from '@/lib/fees'
+import { createClient } from '@/lib/supabase/client'
 
 type EventStatus = 'draft' | 'published' | 'cancelled' | 'archived'
 
@@ -35,6 +36,8 @@ export function EventsClient({ events }: EventsClientProps) {
     const [tab, setTab] = useState<TabStatus>('all')
     const [showCancelModal, setShowCancelModal] = useState<string | null>(null)
     const [cancelling, setCancelling] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null)
+    const [deleting, setDeleting] = useState(false)
 
     const now = new Date()
 
@@ -69,6 +72,16 @@ export function EventsClient({ events }: EventsClientProps) {
         await fetch(`/api/events/${eventId}/cancel`, { method: 'POST' })
         setCancelling(false)
         setShowCancelModal(null)
+        window.location.reload()
+    }
+
+    async function handleDelete(eventId: string) {
+        setDeleting(true)
+        const supabase = createClient()
+        await supabase.from('ticket_types').delete().eq('event_id', eventId)
+        await supabase.from('events').delete().eq('id', eventId)
+        setDeleting(false)
+        setShowDeleteModal(null)
         window.location.reload()
     }
 
@@ -127,15 +140,23 @@ export function EventsClient({ events }: EventsClientProps) {
                                             <div className="flex items-center gap-2">
                                                 <Link href={`/organiser/events/${e.id}`} className="text-xs text-muted hover:text-text transition-colors">Edit</Link>
                                                 <span className="text-border">·</span>
+                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-text transition-colors">View</a>
+                                                <span className="text-border">·</span>
                                                 <Link href={`/organiser/events/${e.id}/attendees`} className="text-xs text-muted hover:text-text transition-colors">Attendees</Link>
                                                 <span className="text-border">·</span>
                                                 <Link href={`/organiser/events/${e.id}/checkin`} className="text-xs text-muted hover:text-text transition-colors">Check-in</Link>
                                                 <span className="text-border">·</span>
-                                                <button onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors">Duplicate</button>
+                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors">Duplicate</button>
                                                 {e.status !== 'cancelled' && (
                                                     <>
                                                         <span className="text-border">·</span>
-                                                        <button onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline">Cancel</button>
+                                                        <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline">Cancel</button>
+                                                    </>
+                                                )}
+                                                {e.ticketsSold === 0 && (
+                                                    <>
+                                                        <span className="text-border">·</span>
+                                                        <button type="button" onClick={() => setShowDeleteModal(e.id)} className="text-xs text-accent hover:underline">Delete</button>
                                                     </>
                                                 )}
                                             </div>
@@ -162,6 +183,25 @@ export function EventsClient({ events }: EventsClientProps) {
                                 {cancelling ? 'Cancelling...' : 'Yes, Cancel Event'}
                             </Button>
                             <Button variant="secondary" size="md" onClick={() => setShowCancelModal(null)}>Keep Event</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete confirmation modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                        <h3 className="font-heading text-xl text-text mb-3">Delete Event?</h3>
+                        <p className="text-sm text-muted mb-4">
+                            This will permanently delete the event and all its ticket types.
+                            This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3">
+                            <Button variant="danger" size="md" onClick={() => handleDelete(showDeleteModal)} disabled={deleting}>
+                                {deleting ? 'Deleting...' : 'Yes, Delete Event'}
+                            </Button>
+                            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(null)}>Keep Event</Button>
                         </div>
                     </div>
                 </div>

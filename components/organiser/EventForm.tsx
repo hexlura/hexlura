@@ -95,10 +95,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [endAt, setEndAt] = useState(toDatetimeLocal(event?.end_at))
     const [venueName, setVenueName] = useState(event?.venue_name || '')
     // Parse city from stored venue_address (saved as "street, city")
-    const _fullAddr = event?.venue_address || ''
-    const _lastComma = _fullAddr.lastIndexOf(', ')
-    const _initCity = _lastComma !== -1 ? _fullAddr.slice(_lastComma + 2) : ''
-    const _initAddr = _initCity ? _fullAddr.slice(0, _lastComma) : _fullAddr
+    const _rawAddr = event?.venue_address || ''
+    const _parts = _rawAddr.split(',')
+    const _initCity = _parts.length > 1 ? _parts[_parts.length - 1].trim() : ''
+    const _initAddr = _parts.length > 1 ? _parts.slice(0, -1).join(',').trim() : _rawAddr
     const [venueAddress, setVenueAddress] = useState(_initAddr)
     const [venueCity, setVenueCity] = useState(_initCity)
     const [venuePostcode, setVenuePostcode] = useState(event?.venue_postcode || '')
@@ -273,7 +273,23 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         const eventId = await getOrCreateEventId()
         if (!eventId) { setPublishing(false); return }
 
-        await supabase.from('events').update({ status: 'published' }).eq('id', eventId)
+        await supabase.from('events').update({
+            title,
+            slug,
+            description,
+            category: category || 'Other',
+            tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+            venue_name: venueName,
+            venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
+            venue_postcode: venuePostcode,
+            start_at: startAt ? new Date(startAt).toISOString() : null,
+            end_at: endAt ? new Date(endAt).toISOString() : null,
+            banner_url: bannerUrl || null,
+            min_age: minAge,
+            max_tickets_per_order: maxTicketsPerOrder,
+            refund_policy: refundPolicy,
+            status: 'published',
+        }).eq('id', eventId)
         setStatus('published')
         setPublishing(false)
         router.push('/organiser/events')
