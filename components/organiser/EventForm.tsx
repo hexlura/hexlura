@@ -56,11 +56,33 @@ interface EventFormProps {
     promoCodes?: PromoCode[]
 }
 
+// Convert UTC ISO string → "YYYY-MM-DDTHH:mm" in Europe/London time for datetime-local inputs
 function toDatetimeLocal(utcStr: string | null | undefined): string {
     if (!utcStr) return ''
     const d = new Date(utcStr)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/London',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(d)
+    const p: Record<string, string> = {}
+    parts.forEach(({ type, value }) => { p[type] = value })
+    return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`
+}
+
+// Convert datetime-local value (treated as Europe/London time) → UTC ISO string
+function ukTimeToUTC(localStr: string): string | null {
+    if (!localStr) return null
+    const [datePart, timePart] = localStr.split('T')
+    const [year, month, day] = datePart.split('-').map(Number)
+    const [hour, minute] = timePart.split(':').map(Number)
+    // Check London's UTC offset at noon on this date (noon is safely away from DST transitions)
+    const noonUtc = new Date(Date.UTC(year, month - 1, day, 12, 0))
+    const noonLondon = parseInt(new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/London', hour: 'numeric', hourCycle: 'h23',
+    }).format(noonUtc))
+    const londonOffset = noonLondon - 12 // 0 for GMT (winter), 1 for BST (summer)
+    return new Date(Date.UTC(year, month - 1, day, hour - londonOffset, minute)).toISOString()
 }
 
 function toSlug(title: string) {
@@ -208,8 +230,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 venue_name: venueName,
                 venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
                 venue_postcode: venuePostcode,
-                start_at: startAt ? new Date(startAt).toISOString() : null,
-                end_at: endAt ? new Date(endAt).toISOString() : null,
+                start_at: startAt ? ukTimeToUTC(startAt) : null,
+                end_at: endAt ? ukTimeToUTC(endAt) : null,
                 banner_url: bannerUrl || null,
                 status: 'draft',
                 min_age: minAge,
