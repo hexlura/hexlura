@@ -159,6 +159,30 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         if (!isEdit && title) setSlug(toSlug(title))
     }, [title, isEdit])
 
+    // If editing and no tickets were passed (e.g. not yet saved to DB), fetch them client-side
+    useEffect(() => {
+        if (!event?.id || tickets.length > 0) return
+        const supabase = createClient()
+        supabase.from('ticket_types').select('*').eq('event_id', event.id).order('sort_order').then(({ data }) => {
+            if (data && data.length > 0) {
+                setTickets(data.map(tt => ({
+                    id: tt.id,
+                    name: tt.name,
+                    description: tt.description || '',
+                    price_pence: tt.price_pence,
+                    priceStr: (tt.price_pence / 100).toFixed(2),
+                    quantity_total: tt.quantity_total,
+                    qtyStr: String(tt.quantity_total || ''),
+                    max_per_order: tt.max_per_order,
+                    is_visible: tt.is_visible,
+                    sort_order: tt.sort_order,
+                    sale_starts_at: tt.sale_starts_at || '',
+                    sale_ends_at: tt.sale_ends_at || '',
+                })))
+            }
+        })
+    }, [event?.id])
+
     // Auto-save every 30 seconds
     useEffect(() => {
         autoSaveRef.current = setInterval(() => {
@@ -290,6 +314,30 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             refund_policy: refundPolicy,
             status: 'published',
         }).eq('id', eventId)
+
+        // Save ticket types (same as saveDraft)
+        for (let i = 0; i < tickets.length; i++) {
+            const tt = tickets[i]
+            if (tt.id) {
+                await supabase.from('ticket_types').update({
+                    name: tt.name, description: tt.description, price_pence: tt.price_pence,
+                    quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
+                    is_visible: tt.is_visible, sort_order: i,
+                    sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+                }).eq('id', tt.id)
+            } else {
+                const { data: newTt } = await supabase.from('ticket_types').insert({
+                    event_id: eventId, name: tt.name, description: tt.description,
+                    price_pence: tt.price_pence, quantity_total: tt.quantity_total,
+                    max_per_order: tt.max_per_order, is_visible: tt.is_visible, sort_order: i,
+                    sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+                }).select('id').single()
+                if (newTt) {
+                    setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, id: newTt.id } : t))
+                }
+            }
+        }
+
         setStatus('published')
         setPublishing(false)
         router.push('/organiser/events')

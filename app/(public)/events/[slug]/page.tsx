@@ -32,6 +32,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        timeZone: 'Europe/London',
     }).format(new Date(event.start_at));
 
     const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' };
