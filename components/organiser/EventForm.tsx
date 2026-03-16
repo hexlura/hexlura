@@ -33,6 +33,7 @@ interface TicketTypeRow {
     sort_order: number
     sale_starts_at: string
     sale_ends_at: string
+    priceStr: string
 }
 
 interface PromoCodeRow {
@@ -52,6 +53,11 @@ interface EventFormProps {
     event?: Event
     ticketTypes?: TicketType[]
     promoCodes?: PromoCode[]
+}
+
+function utcToLondonInput(utcStr: string): string {
+    const s = new Date(utcStr).toLocaleString('sv-SE', { timeZone: 'Europe/London' })
+    return s.slice(0, 16).replace(' ', 'T')
 }
 
 function toSlug(title: string) {
@@ -78,19 +84,26 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [description, setDescription] = useState(event?.description || '')
     const [bannerUrl, setBannerUrl] = useState(event?.banner_url || '')
     const [bannerUploading, setBannerUploading] = useState(false)
+    const [bannerError, setBannerError] = useState('')
 
     // Section 02
     const [slug, setSlug] = useState(event?.slug || '')
-    const [startAt, setStartAt] = useState(event?.start_at ? event.start_at.slice(0, 16) : '')
-    const [endAt, setEndAt] = useState(event?.end_at ? event.end_at.slice(0, 16) : '')
+    const [startAt, setStartAt] = useState(event?.start_at ? utcToLondonInput(event.start_at) : '')
+    const [endAt, setEndAt] = useState(event?.end_at ? utcToLondonInput(event.end_at) : '')
     const [venueName, setVenueName] = useState(event?.venue_name || '')
-    const [venueAddress, setVenueAddress] = useState(event?.venue_address || '')
-    const [venueCity, setVenueCity] = useState('')
+    // Parse city from stored venue_address (saved as "street, city")
+    const _fullAddr = event?.venue_address || ''
+    const _lastComma = _fullAddr.lastIndexOf(', ')
+    const _candidateCity = _lastComma !== -1 ? _fullAddr.slice(_lastComma + 2) : ''
+    const _initCity = UK_CITIES.includes(_candidateCity) ? _candidateCity : ''
+    const _initAddr = _initCity ? _fullAddr.slice(0, _lastComma) : _fullAddr
+    const [venueAddress, setVenueAddress] = useState(_initAddr)
+    const [venueCity, setVenueCity] = useState(_initCity)
     const [venuePostcode, setVenuePostcode] = useState(event?.venue_postcode || '')
 
     // Section 03 — Ticket Types
     const defaultTicket: TicketTypeRow = {
-        name: 'General Admission', description: '', price_pence: 0,
+        name: 'General Admission', description: '', price_pence: 0, priceStr: '',
         quantity_total: 100, max_per_order: 10, is_visible: true, sort_order: 0,
         sale_starts_at: '', sale_ends_at: '',
     }
@@ -100,6 +113,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             name: tt.name,
             description: tt.description || '',
             price_pence: tt.price_pence,
+            priceStr: (tt.price_pence / 100).toFixed(2),
             quantity_total: tt.quantity_total,
             max_per_order: tt.max_per_order,
             is_visible: tt.is_visible,
@@ -124,6 +138,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         })) || []
     )
     const [showPromoModal, setShowPromoModal] = useState(false)
+    const [promoError, setPromoError] = useState('')
+    const [promoToast, setPromoToast] = useState(false)
     const [newPromo, setNewPromo] = useState<Omit<PromoCodeRow, 'id' | 'uses_count'>>({
         code: '', discount_type: 'percent', discount_value: 10, min_order_pence: 0,
         max_uses: null, valid_from: '', valid_to: '',
@@ -165,8 +181,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 venue_name: venueName,
                 venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
                 venue_postcode: venuePostcode,
-                start_at: startAt || new Date().toISOString(),
-                end_at: endAt || null,
+                start_at: startAt ? new Date(startAt).toISOString() : new Date().toISOString(),
+                end_at: endAt ? new Date(endAt).toISOString() : null,
                 banner_url: bannerUrl || null,
                 status: 'draft',
                 min_age: minAge,
@@ -195,8 +211,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             venue_name: venueName,
             venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
             venue_postcode: venuePostcode,
-            start_at: startAt || new Date().toISOString(),
-            end_at: endAt || null,
+            start_at: startAt ? new Date(startAt).toISOString() : new Date().toISOString(),
+            end_at: endAt ? new Date(endAt).toISOString() : null,
             banner_url: bannerUrl || null,
             min_age: minAge,
             max_tickets_per_order: maxTicketsPerOrder,
@@ -263,15 +279,17 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     async function uploadBanner(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (!file) return
-        if (file.size > 5 * 1024 * 1024) return alert('File must be under 5MB')
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return alert('JPG, PNG or WEBP only')
+        setBannerError('')
+        if (file.size > 5 * 1024 * 1024) { setBannerError('File must be under 5MB'); return }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setBannerError('Only JPG, PNG or WEBP files are allowed'); return }
 
         setBannerUploading(true)
         const supabase = createClient()
-        const ext = file.name.split('.').pop()
-        const path = `${organiserId}/${Date.now()}.${ext}`
+        const path = `organisers/${organiserId}/${Date.now()}-${file.name}`
         const { error } = await supabase.storage.from('event-banners').upload(path, file)
-        if (!error) {
+        if (error) {
+            setBannerError(error.message)
+        } else {
             const { data } = supabase.storage.from('event-banners').getPublicUrl(path)
             setBannerUrl(data.publicUrl)
         }
@@ -308,9 +326,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     async function addPromo() {
         const supabase = createClient()
         const eventId = event?.id
-        if (!eventId) { alert('Save the event first before adding promo codes'); return }
+        if (!eventId) { setPromoError('Save the event first before adding promo codes'); return }
+        setPromoError('')
 
-        const { data } = await supabase.from('promo_codes').insert({
+        const { data, error: insertError } = await supabase.from('promo_codes').insert({
             event_id: eventId,
             organiser_id: organiserId,
             code: newPromo.code.toUpperCase(),
@@ -322,11 +341,17 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             valid_to: newPromo.valid_to || null,
         }).select('id').single()
 
+        if (insertError) {
+            setPromoError(insertError.message)
+            return
+        }
         if (data) {
             setPromos(prev => [...prev, { ...newPromo, id: data.id, uses_count: 0 }])
         }
         setShowPromoModal(false)
         setNewPromo({ code: '', discount_type: 'percent', discount_value: 10, min_order_pence: 0, max_uses: null, valid_from: '', valid_to: '' })
+        setPromoToast(true)
+        setTimeout(() => setPromoToast(false), 3000)
     }
 
     async function deletePromo(promoId: string) {
@@ -350,9 +375,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     return (
         <div className="pb-24">
             {/* Save indicator */}
-            <div className="fixed top-4 right-4 z-40">
+            <div className="fixed top-4 right-4 z-40 flex flex-col gap-2 items-end">
                 {saved && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Saved ✓</span>}
                 {saving && <span className="text-muted text-xs">Saving...</span>}
+                {promoToast && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Promo code created</span>}
             </div>
 
             {/* Section 01 */}
@@ -397,6 +423,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : 'Click to upload banner (JPG, PNG, WEBP, max 5MB)'}</p>
                             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
                         </label>
+                        {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
                     </div>
                 </div>
             </div>
@@ -465,9 +492,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 <div>
                                     <label className={labelClass}>Price (£)</label>
                                     <input
-                                        type="number" min="0" step="0.01"
-                                        value={(tt.price_pence / 100).toFixed(2)}
-                                        onChange={e => updateTicket(i, { price_pence: priceToPence(e.target.value) })}
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="[0-9]*\.?[0-9]{0,2}"
+                                        value={tt.priceStr}
+                                        onChange={e => updateTicket(i, { priceStr: e.target.value, price_pence: priceToPence(e.target.value) })}
                                         className={inputClass}
                                     />
                                     <p className="text-xs text-muted mt-1">
@@ -480,7 +509,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 </div>
                                 <div>
                                     <label className={labelClass}>Total Quantity</label>
-                                    <input type="number" min="1" value={tt.quantity_total} onChange={e => updateTicket(i, { quantity_total: parseInt(e.target.value) || 0 })} className={inputClass} />
+                                    <input type="number" min="1" max="10000" value={tt.quantity_total} onChange={e => updateTicket(i, { quantity_total: parseInt(e.target.value) || 1 })} placeholder="e.g. 100" className={inputClass} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Max per Order</label>
@@ -634,6 +663,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 </div>
                             </div>
                         </div>
+                        {promoError && <p className="text-accent text-xs mt-3">{promoError}</p>}
                         <div className="flex gap-3 mt-4">
                             <Button type="button" variant="primary" size="md" onClick={addPromo} disabled={!newPromo.code}>Add Code</Button>
                             <Button type="button" variant="secondary" size="md" onClick={() => setShowPromoModal(false)}>Cancel</Button>

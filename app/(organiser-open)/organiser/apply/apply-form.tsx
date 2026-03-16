@@ -58,9 +58,6 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
                 return
             }
 
-            // Update user role to organiser
-            await supabase.from('profiles').update({ role: 'organiser' }).eq('id', userId)
-
             // Notify support
             await fetch('/api/notifications/organiser-apply', {
                 method: 'POST',

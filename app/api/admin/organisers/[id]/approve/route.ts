@@ -13,11 +13,19 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
     const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+    // Fetch user_id before updating (needed for role update)
+    const { data: orgProfile } = await adminClient.from('organiser_profiles').select('user_id').eq('id', params.id).single()
+
     await adminClient.from('organiser_profiles').update({
         is_approved: true,
         approved_at: new Date().toISOString(),
         approved_by: user.id,
     }).eq('id', params.id)
+
+    // Set the user's role to organiser now that they are approved
+    if (orgProfile?.user_id) {
+        await adminClient.from('profiles').update({ role: 'organiser' }).eq('id', orgProfile.user_id)
+    }
 
     await logAuditAction({
         actorId: user.id,

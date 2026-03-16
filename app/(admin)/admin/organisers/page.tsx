@@ -15,27 +15,39 @@ export default async function AdminOrganisersPage({
     const adminClient = createAdminClient()
 
     // Pending organisers
-    const { data: pendingData } = await adminClient
+    const { data: pendingData, error: pendingError } = await adminClient
         .from('organiser_profiles')
-        .select('id, org_name, slug, description, website, vat_registered, created_at, user_id, profiles(full_name, email, phone)')
+        .select(`
+            id, org_name, slug, description, website, vat_registered, created_at, user_id,
+            profiles!organiser_profiles_user_id_fkey (full_name, email, phone)
+        `)
         .eq('is_approved', false)
         .order('created_at', { ascending: true })
+    if (pendingError) console.error('Pending organisers query error:', pendingError)
 
     // Active organisers - with event count and revenue
-    const { data: activeData } = await adminClient
+    const { data: activeData, error: activeError } = await adminClient
         .from('organiser_profiles')
-        .select('id, org_name, slug, stripe_account_id, is_suspended, created_at, approved_at, user_id, profiles(full_name, email)')
+        .select(`
+            id, org_name, slug, stripe_account_id, is_suspended, created_at, approved_at, user_id,
+            profiles!organiser_profiles_user_id_fkey (full_name, email)
+        `)
         .eq('is_approved', true)
         .eq('is_suspended', false)
         .order('created_at', { ascending: false })
+    if (activeError) console.error('Active organisers query error:', activeError)
 
     // Suspended organisers
-    const { data: suspendedData } = await adminClient
+    const { data: suspendedData, error: suspendedError } = await adminClient
         .from('organiser_profiles')
-        .select('id, org_name, is_suspended, created_at, user_id, profiles(full_name, email)')
+        .select(`
+            id, org_name, is_suspended, created_at, user_id,
+            profiles!organiser_profiles_user_id_fkey (full_name, email)
+        `)
         .eq('is_approved', true)
         .eq('is_suspended', true)
         .order('created_at', { ascending: false })
+    if (suspendedError) console.error('Suspended organisers query error:', suspendedError)
 
     // Get event counts and revenue for active organisers
     const activeIds = (activeData || []).map((o: { id: string }) => o.id)
