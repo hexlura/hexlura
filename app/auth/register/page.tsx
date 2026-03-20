@@ -26,7 +26,7 @@ export default function RegisterPage() {
                 <p className="text-muted text-sm">Join Hexlura and discover amazing events.</p>
             </div>
 
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={async (e) => { e.preventDefault(); await handleSubmit(new FormData(e.currentTarget)) }} className="space-y-4">
                 <div className="flex flex-col gap-1">
                     <label htmlFor="full_name" className="text-sm font-medium text-text">Full Name</label>
                     <input
