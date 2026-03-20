@@ -109,12 +109,16 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                 </div>
 
                 {/* Table */}
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Name', 'Email', 'Ticket Type', 'Booking Ref', 'Booked', 'Checked In'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted pb-2 font-normal pr-4">{h}</th>
-                            ))}
+                            <th className="text-left text-xs text-muted pb-2 font-normal pr-4">Name</th>
+                            <th className="hidden md:table-cell text-left text-xs text-muted pb-2 font-normal pr-4">Email</th>
+                            <th className="text-left text-xs text-muted pb-2 font-normal pr-4">Ticket Type</th>
+                            <th className="text-left text-xs text-muted pb-2 font-normal pr-4">Booking Ref</th>
+                            <th className="hidden md:table-cell text-left text-xs text-muted pb-2 font-normal pr-4">Booked</th>
+                            <th className="text-left text-xs text-muted pb-2 font-normal pr-4">Checked In</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -129,10 +133,10 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                                     onClick={() => setExpanded(expanded === a.id ? null : a.id)}
                                 >
                                     <td className="py-3 pr-4 text-text text-sm">{a.name}</td>
-                                    <td className="py-3 pr-4 text-muted text-xs">{a.email}</td>
+                                    <td className="hidden md:table-cell py-3 pr-4 text-muted text-xs">{a.email}</td>
                                     <td className="py-3 pr-4 text-text text-xs">{a.ticketTypeName}</td>
                                     <td className="py-3 pr-4 font-mono text-xs text-accent">{a.bookingRef}</td>
-                                    <td className="py-3 pr-4 text-muted text-xs">
+                                    <td className="hidden md:table-cell py-3 pr-4 text-muted text-xs">
                                         {new Date(a.bookedAt).toLocaleDateString('en-GB')}
                                     </td>
                                     <td className="py-3">
@@ -163,6 +167,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             {/* Announcement Modal */}

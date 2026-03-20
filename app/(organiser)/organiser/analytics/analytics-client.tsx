@@ -118,7 +118,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
     return (
         <>
             {/* Date range selector */}
-            <div className="flex gap-2 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
                 {rangeOptions.map(opt => (
                     <button
                         key={opt.value}
@@ -131,7 +131,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
             </div>
 
             {/* Summary stats */}
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
                     { label: 'Total Revenue', value: formatPence(totalRevenue) },
                     { label: 'Tickets Sold', value: String(totalTickets) },
@@ -140,7 +140,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
                 ].map(s => (
                     <div key={s.label} className="bg-card border border-border rounded-xl p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{s.label}</p>
-                        <p className={`font-heading text-2xl text-text truncate`}>{s.value}</p>
+                        <p className="font-heading text-2xl text-text">{s.value}</p>
                     </div>
                 ))}
             </div>

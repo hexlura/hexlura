@@ -144,7 +144,7 @@ export default async function OrganiserDashboardPage() {
                 <h1 className="font-heading text-4xl text-text tracking-wide">DASHBOARD</h1>
                 <p className="text-muted text-sm mt-1">{organiser.org_name}</p>
             </div>
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {kpis.map(kpi => (
                     <div key={kpi.label} className="bg-card border border-border rounded-xl p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{kpi.label}</p>
@@ -158,8 +158,8 @@ export default async function OrganiserDashboardPage() {
                 <p className="text-xs text-muted mb-4">Daily ticket revenue</p>
                 <RevenueChart data={chartData} />
             </div>
-            <div className="grid grid-cols-3 gap-6">
-                <div className="col-span-2 bg-card border border-border rounded-xl p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 bg-card border border-border rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Recent Bookings</h2>
                         <Link href="/organiser/bookings" className="text-xs text-accent hover:underline">View all →</Link>

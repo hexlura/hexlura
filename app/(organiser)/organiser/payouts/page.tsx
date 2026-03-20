@@ -47,18 +47,13 @@ export default async function OrganiserPayoutsPage() {
 
             {/* Balance card */}
             <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <p className="text-xs text-muted uppercase tracking-wider mb-1">Available Balance</p>
-                        <p className="font-heading text-5xl text-text">{formatPence(pendingBalance)}</p>
-                        <p className="text-xs text-muted mt-2">Funds from completed events released within 2 business days</p>
-                    </div>
-                    {!organiser.stripe_account_id && (
-                        <a href="/api/stripe/connect" className="px-4 py-2 bg-accent text-white text-sm rounded-lg hover:bg-[#cc2f43] transition-colors">
-                            Connect with Stripe
-                        </a>
-                    )}
-                </div>
+                <p className="text-xs text-muted uppercase tracking-wider mb-1">Available Balance</p>
+                <p className="font-heading text-5xl text-text">{formatPence(pendingBalance)}</p>
+                {!organiser.stripe_account_id ? (
+                    <p className="text-xs text-muted mt-2">Connect Stripe to receive payouts</p>
+                ) : (
+                    <p className="text-xs text-success mt-2">Bank account connected ✓</p>
+                )}
             </div>
 
             {/* Stripe status banner */}

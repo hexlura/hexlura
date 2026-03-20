@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { formatPence } from '@/lib/fees'
@@ -38,6 +38,13 @@ export function EventsClient({ events }: EventsClientProps) {
     const [cancelling, setCancelling] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+
+    useEffect(() => {
+        const handler = () => setOpenMenuId(null)
+        document.addEventListener('click', handler)
+        return () => document.removeEventListener('click', handler)
+    }, [])
 
     const now = new Date()
 
@@ -110,6 +117,7 @@ export function EventsClient({ events }: EventsClientProps) {
                 </div>
             ) : (
                 <div className="bg-card border border-border rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
@@ -137,7 +145,8 @@ export function EventsClient({ events }: EventsClientProps) {
                                         <td className="py-3 px-4 text-text text-xs">{e.ticketsSold}</td>
                                         <td className="py-3 px-4 text-text text-xs">{formatPence(e.revenue)}</td>
                                         <td className="py-3 px-4">
-                                            <div className="flex items-center gap-2">
+                                            {/* Desktop actions */}
+                                            <div className="hidden md:flex items-center gap-2">
                                                 <Link href={`/organiser/events/${e.id}`} className="text-xs text-muted hover:text-text transition-colors">Edit</Link>
                                                 <span className="text-border">·</span>
                                                 <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-text transition-colors">View</a>
@@ -160,12 +169,38 @@ export function EventsClient({ events }: EventsClientProps) {
                                                     </>
                                                 )}
                                             </div>
+                                            {/* Mobile dropdown */}
+                                            <div className="relative md:hidden">
+                                                <button
+                                                    type="button"
+                                                    onClick={(ev) => { ev.stopPropagation(); setOpenMenuId(openMenuId === e.id ? null : e.id) }}
+                                                    className="px-2 py-1 text-muted hover:text-text transition-colors text-sm"
+                                                >
+                                                    •••
+                                                </button>
+                                                {openMenuId === e.id && (
+                                                    <div className="absolute right-0 top-8 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
+                                                        <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
+                                                        <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
+                                                        <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
+                                                        <Link href={`/organiser/events/${e.id}/checkin`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Check-in</Link>
+                                                        <button type="button" onClick={() => handleDuplicate(e.id)} className="block w-full text-left px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Duplicate</button>
+                                                        {e.status !== 'cancelled' && (
+                                                            <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Cancel</button>
+                                                        )}
+                                                        {e.ticketsSold === 0 && (
+                                                            <button type="button" onClick={() => setShowDeleteModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Delete</button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 )
                             })}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             )}
 

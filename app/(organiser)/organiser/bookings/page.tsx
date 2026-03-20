@@ -49,12 +49,17 @@ export default async function OrganiserBookingsPage() {
             </div>
 
             <div className="bg-card border border-border rounded-xl p-6">
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px] text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Booking Ref', 'Event', 'Status', 'Subtotal', 'Fee', 'Total', 'Date'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted pb-3 font-normal pr-4">{h}</th>
-                            ))}
+                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Booking Ref</th>
+                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Event</th>
+                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Status</th>
+                            <th className="hidden md:table-cell text-left text-xs text-muted pb-3 font-normal pr-4">Subtotal</th>
+                            <th className="hidden md:table-cell text-left text-xs text-muted pb-3 font-normal pr-4">Fee</th>
+                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Total</th>
+                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,8 +79,8 @@ export default async function OrganiserBookingsPage() {
                                         {b.status}
                                     </span>
                                 </td>
-                                <td className="py-3 pr-4 text-text text-xs">{formatPence(b.ticket_subtotal_pence || 0)}</td>
-                                <td className="py-3 pr-4 text-muted text-xs">{formatPence(b.booking_fee_pence || 0)}</td>
+                                <td className="hidden md:table-cell py-3 pr-4 text-text text-xs">{formatPence(b.ticket_subtotal_pence || 0)}</td>
+                                <td className="hidden md:table-cell py-3 pr-4 text-muted text-xs">{formatPence(b.booking_fee_pence || 0)}</td>
                                 <td className="py-3 pr-4 text-text text-xs font-medium">{formatPence(b.total_pence || 0)}</td>
                                 <td className="py-3 text-muted text-xs">
                                     {new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -84,6 +89,7 @@ export default async function OrganiserBookingsPage() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )
