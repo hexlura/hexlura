@@ -40,9 +40,11 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
     const pathname = usePathname()
     const router = useRouter()
     const [loadingPath, setLoadingPath] = useState('')
+    const [isOpen, setIsOpen] = useState(false)
 
     useEffect(() => {
         setLoadingPath('')
+        setIsOpen(false)
     }, [pathname])
 
     const isActive = (href: string, exact: boolean) => {
@@ -52,6 +54,7 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
 
     const handleNavClick = (href: string) => {
         setLoadingPath(href)
+        setIsOpen(false)
         router.push(href)
     }
 
@@ -66,82 +69,129 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
     }
 
     return (
-        <aside
-            className="fixed left-0 top-0 h-full flex flex-col z-50"
-            style={{ width: '240px', background: '#0A0A0F', borderRight: '1px solid #2A2A3A' }}
-        >
-            <div className="px-6 py-5 border-b border-border">
-                <div className="font-heading text-xl text-accent tracking-widest">HEXLURA</div>
-                <div className="text-xs text-muted mt-0.5">Admin Console</div>
-            </div>
-
-            <nav className="flex-1 px-3 py-4 flex flex-col gap-5 overflow-y-auto">
-                {NAV_SECTIONS.map((section) => (
-                    <div key={section.title}>
-                        <p className="text-[10px] text-muted font-medium tracking-widest px-3 mb-2">
-                            {section.title}
-                        </p>
-                        <div className="flex flex-col gap-0.5">
-                            {section.links.map((link) => {
-                                const active = isActive(link.href, link.exact)
-                                const loading = loadingPath === link.href
-                                return (
-                                    <button
-                                        key={link.href}
-                                        onClick={() => handleNavClick(link.href)}
-                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
-                                            active
-                                                ? 'text-text bg-card font-medium'
-                                                : loading
-                                                ? 'text-muted'
-                                                : 'text-muted hover:text-text hover:bg-card'
-                                        }`}
-                                    >
-                                        {active && (
-                                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent" />
-                                        )}
-                                        <span className={active ? 'text-accent' : ''}>{link.label}</span>
-                                        <span className="flex items-center gap-1.5">
-                                            {link.badge && pendingOrganisers > 0 && (
-                                                <span className="text-[10px] font-bold bg-gold text-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                                                    {pendingOrganisers}
-                                                </span>
-                                            )}
-                                            {loading && (
-                                                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                                </svg>
-                                            )}
-                                        </span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
-                ))}
-            </nav>
-
-            <div className="p-4 border-t border-border">
-                <div className="text-sm text-text font-medium truncate mb-3">{adminName}</div>
+        <>
+            {/* Mobile header bar — hidden on desktop */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-[#0A0A0F] border-b border-[#2A2A3A] flex items-center px-4 gap-3">
                 <button
-                    onClick={handleSignOut}
-                    disabled={signingOut}
-                    className="flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setIsOpen(true)}
+                    className="text-white p-2 -ml-2"
+                    type="button"
+                    aria-label="Open menu"
                 >
-                    {signingOut ? (
-                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    ) : (
-                        <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                            <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                        </svg>
-                    )}
-                    {signingOut ? 'Signing out...' : 'Sign Out'}
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
                 </button>
+                <span className="font-heading text-accent tracking-widest text-lg">HEXLURA</span>
             </div>
-        </aside>
+
+            {/* Mobile overlay */}
+            {isOpen && (
+                <div
+                    onClick={() => setIsOpen(false)}
+                    className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                    aria-hidden="true"
+                />
+            )}
+
+            {/* Sidebar */}
+            <aside
+                className={[
+                    'fixed inset-y-0 left-0 z-50 flex flex-col',
+                    'transform transition-transform duration-300 ease-in-out',
+                    'lg:translate-x-0',
+                    isOpen ? 'translate-x-0' : '-translate-x-full',
+                ].join(' ')}
+                style={{ width: '240px', background: '#0A0A0F', borderRight: '1px solid #2A2A3A' }}
+            >
+                {/* X close button — mobile only */}
+                <button
+                    onClick={() => setIsOpen(false)}
+                    className="lg:hidden absolute top-4 right-4 text-white hover:text-accent transition-colors"
+                    type="button"
+                    aria-label="Close menu"
+                >
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="5" y1="5" x2="15" y2="15" />
+                        <line x1="15" y1="5" x2="5" y2="15" />
+                    </svg>
+                </button>
+
+                <div className="px-6 py-5 border-b border-border">
+                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA</div>
+                    <div className="text-xs text-muted mt-0.5">Admin Console</div>
+                </div>
+
+                <nav className="flex-1 px-3 py-4 flex flex-col gap-5 overflow-y-auto">
+                    {NAV_SECTIONS.map((section) => (
+                        <div key={section.title}>
+                            <p className="text-[10px] text-muted font-medium tracking-widest px-3 mb-2">
+                                {section.title}
+                            </p>
+                            <div className="flex flex-col gap-0.5">
+                                {section.links.map((link) => {
+                                    const active = isActive(link.href, link.exact)
+                                    const loading = loadingPath === link.href
+                                    return (
+                                        <button
+                                            key={link.href}
+                                            onClick={() => handleNavClick(link.href)}
+                                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
+                                                active
+                                                    ? 'text-text bg-card font-medium'
+                                                    : loading
+                                                    ? 'text-muted'
+                                                    : 'text-muted hover:text-text hover:bg-card'
+                                            }`}
+                                        >
+                                            {active && (
+                                                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent" />
+                                            )}
+                                            <span className={active ? 'text-accent' : ''}>{link.label}</span>
+                                            <span className="flex items-center gap-1.5">
+                                                {link.badge && pendingOrganisers > 0 && (
+                                                    <span className="text-[10px] font-bold bg-gold text-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                                                        {pendingOrganisers}
+                                                    </span>
+                                                )}
+                                                {loading && (
+                                                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                    </svg>
+                                                )}
+                                            </span>
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </nav>
+
+                <div className="p-4 border-t border-border">
+                    <div className="text-sm text-text font-medium truncate mb-3">{adminName}</div>
+                    <button
+                        onClick={handleSignOut}
+                        disabled={signingOut}
+                        className="flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {signingOut ? (
+                            <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                        ) : (
+                            <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                            </svg>
+                        )}
+                        {signingOut ? 'Signing out...' : 'Sign Out'}
+                    </button>
+                </div>
+            </aside>
+        </>
     )
 }

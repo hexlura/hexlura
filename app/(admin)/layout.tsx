@@ -63,8 +63,8 @@ export default async function AdminLayout({
                 pendingOrganisers={pendingCount ?? 0}
             />
             <main
-                className="flex-1 p-8 overflow-auto"
-                style={{ marginLeft: '240px', paddingTop: impersonatedName ? '56px' : '32px' }}
+                className="flex-1 overflow-auto px-8 pb-8 pt-14 lg:pt-8 lg:ml-[240px]"
+                style={impersonatedName ? { paddingTop: '56px' } : undefined}
             >
                 {children}
             </main>
