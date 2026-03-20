@@ -14,6 +14,7 @@ interface BookingWidgetProps {
 export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps) {
     const router = useRouter();
     const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>({});
+    const [checkoutLoading, setCheckoutLoading] = useState(false);
 
     const handleTicketChange = (ticketId: string, delta: number) => {
         const ticket = ticketTypes.find(t => t.id === ticketId);
@@ -49,6 +50,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
     const isAllSoldOut = ticketTypes.every(t => (t.quantity_total - t.quantity_sold) <= 0);
 
     function handleCheckout() {
+        setCheckoutLoading(true);
         const ticketsParam = Object.entries(selectedTickets)
             .filter(([, qty]) => qty > 0)
             .map(([id, qty]) => `${id}:${qty}`)
@@ -141,10 +143,16 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
 
             <Button
                 className="w-full h-14 text-lg font-bold mt-2 bg-accent text-white hover:bg-accent/90"
-                disabled={!hasSelectedTickets}
+                disabled={!hasSelectedTickets || checkoutLoading}
                 onClick={handleCheckout}
             >
-                Proceed to Checkout
+                {checkoutLoading && (
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                )}
+                {checkoutLoading ? 'Loading...' : 'Proceed to Checkout'}
             </Button>
         </div>
     );

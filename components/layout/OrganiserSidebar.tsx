@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface OrganiserSidebarProps {
@@ -88,10 +88,20 @@ const navLinks = [
 export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
+    const [loadingPath, setLoadingPath] = useState('')
+
+    useEffect(() => {
+        setLoadingPath('')
+    }, [pathname])
 
     const isActive = (href: string, exact: boolean) => {
         if (exact) return pathname === href
         return pathname.startsWith(href)
+    }
+
+    const handleNavClick = (href: string) => {
+        setLoadingPath(href)
+        router.push(href)
     }
 
     const handleSignOut = async () => {
@@ -116,24 +126,34 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
             <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
                 {navLinks.map((link) => {
                     const active = isActive(link.href, link.exact)
+                    const loading = loadingPath === link.href
                     return (
-                        <Link
+                        <button
                             key={link.href}
-                            href={link.href}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative ${
+                            onClick={() => handleNavClick(link.href)}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
                                 active
                                     ? 'text-text bg-card font-medium'
+                                    : loading
+                                    ? 'text-muted'
                                     : 'text-muted hover:text-text hover:bg-card'
                             }`}
                         >
                             {active && (
                                 <span
                                     className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent"
+                                    style={{ borderLeft: '2px solid #E63950' }}
                                 />
                             )}
                             <span className={active ? 'text-accent' : ''}>{link.icon}</span>
                             {link.label}
-                        </Link>
+                            {loading && (
+                                <svg className="animate-spin h-3 w-3 ml-auto shrink-0" viewBox="0 0 24 24" fill="none">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                            )}
+                        </button>
                     )
                 })}
             </nav>

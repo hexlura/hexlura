@@ -27,3 +27,27 @@
   }
 }
 
+@layer base {
+  button, a {
+    transition: all 0.15s ease;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+.btn-accent {
+  transition: all 0.15s ease;
+}
+.btn-accent:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.btn-accent:active {
+  transform: translateY(0);
+  opacity: 0.8;
+}
+

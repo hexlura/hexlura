@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface AdminSidebarProps {
@@ -39,10 +39,20 @@ const NAV_SECTIONS = [
 export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
+    const [loadingPath, setLoadingPath] = useState('')
+
+    useEffect(() => {
+        setLoadingPath('')
+    }, [pathname])
 
     const isActive = (href: string, exact: boolean) => {
         if (exact) return pathname === href
         return pathname.startsWith(href)
+    }
+
+    const handleNavClick = (href: string) => {
+        setLoadingPath(href)
+        router.push(href)
     }
 
     const handleSignOut = async () => {
@@ -71,13 +81,16 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
                         <div className="flex flex-col gap-0.5">
                             {section.links.map((link) => {
                                 const active = isActive(link.href, link.exact)
+                                const loading = loadingPath === link.href
                                 return (
-                                    <Link
+                                    <button
                                         key={link.href}
-                                        href={link.href}
-                                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative ${
+                                        onClick={() => handleNavClick(link.href)}
+                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
                                             active
                                                 ? 'text-text bg-card font-medium'
+                                                : loading
+                                                ? 'text-muted'
                                                 : 'text-muted hover:text-text hover:bg-card'
                                         }`}
                                     >
@@ -85,12 +98,20 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
                                             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent" />
                                         )}
                                         <span className={active ? 'text-accent' : ''}>{link.label}</span>
-                                        {link.badge && pendingOrganisers > 0 && (
-                                            <span className="text-[10px] font-bold bg-gold text-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                                                {pendingOrganisers}
-                                            </span>
-                                        )}
-                                    </Link>
+                                        <span className="flex items-center gap-1.5">
+                                            {link.badge && pendingOrganisers > 0 && (
+                                                <span className="text-[10px] font-bold bg-gold text-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                                                    {pendingOrganisers}
+                                                </span>
+                                            )}
+                                            {loading && (
+                                                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                </svg>
+                                            )}
+                                        </span>
+                                    </button>
                                 )
                             })}
                         </div>
