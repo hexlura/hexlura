@@ -81,10 +81,10 @@ export default async function HomePage() {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
                         <Link href="/events" className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
-                            Browse Events
+                            Find Events
                         </Link>
                         <Link href="/organisers/register" className="flex items-center justify-center bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
-                            List Your Event
+                            Sell Tickets
                         </Link>
                     </div>
                 </div>

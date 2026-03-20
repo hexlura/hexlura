@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const discoverLinks = [
-    { label: 'Browse Events', href: '/events' },
+    { label: 'Find Events', href: '/events' },
     { label: 'Events Today', href: '/events?date=today' },
     { label: 'Events This Weekend', href: '/events?date=weekend' },
     { label: 'Search by City', href: '/events' },
@@ -9,7 +9,7 @@ const discoverLinks = [
 ]
 
 const organiserLinks = [
-    { label: 'List Your Event', href: '/organiser' },
+    { label: 'Sell Tickets', href: '/organiser' },
     { label: 'Organiser Login', href: '/auth/login' },
     { label: 'How It Works', href: '/how-it-works' },
     { label: 'Pricing & Fees', href: '/pricing' },

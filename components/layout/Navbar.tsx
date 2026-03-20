@@ -25,6 +25,8 @@ export async function Navbar() {
         ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : user?.email?.[0]?.toUpperCase() || '?'
 
+    const sellTicketsHref = (user && (role === 'organiser' || role === 'admin')) ? '/organiser' : '/auth/register'
+
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -32,20 +34,31 @@ export async function Navbar() {
                     <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
                 </Link>
                 <nav className="hidden md:flex gap-6">
-                    <Link href="/browse" className="text-sm font-medium text-muted hover:text-text transition">
-                        Browse Events
+                    <Link href="/events" className="text-sm font-medium text-muted hover:text-text transition">
+                        Find Events
+                    </Link>
+                    <Link href={sellTicketsHref} className="text-sm font-medium text-muted hover:text-text transition">
+                        Sell Tickets
                     </Link>
                 </nav>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     {user ? (
                         <UserMenu initials={initials} fullName={fullName} role={role} />
                     ) : (
-                        <Link
-                            href="/auth/login"
-                            className="text-sm font-medium text-text bg-surface border border-border px-4 py-2 rounded-lg hover:bg-surface/80 transition"
-                        >
-                            Sign In
-                        </Link>
+                        <>
+                            <Link
+                                href="/auth/login"
+                                className="hidden md:inline-flex items-center justify-center text-sm font-medium text-white border border-white bg-transparent px-5 py-2 rounded-lg hover:bg-white hover:text-black transition"
+                            >
+                                Log In
+                            </Link>
+                            <Link
+                                href="/auth/register"
+                                className="inline-flex items-center justify-center text-sm font-semibold text-white bg-accent border-0 px-5 py-2 rounded-lg hover:opacity-90 transition"
+                            >
+                                Get Started
+                            </Link>
+                        </>
                     )}
                 </div>
             </div>
