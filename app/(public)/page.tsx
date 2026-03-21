@@ -52,16 +52,37 @@ export default async function HomePage() {
             <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 space-y-20">
 
                 {/* Upcoming Events */}
-                <section className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
+                <section>
+                    <div className="flex items-center justify-between mb-5">
+                        <h2
+                            style={{
+                                fontFamily: '"Bebas Neue", sans-serif',
+                                fontSize: '22px',
+                                color: '#F0F0F8',
+                                letterSpacing: '1px',
+                            }}
+                        >
+                            UPCOMING EVENTS
+                        </h2>
+                        <Link
+                            href="/events"
+                            style={{
+                                fontSize: '13px',
+                                color: '#E63950',
+                                border: '1px solid #E63950',
+                                padding: '5px 14px',
+                                borderRadius: '4px',
+                            }}
+                        >
+                            View All
+                        </Link>
                     </div>
 
                     {allEvents.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-[14px]">
                                 {allEvents.map((event) => (
-                                    <EventCard key={event.id} event={event} showOrganiser />
+                                    <EventCard key={event.id} event={event} />
                                 ))}
                             </div>
                             <div className="flex justify-center pt-8">

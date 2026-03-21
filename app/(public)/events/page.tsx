@@ -158,11 +158,18 @@ export default async function BrowseEventsPage({
 
             {/* Main Content Area */}
             <main className="flex-1 space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        {location && location !== 'Any' ? `Events in ${location}` : 'Browse Events'}
+                <div className="flex items-center justify-between">
+                    <h1
+                        style={{
+                            fontFamily: '"Bebas Neue", sans-serif',
+                            fontSize: '22px',
+                            color: '#F0F0F8',
+                            letterSpacing: '1px',
+                        }}
+                    >
+                        {location && location !== 'Any' ? `EVENTS IN ${location.toUpperCase()}` : 'ALL EVENTS'}
                     </h1>
-                    <span className="text-muted-foreground">{events.length} results found</span>
+                    <span className="text-muted-foreground text-sm">{events.length} results</span>
                 </div>
 
                 {/* Active Filters */}
@@ -184,9 +191,9 @@ export default async function BrowseEventsPage({
 
                 {/* Results Grid */}
                 {events.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-[14px]">
                         {events.map((event) => (
-                            <EventCard key={event.id} event={event} showOrganiser />
+                            <EventCard key={event.id} event={event} />
                         ))}
                     </div>
                 ) : (
