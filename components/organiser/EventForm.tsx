@@ -174,6 +174,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [saved, setSaved] = useState(false)
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
+    const [currentStep, setCurrentStep] = useState(1)
+    const [stepErrors, setStepErrors] = useState<string[]>([])
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     // Auto-generate slug from title (only if not editing)
@@ -308,6 +310,39 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         if (!venuePostcode.trim()) errs.push('Postcode is required')
         if (tickets.length === 0) errs.push('At least one ticket type is required')
         return errs
+    }
+
+    function validateStep(step: number): boolean {
+        const errs: string[] = []
+        if (step === 1) {
+            if (!title.trim()) errs.push('Event title is required')
+            if (!category) errs.push('Category is required')
+        } else if (step === 2) {
+            if (!startAt) errs.push('Start date is required')
+            if (!venueName.trim()) errs.push('Venue name is required')
+            if (!venuePostcode.trim()) errs.push('Postcode is required')
+        } else if (step === 3) {
+            if (tickets.length === 0) errs.push('At least one ticket type is required')
+            tickets.forEach((tt, i) => {
+                if (!tt.name.trim()) errs.push(`Ticket ${i + 1}: name is required`)
+                if (tt.price_pence <= 0) errs.push(`Ticket ${i + 1}: price must be greater than £0`)
+            })
+        }
+        setStepErrors(errs)
+        return errs.length === 0
+    }
+
+    const goToNext = async () => {
+        if (!validateStep(currentStep)) return
+        await saveDraft()
+        setCurrentStep(prev => Math.min(prev + 1, 5))
+        window.scrollTo(0, 0)
+    }
+
+    const goToPrev = () => {
+        setStepErrors([])
+        setCurrentStep(prev => Math.max(prev - 1, 1))
+        window.scrollTo(0, 0)
     }
 
     async function handlePublish() {
@@ -470,8 +505,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         )
     }
 
+    const STEP_LABELS = ['Basic Info', 'Date & Venue', 'Tickets', 'Settings', 'Publish']
+
     return (
-        <div className="pb-24">
+        <div>
             {/* Save indicator */}
             <div className="fixed top-4 right-4 z-40 flex flex-col gap-2 items-end">
                 {saved && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Saved ✓</span>}
@@ -479,272 +516,342 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 {promoToast && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Promo code created</span>}
             </div>
 
-            {/* Section 01 */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <SectionHeader num="01" title="Basic Info" />
-                <div className="space-y-4">
-                    <div>
-                        <label className={labelClass}>Event Title *</label>
-                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={100} className={inputClass} placeholder="Your event name" required />
-                        <p className="text-xs text-muted mt-1 text-right">{title.length}/100</p>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Category *</label>
-                        <select value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
-                            <option value="">Select category...</option>
-                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Tags (comma-separated)</label>
-                        <input type="text" value={tags} onChange={e => setTags(e.target.value)} className={inputClass} placeholder="e.g. live music, outdoor, family" />
-                        {tags && (
-                            <div className="flex flex-wrap gap-1.5 mt-2">
-                                {tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
-                                    <span key={tag} className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">{tag}</span>
-                                ))}
+            {/* Step indicator */}
+            <div style={{ background: '#13131A', borderRadius: 16, padding: 24, marginBottom: 32 }}>
+                {/* Mobile */}
+                <div className="sm:hidden text-center">
+                    <p style={{ color: '#8888AA', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 5</p>
+                    <p className="font-heading text-text text-lg">{STEP_LABELS[currentStep - 1]}</p>
+                </div>
+                {/* Desktop */}
+                <div className="hidden sm:flex items-start">
+                    {STEP_LABELS.map((label, idx) => {
+                        const stepNum = idx + 1
+                        const done = currentStep > stepNum
+                        const active = currentStep === stepNum
+                        return (
+                            <div key={stepNum} style={{ display: 'flex', alignItems: 'center', flex: idx < 4 ? 1 : undefined }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{
+                                        width: 32, height: 32, borderRadius: '50%',
+                                        background: done || active ? '#E63950' : '#2A2A3A',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0,
+                                    }}>{done ? '✓' : stepNum}</div>
+                                    <span style={{ fontSize: 11, marginTop: 6, whiteSpace: 'nowrap', color: active ? '#F0F0F8' : '#8888AA' }}>{label}</span>
+                                </div>
+                                {idx < 4 && (
+                                    <div style={{ flex: 1, height: 2, background: done ? '#E63950' : '#2A2A3A', margin: '0 8px 20px 8px' }} />
+                                )}
                             </div>
-                        )}
-                    </div>
-                    <div>
-                        <label className={labelClass}>Description</label>
-                        {typeof window !== 'undefined' && (
-                            <RichTextEditor content={description} onChange={setDescription} />
-                        )}
-                    </div>
-                    <div>
-                        <label className={labelClass}>Banner Image</label>
-                        {bannerUrl && (
-                            <img src={bannerUrl} alt="Banner" className="w-full h-48 object-cover rounded-lg mb-3 border border-border" />
-                        )}
-                        <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
-                            <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : 'Click to upload banner (JPG, PNG, WEBP, max 5MB)'}</p>
-                            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
-                        </label>
-                        {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
-                    </div>
+                        )
+                    })}
                 </div>
             </div>
 
-            {/* Section 02 */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <SectionHeader num="02" title="Date & Venue" />
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className={labelClass}>Start Date & Time *</label>
-                        <input type="datetime-local" value={startAt} onChange={e => setStartAt(e.target.value)} min={new Date().toISOString().slice(0, 16)} className={inputClass} required />
-                    </div>
-                    <div>
-                        <label className={labelClass}>End Date & Time</label>
-                        <input type="datetime-local" value={endAt} onChange={e => setEndAt(e.target.value)} min={startAt || new Date().toISOString().slice(0, 16)} className={inputClass} />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Timezone</label>
-                        <input type="text" value="Europe/London (UK Time)" readOnly className={`${inputClass} opacity-60`} />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Event Slug</label>
-                        <input type="text" value={slug} onChange={e => setSlug(e.target.value)} className={inputClass} placeholder="your-event-slug" />
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Venue Name *</label>
-                        <input type="text" value={venueName} onChange={e => setVenueName(e.target.value)} className={inputClass} placeholder="e.g. The O2 Arena" required />
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Address Line 1</label>
-                        <input type="text" value={venueAddress} onChange={e => setVenueAddress(e.target.value)} className={inputClass} placeholder="Street address" />
-                    </div>
-                    <div>
-                        <label className={labelClass}>City</label>
-                        <input
-                            type="text"
-                            value={venueCity}
-                            onChange={e => setVenueCity(e.target.value)}
-                            placeholder="e.g. Manchester"
-                            list="uk-cities"
-                            className={inputClass}
-                        />
-                        <datalist id="uk-cities">
-                            {UK_CITIES.map(c => <option key={c} value={c} />)}
-                        </datalist>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Postcode *</label>
-                        <input type="text" value={venuePostcode} onChange={e => setVenuePostcode(e.target.value.toUpperCase())} className={inputClass} placeholder="SW1A 1AA" required />
-                    </div>
-                </div>
-            </div>
+            {/* Step content */}
+            <div style={{ background: '#1A1A24', borderRadius: 16, padding: 28, minHeight: 400 }}>
 
-            {/* Section 03 */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <SectionHeader num="03" title="Ticket Types" />
-                <div className="space-y-4">
-                    {tickets.map((tt, i) => (
-                        <div key={i} className="bg-surface border border-border rounded-xl p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-xs text-muted font-mono">Ticket {i + 1}</span>
-                                <div className="flex gap-2">
-                                    {i > 0 && <button type="button" onClick={() => moveTicket(i, -1)} className="text-xs text-muted hover:text-text">↑</button>}
-                                    {i < tickets.length - 1 && <button type="button" onClick={() => moveTicket(i, 1)} className="text-xs text-muted hover:text-text">↓</button>}
-                                    <button type="button" onClick={() => removeTicket(i)} className="text-xs text-accent hover:underline">Remove</button>
-                                </div>
+                {/* Step 1 — Basic Info */}
+                {currentStep === 1 && (
+                    <div>
+                        <SectionHeader num="01" title="Basic Info" />
+                        <div className="space-y-4">
+                            <div>
+                                <label className={labelClass}>Event Title *</label>
+                                <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={100} className={inputClass} placeholder="Your event name" required />
+                                <p className="text-xs text-muted mt-1 text-right">{title.length}/100</p>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className={labelClass}>Name</label>
-                                    <input type="text" value={tt.name} onChange={e => updateTicket(i, { name: e.target.value })} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Price (£)</label>
-                                    <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        pattern="[0-9]*\.?[0-9]{0,2}"
-                                        value={tt.priceStr}
-                                        onChange={e => updateTicket(i, { priceStr: e.target.value, price_pence: priceToPence(e.target.value) })}
-                                        className={inputClass}
-                                    />
-                                    <p className="text-xs text-muted mt-1">
-                                        Buyer pays {formatPence(tt.price_pence + calculateBookingFeePerTicket(tt.price_pence))} (incl. {formatPence(calculateBookingFeePerTicket(tt.price_pence))} booking fee)
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Description (optional)</label>
-                                    <input type="text" value={tt.description} onChange={e => updateTicket(i, { description: e.target.value })} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Total Quantity</label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={tt.qtyStr}
-                                        onChange={e => {
-                                            const val = e.target.value.replace(/\D/g, '')
-                                            updateTicket(i, { qtyStr: val, quantity_total: parseInt(val) || 1 })
-                                        }}
-                                        placeholder="e.g. 200"
-                                        className={inputClass}
-                                    />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Max per Order</label>
-                                    <input type="number" min="1" max="100" value={tt.max_per_order} onChange={e => updateTicket(i, { max_per_order: parseInt(e.target.value) || 10 })} className={inputClass} />
-                                </div>
-                                <div className="flex items-center justify-between pt-4">
-                                    <span className="text-sm text-text">Visible</span>
-                                    <div onClick={() => updateTicket(i, { is_visible: !tt.is_visible })} className={`w-10 h-6 rounded-full relative transition-colors cursor-pointer ${tt.is_visible ? 'bg-accent' : 'bg-border'}`}>
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${tt.is_visible ? 'translate-x-5' : 'translate-x-1'}`} />
+                            <div>
+                                <label className={labelClass}>Category *</label>
+                                <select value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
+                                    <option value="">Select category...</option>
+                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Tags (comma-separated)</label>
+                                <input type="text" value={tags} onChange={e => setTags(e.target.value)} className={inputClass} placeholder="e.g. live music, outdoor, family" />
+                                {tags && (
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
+                                            <span key={tag} className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">{tag}</span>
+                                        ))}
                                     </div>
-                                </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className={labelClass}>Description</label>
+                                {typeof window !== 'undefined' && (
+                                    <RichTextEditor content={description} onChange={setDescription} />
+                                )}
+                            </div>
+                            <div>
+                                <label className={labelClass}>Banner Image</label>
+                                {bannerUrl && (
+                                    <img src={bannerUrl} alt="Banner" className="w-full h-48 object-cover rounded-lg mb-3 border border-border" />
+                                )}
+                                <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
+                                    <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : 'Click to upload banner (JPG, PNG, WEBP, max 5MB)'}</p>
+                                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
+                                </label>
+                                {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
                             </div>
                         </div>
-                    ))}
-                    <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
-                </div>
-            </div>
+                    </div>
+                )}
 
-            {/* Section 04 */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <SectionHeader num="04" title="Settings" />
-                <div className="grid grid-cols-2 gap-4">
+                {/* Step 2 — Date & Venue */}
+                {currentStep === 2 && (
                     <div>
-                        <label className={labelClass}>Max tickets per order</label>
-                        <input type="number" min="1" max="100" value={maxTicketsPerOrder} onChange={e => setMaxTicketsPerOrder(parseInt(e.target.value) || 10)} className={inputClass} />
+                        <SectionHeader num="02" title="Date & Venue" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelClass}>Start Date & Time *</label>
+                                <input type="datetime-local" value={startAt} onChange={e => setStartAt(e.target.value)} min={new Date().toISOString().slice(0, 16)} className={inputClass} required />
+                            </div>
+                            <div>
+                                <label className={labelClass}>End Date & Time</label>
+                                <input type="datetime-local" value={endAt} onChange={e => setEndAt(e.target.value)} min={startAt || new Date().toISOString().slice(0, 16)} className={inputClass} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Timezone</label>
+                                <input type="text" value="Europe/London (UK Time)" readOnly className={`${inputClass} opacity-60`} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Event Slug</label>
+                                <input type="text" value={slug} onChange={e => setSlug(e.target.value)} className={inputClass} placeholder="your-event-slug" />
+                            </div>
+                            <div className="col-span-2">
+                                <label className={labelClass}>Venue Name *</label>
+                                <input type="text" value={venueName} onChange={e => setVenueName(e.target.value)} className={inputClass} placeholder="e.g. The O2 Arena" required />
+                            </div>
+                            <div className="col-span-2">
+                                <label className={labelClass}>Address Line 1</label>
+                                <input type="text" value={venueAddress} onChange={e => setVenueAddress(e.target.value)} className={inputClass} placeholder="Street address" />
+                            </div>
+                            <div>
+                                <label className={labelClass}>City</label>
+                                <input
+                                    type="text"
+                                    value={venueCity}
+                                    onChange={e => setVenueCity(e.target.value)}
+                                    placeholder="e.g. Manchester"
+                                    list="uk-cities"
+                                    className={inputClass}
+                                />
+                                <datalist id="uk-cities">
+                                    {UK_CITIES.map(c => <option key={c} value={c} />)}
+                                </datalist>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Postcode *</label>
+                                <input type="text" value={venuePostcode} onChange={e => setVenuePostcode(e.target.value.toUpperCase())} className={inputClass} placeholder="SW1A 1AA" required />
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label className={labelClass}>Minimum Age</label>
-                        <select value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
-                            <option value={0}>All ages</option>
-                            <option value={16}>16+</option>
-                            <option value={18}>18+</option>
-                        </select>
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Refund Policy</label>
-                        <select value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
-                            {REFUND_POLICIES.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Event Visibility</label>
-                        <select value={status} onChange={e => setStatus(e.target.value as 'draft' | 'published')} className={inputClass}>
-                            <option value="draft">Draft — not visible to public</option>
-                            <option value="published">Published — visible and bookable</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                )}
 
-            {/* Section 05 */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
-                <SectionHeader num="05" title="Promo Codes" />
-                {promos.length > 0 && (
-                    <table className="w-full text-sm mb-4">
-                        <thead>
-                            <tr className="border-b border-border">
-                                {['Code', 'Type', 'Value', 'Uses', 'Valid Until', ''].map(h => (
-                                    <th key={h} className="text-left text-xs text-muted pb-2 font-normal pr-4">{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {promos.map(p => (
-                                <tr key={p.id || p.code} className="border-b border-border/50">
-                                    <td className="py-2 pr-4 font-mono text-xs text-accent">{p.code}</td>
-                                    <td className="py-2 pr-4 text-text text-xs">{p.discount_type}</td>
-                                    <td className="py-2 pr-4 text-text text-xs">{p.discount_type === 'percent' ? `${p.discount_value}%` : formatPence(p.discount_value)}</td>
-                                    <td className="py-2 pr-4 text-muted text-xs">{p.uses_count}{p.max_uses ? `/${p.max_uses}` : ''}</td>
-                                    <td className="py-2 pr-4 text-muted text-xs">{p.valid_to ? new Date(p.valid_to).toLocaleDateString('en-GB') : '—'}</td>
-                                    <td className="py-2">{p.id && <button type="button" onClick={() => deletePromo(p.id!)} className="text-xs text-accent hover:underline">Delete</button>}</td>
-                                </tr>
+                {/* Step 3 — Ticket Types */}
+                {currentStep === 3 && (
+                    <div>
+                        <SectionHeader num="03" title="Ticket Types" />
+                        <div className="space-y-4">
+                            {tickets.map((tt, i) => (
+                                <div key={i} className="bg-surface border border-border rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-xs text-muted font-mono">Ticket {i + 1}</span>
+                                        <div className="flex gap-2">
+                                            {i > 0 && <button type="button" onClick={() => moveTicket(i, -1)} className="text-xs text-muted hover:text-text">↑</button>}
+                                            {i < tickets.length - 1 && <button type="button" onClick={() => moveTicket(i, 1)} className="text-xs text-muted hover:text-text">↓</button>}
+                                            <button type="button" onClick={() => removeTicket(i)} className="text-xs text-accent hover:underline">Remove</button>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className={labelClass}>Name</label>
+                                            <input type="text" value={tt.name} onChange={e => updateTicket(i, { name: e.target.value })} className={inputClass} />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Price (£)</label>
+                                            <input
+                                                type="text"
+                                                inputMode="decimal"
+                                                pattern="[0-9]*\.?[0-9]{0,2}"
+                                                value={tt.priceStr}
+                                                onChange={e => updateTicket(i, { priceStr: e.target.value, price_pence: priceToPence(e.target.value) })}
+                                                className={inputClass}
+                                            />
+                                            <p className="text-xs text-muted mt-1">
+                                                Buyer pays {formatPence(tt.price_pence + calculateBookingFeePerTicket(tt.price_pence))} (incl. {formatPence(calculateBookingFeePerTicket(tt.price_pence))} booking fee)
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Description (optional)</label>
+                                            <input type="text" value={tt.description} onChange={e => updateTicket(i, { description: e.target.value })} className={inputClass} />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Total Quantity</label>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={tt.qtyStr}
+                                                onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, '')
+                                                    updateTicket(i, { qtyStr: val, quantity_total: parseInt(val) || 1 })
+                                                }}
+                                                placeholder="e.g. 200"
+                                                className={inputClass}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Max per Order</label>
+                                            <input type="number" min="1" max="100" value={tt.max_per_order} onChange={e => updateTicket(i, { max_per_order: parseInt(e.target.value) || 10 })} className={inputClass} />
+                                        </div>
+                                        <div className="flex items-center justify-between pt-4">
+                                            <span className="text-sm text-text">Visible</span>
+                                            <div onClick={() => updateTicket(i, { is_visible: !tt.is_visible })} className={`w-10 h-6 rounded-full relative transition-colors cursor-pointer ${tt.is_visible ? 'bg-accent' : 'bg-border'}`}>
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${tt.is_visible ? 'translate-x-5' : 'translate-x-1'}`} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                            <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
+                        </div>
+                    </div>
                 )}
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowPromoModal(true)}>Create Promo Code</Button>
-            </div>
 
-            {/* Errors */}
-            {errors.length > 0 && (
-                <div className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-6">
-                    <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                        {errors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
-                    </ul>
+                {/* Step 4 — Settings */}
+                {currentStep === 4 && (
+                    <div>
+                        <SectionHeader num="04" title="Settings" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelClass}>Max tickets per order</label>
+                                <input type="number" min="1" max="100" value={maxTicketsPerOrder} onChange={e => setMaxTicketsPerOrder(parseInt(e.target.value) || 10)} className={inputClass} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Minimum Age</label>
+                                <select value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
+                                    <option value={0}>All ages</option>
+                                    <option value={16}>16+</option>
+                                    <option value={18}>18+</option>
+                                </select>
+                            </div>
+                            <div className="col-span-2">
+                                <label className={labelClass}>Refund Policy</label>
+                                <select value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
+                                    {REFUND_POLICIES.map(p => <option key={p} value={p}>{p}</option>)}
+                                </select>
+                            </div>
+                            <div className="col-span-2">
+                                <label className={labelClass}>Event Visibility</label>
+                                <select value={status} onChange={e => setStatus(e.target.value as 'draft' | 'published')} className={inputClass}>
+                                    <option value="draft">Draft — not visible to public</option>
+                                    <option value="published">Published — visible and bookable</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 5 — Promo Codes + Publish */}
+                {currentStep === 5 && (
+                    <div>
+                        <SectionHeader num="05" title="Promo Codes" />
+                        {promos.length > 0 && (
+                            <table className="w-full text-sm mb-4">
+                                <thead>
+                                    <tr className="border-b border-border">
+                                        {['Code', 'Type', 'Value', 'Uses', 'Valid Until', ''].map(h => (
+                                            <th key={h} className="text-left text-xs text-muted pb-2 font-normal pr-4">{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {promos.map(p => (
+                                        <tr key={p.id || p.code} className="border-b border-border/50">
+                                            <td className="py-2 pr-4 font-mono text-xs text-accent">{p.code}</td>
+                                            <td className="py-2 pr-4 text-text text-xs">{p.discount_type}</td>
+                                            <td className="py-2 pr-4 text-text text-xs">{p.discount_type === 'percent' ? `${p.discount_value}%` : formatPence(p.discount_value)}</td>
+                                            <td className="py-2 pr-4 text-muted text-xs">{p.uses_count}{p.max_uses ? `/${p.max_uses}` : ''}</td>
+                                            <td className="py-2 pr-4 text-muted text-xs">{p.valid_to ? new Date(p.valid_to).toLocaleDateString('en-GB') : '—'}</td>
+                                            <td className="py-2">{p.id && <button type="button" onClick={() => deletePromo(p.id!)} className="text-xs text-accent hover:underline">Delete</button>}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                        <Button type="button" variant="outline" size="sm" onClick={() => setShowPromoModal(true)}>Create Promo Code</Button>
+                        {event?.slug && (
+                            <div className="mt-4">
+                                <a href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-text transition-colors">
+                                    Preview event →
+                                </a>
+                            </div>
+                        )}
+                        {errors.length > 0 && (
+                            <div className="mt-6 bg-accent/10 border border-accent/30 rounded-xl p-4">
+                                <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
+                                <ul className="list-disc list-inside space-y-1">
+                                    {errors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Per-step validation errors */}
+                {stepErrors.length > 0 && (
+                    <div className="mt-6 bg-accent/10 border border-accent/30 rounded-xl p-4">
+                        <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                            {stepErrors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
+                        </ul>
+                    </div>
+                )}
+
+                {/* Navigation bar */}
+                <div style={{ borderTop: '1px solid #2A2A3A', paddingTop: 24, marginTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {currentStep > 1 ? (
+                        <button
+                            type="button"
+                            onClick={goToPrev}
+                            style={{ background: 'transparent', border: '1px solid #2A2A3A', color: '#8888AA', padding: '12px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#F0F0F8'; e.currentTarget.style.color = '#F0F0F8' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#2A2A3A'; e.currentTarget.style.color = '#8888AA' }}
+                        >← Back</button>
+                    ) : <div />}
+                    <div style={{ display: 'flex', gap: 12 }}>
+                        <button
+                            type="button"
+                            onClick={saveDraft}
+                            disabled={saving}
+                            style={{ background: 'transparent', border: '1px solid #E63950', color: '#E63950', padding: '12px 24px', borderRadius: 8, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, opacity: saving ? 0.6 : 1 }}
+                            onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'rgba(230,57,80,0.08)' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                        >{saving ? 'Saving...' : 'Save Draft'}</button>
+                        {currentStep < 5 ? (
+                            <button
+                                type="button"
+                                onClick={goToNext}
+                                style={{ background: '#E63950', color: '#fff', padding: '12px 32px', borderRadius: 8, cursor: 'pointer', fontSize: 14, border: 'none' }}
+                                onMouseEnter={e => { e.currentTarget.style.opacity = '0.9' }}
+                                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                            >Next →</button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handlePublish}
+                                disabled={publishing}
+                                style={{ background: '#E63950', color: '#fff', padding: '12px 32px', borderRadius: 8, cursor: publishing ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: publishing ? 0.7 : 1 }}
+                                onMouseEnter={e => { if (!publishing) e.currentTarget.style.opacity = '0.9' }}
+                                onMouseLeave={e => { if (!publishing) e.currentTarget.style.opacity = '1' }}
+                            >{publishing ? 'Publishing...' : 'Publish Event'}</button>
+                        )}
+                    </div>
                 </div>
-            )}
-
-            {/* Sticky action bar */}
-            <div className="fixed bottom-0 left-[220px] right-0 bg-surface border-t border-border px-8 py-4 flex items-center gap-4 z-30">
-                <Button type="button" variant="secondary" size="md" onClick={saveDraft} disabled={saving}>
-                    {saving && (
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    )}
-                    {saving ? 'Saving...' : 'Save as Draft'}
-                </Button>
-                <Button type="button" variant="primary" size="md" onClick={handlePublish} disabled={publishing}>
-                    {publishing && (
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    )}
-                    {publishing ? 'Publishing...' : 'Publish Event'}
-                </Button>
-                {event?.slug && (
-                    <a
-                        href={`/events/${event.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-muted hover:text-text transition-colors"
-                    >
-                        Preview →
-                    </a>
-                )}
-                {saved && <span className="text-success text-xs ml-auto">Saved ✓</span>}
             </div>
 
             {/* Ticket type preset modal */}
