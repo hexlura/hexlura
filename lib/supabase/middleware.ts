@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
 
     // Classify routes
     const isAdminRoute = pathname.startsWith('/admin')
-    const isOrganiserRoute = pathname.startsWith('/organiser')
+    const isOrganiserRoute = pathname.startsWith('/organiser/')
     const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
     const isAuthRoute = (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register'))
     const isProtectedRoute = isAdminRoute || isOrganiserRoute || isAccountRoute
