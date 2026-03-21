@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import EventCard from '@/components/events/EventCard';
 import ShareButton from '@/components/events/ShareButton';
 import { Event } from '@/types';
@@ -10,9 +11,10 @@ export const revalidate = 60;
 
 export default async function OrganiserProfilePage({ params }: { params: { slug: string } }) {
     const supabase = createClient();
+    const serviceClient = createServiceClient();
     const slug = params.slug;
 
-    const { data: organiserData, error: organiserErr } = await supabase
+    const { data: organiserData, error: organiserErr } = await serviceClient
         .from('organiser_profiles')
         .select('*')
         .eq('slug', slug)
