@@ -5,6 +5,7 @@ import { Event } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
+import { CATEGORIES } from '@/lib/config/categories';
 
 export const revalidate = 0; // Dynamic page based on search parameters
 
@@ -71,7 +72,7 @@ export default async function BrowseEventsPage({
     // Note: Since Supabase inner joins filter out rows without matching inner conditions, 
     // it automatically handles our price filters correctly if the event has passing ticket_types!
 
-    const categoriesList = ['All', 'Music', 'Sports', 'Comedy', 'Theatre', 'Festival', 'Corporate', 'Family', 'Culture'];
+    const categoriesList = ['All', ...CATEGORIES];
     const cities = ['Any', 'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Edinburgh', 'Bristol', 'Liverpool', 'Cardiff', 'Belfast'];
 
     return (

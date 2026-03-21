@@ -39,7 +39,7 @@ export interface Event {
     title: string;
     slug: string;
     description: string | null;
-    category: 'Music' | 'Sports' | 'Comedy' | 'Theatre' | 'Festival' | 'Corporate' | 'Family' | 'Culture' | 'Other';
+    category: 'Club Nights' | 'Gigs & Live Music' | 'Comedy' | 'Theatre & Arts' | 'Festivals' | 'Food & Drink' | 'Sports & Fitness' | 'Business & Networking' | 'Family & Kids' | 'Classes & Workshops' | 'Dating & Social' | 'Culture & Heritage';
     tags: string[] | null;
     venue_name: string | null;
     venue_address: string | null;

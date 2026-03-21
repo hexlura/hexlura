@@ -9,8 +9,18 @@ interface EventCardProps {
 }
 
 const categoryBadgeColor: Record<string, string> = {
-    Gigs: '#E63950',
-    'Nights Out': '#F5A623',
+    'Club Nights':           '#F5A623',
+    'Gigs & Live Music':     '#E63950',
+    'Comedy':                '#F5A623',
+    'Theatre & Arts':        '#9B59B6',
+    'Festivals':             '#E63950',
+    'Food & Drink':          '#27AE60',
+    'Sports & Fitness':      '#2980B9',
+    'Business & Networking': '#7F8C8D',
+    'Family & Kids':         '#F39C12',
+    'Classes & Workshops':   '#16A085',
+    'Dating & Social':       '#E91E8C',
+    'Culture & Heritage':    '#8E44AD',
 };
 
 function getCategoryColor(category: string): string {

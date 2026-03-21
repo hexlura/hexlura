@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signOut } from '@/app/auth/actions'
+import { CATEGORIES } from '@/lib/config/categories'
 
 interface LeftMenuProps {
     isLoggedIn: boolean
@@ -119,7 +120,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                     {heading('CATEGORIES')}
                     {divider}
                     <div className="pt-2 space-y-0.5">
-                        {['Music', 'Sports', 'Comedy', 'Theatre', 'Festival', 'Corporate', 'Family', 'Culture'].map(cat => (
+                        {CATEGORIES.map(cat => (
                             <Link key={cat} href={`/events?category=${cat}`} onClick={close} className={linkClass(`/events?category=${cat}`)}>
                                 {cat}
                             </Link>

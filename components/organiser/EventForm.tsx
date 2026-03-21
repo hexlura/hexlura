@@ -7,13 +7,12 @@ import { Button } from '@/components/ui/Button'
 import { calculateBookingFeePerTicket, formatPence } from '@/lib/fees'
 import type { Event, TicketType, PromoCode } from '@/types'
 import dynamic from 'next/dynamic'
+import { CATEGORIES } from '@/lib/config/categories'
 
 const RichTextEditor = dynamic(
     () => import('@/components/organiser/RichTextEditor').then(m => m.RichTextEditor),
     { ssr: false, loading: () => <div className="h-48 bg-surface border border-border rounded-lg animate-pulse" /> }
 )
-
-const CATEGORIES = ['Music', 'Sports', 'Comedy', 'Theatre', 'Festival', 'Corporate', 'Family', 'Culture', 'Other'] as const
 const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']
 const REFUND_POLICIES = [
     'No refunds',

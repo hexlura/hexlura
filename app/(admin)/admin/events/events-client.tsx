@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { CATEGORIES } from '@/lib/config/categories'
 
 type Tab = 'all' | 'featured' | 'cancelled'
 
@@ -36,7 +37,6 @@ const STATUS_BADGE: Record<string, string> = {
     archived: 'text-muted bg-muted/10 border-muted/20',
 }
 
-const CATEGORIES = ['Music', 'Sports', 'Comedy', 'Theatre', 'Festival', 'Corporate', 'Family', 'Culture', 'Other']
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
