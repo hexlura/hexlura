@@ -25,7 +25,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
     const { data: eventData, error } = await supabase
         .from('events')
-        .select('*, organiser:organiser_profiles(*), ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
+        .select('*, organiser:organiser_profiles(id, business_name, organiser_type, logo_url, slug), ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
         .eq('slug', slug)
         .single();
 
@@ -134,7 +134,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     {event.organiser && (
                         <section>
                             <p style={{ fontSize: '11px', color: '#8888AA', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-                                Organised by
+                                ORGANISED BY
                             </p>
                             <div style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                                 {/* Organiser logo */}
@@ -146,14 +146,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                         <Image src={event.organiser.logo_url} alt="" fill className="object-cover" />
                                     ) : (
                                         <span style={{ fontSize: '20px', fontWeight: 700, color: '#F0F0F8' }}>
-                                            {event.organiser.org_name.charAt(0).toUpperCase()}
+                                            {event.organiser.business_name.charAt(0).toUpperCase()}
                                         </span>
                                     )}
                                 </div>
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <p style={{ fontSize: '16px', color: '#F0F0F8', fontWeight: 600, lineHeight: 1.3 }}>
-                                        {event.organiser.org_name}
+                                        {event.organiser.business_name}
                                     </p>
                                     <p style={{ fontSize: '13px', color: '#8888AA', marginTop: '2px' }}>
                                         {organiserTypeLabels[event.organiser.organiser_type] ?? event.organiser.organiser_type}
