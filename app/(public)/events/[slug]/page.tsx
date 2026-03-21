@@ -25,7 +25,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
     const { data: eventData, error } = await supabase
         .from('events')
-        .select('*, organiser:organiser_profiles(id, business_name, organiser_type, logo_url, slug), ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
+        .select('*, organiser:organiser_profiles(id, org_name, organiser_type, logo_url, slug), ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
         .eq('slug', slug)
         .single();
 
@@ -146,14 +146,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                         <Image src={event.organiser.logo_url} alt="" fill className="object-cover" />
                                     ) : (
                                         <span style={{ fontSize: '20px', fontWeight: 700, color: '#F0F0F8' }}>
-                                            {event.organiser.business_name.charAt(0).toUpperCase()}
+                                            {event.organiser.org_name.charAt(0).toUpperCase()}
                                         </span>
                                     )}
                                 </div>
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <p style={{ fontSize: '16px', color: '#F0F0F8', fontWeight: 600, lineHeight: 1.3 }}>
-                                        {event.organiser.business_name}
+                                        {event.organiser.org_name}
                                     </p>
                                     <p style={{ fontSize: '13px', color: '#8888AA', marginTop: '2px' }}>
                                         {organiserTypeLabels[event.organiser.organiser_type] ?? event.organiser.organiser_type}
