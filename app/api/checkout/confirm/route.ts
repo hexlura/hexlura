@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { randomUUID } from 'crypto'
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
         const totalPence = ticketSubtotalPence - discountPence + bookingFeePence
 
-        const supabase = createClient()
+        const supabase = createAdminClient()
 
         // Final availability check
         for (const item of items) {
@@ -107,18 +107,22 @@ export async function POST(request: Request) {
             })
 
             // Update quantity_sold
-            await supabase.rpc('increment_quantity_sold', {
+            const { error: rpcError } = await supabase.rpc('increment_quantity_sold', {
                 p_ticket_type_id: item.ticket_type_id,
                 p_quantity: item.quantity,
-            }).then(({ error }) => {
-                // Fallback: direct update if RPC doesn't exist
-                if (error) {
-                    return supabase
-                        .from('ticket_types')
-                        .update({ quantity_sold: (ticketType?.price_pence || 0) }) // This won't work correctly, use raw SQL
-                        .eq('id', item.ticket_type_id)
-                }
             })
+            // Fallback: direct update if RPC doesn't exist
+            if (rpcError) {
+                const { data: current } = await supabase
+                    .from('ticket_types')
+                    .select('quantity_sold')
+                    .eq('id', item.ticket_type_id)
+                    .single()
+                await supabase
+                    .from('ticket_types')
+                    .update({ quantity_sold: (current?.quantity_sold ?? 0) + item.quantity })
+                    .eq('id', item.ticket_type_id)
+            }
         }
 
         // Increment promo code usage
