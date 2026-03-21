@@ -112,21 +112,22 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         }
     }
 
-    // Create booking — column names must match schema exactly
+    // Create booking
     const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
             user_id: userId,
             event_id: eventId,
             status: 'confirmed',
-            subtotal_pence: ticketSubtotalPence,
-            platform_fee_pence: bookingFeePence,
+            ticket_subtotal_pence: ticketSubtotalPence,
+            booking_fee_pence: bookingFeePence,
             discount_pence: discountPence,
             total_pence: totalPence,
             promo_code_id: promoCodeId,
             stripe_payment_intent_id: paymentIntent.id,
             payment_method: paymentIntent.payment_method_types?.[0] || 'card',
             confirmed_at: new Date().toISOString(),
+            needs_manual_payout: !organiserStripeAccountId,
         })
         .select('id, booking_ref')
         .single()
@@ -321,21 +322,22 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
     }
 
-    // Create booking — column names must match schema exactly
+    // Create booking
     const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
             user_id: userId,
             event_id: eventId,
             status: 'confirmed',
-            subtotal_pence: ticketSubtotalPence,
-            platform_fee_pence: bookingFeePence,
+            ticket_subtotal_pence: ticketSubtotalPence,
+            booking_fee_pence: bookingFeePence,
             discount_pence: discountPence,
             total_pence: totalPence,
             promo_code_id: promoCodeId,
             stripe_payment_intent_id: paymentIntentId,
             payment_method: 'card',
             confirmed_at: new Date().toISOString(),
+            needs_manual_payout: !organiserStripeAccountId,
         })
         .select('id, booking_ref')
         .single()
