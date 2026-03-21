@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { Badge } from '@/components/ui/Badge';
 import BookingWidget from '@/components/events/BookingWidget';
 import ShareButton from '@/components/events/ShareButton';
@@ -25,7 +26,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
     const { data: eventData, error } = await supabase
         .from('events')
-        .select('*, organiser:organiser_profiles(id, org_name, organiser_type, logo_url, slug), ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
+        .select('*, ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
         .eq('slug', slug)
         .single();
 
@@ -37,13 +38,21 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     const ticketTypes = event.ticket_types || [];
     const reviews = event.reviews || [];
 
+    // Fetch organiser via service client (RLS blocks anon access to organiser_profiles)
+    const serviceClient = createServiceClient();
+    const { data: organiser } = await serviceClient
+        .from('organiser_profiles')
+        .select('id, org_name, organiser_type, logo_url, slug')
+        .eq('id', event.organiser_id)
+        .single();
+
     // Fetch organiser's total published events count
     let organiserEventCount = 0;
-    if (event.organiser?.id) {
+    if (organiser?.id) {
         const { count } = await supabase
             .from('events')
             .select('*', { count: 'exact', head: true })
-            .eq('organiser_id', event.organiser.id)
+            .eq('organiser_id', organiser.id)
             .eq('status', 'published');
         organiserEventCount = count ?? 0;
     }
@@ -131,7 +140,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     </section>
 
                     {/* Organiser Card */}
-                    {event.organiser && (
+                    {organiser && (
                         <section>
                             <p style={{ fontSize: '11px', color: '#8888AA', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
                                 ORGANISED BY
@@ -142,28 +151,28 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                     className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center"
                                     style={{ width: '56px', height: '56px', background: '#2A2A3A' }}
                                 >
-                                    {event.organiser.logo_url ? (
-                                        <Image src={event.organiser.logo_url} alt="" fill className="object-cover" />
+                                    {organiser.logo_url ? (
+                                        <Image src={organiser.logo_url} alt="" fill className="object-cover" />
                                     ) : (
                                         <span style={{ fontSize: '20px', fontWeight: 700, color: '#F0F0F8' }}>
-                                            {event.organiser.org_name.charAt(0).toUpperCase()}
+                                            {organiser.org_name.charAt(0).toUpperCase()}
                                         </span>
                                     )}
                                 </div>
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <p style={{ fontSize: '16px', color: '#F0F0F8', fontWeight: 600, lineHeight: 1.3 }}>
-                                        {event.organiser.org_name}
+                                        {organiser.org_name}
                                     </p>
                                     <p style={{ fontSize: '13px', color: '#8888AA', marginTop: '2px' }}>
-                                        {organiserTypeLabels[event.organiser.organiser_type] ?? event.organiser.organiser_type}
+                                        {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
                                         {' · '}
                                         {organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
                                     </p>
                                 </div>
                                 {/* View Profile button */}
                                 <Link
-                                    href={`/organisers/${event.organiser.slug}`}
+                                    href={`/organisers/${organiser.slug}`}
                                     className="shrink-0 transition-colors hover:border-[#E63950]"
                                     style={{ fontSize: '13px', padding: '6px 16px', border: '1px solid #2A2A3A', borderRadius: '2px', color: '#F0F0F8', background: 'transparent', whiteSpace: 'nowrap' }}
                                 >
