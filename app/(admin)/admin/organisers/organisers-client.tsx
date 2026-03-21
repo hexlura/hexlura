@@ -7,6 +7,40 @@ import { formatPence } from '@/lib/fees'
 
 type Tab = 'pending' | 'active' | 'suspended'
 
+const TYPE_LABELS: Record<string, string> = {
+    individual: 'Individual',
+    artist: 'Artist / Performer',
+    club_venue: 'Club / Venue',
+    event_company: 'Event Company',
+    charity: 'Charity / Community',
+    education: 'Education',
+}
+const TYPE_COLOURS: Record<string, string> = {
+    individual: '#6B7280',
+    artist: '#7C3AED',
+    club_venue: '#2563EB',
+    event_company: '#0D9488',
+    charity: '#16A34A',
+    education: '#D97706',
+}
+
+function OrgTypeBadge({ type }: { type: string | null }) {
+    const key = type ?? 'individual'
+    return (
+        <span style={{
+            background: `${TYPE_COLOURS[key] ?? TYPE_COLOURS.individual}22`,
+            border: `1px solid ${TYPE_COLOURS[key] ?? TYPE_COLOURS.individual}55`,
+            color: TYPE_COLOURS[key] ?? TYPE_COLOURS.individual,
+            fontSize: '11px',
+            borderRadius: '4px',
+            padding: '2px 8px',
+            whiteSpace: 'nowrap',
+        }}>
+            {TYPE_LABELS[key] ?? 'Individual'}
+        </span>
+    )
+}
+
 interface PendingOrg {
     id: string; org_name: string; slug: string; description: string | null
     website: string | null; vat_registered: boolean; created_at: string; user_id: string
@@ -15,6 +49,7 @@ interface PendingOrg {
 interface ActiveOrg {
     id: string; org_name: string; slug: string; stripe_account_id: string | null
     is_suspended: boolean; created_at: string; approved_at: string | null; user_id: string
+    organiser_type: string | null
     profiles: { full_name: string | null; email: string | null } | null
     events_count: number; revenue_pence: number
 }
@@ -136,7 +171,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                 <div>
                     {pending.length === 0 ? (
                         <div className="bg-card border border-border rounded-xl p-16 text-center">
-                            <p className="text-muted text-sm">No pending applications</p>
+                            <p className="text-muted text-sm">Organiser signups are now instant. This tab shows manually flagged accounts only.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
@@ -191,18 +226,21 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
-                                {['Org Name', 'Organiser', 'Email', 'Events', 'Revenue', 'Stripe', 'Joined', 'Actions'].map(h => (
+                                {['Org Name', 'Type', 'Organiser', 'Email', 'Events', 'Revenue', 'Stripe', 'Joined', 'Actions'].map(h => (
                                     <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
                             {active.length === 0 && (
-                                <tr><td colSpan={8} className="text-center text-muted text-xs py-12">No active organisers</td></tr>
+                                <tr><td colSpan={9} className="text-center text-muted text-xs py-12">No active organisers</td></tr>
                             )}
                             {active.map(org => (
                                 <tr key={org.id} className="border-b border-border/50 hover:bg-surface transition-colors">
                                     <td className="py-3 px-4 text-text font-medium">{org.org_name}</td>
+                                    <td className="py-3 px-4">
+                                        <OrgTypeBadge type={org.organiser_type} />
+                                    </td>
                                     <td className="py-3 px-4 text-muted text-xs">{org.profiles?.full_name ?? '—'}</td>
                                     <td className="py-3 px-4 text-muted text-xs">{org.profiles?.email ?? '—'}</td>
                                     <td className="py-3 px-4 text-text text-xs">{org.events_count}</td>

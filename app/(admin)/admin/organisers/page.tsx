@@ -29,7 +29,7 @@ export default async function AdminOrganisersPage({
     const { data: activeData, error: activeError } = await adminClient
         .from('organiser_profiles')
         .select(`
-            id, org_name, slug, stripe_account_id, is_suspended, created_at, approved_at, user_id,
+            id, org_name, slug, stripe_account_id, is_suspended, created_at, approved_at, user_id, organiser_type,
             profiles!organiser_profiles_user_id_fkey (full_name, email)
         `)
         .eq('is_approved', true)
@@ -85,6 +85,7 @@ export default async function AdminOrganisersPage({
     type ActiveOrg = {
         id: string; org_name: string; slug: string; stripe_account_id: string | null
         is_suspended: boolean; created_at: string; approved_at: string | null; user_id: string
+        organiser_type: string | null
         profiles: { full_name: string | null; email: string | null } | null
         events_count: number; revenue_pence: number
     }

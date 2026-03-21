@@ -85,14 +85,7 @@ export async function updateSession(request: NextRequest) {
     // Authenticated user on auth pages → redirect to their dashboard
     if (isAuthRoute) {
         if (role === 'admin') return redirectTo('/admin')
-        if (role === 'organiser') {
-            const { data: org } = await serviceClient
-                .from('organiser_profiles')
-                .select('is_approved')
-                .eq('user_id', user.id)
-                .maybeSingle()
-            return redirectTo(org?.is_approved ? '/organiser' : '/organiser/pending')
-        }
+        if (role === 'organiser') return redirectTo('/organiser')
         return redirectTo('/account')
     }
 
@@ -101,24 +94,11 @@ export async function updateSession(request: NextRequest) {
         if (role !== 'admin') return redirectTo('/')
     }
 
-    // Organiser routes (except /organiser/pending and /organiser/apply)
+    // Organiser routes (except /organiser/apply)
     if (isOrganiserRoute) {
-        const isExempt = pathname === '/organiser/pending' || pathname === '/organiser/apply'
+        const isExempt = pathname === '/organiser/apply'
 
-        if (pathname === '/organiser/pending') {
-            // Only allow unapproved organisers on pending page
-            if (role === 'organiser') {
-                const { data: org } = await serviceClient
-                    .from('organiser_profiles')
-                    .select('is_approved')
-                    .eq('user_id', user.id)
-                    .maybeSingle()
-                if (org?.is_approved) return redirectTo('/organiser')
-                // Unapproved organiser → allow through
-            } else {
-                return redirectTo('/organiser')
-            }
-        } else if (!isExempt) {
+        if (!isExempt) {
             // Regular organiser routes: must be organiser or admin
             if (role !== 'organiser' && role !== 'admin') {
                 return redirectTo('/')

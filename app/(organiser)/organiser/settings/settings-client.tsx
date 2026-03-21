@@ -100,6 +100,26 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
             <Section title="Profile">
                 <form onSubmit={saveProfile} className="space-y-4">
                     <div>
+                        <label className="text-xs text-muted block mb-1.5">Account Type</label>
+                        <span style={{
+                            background: '#1A1A24',
+                            border: '1px solid #2A2A3A',
+                            color: '#8888AA',
+                            fontSize: '13px',
+                            borderRadius: '6px',
+                            padding: '4px 12px',
+                            display: 'inline-block',
+                        }}>
+                            {organiser.organiser_type === 'individual' && 'Individual'}
+                            {organiser.organiser_type === 'artist' && 'Artist / Performer'}
+                            {organiser.organiser_type === 'club_venue' && 'Club / Venue'}
+                            {organiser.organiser_type === 'event_company' && 'Event Company'}
+                            {organiser.organiser_type === 'charity' && 'Charity / Community'}
+                            {organiser.organiser_type === 'education' && 'Education'}
+                            {!organiser.organiser_type && 'Individual'}
+                        </span>
+                    </div>
+                    <div>
                         <label className="text-xs text-muted block mb-1.5">Organisation Name</label>
                         <input type="text" value={orgName} onChange={e => setOrgName(e.target.value)} required
                             className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />

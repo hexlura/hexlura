@@ -26,6 +26,7 @@ export interface OrganiserProfile {
     vat_number: string | null;
     vat_registered: boolean;
     stripe_account_id: string | null;
+    organiser_type: 'individual' | 'artist' | 'club_venue' | 'event_company' | 'charity' | 'education';
     is_approved: boolean;
     is_suspended: boolean;
     approved_at: string | null;

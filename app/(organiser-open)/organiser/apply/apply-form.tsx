@@ -10,8 +10,20 @@ interface ApplyFormProps {
     userEmail: string
 }
 
+type OrgType = 'individual' | 'artist' | 'club_venue' | 'event_company' | 'charity' | 'education'
+
+const ORG_TYPES: { value: OrgType; emoji: string; name: string; description: string }[] = [
+    { value: 'individual', emoji: '👤', name: 'Individual', description: 'Solo organiser running your own events' },
+    { value: 'artist', emoji: '🎭', name: 'Artist / Performer', description: 'Musician, comedian, performer selling tickets to your own shows' },
+    { value: 'club_venue', emoji: '🏢', name: 'Club / Venue', description: 'Nightclub, pub, venue or entertainment space' },
+    { value: 'event_company', emoji: '🏗️', name: 'Event Company', description: 'Professional events business or promoter' },
+    { value: 'charity', emoji: '❤️', name: 'Charity / Community', description: 'Non-profit, charity or community group' },
+    { value: 'education', emoji: '🎓', name: 'Education', description: 'School, university, training provider or workshop host' },
+]
+
 export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
     const router = useRouter()
+    const [orgType, setOrgType] = useState<OrgType | null>(null)
     const [orgName, setOrgName] = useState('')
     const [role, setRole] = useState('')
     const [website, setWebsite] = useState('')
@@ -22,6 +34,7 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
     const [agreedTerms, setAgreedTerms] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
+    const [typeError, setTypeError] = useState('')
 
     function toSlug(name: string) {
         return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -29,6 +42,11 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
+        if (!orgType) {
+            setTypeError('Please select your organiser type')
+            return
+        }
+        setTypeError('')
         if (!agreedTerms) return setError('You must agree to the organiser terms')
         setSubmitting(true)
         setError('')
@@ -38,7 +56,7 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
             const baseSlug = toSlug(orgName)
             const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
 
-            // Create organiser profile
+            // Create organiser profile — approved immediately
             const { error: insertError } = await supabase
                 .from('organiser_profiles')
                 .insert({
@@ -49,7 +67,9 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
                     website: website || null,
                     vat_registered: vatRegistered,
                     vat_number: vatRegistered ? vatNumber : null,
-                    is_approved: false,
+                    organiser_type: orgType,
+                    is_approved: true,
+                    approved_at: new Date().toISOString(),
                 })
 
             if (insertError) {
@@ -58,14 +78,20 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
                 return
             }
 
-            // Notify support
+            // Promote role to organiser immediately
+            await supabase
+                .from('profiles')
+                .update({ role: 'organiser' })
+                .eq('id', userId)
+
+            // Notify support (best effort)
             await fetch('/api/notifications/organiser-apply', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orgName, role, website, description, monthlyEvents, email: userEmail }),
-            }).catch(() => {}) // best effort
+            }).catch(() => {})
 
-            router.push('/organiser/pending')
+            router.push('/organiser')
         } catch {
             setError('Something went wrong. Please try again.')
             setSubmitting(false)
@@ -76,6 +102,40 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Organiser Type Selection */}
+            <div>
+                <p className="text-sm font-semibold text-text mb-1">What type of organiser are you?</p>
+                <p className="text-xs text-muted mb-3">This helps us personalise your experience</p>
+                <div className="grid grid-cols-3 gap-3">
+                    {ORG_TYPES.map(t => (
+                        <div
+                            key={t.value}
+                            onClick={() => { setOrgType(t.value); setTypeError('') }}
+                            style={{
+                                background: orgType === t.value ? 'rgba(230,57,80,0.1)' : '#1A1A24',
+                                border: `1px solid ${orgType === t.value ? '#E63950' : '#2A2A3A'}`,
+                                borderRadius: '12px',
+                                padding: '20px 16px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => {
+                                if (orgType !== t.value) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(230,57,80,0.5)'
+                            }}
+                            onMouseLeave={e => {
+                                if (orgType !== t.value) (e.currentTarget as HTMLDivElement).style.borderColor = '#2A2A3A'
+                            }}
+                        >
+                            <div style={{ fontSize: '28px' }}>{t.emoji}</div>
+                            <div style={{ fontWeight: 'bold', color: 'white', fontSize: '14px', marginTop: '8px' }}>{t.name}</div>
+                            <div style={{ color: '#8888AA', fontSize: '12px', marginTop: '4px' }}>{t.description}</div>
+                        </div>
+                    ))}
+                </div>
+                {typeError && <p className="text-accent text-xs mt-2">{typeError}</p>}
+            </div>
+
             <div>
                 <label className="text-xs text-muted block mb-1.5">Organisation Name *</label>
                 <input type="text" required value={orgName} onChange={e => setOrgName(e.target.value)} className={inputClass} placeholder="Your company or event brand name" />
@@ -117,12 +177,12 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
             <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={agreedTerms} onChange={e => setAgreedTerms(e.target.checked)} className="mt-0.5 accent-accent" />
                 <span className="text-sm text-muted">
-                    I agree to the <a href="#" className="text-accent hover:underline">Organiser Terms</a> and understand that my account will be reviewed before activation.
+                    I agree to the <a href="#" className="text-accent hover:underline">Organiser Terms</a> and confirm I am authorised to create events on behalf of this organisation.
                 </span>
             </label>
             {error && <p className="text-accent text-xs">{error}</p>}
             <Button type="submit" variant="primary" size="lg" disabled={submitting} className="w-full">
-                {submitting ? 'Submitting...' : 'Submit Application'}
+                {submitting ? 'Creating Account...' : 'Create Organiser Account'}
             </Button>
         </form>
     )
