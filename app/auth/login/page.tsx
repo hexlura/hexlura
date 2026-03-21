@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, signInWithGoogle } from '../actions'
 
-export default function LoginPage() {
+function LoginContent() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const next = searchParams.get('next') || ''
+
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -39,6 +43,8 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={async (e) => { e.preventDefault(); await handleSubmit(new FormData(e.currentTarget)) }} className="space-y-4">
+                <input type="hidden" name="next" value={next} />
+
                 <div className="flex flex-col gap-1">
                     <label htmlFor="email" className="text-sm font-medium text-text">Email</label>
                     <input
@@ -112,10 +118,25 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-muted">
                 Don&apos;t have an account?{' '}
-                <Link href="/auth/register" className="text-accent hover:underline font-medium">
+                <Link
+                    href={next ? `/auth/register?next=${encodeURIComponent(next)}` : '/auth/register'}
+                    className="text-accent hover:underline font-medium"
+                >
                     Create one
                 </Link>
             </p>
         </section>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <section className="space-y-6 text-center">
+                <h1 className="font-heading text-4xl text-text">SIGN IN</h1>
+            </section>
+        }>
+            <LoginContent />
+        </Suspense>
     )
 }

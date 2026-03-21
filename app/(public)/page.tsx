@@ -1,15 +1,32 @@
 import React from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { Button } from '@/components/ui/Button';
 import EventCard from '@/components/events/EventCard';
 import CityCards from '@/components/home/CityCards';
 import { Event } from '@/types';
 
-export const revalidate = 60; // SSR with ISR (60 seconds)
-
 export default async function HomePage() {
     const supabase = createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    let role = 'user';
+    if (user) {
+        const serviceClient = createServiceClient();
+        const { data: profile } = await serviceClient
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+        role = profile?.role || 'user';
+    }
+
+    const sellTicketsHref = !user
+        ? '/auth/register?next=/organiser/apply'
+        : (role === 'organiser' || role === 'admin')
+            ? '/organiser'
+            : '/organiser/apply';
 
     // Fetch All Events
     const { data: allEventsRaw } = await supabase
@@ -39,7 +56,7 @@ export default async function HomePage() {
                         <Link href="/events" className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
                             Find Events
                         </Link>
-                        <Link href="/organisers/register" className="flex items-center justify-center bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
+                        <Link href={sellTicketsHref} className="flex items-center justify-center bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
                             Sell Tickets
                         </Link>
                     </div>

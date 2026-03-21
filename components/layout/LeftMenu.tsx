@@ -32,6 +32,12 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
         }
     }
 
+    const sellTicketsHref = !isLoggedIn
+        ? '/auth/register?next=/organiser/apply'
+        : (role === 'organiser' || role === 'admin')
+            ? '/organiser'
+            : '/organiser/apply'
+
     const isActive = (href: string) => pathname === href
 
     const linkClass = (href: string) =>
@@ -131,7 +137,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                     {heading('FOR ORGANISERS')}
                     {divider}
                     <div className="pt-2 space-y-0.5">
-                        <Link href="/organiser" onClick={close} className={linkClass('/organiser')}>Sell Tickets</Link>
+                        <Link href={sellTicketsHref} onClick={close} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
                         <Link href="/how-it-works" onClick={close} className={linkClass('/how-it-works')}>How It Works</Link>
                         <Link href="/pricing" onClick={close} className={linkClass('/pricing')}>Pricing &amp; Fees</Link>
                     </div>

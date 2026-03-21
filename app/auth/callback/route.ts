@@ -29,7 +29,13 @@ export async function GET(request: Request) {
                         avatar_url: user.user_metadata?.avatar_url || null,
                         role: 'user',
                     })
-                    return NextResponse.redirect(`${origin}/account`)
+                    const dest = (next && next !== '/') ? next : '/account'
+                    return NextResponse.redirect(`${origin}${dest}`)
+                }
+
+                // If a specific next destination was requested, honour it
+                if (next && next !== '/') {
+                    return NextResponse.redirect(`${origin}${next}`)
                 }
 
                 // Role-based redirect

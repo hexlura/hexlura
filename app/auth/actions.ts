@@ -11,6 +11,7 @@ export async function signUp(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirm_password') as string
+    const next = (formData.get('next') as string | null) || ''
 
     if (!fullName || !email || !password) {
         return { error: 'All fields are required.' }
@@ -24,12 +25,19 @@ export async function signUp(formData: FormData) {
         return { error: 'Passwords do not match.' }
     }
 
+    // Safe relative-path check to prevent open redirect
+    const safeNext = next.startsWith('/') ? next : ''
+
+    const callbackUrl = safeNext
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(safeNext)}`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
+
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
             data: { full_name: fullName },
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            emailRedirectTo: callbackUrl,
         },
     })
 
@@ -48,7 +56,11 @@ export async function signUp(formData: FormData) {
         }
     }
 
-    redirect('/auth/verify')
+    const verifyUrl = safeNext
+        ? `/auth/verify?next=${encodeURIComponent(safeNext)}&email=${encodeURIComponent(email)}`
+        : `/auth/verify?email=${encodeURIComponent(email)}`
+
+    redirect(verifyUrl)
 }
 
 export async function signIn(formData: FormData) {
@@ -56,6 +68,7 @@ export async function signIn(formData: FormData) {
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
+    const next = (formData.get('next') as string | null) || ''
 
     if (!email || !password) {
         return { error: 'Email and password are required.' }
@@ -73,6 +86,12 @@ export async function signIn(formData: FormData) {
         return { error: 'Authentication failed.' }
     }
 
+    // If a safe next param was supplied, honour it
+    const safeNext = next.startsWith('/') ? next : ''
+    if (safeNext) {
+        return { redirectTo: safeNext }
+    }
+
     // Service client bypasses RLS for reliable role lookup
     const serviceClient = createServiceClient()
     const { data: profile } = await serviceClient
@@ -84,19 +103,8 @@ export async function signIn(formData: FormData) {
     const role = profile?.role || 'user'
 
     // Return redirectTo — client uses router.push(), never call redirect() here
-    if (role === 'admin') {
-        return { redirectTo: '/admin' }
-    }
-
-    if (role === 'organiser') {
-        const { data: org } = await serviceClient
-            .from('organiser_profiles')
-            .select('is_approved')
-            .eq('user_id', user.id)
-            .maybeSingle()
-        return { redirectTo: org?.is_approved ? '/organiser' : '/organiser/pending' }
-    }
-
+    if (role === 'admin') return { redirectTo: '/admin' }
+    if (role === 'organiser') return { redirectTo: '/organiser' }
     return { redirectTo: '/account' }
 }
 

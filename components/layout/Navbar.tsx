@@ -26,7 +26,11 @@ export async function Navbar() {
         ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : user?.email?.[0]?.toUpperCase() || '?'
 
-    const sellTicketsHref = (user && (role === 'organiser' || role === 'admin')) ? '/organiser' : '/auth/register'
+    const sellTicketsHref = !user
+        ? '/auth/register?next=/organiser/apply'
+        : (role === 'organiser' || role === 'admin')
+            ? '/organiser'
+            : '/organiser/apply'
 
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
