@@ -162,6 +162,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         })) || []
     )
     const [showPromoModal, setShowPromoModal] = useState(false)
+    const [showTicketPresetModal, setShowTicketPresetModal] = useState(false)
     const [promoError, setPromoError] = useState('')
     const [promoToast, setPromoToast] = useState(false)
     const [newPromo, setNewPromo] = useState<Omit<PromoCodeRow, 'id' | 'uses_count'>>({
@@ -384,8 +385,17 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         setBannerUploading(false)
     }
 
-    function addTicket() {
-        setTickets(prev => [...prev, { ...defaultTicket, sort_order: prev.length }])
+    function addTicketFromPreset(name: string, description: string) {
+        setTickets(prev => [...prev, {
+            ...defaultTicket,
+            name,
+            description,
+            priceStr: '',
+            price_pence: 0,
+            qtyStr: '',
+            quantity_total: 0,
+            sort_order: prev.length,
+        }])
     }
 
     function updateTicket(i: number, updates: Partial<TicketTypeRow>) {
@@ -629,7 +639,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             </div>
                         </div>
                     ))}
-                    <Button type="button" variant="outline" size="md" onClick={addTicket}>+ Add Ticket Type</Button>
+                    <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
                 </div>
             </div>
 
@@ -736,6 +746,57 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 )}
                 {saved && <span className="text-success text-xs ml-auto">Saved ✓</span>}
             </div>
+
+            {/* Ticket type preset modal */}
+            {showTicketPresetModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div style={{ background: '#13131A', border: '1px solid #2A2A3A', borderRadius: 16, padding: 24, width: '100%', maxWidth: 500 }}>
+                        <div className="flex items-center justify-between mb-5">
+                            <h3 style={{ fontFamily: 'var(--font-bebas-neue, Bebas Neue, sans-serif)', fontSize: 20, color: '#fff', letterSpacing: '0.05em' }}>Choose Ticket Type</h3>
+                            <button type="button" onClick={() => setShowTicketPresetModal(false)} className="text-muted hover:text-text text-lg leading-none">✕</button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                            {[
+                                { name: 'General Admission', description: 'Standard entry to the event', icon: '🎟️' },
+                                { name: 'VIP', description: 'Premium experience with exclusive access', icon: '⭐' },
+                                { name: 'Early Bird', description: 'Limited early release at a special price', icon: '🐦' },
+                                { name: 'Student', description: 'Discounted — valid student ID required', icon: '🎓' },
+                                { name: 'Group Ticket', description: 'Entry for a group of people', icon: '👥' },
+                                { name: 'Under 18', description: 'For attendees aged 17 and under', icon: '🧒' },
+                                { name: 'Backstage Pass', description: 'Full access including backstage areas', icon: '🎭' },
+                                { name: 'Custom', description: 'Build your own ticket type from scratch', icon: '✏️' },
+                            ].map(preset => (
+                                <button
+                                    key={preset.name}
+                                    type="button"
+                                    onClick={() => {
+                                        setShowTicketPresetModal(false)
+                                        addTicketFromPreset(
+                                            preset.name === 'Custom' ? '' : preset.name,
+                                            preset.name === 'Custom' ? '' : preset.description,
+                                        )
+                                    }}
+                                    style={{
+                                        background: '#1A1A24',
+                                        border: '1px solid #2A2A3A',
+                                        borderRadius: 12,
+                                        padding: 16,
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                        transition: 'border-color 0.15s, background 0.15s',
+                                    }}
+                                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#E63950' }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#2A2A3A' }}
+                                >
+                                    <div style={{ fontSize: 24, marginBottom: 8 }}>{preset.icon}</div>
+                                    <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 4 }}>{preset.name}</div>
+                                    <div style={{ color: '#8888AA', fontSize: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preset.description}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Promo code modal */}
             {showPromoModal && (
