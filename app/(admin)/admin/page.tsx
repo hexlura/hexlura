@@ -168,7 +168,7 @@ export default async function AdminDashboardPage() {
             {/* KPI Row 1 */}
             <div className="grid grid-cols-4 gap-4 mb-4">
                 {kpis1.map(kpi => (
-                    <div key={kpi.label} className="bg-card border border-border rounded-xl p-5">
+                    <div key={kpi.label} className="bg-card border border-border rounded-none p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{kpi.label}</p>
                         <p className="font-heading text-3xl text-text">{kpi.value}</p>
                         <p className="text-xs text-muted mt-2">{kpi.sub}</p>
@@ -179,7 +179,7 @@ export default async function AdminDashboardPage() {
             {/* KPI Row 2 */}
             <div className="grid grid-cols-4 gap-4 mb-8">
                 {kpis2.map(kpi => (
-                    <div key={kpi.label} className={`border rounded-xl p-5 ${kpi.amber ? 'bg-[#2A1F00] border-gold/40' : 'bg-card border-border'}`}>
+                    <div key={kpi.label} className={`border rounded-none p-5 ${kpi.amber ? 'bg-[#2A1F00] border-gold/40' : 'bg-card border-border'}`}>
                         <p className={`text-xs uppercase tracking-wider mb-1 ${kpi.amber ? 'text-gold' : 'text-muted'}`}>{kpi.label}</p>
                         <p className={`font-heading text-3xl ${kpi.amber ? 'text-gold' : 'text-text'}`}>{kpi.value}</p>
                         <p className={`text-xs mt-2 ${kpi.amber ? 'text-gold/60' : 'text-muted'}`}>{kpi.sub}</p>
@@ -193,7 +193,7 @@ export default async function AdminDashboardPage() {
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-6 mt-8">
                 {/* Pending Applications */}
-                <div className="bg-card border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-none p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Pending Organiser Applications</h2>
                         <Link href="/admin/organisers" className="text-xs text-accent hover:underline">View All →</Link>
@@ -223,7 +223,7 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 {/* Recent Refund Requests */}
-                <div className="bg-card border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-none p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Recent Refund Requests</h2>
                         <Link href="/admin/bookings?tab=refunds" className="text-xs text-accent hover:underline">View All →</Link>

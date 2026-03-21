@@ -81,7 +81,7 @@ export default function StepDetails() {
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             placeholder="John Doe"
-                            className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                            className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                         />
                         {errors.full_name && <span className="text-xs text-accent">{errors.full_name}</span>}
                     </div>
@@ -94,7 +94,7 @@ export default function StepDetails() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="you@example.com"
-                            className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                            className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                         />
                         {errors.email && <span className="text-xs text-accent">{errors.email}</span>}
                     </div>
@@ -107,7 +107,7 @@ export default function StepDetails() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="+44 7700 000000"
-                            className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                            className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                         />
                         {errors.phone && <span className="text-xs text-accent">{errors.phone}</span>}
                     </div>
@@ -121,12 +121,12 @@ export default function StepDetails() {
                             value={promoInput}
                             onChange={(e) => setPromoInput(e.target.value)}
                             placeholder="Enter code"
-                            className="h-11 flex-1 rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent uppercase"
+                            className="h-11 flex-1 rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent uppercase"
                         />
                         <button
                             onClick={handleApplyPromo}
                             disabled={promoLoading || !promoInput.trim()}
-                            className="h-11 px-6 rounded-lg border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition disabled:opacity-50"
+                            className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition disabled:opacity-50"
                         >
                             {promoLoading ? '...' : 'Apply'}
                         </button>
@@ -137,7 +137,7 @@ export default function StepDetails() {
 
                 <button
                     onClick={handleContinue}
-                    className="w-full h-12 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition"
+                    className="w-full h-12 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition"
                 >
                     Continue to Payment
                 </button>

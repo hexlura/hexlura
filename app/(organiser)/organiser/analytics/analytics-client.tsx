@@ -23,7 +23,7 @@ type Range = '7d' | '30d' | '90d' | 'all'
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string }[]; label?: string }) {
     if (!active || !payload?.length) return null
     return (
-        <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs">
+        <div className="bg-card border border-border rounded-none px-3 py-2 text-xs">
             {label && <p className="text-muted mb-1">{label}</p>}
             {payload.map((p, i) => (
                 <p key={i} className="text-text">{p.name}: <span className="text-accent font-medium">{typeof p.value === 'number' && p.name?.includes('£') ? `£${p.value.toFixed(2)}` : p.value}</span></p>
@@ -123,7 +123,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
                     <button
                         key={opt.value}
                         onClick={() => setRange(opt.value)}
-                        className={`px-4 py-2 rounded-lg text-sm transition-colors ${range === opt.value ? 'bg-accent text-white' : 'bg-card border border-border text-muted hover:text-text'}`}
+                        className={`px-4 py-2 rounded-sm text-sm transition-colors ${range === opt.value ? 'bg-accent text-white' : 'bg-card border border-border text-muted hover:text-text'}`}
                     >
                         {opt.label}
                     </button>
@@ -138,7 +138,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
                     { label: 'Avg Order Value', value: formatPence(avgOrder) },
                     { label: 'Top Event', value: topEvent },
                 ].map(s => (
-                    <div key={s.label} className="bg-card border border-border rounded-xl p-5">
+                    <div key={s.label} className="bg-card border border-border rounded-none p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{s.label}</p>
                         <p className="font-heading text-2xl text-text">{s.value}</p>
                     </div>
@@ -148,7 +148,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
             {/* Charts grid */}
             <div className="grid grid-cols-2 gap-6 mb-6">
                 {/* Revenue over time */}
-                <div className="bg-card border border-border rounded-xl p-6 col-span-2">
+                <div className="bg-card border border-border rounded-none p-6 col-span-2">
                     <h2 className="text-sm font-medium text-text mb-4">Revenue Over Time</h2>
                     <ResponsiveContainer width="100%" height={200}>
                         <LineChart data={revenueData}>
@@ -162,7 +162,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
                 </div>
 
                 {/* Tickets by event */}
-                <div className="bg-card border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-none p-6">
                     <h2 className="text-sm font-medium text-text mb-4">Tickets Sold by Event</h2>
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={ticketsByEvent} layout="vertical">
@@ -176,7 +176,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
                 </div>
 
                 {/* By category */}
-                <div className="bg-card border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-none p-6">
                     <h2 className="text-sm font-medium text-text mb-4">Revenue by Category</h2>
                     {byCategory.length === 0 ? (
                         <p className="text-muted text-xs text-center py-8">No data for period</p>

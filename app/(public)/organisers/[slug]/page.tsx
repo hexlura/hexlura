@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import EventCard from '@/components/events/EventCard';
+import ShareButton from '@/components/events/ShareButton';
 import { Event } from '@/types';
 
 export const revalidate = 60;
@@ -58,7 +59,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         <div className="max-w-7xl mx-auto px-4 py-12 min-h-screen">
 
             {/* Organiser Header */}
-            <div className="bg-card border border-border rounded-2xl p-8 mb-12 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left shadow-sm">
+            <div className="bg-card border border-border p-8 mb-12 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left shadow-sm">
                 <div className="w-32 h-32 md:w-40 md:h-40 shrink-0 rounded-full border-4 border-background shadow-md overflow-hidden relative bg-muted">
                     {organiser.logo_url ? (
                         <Image src={organiser.logo_url} alt={organiser.org_name} fill className="object-cover" />
@@ -70,13 +71,18 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                 </div>
 
                 <div className="flex-1 space-y-4">
-                    <div className="space-y-1">
-                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight">{organiser.org_name}</h1>
-                        {organiser.website && (
-                            <a href={organiser.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm font-medium">
-                                {organiser.website.replace(/^https?:\/\//, '')}
-                            </a>
-                        )}
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                        <div className="space-y-1">
+                            <h1 className="text-3xl md:text-5xl font-bold tracking-tight">{organiser.org_name}</h1>
+                            {organiser.website && (
+                                <a href={organiser.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm font-medium">
+                                    {organiser.website.replace(/^https?:\/\//, '')}
+                                </a>
+                            )}
+                        </div>
+                        <div className="flex md:justify-end">
+                            <ShareButton title={organiser.org_name} />
+                        </div>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground">
@@ -109,7 +115,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                         ))}
                     </div>
                 ) : (
-                    <div className="py-20 text-center border-2 border-dashed rounded-xl bg-muted/20">
+                    <div className="py-20 text-center border-2 border-dashed bg-muted/20">
                         <h3 className="text-xl font-semibold mb-2">No upcoming events</h3>
                         <p className="text-muted-foreground">This organiser doesn&apos;t have any published events right now.</p>
                     </div>

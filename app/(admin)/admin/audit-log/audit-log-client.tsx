@@ -56,7 +56,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 </div>
                 <Link
                     href="/api/admin/export/audit-log"
-                    className="text-xs px-3 py-2 rounded-lg bg-card border border-border text-muted hover:text-text transition-colors"
+                    className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors"
                 >
                     Export CSV
                 </Link>
@@ -67,7 +67,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 <select
                     defaultValue={searchParams.get('admin') ?? ''}
                     onChange={e => updateParam('admin', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 >
                     <option value="">All Admins</option>
                     {admins.map(a => (
@@ -77,7 +77,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 <select
                     defaultValue={searchParams.get('action') ?? ''}
                     onChange={e => updateParam('action', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 >
                     <option value="">All Actions</option>
                     {distinctActions.map(a => (
@@ -87,7 +87,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 <select
                     defaultValue={searchParams.get('entity') ?? ''}
                     onChange={e => updateParam('entity', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 >
                     <option value="">All Entity Types</option>
                     {['user', 'organiser', 'event', 'booking', 'payout'].map(e => (
@@ -98,18 +98,18 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                     type="date"
                     defaultValue={searchParams.get('from') ?? ''}
                     onChange={e => updateParam('from', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 />
                 <input
                     type="date"
                     defaultValue={searchParams.get('to') ?? ''}
                     onChange={e => updateParam('to', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 />
             </div>
 
             {/* Table */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden mb-4">
+            <div className="bg-card border border-border rounded-none overflow-hidden mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
@@ -162,13 +162,13 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
             {/* Detail Modal */}
             {detailModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-lg w-full">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-heading text-xl text-text">{detailModal.action}</h3>
                             <button onClick={() => setDetailModal(null)} className="text-muted hover:text-text text-xl">×</button>
                         </div>
                         <p className="text-xs text-muted mb-3">{fmtUK(detailModal.created_at)}</p>
-                        <pre className="bg-surface rounded-lg p-4 text-xs text-success font-mono overflow-auto max-h-80 whitespace-pre-wrap">
+                        <pre className="bg-surface rounded-none p-4 text-xs text-success font-mono overflow-auto max-h-80 whitespace-pre-wrap">
                             {JSON.stringify(detailModal.metadata, null, 2)}
                         </pre>
                     </div>

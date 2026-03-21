@@ -48,7 +48,7 @@ export default async function OrganiserBookingsPage() {
                 <p className="text-muted text-sm mt-1">{rows.length} bookings shown</p>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <div className="overflow-x-auto">
                 <table className="w-full min-w-[600px] text-sm">
                     <thead>

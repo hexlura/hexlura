@@ -111,7 +111,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-lg text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -147,12 +147,12 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                         clearTimeout((window as Window & { _st?: ReturnType<typeof setTimeout> })._st)
                         ;(window as Window & { _st?: ReturnType<typeof setTimeout> })._st = setTimeout(() => updateParam('q', v), 300)
                     }}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56"
                 />
                 <select
                     defaultValue={searchParams.get('category') ?? ''}
                     onChange={e => updateParam('category', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 >
                     <option value="">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -160,7 +160,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <select
                     defaultValue={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 >
                     <option value="">All Statuses</option>
                     <option value="published">Published</option>
@@ -171,7 +171,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
             </div>
 
             {/* Table */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden mb-4">
+            <div className="bg-card border border-border rounded-none overflow-hidden mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
@@ -254,7 +254,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
             {/* Cancel Event Modal */}
             {cancelModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-md w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Cancel Event?</h3>
                         <p className="text-sm text-muted mb-4">
                             This will cancel the event and trigger automatic refunds for ALL confirmed bookings.
@@ -266,7 +266,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                             value={cancelConfirmTitle}
                             onChange={e => setCancelConfirmTitle(e.target.value)}
                             placeholder="Event title..."
-                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent mb-4"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent mb-4"
                         />
                         <div className="flex gap-3">
                             <Button

@@ -30,13 +30,13 @@ export default async function OrganiserAttendeesPage() {
 
             <div className="grid gap-3">
                 {(events || []).length === 0 && (
-                    <div className="bg-card border border-border rounded-xl p-12 text-center">
+                    <div className="bg-card border border-border rounded-none p-12 text-center">
                         <p className="text-muted text-sm">No events yet.</p>
                         <Link href="/organiser/events/new" className="text-accent text-sm hover:underline mt-2 inline-block">Create your first event →</Link>
                     </div>
                 )}
                 {(events || []).map(e => (
-                    <div key={e.id} className="bg-card border border-border rounded-xl p-5 flex items-center justify-between hover:bg-[#22223A] transition-colors">
+                    <div key={e.id} className="bg-card border border-border rounded-none p-5 flex items-center justify-between hover:bg-[#22223A] transition-colors">
                         <div>
                             <p className="text-text font-medium">{e.title}</p>
                             <p className="text-muted text-xs mt-0.5">
@@ -45,7 +45,7 @@ export default async function OrganiserAttendeesPage() {
                         </div>
                         <Link
                             href={`/organiser/events/${e.id}/attendees`}
-                            className="px-4 py-2 bg-accent/10 text-accent text-sm rounded-lg hover:bg-accent/20 transition-colors"
+                            className="px-4 py-2 bg-accent/10 text-accent text-sm rounded-sm hover:bg-accent/20 transition-colors"
                         >
                             View Attendees →
                         </Link>

@@ -53,7 +53,7 @@ function LoginContent() {
                         type="email"
                         required
                         placeholder="you@example.com"
-                        className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                 </div>
 
@@ -70,18 +70,18 @@ function LoginContent() {
                         type="password"
                         required
                         placeholder="Your password"
-                        className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                 </div>
 
                 {error && (
-                    <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-lg px-4 py-2">{error}</p>
+                    <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{error}</p>
                 )}
 
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 hover:-translate-y-px active:translate-y-0 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
+                    className="w-full h-11 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 hover:-translate-y-px active:translate-y-0 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
                 >
                     {loading && (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -105,7 +105,7 @@ function LoginContent() {
             <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="w-full h-11 rounded-lg border border-border bg-card text-text font-medium text-sm hover:bg-card/80 transition flex items-center justify-center gap-3"
+                className="w-full h-11 rounded-sm border border-border bg-card text-text font-medium text-sm hover:bg-card/80 transition flex items-center justify-center gap-3"
             >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                     <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>

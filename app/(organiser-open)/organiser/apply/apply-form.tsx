@@ -98,7 +98,7 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
         }
     }
 
-    const inputClass = "w-full bg-surface border border-border rounded-lg px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+    const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -164,7 +164,7 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
             </div>
             <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-text">VAT Registered</span>
-                <div onClick={() => setVatRegistered(!vatRegistered)} className={`w-10 h-6 rounded-full relative transition-colors cursor-pointer ${vatRegistered ? 'bg-accent' : 'bg-border'}`}>
+                <div onClick={() => setVatRegistered(!vatRegistered)} className={`w-10 h-6 rounded-sm relative transition-colors cursor-pointer ${vatRegistered ? 'bg-accent' : 'bg-border'}`}>
                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${vatRegistered ? 'translate-x-5' : 'translate-x-1'}`} />
                 </div>
             </div>

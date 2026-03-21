@@ -77,7 +77,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
 
     return (
         <>
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 {/* Search + Filters */}
                 <div className="flex gap-3 mb-4">
                     <input
@@ -85,12 +85,12 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                         placeholder="Search name or email..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                        className="flex-1 bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
                     />
                     <select
                         value={filterType}
                         onChange={e => setFilterType(e.target.value)}
-                        className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        className="bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
                     >
                         <option value="">All ticket types</option>
                         {ticketTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -98,7 +98,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                     <select
                         value={filterCheckedIn}
                         onChange={e => setFilterCheckedIn(e.target.value)}
-                        className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        className="bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
                     >
                         <option value="">All attendees</option>
                         <option value="yes">Checked in</option>
@@ -173,7 +173,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
             {/* Announcement Modal */}
             {showAnnouncement && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 w-full max-w-lg">
+                    <div className="bg-card border border-border rounded-none p-6 w-full max-w-lg">
                         <h2 className="font-heading text-xl text-text mb-4">SEND ANNOUNCEMENT</h2>
                         {sent ? (
                             <p className="text-success text-sm py-4 text-center">✓ Announcement sent!</p>
@@ -187,7 +187,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                                             type="text"
                                             value={subject}
                                             onChange={e => setSubject(e.target.value)}
-                                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
                                             placeholder="Email subject..."
                                         />
                                     </div>
@@ -197,7 +197,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                                             value={message}
                                             onChange={e => setMessage(e.target.value)}
                                             rows={5}
-                                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent resize-none"
+                                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent resize-none"
                                             placeholder="Your message..."
                                         />
                                     </div>

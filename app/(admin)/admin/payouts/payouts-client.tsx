@@ -96,7 +96,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-lg text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -108,7 +108,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
 
             {/* Due Payouts */}
             {duePayouts.length > 0 && (
-                <div className="bg-[#1A1A00] border border-gold/30 rounded-xl p-6 mb-8">
+                <div className="bg-[#1A1A00] border border-gold/30 rounded-none p-6 mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-sm font-medium text-gold">Payouts Due</h2>
@@ -131,7 +131,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                     </div>
                     <div className="flex flex-col gap-3">
                         {duePayouts.map(p => (
-                            <div key={p.id} className="flex items-center justify-between bg-card rounded-lg px-4 py-3">
+                            <div key={p.id} className="flex items-center justify-between bg-card rounded-none px-4 py-3">
                                 <div>
                                     <p className="text-sm text-text font-medium">{p.organiser_profiles?.org_name ?? '—'}</p>
                                     <p className="text-xs text-muted">{p.events?.title ?? '—'}</p>
@@ -157,7 +157,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 <select
                     defaultValue={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-card border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
                 >
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
@@ -167,7 +167,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 </select>
             </div>
 
-            <div className="bg-card border border-border rounded-xl overflow-hidden mb-4">
+            <div className="bg-card border border-border rounded-none overflow-hidden mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
@@ -212,7 +212,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             {/* Confirm Process Modal */}
             {confirmModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Process Payout</h3>
                         <p className="text-sm text-muted mb-2">{confirmModal.organiser_profiles?.org_name}</p>
                         <p className="text-sm text-muted mb-4">Send {formatPence(confirmModal.net_pence || 0)} via Stripe?</p>

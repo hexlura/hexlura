@@ -57,7 +57,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
 
     if (submitted) {
         return (
-            <div className="h-11 px-6 rounded-lg border border-success/30 bg-success/10 text-success text-sm font-medium flex items-center justify-center">
+            <div className="h-11 px-6 rounded-sm border border-success/30 bg-success/10 text-success text-sm font-medium flex items-center justify-center">
                 Request submitted — organiser will respond within 48 hours
             </div>
         )
@@ -67,14 +67,14 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="h-11 px-6 rounded-lg border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition"
+                className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition"
             >
                 Request Refund
             </button>
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
-                    <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-surface border border-border rounded-none p-6 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
                         <h3 className="font-heading text-2xl text-text">REQUEST REFUND</h3>
 
                         <div className="flex flex-col gap-1">
@@ -82,7 +82,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                             <select
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
-                                className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
                             >
                                 <option value="">Select a reason...</option>
                                 {REASONS.map((r) => (
@@ -99,7 +99,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                                 maxLength={500}
                                 rows={3}
                                 placeholder="Any additional details..."
-                                className="w-full rounded-lg border border-border bg-card px-4 py-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                                className="w-full rounded-sm border border-border bg-card px-4 py-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                             />
                             <span className="text-xs text-muted text-right">{message.length}/500</span>
                         </div>
@@ -111,14 +111,14 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setOpen(false)}
-                                className="flex-1 h-11 rounded-lg border border-border text-text text-sm font-medium hover:bg-card transition"
+                                className="flex-1 h-11 rounded-sm border border-border text-text text-sm font-medium hover:bg-card transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={loading}
-                                className="flex-1 h-11 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition disabled:opacity-50"
+                                className="flex-1 h-11 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition disabled:opacity-50"
                             >
                                 {loading ? 'Submitting...' : 'Submit Request'}
                             </button>

@@ -38,9 +38,9 @@ export default async function CityCards() {
                             <Link
                                 key={name}
                                 href={`/events?city=${encodeURIComponent(name)}`}
-                                className="group block relative overflow-hidden rounded-2xl"
+                                className="group block relative overflow-hidden rounded-none"
                             >
-                                <div className="relative h-[160px] md:h-[200px] overflow-hidden rounded-2xl">
+                                <div className="relative h-[160px] md:h-[200px] overflow-hidden rounded-none">
                                     <Image
                                         src={photo}
                                         alt={`${name} events`}

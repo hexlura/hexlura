@@ -76,14 +76,14 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
             </div>
 
             {/* QR Code */}
-            <div className="bg-surface border border-border rounded-xl p-8 text-center space-y-4">
+            <div className="bg-surface border border-border rounded-none p-8 text-center space-y-4">
                 <BookingQR value={qrCode} />
                 <p className="text-sm text-muted">Show this at the door</p>
                 <p className="font-mono text-2xl font-bold text-accent">{booking.booking_ref}</p>
             </div>
 
             {/* Ticket breakdown */}
-            <div className="bg-surface border border-border rounded-xl p-6 space-y-4">
+            <div className="bg-surface border border-border rounded-none p-6 space-y-4">
                 <h3 className="font-bold text-text text-lg">Ticket Breakdown</h3>
                 <table className="w-full text-sm">
                     <thead>
@@ -133,7 +133,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                 <a
                     href={`/api/tickets/${booking.booking_ref}/pdf`}
                     target="_blank"
-                    className="h-11 px-6 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center"
+                    className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center"
                 >
                     Download PDF Ticket
                 </a>
@@ -143,7 +143,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                 )}
 
                 {existingRefund && (
-                    <div className="h-11 px-6 rounded-lg border border-gold/30 bg-gold/10 text-gold text-sm font-medium flex items-center justify-center">
+                    <div className="h-11 px-6 rounded-sm border border-gold/30 bg-gold/10 text-gold text-sm font-medium flex items-center justify-center">
                         Refund {existingRefund.status}
                     </div>
                 )}

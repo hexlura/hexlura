@@ -73,7 +73,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
 
     function Section({ title, children }: { title: string; children: React.ReactNode }) {
         return (
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
+            <div className="bg-card border border-border rounded-none p-6 mb-6">
                 <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">{title}</h2>
                 {children}
             </div>
@@ -86,7 +86,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                 <span className="text-sm text-text">{label}</span>
                 <div
                     onClick={() => onChange(!checked)}
-                    className={`w-10 h-6 rounded-full relative transition-colors ${checked ? 'bg-accent' : 'bg-border'}`}
+                    className={`w-10 h-6 rounded-sm relative transition-colors ${checked ? 'bg-accent' : 'bg-border'}`}
                 >
                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} />
                 </div>
@@ -122,24 +122,24 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Organisation Name</label>
                         <input type="text" value={orgName} onChange={e => setOrgName(e.target.value)} required
-                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
                     </div>
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Description</label>
                         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
-                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent resize-none" />
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent resize-none" />
                     </div>
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Website URL</label>
                         <input type="url" value={website} onChange={e => setWebsite(e.target.value)}
                             placeholder="https://"
-                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
                     </div>
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Logo</label>
                         <div className="flex items-center gap-4">
-                            {logoUrl && <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-lg object-cover border border-border" />}
-                            <label className="cursor-pointer bg-surface border border-border rounded-lg px-3 py-2 text-sm text-muted hover:text-text transition-colors">
+                            {logoUrl && <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-sm object-cover border border-border" />}
+                            <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors">
                                 {logoUploading ? 'Uploading...' : 'Upload Logo'}
                                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadLogo} className="hidden" />
                             </label>
@@ -158,7 +158,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                             <label className="text-xs text-muted block mb-1.5">VAT Number</label>
                             <input type="text" value={vatNumber} onChange={e => setVatNumber(e.target.value)}
                                 placeholder="GB123456789"
-                                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
+                                className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
                         </div>
                     )}
                     <p className="text-xs text-muted">VAT invoices will be generated for your payouts</p>
@@ -201,7 +201,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
             </Section>
 
             {/* Danger Zone */}
-            <div className="bg-card border border-accent/30 rounded-xl p-6">
+            <div className="bg-card border border-accent/30 rounded-none p-6">
                 <h2 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wider">Danger Zone</h2>
                 <p className="text-sm text-muted mb-4">
                     Closing your organiser account will remove your organiser status.
@@ -213,7 +213,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
             {/* Disconnect Modal */}
             {showDisconnectModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Disconnect Bank Account?</h3>
                         <p className="text-sm text-muted mb-4">You will stop receiving automatic payouts until you reconnect.</p>
                         <div className="flex gap-3">
@@ -227,7 +227,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
             {/* Close Account Modal */}
             {showCloseModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Close Organiser Account?</h3>
                         <p className="text-sm text-muted mb-4">This will remove your organiser status. This action cannot be undone.</p>
                         <div className="flex gap-3">

@@ -60,7 +60,7 @@ export default async function AccountPage() {
             {profile?.role === 'organiser' && organiserProfile?.is_approved && (
                 <Link
                     href="/organiser"
-                    className="flex items-center justify-between gap-4 bg-accent/10 border border-accent/30 rounded-xl px-6 py-4 hover:bg-accent/15 transition group"
+                    className="flex items-center justify-between gap-4 bg-accent/10 border border-accent/30 rounded-none px-6 py-4 hover:bg-accent/15 transition group"
                 >
                     <div>
                         <p className="font-heading text-lg text-accent tracking-wide">ORGANISER PORTAL</p>
@@ -78,15 +78,15 @@ export default async function AccountPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-surface border border-border rounded-xl p-5 text-center space-y-1">
+                <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
                     <p className="text-3xl font-bold text-accent">{confirmedBookings.length}</p>
                     <p className="text-sm text-muted">Total Bookings</p>
                 </div>
-                <div className="bg-surface border border-border rounded-xl p-5 text-center space-y-1">
+                <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
                     <p className="text-3xl font-bold text-accent">{upcomingBookings.length}</p>
                     <p className="text-sm text-muted">Upcoming Events</p>
                 </div>
-                <div className="bg-surface border border-border rounded-xl p-5 text-center space-y-1">
+                <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
                     <p className="text-3xl font-bold text-accent">{formatPence(totalSpent)}</p>
                     <p className="text-sm text-muted">Total Spent</p>
                 </div>
@@ -116,7 +116,7 @@ export default async function AccountPage() {
                             const ticketCount = booking.items?.reduce((s, i) => s + i.quantity, 0) || 0
 
                             return (
-                                <div key={booking.id} className="bg-surface border border-border rounded-xl p-5 flex flex-col sm:flex-row gap-4 hover:border-accent/30 transition">
+                                <div key={booking.id} className="bg-surface border border-border rounded-none p-5 flex flex-col sm:flex-row gap-4 hover:border-accent/30 transition">
                                     <div className="flex-1 space-y-2">
                                         <h3 className="font-semibold text-text text-lg">{event?.title || 'Event'}</h3>
                                         <p className="text-sm text-muted">{dateStr}</p>
@@ -132,7 +132,7 @@ export default async function AccountPage() {
                                     <div className="flex items-center">
                                         <Link
                                             href={`/bookings/${booking.booking_ref}`}
-                                            className="h-10 px-5 rounded-lg border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition flex items-center gap-1 whitespace-nowrap"
+                                            className="h-10 px-5 rounded-sm border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition flex items-center gap-1 whitespace-nowrap"
                                         >
                                             View Ticket &rarr;
                                         </Link>
@@ -142,7 +142,7 @@ export default async function AccountPage() {
                         })}
                     </div>
                 ) : (
-                    <div className="py-12 text-center border-2 border-dashed border-border rounded-xl">
+                    <div className="py-12 text-center border-2 border-dashed border-border rounded-none">
                         <p className="text-muted mb-4">No upcoming bookings yet.</p>
                         <Link href="/events" className="text-accent hover:underline text-sm font-medium">
                             Browse events
@@ -159,7 +159,7 @@ export default async function AccountPage() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="bg-surface border border-border rounded-xl p-5 hover:border-accent/30 transition group"
+                            className="bg-surface border border-border rounded-none p-5 hover:border-accent/30 transition group"
                         >
                             <p className="font-semibold text-text group-hover:text-accent transition">{link.label}</p>
                             <p className="text-sm text-muted mt-1">{link.description}</p>
@@ -169,7 +169,7 @@ export default async function AccountPage() {
             </div>
 
             {/* Account Info */}
-            <div className="bg-surface border border-border rounded-xl p-6 space-y-4">
+            <div className="bg-surface border border-border rounded-none p-6 space-y-4">
                 <h2 className="font-heading text-2xl text-text">ACCOUNT INFO</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
@@ -183,7 +183,7 @@ export default async function AccountPage() {
                 </div>
                 <Link
                     href="/account/settings"
-                    className="inline-flex h-10 px-5 rounded-lg border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition items-center"
+                    className="inline-flex h-10 px-5 rounded-sm border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition items-center"
                 >
                     Edit Profile
                 </Link>

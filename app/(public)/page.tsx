@@ -109,7 +109,7 @@ export default async function HomePage() {
                             </div>
                         </>
                     ) : (
-                        <div className="py-20 text-center border rounded-xl bg-muted/20 border-border border-dashed">
+                        <div className="py-20 text-center border rounded-none bg-muted/20 border-border border-dashed">
                             <h3 className="text-xl font-semibold mb-2">No events found</h3>
                             <p className="text-muted-foreground">Check back later for more exciting events!</p>
                         </div>

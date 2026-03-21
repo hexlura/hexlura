@@ -56,13 +56,13 @@ export async function Navbar() {
                         <>
                             <Link
                                 href="/auth/login"
-                                className="hidden md:inline-flex items-center justify-center text-sm font-medium text-white border border-white bg-transparent px-5 py-2 rounded-lg hover:bg-white hover:text-black transition"
+                                className="hidden md:inline-flex items-center justify-center text-sm font-medium text-white border border-white bg-transparent px-5 py-2 rounded-sm hover:bg-white hover:text-black transition"
                             >
                                 Log In
                             </Link>
                             <Link
                                 href="/auth/register"
-                                className="inline-flex items-center justify-center text-sm font-semibold text-white bg-accent border-0 px-5 py-2 rounded-lg hover:opacity-90 transition"
+                                className="inline-flex items-center justify-center text-sm font-semibold text-white bg-accent border-0 px-5 py-2 rounded-sm hover:opacity-90 transition"
                             >
                                 Get Started
                             </Link>

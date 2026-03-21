@@ -13,7 +13,7 @@ interface Props {
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string }[]; label?: string }) {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-card border border-border rounded-lg px-3 py-2 text-sm">
+            <div className="bg-card border border-border rounded-none px-3 py-2 text-sm">
                 <p className="text-muted text-xs mb-1">{label}</p>
                 {payload.map((p, i) => (
                     <p key={i} className="text-text font-medium">
@@ -29,7 +29,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 export function AdminDashboardClient({ gmvChartData, categoryChartData }: Props) {
     return (
         <div className="grid grid-cols-2 gap-6">
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-1">GMV — Last 90 Days</h2>
                 <p className="text-xs text-muted mb-4">Daily gross merchandise value</p>
                 <ResponsiveContainer width="100%" height={220}>
@@ -43,7 +43,7 @@ export function AdminDashboardClient({ gmvChartData, categoryChartData }: Props)
                 </ResponsiveContainer>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-1">Bookings by Category</h2>
                 <p className="text-xs text-muted mb-4">All confirmed bookings</p>
                 <ResponsiveContainer width="100%" height={220}>

@@ -29,7 +29,7 @@ function BookingCard({ booking }: { booking: Booking }) {
     const ticketCount = booking.items?.reduce((s, i) => s + i.quantity, 0) || 0
 
     return (
-        <div className="bg-surface border border-border rounded-xl p-5 flex flex-col sm:flex-row gap-4 hover:border-accent/30 transition">
+        <div className="bg-surface border border-border rounded-none p-5 flex flex-col sm:flex-row gap-4 hover:border-accent/30 transition">
             <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-text text-lg">{event?.title || 'Event'}</h3>
@@ -50,7 +50,7 @@ function BookingCard({ booking }: { booking: Booking }) {
             <div className="flex items-center">
                 <Link
                     href={`/bookings/${booking.booking_ref}`}
-                    className="h-10 px-5 rounded-lg border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition flex items-center gap-1 whitespace-nowrap"
+                    className="h-10 px-5 rounded-sm border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition flex items-center gap-1 whitespace-nowrap"
                 >
                     View Ticket →
                 </Link>
@@ -61,7 +61,7 @@ function BookingCard({ booking }: { booking: Booking }) {
 
 function EmptyState({ message }: { message: string }) {
     return (
-        <div className="py-16 text-center border-2 border-dashed border-border rounded-xl">
+        <div className="py-16 text-center border-2 border-dashed border-border rounded-none">
             <p className="text-muted mb-4">{message}</p>
             <Link href="/events" className="text-accent hover:underline text-sm font-medium">
                 Browse events
@@ -83,12 +83,12 @@ export default function BookingTabs({ upcoming, past, cancelled }: BookingTabsPr
 
     return (
         <div className="space-y-6">
-            <div className="flex gap-1 bg-card border border-border rounded-lg p-1">
+            <div className="flex gap-1 bg-card border border-border rounded-none p-1">
                 {tabs.map((t) => (
                     <button
                         key={t.key}
                         onClick={() => setTab(t.key)}
-                        className={`flex-1 h-10 rounded-md text-sm font-medium transition ${
+                        className={`flex-1 h-10 rounded-sm text-sm font-medium transition ${
                             tab === t.key
                                 ? 'bg-accent text-white'
                                 : 'text-muted hover:text-text'

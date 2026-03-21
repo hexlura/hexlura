@@ -96,15 +96,15 @@ export default async function AdminFinancialsPage() {
                     <p className="text-muted text-sm mt-1">Platform revenue and payout overview</p>
                 </div>
                 <div className="flex gap-3">
-                    <Link href="/api/admin/export/revenue" className="text-xs px-3 py-2 rounded-lg bg-card border border-border text-muted hover:text-text transition-colors">Export Revenue CSV</Link>
-                    <Link href="/api/admin/export/bookings" className="text-xs px-3 py-2 rounded-lg bg-card border border-border text-muted hover:text-text transition-colors">Export Bookings CSV</Link>
-                    <Link href="/api/admin/export/payouts" className="text-xs px-3 py-2 rounded-lg bg-card border border-border text-muted hover:text-text transition-colors">Export Payouts CSV</Link>
+                    <Link href="/api/admin/export/revenue" className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors">Export Revenue CSV</Link>
+                    <Link href="/api/admin/export/bookings" className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors">Export Bookings CSV</Link>
+                    <Link href="/api/admin/export/payouts" className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors">Export Payouts CSV</Link>
                 </div>
             </div>
 
             <div className="grid grid-cols-4 gap-4 mb-8">
                 {kpis.map(k => (
-                    <div key={k.label} className="bg-card border border-border rounded-xl p-5">
+                    <div key={k.label} className="bg-card border border-border rounded-none p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{k.label}</p>
                         <p className="font-heading text-3xl text-text">{k.value}</p>
                         {k.note && <p className="text-xs text-muted mt-2">{k.note}</p>}
@@ -115,7 +115,7 @@ export default async function AdminFinancialsPage() {
             <FinancialsClient monthlyData={monthlyData} cumulativeData={cumulativeData} />
 
             {/* Monthly Breakdown Table */}
-            <div className="mt-8 bg-card border border-border rounded-xl overflow-hidden">
+            <div className="mt-8 bg-card border border-border rounded-none overflow-hidden">
                 <div className="p-6 border-b border-border">
                     <h2 className="text-sm font-medium text-text">Monthly Breakdown — Last 12 Months</h2>
                 </div>

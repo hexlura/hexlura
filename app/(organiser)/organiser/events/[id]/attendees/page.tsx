@@ -97,7 +97,7 @@ export default async function AttendeesPage({ params }: PageProps) {
                     { label: 'Checked In', value: `${checkedIn} / ${attendees.length}` },
                     { label: 'Revenue', value: formatPence(totalRevenue) },
                 ].map(s => (
-                    <div key={s.label} className="bg-card border border-border rounded-xl p-5">
+                    <div key={s.label} className="bg-card border border-border rounded-none p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{s.label}</p>
                         <p className="font-heading text-3xl text-text">{s.value}</p>
                     </div>

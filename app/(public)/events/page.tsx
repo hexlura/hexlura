@@ -118,7 +118,7 @@ export default async function BrowseEventsPage({
                         <label className="text-sm font-medium">Location</label>
                         <select
                             name="location"
-                            className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full h-10 px-3 py-2 rounded-sm border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                             defaultValue={location || 'Any'}
                         >
                             {cities.map(city => (
@@ -143,7 +143,7 @@ export default async function BrowseEventsPage({
                         <label className="text-sm font-medium">Sort By</label>
                         <select
                             name="sort"
-                            className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full h-10 px-3 py-2 rounded-sm border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                             defaultValue={sort}
                         >
                             <option value="soonest">Soonest</option>
@@ -185,7 +185,7 @@ export default async function BrowseEventsPage({
                 </div>
 
                 {error && (
-                    <div className="p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-md">
+                    <div className="p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-none">
                         Error loading events. Please try again later.
                     </div>
                 )}
@@ -198,7 +198,7 @@ export default async function BrowseEventsPage({
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center border border-dashed rounded-xl bg-muted/20">
+                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center border border-dashed rounded-none bg-muted/20">
                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search-x text-muted-foreground mb-4"><path d="m13.5 8.5-5 5" /><path d="m8.5 8.5 5 5" /><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                         <h3 className="text-xl font-semibold mb-2">No events match your criteria</h3>
                         <p className="text-muted-foreground max-w-sm mb-6">Try adjusting your filters, searching for something else, or removing the location constraint.</p>

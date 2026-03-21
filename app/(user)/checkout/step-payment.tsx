@@ -56,13 +56,13 @@ function PaymentForm() {
             </label>
 
             {error && (
-                <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-lg px-4 py-2">{error}</p>
+                <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{error}</p>
             )}
 
             <button
                 type="submit"
                 disabled={!stripe || !elements || loading || !agreed}
-                className="w-full h-12 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {loading && (
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -148,7 +148,7 @@ export default function StepPayment() {
                 </div>
 
                 {/* Locked summary */}
-                <div className="bg-surface border border-border rounded-lg p-4 text-sm space-y-2">
+                <div className="bg-surface border border-border rounded-none p-4 text-sm space-y-2">
                     <div className="flex justify-between">
                         <span className="text-muted">Ticket subtotal</span>
                         <span className="text-text">{formatPence(state.items.reduce((s, i) => s + i.price_pence * i.quantity, 0))}</span>

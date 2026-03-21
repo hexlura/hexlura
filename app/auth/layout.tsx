@@ -13,7 +13,7 @@ export default function AuthLayout({
                         <span className="font-heading text-4xl text-accent tracking-wider">HEXLURA</span>
                     </Link>
                 </div>
-                <div className="bg-surface border border-border rounded-2xl p-8">
+                <div className="bg-surface border border-border rounded-none p-8">
                     {children}
                 </div>
             </div>

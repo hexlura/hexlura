@@ -141,14 +141,14 @@ export function SettingsClient({ settings, promoCodes }: Props) {
         setSelectedCities(prev => prev.includes(city) ? prev.filter(c => c !== city) : [...prev, city])
     }
 
-    const sectionClass = "bg-card border border-border rounded-xl p-6 mb-6"
+    const sectionClass = "bg-card border border-border rounded-none p-6 mb-6"
     const labelClass = "text-xs text-muted block mb-1"
-    const inputClass = "w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+    const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
 
     return (
         <div className="max-w-3xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-lg text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -215,7 +215,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                     </div>
                     <button
                         onClick={() => setMaintenanceMode(!maintenanceMode)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${maintenanceMode ? 'bg-accent' : 'bg-border'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors ${maintenanceMode ? 'bg-accent' : 'bg-border'}`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${maintenanceMode ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
@@ -235,7 +235,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                     </div>
                     <button
                         onClick={() => setAutoApprove(!autoApprove)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoApprove ? 'bg-accent' : 'bg-border'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors ${autoApprove ? 'bg-accent' : 'bg-border'}`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoApprove ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>

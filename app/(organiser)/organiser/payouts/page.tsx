@@ -46,7 +46,7 @@ export default async function OrganiserPayoutsPage() {
             </div>
 
             {/* Balance card */}
-            <div className="bg-card border border-border rounded-xl p-6 mb-6">
+            <div className="bg-card border border-border rounded-none p-6 mb-6">
                 <p className="text-xs text-muted uppercase tracking-wider mb-1">Available Balance</p>
                 <p className="font-heading text-5xl text-text">{formatPence(pendingBalance)}</p>
                 {!organiser.stripe_account_id ? (
@@ -58,23 +58,23 @@ export default async function OrganiserPayoutsPage() {
 
             {/* Stripe status banner */}
             {!organiser.stripe_account_id ? (
-                <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 mb-6 flex items-center justify-between">
+                <div className="bg-gold/10 border border-gold/30 rounded-none p-4 mb-6 flex items-center justify-between">
                     <div>
                         <p className="text-gold text-sm font-medium">Connect your bank account to receive payouts</p>
                         <p className="text-muted text-xs mt-0.5">Required to receive automatic Stripe payouts</p>
                     </div>
-                    <a href="/api/stripe/connect" className="px-4 py-2 bg-gold text-black text-sm rounded-lg font-medium hover:bg-yellow-400 transition-colors">
+                    <a href="/api/stripe/connect" className="px-4 py-2 bg-gold text-black text-sm rounded-sm font-medium hover:bg-yellow-400 transition-colors">
                         Connect with Stripe
                     </a>
                 </div>
             ) : (
-                <div className="bg-success/10 border border-success/20 rounded-xl p-4 mb-6">
+                <div className="bg-success/10 border border-success/20 rounded-none p-4 mb-6">
                     <p className="text-success text-sm">✓ Bank account connected</p>
                 </div>
             )}
 
             {/* Payouts table */}
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-4">Payout History</h2>
                 <p className="text-xs text-muted mb-4">* Hexlura fee is paid by buyers, not deducted from your payout</p>
                 <table className="w-full text-sm">

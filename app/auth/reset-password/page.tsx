@@ -39,22 +39,22 @@ export default function ResetPasswordPage() {
                         type="email"
                         required
                         placeholder="you@example.com"
-                        className="h-11 w-full rounded-lg border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                 </div>
 
                 {error && (
-                    <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-lg px-4 py-2">{error}</p>
+                    <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{error}</p>
                 )}
 
                 {success && (
-                    <p className="text-sm text-success bg-success/10 border border-success/20 rounded-lg px-4 py-2">{success}</p>
+                    <p className="text-sm text-success bg-success/10 border border-success/20 rounded-none px-4 py-2">{success}</p>
                 )}
 
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full h-11 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {loading && (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

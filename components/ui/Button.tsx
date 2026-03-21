@@ -15,9 +15,9 @@ const variantClasses = {
 }
 
 const sizeClasses = {
-    sm: 'px-3 py-1.5 text-xs rounded-md',
-    md: 'px-4 py-2 text-sm rounded-lg',
-    lg: 'px-6 py-3 text-base rounded-xl',
+    sm: 'px-3 py-1.5 text-xs rounded-sm',
+    md: 'px-4 py-2 text-sm rounded-sm',
+    lg: 'px-6 py-3 text-base rounded-sm',
 }
 
 export function Button({

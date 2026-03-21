@@ -138,7 +138,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-lg text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -170,13 +170,13 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             {tab === 'pending' && (
                 <div>
                     {pending.length === 0 ? (
-                        <div className="bg-card border border-border rounded-xl p-16 text-center">
+                        <div className="bg-card border border-border rounded-none p-16 text-center">
                             <p className="text-muted text-sm">Organiser signups are now instant. This tab shows manually flagged accounts only.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
                             {pending.map(org => (
-                                <div key={org.id} className="bg-card border border-border rounded-xl p-6">
+                                <div key={org.id} className="bg-card border border-border rounded-none p-6">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
                                             <h3 className="font-heading text-2xl text-text">{org.org_name}</h3>
@@ -222,7 +222,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
 
             {/* Active Tab */}
             {tab === 'active' && (
-                <div className="bg-card border border-border rounded-xl overflow-hidden">
+                <div className="bg-card border border-border rounded-none overflow-hidden">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
@@ -269,7 +269,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
 
             {/* Suspended Tab */}
             {tab === 'suspended' && (
-                <div className="bg-card border border-border rounded-xl overflow-hidden">
+                <div className="bg-card border border-border rounded-none overflow-hidden">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
@@ -307,7 +307,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             {/* Reject Modal */}
             {rejectModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Reject Application</h3>
                         <p className="text-sm text-muted mb-4">{rejectModal.org_name}</p>
                         <textarea
@@ -315,7 +315,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                             onChange={e => setRejectReason(e.target.value)}
                             placeholder="Rejection reason (required)"
                             rows={3}
-                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
                         />
                         <div className="flex gap-3">
                             <Button variant="danger" size="md" onClick={handleReject} disabled={!rejectReason.trim() || !!loading}>
@@ -330,7 +330,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             {/* Suspend Modal */}
             {suspendModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Suspend Organiser</h3>
                         <p className="text-sm text-muted mb-4">{suspendModal.org_name}</p>
                         <textarea
@@ -338,7 +338,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                             onChange={e => setSuspendReason(e.target.value)}
                             placeholder="Suspension reason (required)"
                             rows={3}
-                            className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
                         />
                         <div className="flex gap-3">
                             <Button variant="danger" size="md" onClick={handleSuspend} disabled={!suspendReason.trim() || !!loading}>

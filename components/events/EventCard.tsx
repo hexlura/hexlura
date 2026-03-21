@@ -69,7 +69,7 @@ export default function EventCard({ event }: EventCardProps) {
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="group block rounded-[8px] bg-[#1A1A24] border border-[#2A2A3A] hover:border-[#E63950] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+            className="group block rounded-none bg-[#1A1A24] border border-[#2A2A3A] hover:border-[#E63950] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
         >
             {/* Image — 3:2 aspect ratio */}
             <div className="relative overflow-hidden" style={{ aspectRatio: '3 / 2' }}>

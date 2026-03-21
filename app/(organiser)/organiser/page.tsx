@@ -146,20 +146,20 @@ export default async function OrganiserDashboardPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {kpis.map(kpi => (
-                    <div key={kpi.label} className="bg-card border border-border rounded-xl p-5">
+                    <div key={kpi.label} className="bg-card border border-border rounded-none p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{kpi.label}</p>
                         <p className="font-heading text-3xl text-text">{kpi.value}</p>
                         <p className="text-xs text-muted mt-2">{kpi.sub}</p>
                     </div>
                 ))}
             </div>
-            <div className="bg-card border border-border rounded-xl p-6 mb-8">
+            <div className="bg-card border border-border rounded-none p-6 mb-8">
                 <h2 className="text-sm font-medium text-text mb-1">Revenue — Last 30 Days</h2>
                 <p className="text-xs text-muted mb-4">Daily ticket revenue</p>
                 <RevenueChart data={chartData} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 bg-card border border-border rounded-xl p-6">
+                <div className="md:col-span-2 bg-card border border-border rounded-none p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Recent Bookings</h2>
                         <Link href="/organiser/bookings" className="text-xs text-accent hover:underline">View all →</Link>
@@ -188,7 +188,7 @@ export default async function OrganiserDashboardPage() {
                         </tbody>
                     </table>
                 </div>
-                <div className="bg-card border border-border rounded-xl p-6">
+                <div className="bg-card border border-border rounded-none p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Upcoming Events</h2>
                         <Link href="/organiser/events" className="text-xs text-accent hover:underline">View all →</Link>
@@ -208,7 +208,7 @@ export default async function OrganiserDashboardPage() {
                                     {cap > 0 && (
                                         <div className="mt-2">
                                             <div className="flex justify-between text-xs text-muted mb-1"><span>{sold}/{cap}</span><span>{pct}%</span></div>
-                                            <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                                            <div className="h-1.5 bg-border rounded-none overflow-hidden">
                                                 <div className="h-full bg-accent rounded-full" style={{ width: pct + '%' }} />
                                             </div>
                                         </div>

@@ -13,7 +13,7 @@ interface Props {
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string; color?: string }[]; label?: string }) {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs">
+            <div className="bg-card border border-border rounded-none px-3 py-2 text-xs">
                 <p className="text-muted mb-1">{label}</p>
                 {payload.map((p, i) => (
                     <p key={i} style={{ color: p.color }} className="font-medium">
@@ -29,7 +29,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 export function FinancialsClient({ monthlyData, cumulativeData }: Props) {
     return (
         <div className="grid grid-cols-2 gap-6">
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-1">GMV vs Platform Revenue</h2>
                 <p className="text-xs text-muted mb-4">Last 12 months</p>
                 <ResponsiveContainer width="100%" height={220}>
@@ -45,7 +45,7 @@ export function FinancialsClient({ monthlyData, cumulativeData }: Props) {
                 </ResponsiveContainer>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-1">Cumulative GMV</h2>
                 <p className="text-xs text-muted mb-4">All time</p>
                 <ResponsiveContainer width="100%" height={220}>

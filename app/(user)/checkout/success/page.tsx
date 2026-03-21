@@ -75,7 +75,7 @@ function SuccessContent() {
     if (loading) {
         return (
             <div className="max-w-lg mx-auto py-16 text-center space-y-4">
-                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-full mx-auto" />
+                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-none mx-auto" />
                 <p className="text-text font-medium">Confirming your booking...</p>
                 <p className="text-muted text-sm">This may take a few seconds.</p>
             </div>
@@ -85,14 +85,14 @@ function SuccessContent() {
     if (error) {
         return (
             <div className="max-w-lg mx-auto py-16 text-center space-y-6">
-                <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                <div className="w-20 h-20 rounded-none bg-accent/10 flex items-center justify-center mx-auto">
                     <span className="text-accent text-4xl">✕</span>
                 </div>
                 <h1 className="font-heading text-4xl text-text">PAYMENT FAILED</h1>
                 <p className="text-muted">{error}</p>
                 <button
                     onClick={() => window.history.back()}
-                    className="h-11 px-8 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition"
+                    className="h-11 px-8 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition"
                 >
                     Try Again
                 </button>
@@ -111,7 +111,7 @@ function SuccessContent() {
         <div className="max-w-lg mx-auto py-16 text-center space-y-8">
             {/* Animated checkmark */}
             <div className="relative w-20 h-20 mx-auto">
-                <div className="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center animate-bounce">
+                <div className="w-20 h-20 rounded-none bg-success/20 flex items-center justify-center animate-bounce">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-success">
                         <path d="M20 6 9 17l-5-5" />
                     </svg>
@@ -125,7 +125,7 @@ function SuccessContent() {
 
             {booking && (
                 <>
-                    <div className="bg-surface border border-border rounded-xl p-6 space-y-4">
+                    <div className="bg-surface border border-border rounded-none p-6 space-y-4">
                         <p className="text-xs text-muted uppercase tracking-wider">Booking Reference</p>
                         <p className="text-3xl font-bold text-accent font-mono tracking-wider">{booking.booking_ref}</p>
 
@@ -160,13 +160,13 @@ function SuccessContent() {
                         <a
                             href={`/api/tickets/${booking.booking_ref}/pdf`}
                             target="_blank"
-                            className="h-11 px-6 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center gap-2"
+                            className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center gap-2"
                         >
                             Download Ticket
                         </a>
                         <button
                             disabled
-                            className="h-11 px-6 rounded-lg border border-border bg-surface text-muted text-sm font-medium cursor-not-allowed"
+                            className="h-11 px-6 rounded-sm border border-border bg-surface text-muted text-sm font-medium cursor-not-allowed"
                         >
                             Add to Google Wallet
                         </button>
@@ -175,7 +175,7 @@ function SuccessContent() {
             )}
 
             {!booking && (
-                <div className="bg-surface border border-border rounded-xl p-6 space-y-2">
+                <div className="bg-surface border border-border rounded-none p-6 space-y-2">
                     <p className="text-text font-medium">Payment successful!</p>
                     <p className="text-muted text-sm">Your booking is being processed. Check your email for confirmation details.</p>
                 </div>
@@ -192,7 +192,7 @@ export default function CheckoutSuccessPage() {
     return (
         <Suspense fallback={
             <div className="max-w-lg mx-auto py-16 text-center">
-                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-full mx-auto" />
+                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-none mx-auto" />
             </div>
         }>
             <SuccessContent />

@@ -7,7 +7,7 @@ export default function OrderSummary() {
     const { state, ticketSubtotalPence, discountPence, bookingFeePence, totalPence } = useCheckout()
 
     return (
-        <div className="bg-surface border border-border rounded-xl p-6 space-y-4 sticky top-24">
+        <div className="bg-surface border border-border rounded-none p-6 space-y-4 sticky top-24">
             <h3 className="font-bold text-text text-lg">Order Summary</h3>
 
             <div className="space-y-1">

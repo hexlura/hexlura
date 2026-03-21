@@ -93,13 +93,13 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
 
             {/* Scanner */}
             <div className="flex-1 flex flex-col items-center px-4 py-6 max-w-sm mx-auto w-full">
-                <div className="w-full bg-surface border border-border rounded-xl overflow-hidden mb-4">
+                <div className="w-full bg-surface border border-border rounded-none overflow-hidden mb-4">
                     <QrScanner onScan={handleScan} />
                 </div>
                 <p className="text-xs text-muted text-center mb-6">Point camera at attendee QR code</p>
 
                 {/* Manual lookup */}
-                <div className="w-full bg-card border border-border rounded-xl p-4">
+                <div className="w-full bg-card border border-border rounded-none p-4">
                     <p className="text-xs text-muted mb-2">Enter booking ref manually</p>
                     <div className="flex gap-2">
                         <input
@@ -108,12 +108,12 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                             onChange={e => setManualRef(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleManualLookup()}
                             placeholder="HXL-XXXXXX"
-                            className="flex-1 bg-surface border border-border rounded-lg px-3 py-2.5 text-sm font-mono text-text placeholder:text-muted focus:outline-none focus:border-accent uppercase"
+                            className="flex-1 bg-surface border border-border rounded-sm px-3 py-2.5 text-sm font-mono text-text placeholder:text-muted focus:outline-none focus:border-accent uppercase"
                         />
                         <button
                             onClick={handleManualLookup}
                             disabled={lookingUp || !manualRef}
-                            className="px-4 py-2.5 bg-accent text-white text-sm rounded-lg disabled:opacity-50 hover:bg-[#cc2f43] transition-colors"
+                            className="px-4 py-2.5 bg-accent text-white text-sm rounded-sm disabled:opacity-50 hover:bg-[#cc2f43] transition-colors"
                         >
                             {lookingUp ? '...' : 'Search'}
                         </button>

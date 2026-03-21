@@ -109,14 +109,14 @@ export function EventsClient({ events }: EventsClientProps) {
 
             {/* Table */}
             {filtered.length === 0 ? (
-                <div className="bg-card border border-border rounded-xl p-16 text-center">
+                <div className="bg-card border border-border rounded-none p-16 text-center">
                     <p className="text-muted text-sm">No events yet. Create your first event.</p>
                     <Link href="/organiser/events/new">
                         <Button variant="primary" size="md" className="mt-4">Create Event</Button>
                     </Link>
                 </div>
             ) : (
-                <div className="bg-card border border-border rounded-xl overflow-hidden">
+                <div className="bg-card border border-border rounded-none overflow-hidden">
                     <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
@@ -179,7 +179,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                                     •••
                                                 </button>
                                                 {openMenuId === e.id && (
-                                                    <div className="absolute right-0 top-8 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
+                                                    <div className="absolute right-0 top-8 z-50 bg-card border border-border rounded-none shadow-lg py-1 min-w-[140px]">
                                                         <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
                                                         <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
                                                         <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
@@ -207,7 +207,7 @@ export function EventsClient({ events }: EventsClientProps) {
             {/* Cancel confirmation modal */}
             {showCancelModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Cancel Event?</h3>
                         <p className="text-sm text-muted mb-4">
                             This will cancel the event and notify all attendees by email.
@@ -226,7 +226,7 @@ export function EventsClient({ events }: EventsClientProps) {
             {/* Delete confirmation modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Delete Event?</h3>
                         <p className="text-sm text-muted mb-4">
                             This will permanently delete the event and all its ticket types.

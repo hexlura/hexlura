@@ -61,9 +61,9 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
 
     if (isAllSoldOut) {
         return (
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm sticky top-24">
+            <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24">
                 <h3 className="text-xl font-bold mb-4">Tickets</h3>
-                <div className="bg-accent/10 text-accent text-center p-4 rounded-lg mb-6 font-semibold">
+                <div className="bg-accent/10 text-accent text-center p-4 rounded-sm mb-6 font-semibold">
                     This event is completely sold out.
                 </div>
                 <Button className="w-full h-12 text-lg font-bold">Join Waitlist</Button>
@@ -72,7 +72,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
     }
 
     return (
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm sticky top-24 flex flex-col gap-6">
+        <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24 flex flex-col gap-6">
             <h3 className="text-xl font-bold">Select Tickets</h3>
 
             <div className="space-y-4">
@@ -82,7 +82,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                     const quantity = selectedTickets[ticket.id] || 0;
 
                     return (
-                        <div key={ticket.id} className={`p-4 border rounded-lg flex flex-col gap-3 ${isSoldOut ? 'opacity-50 bg-muted/30' : 'bg-background hover:border-accent/50 transition-colors'}`}>
+                        <div key={ticket.id} className={`p-4 border rounded-sm flex flex-col gap-3 ${isSoldOut ? 'opacity-50 bg-muted/30' : 'bg-background hover:border-accent/50 transition-colors'}`}>
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h4 className="font-semibold">{ticket.name}</h4>
@@ -125,7 +125,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
             </div>
 
             {subtotal > 0 && (
-                <div className="space-y-2 text-sm bg-surface p-4 rounded-lg border border-border">
+                <div className="space-y-2 text-sm bg-surface p-4 rounded-sm border border-border">
                     <div className="flex justify-between">
                         <span className="text-muted">Subtotal</span>
                         <span>{formatPence(subtotal)}</span>

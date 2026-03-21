@@ -28,7 +28,7 @@ export default function UserMenu({ initials, fullName, role }: UserMenuProps) {
         <div ref={ref} className="relative">
             <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="flex items-center gap-2 text-sm font-medium text-text bg-surface border border-border px-3 py-2 rounded-lg hover:bg-surface/80 transition"
+                className="flex items-center gap-2 text-sm font-medium text-text bg-surface border border-border px-3 py-2 rounded-sm hover:bg-surface/80 transition"
                 aria-expanded={open}
                 aria-haspopup="true"
             >
@@ -45,7 +45,7 @@ export default function UserMenu({ initials, fullName, role }: UserMenuProps) {
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-52 bg-surface border border-border rounded-xl shadow-lg z-50 overflow-hidden py-1">
+                <div className="absolute right-0 mt-2 w-52 bg-surface border border-border rounded-none shadow-lg z-50 overflow-hidden py-1">
                     {role === 'admin' && (
                         <Link
                             href="/admin"

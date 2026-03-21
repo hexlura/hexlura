@@ -27,7 +27,7 @@ export default async function OrganiserApplyPage() {
 
             <div className="flex items-center justify-center p-6 py-12">
                 <div className="max-w-xl w-full">
-                    <div className="bg-card border border-border rounded-2xl p-8">
+                    <div className="bg-card border border-border rounded-none p-8">
                         <h1 className="font-heading text-3xl text-text tracking-wide mb-2">BECOME AN ORGANISER</h1>
                         <p className="text-muted text-sm mb-8">Tell us about your events and we&apos;ll get you set up.</p>
                         <ApplyForm userId={user.id} userEmail={user.email || ''} />

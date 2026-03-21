@@ -28,7 +28,7 @@ export default async function OrganiserPendingPage() {
 
             <div className="flex items-center justify-center p-6 py-12">
                 <div className="max-w-md w-full text-center">
-                    <div className="bg-card border border-border rounded-2xl p-10">
+                    <div className="bg-card border border-border rounded-none p-10">
                         <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         </div>
@@ -41,7 +41,7 @@ export default async function OrganiserPendingPage() {
                             We&apos;ll send you an email to <strong className="text-text">{user.email}</strong> once approved.
                         </p>
 
-                        <div className="bg-surface border border-border rounded-xl p-4 mb-8 text-left">
+                        <div className="bg-surface border border-border rounded-none p-4 mb-8 text-left">
                             <p className="text-xs text-muted mb-1">Need help?</p>
                             <a href="mailto:support@hexlura.com" className="text-accent text-sm hover:underline font-medium">
                                 support@hexlura.com
@@ -58,7 +58,7 @@ export default async function OrganiserPendingPage() {
                         }}>
                             <button
                                 type="submit"
-                                className="px-6 py-2.5 bg-surface border border-border rounded-lg text-sm text-muted hover:text-text transition-colors"
+                                className="px-6 py-2.5 bg-surface border border-border rounded-sm text-sm text-muted hover:text-text transition-colors"
                             >
                                 Sign Out
                             </button>
