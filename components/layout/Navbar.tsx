@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import UserMenu from './UserMenu'
+import LeftMenu from './LeftMenu'
 
 export async function Navbar() {
     const supabase = createClient()
@@ -30,9 +31,12 @@ export async function Navbar() {
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                <Link href="/" className="flex items-center gap-2">
-                    <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
-                </Link>
+                <div className="flex items-center">
+                    <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
+                    <Link href="/" className="flex items-center gap-2">
+                        <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
+                    </Link>
+                </div>
                 <nav className="hidden md:flex gap-6">
                     <Link href="/events" className="text-sm font-medium text-muted hover:text-text transition">
                         Find Events
