@@ -3,10 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 import QRCode from 'qrcode'
 
 export async function GET(
-    _request: Request,
+    request: Request,
     { params }: { params: { ref: string } }
 ) {
     const ref = params.ref
+    const { searchParams } = new URL(request.url)
+    const indexParam = searchParams.get('index')
+    const requestedIndex = indexParam ? parseInt(indexParam, 10) : null
+
     const supabase = createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -43,8 +47,50 @@ export async function GET(
         unit_price_pence: number
         ticket_type?: { name: string; is_group?: boolean; group_size?: number } | null
     }
+
     const allItems: BookingItem[] = booking.items || []
-    const hasGroupItems = allItems.some(item => item.ticket_type?.is_group)
+
+    // Build one descriptor per individual person/ticket
+    interface TicketDescriptor {
+        token: string
+        ticketName: string
+        isGroup: boolean
+    }
+    const descriptors: TicketDescriptor[] = []
+    let groupCounter = 0
+    let ticketCounter = 0
+
+    for (const item of allItems) {
+        const isGroup = item.ticket_type?.is_group === true
+        const groupSize = item.ticket_type?.group_size ?? 1
+        const qty = item.quantity
+        const ticketName = item.ticket_type?.name ?? 'Ticket'
+
+        if (isGroup) {
+            for (let i = 0; i < groupSize; i++) {
+                groupCounter++
+                descriptors.push({ token: `${booking.booking_ref}-G${groupCounter}`, ticketName, isGroup: true })
+            }
+        } else if (qty > 1) {
+            for (let i = 0; i < qty; i++) {
+                ticketCounter++
+                descriptors.push({ token: `${booking.booking_ref}-T${ticketCounter}`, ticketName, isGroup: false })
+            }
+        } else {
+            descriptors.push({ token: booking.booking_ref, ticketName, isGroup: false })
+        }
+    }
+
+    const total = descriptors.length
+
+    if (requestedIndex !== null && (requestedIndex < 1 || requestedIndex > total)) {
+        return NextResponse.json({ error: 'Ticket index out of range' }, { status: 404 })
+    }
+
+    const toRender: { descriptor: TicketDescriptor; globalIndex: number }[] =
+        requestedIndex !== null
+            ? [{ descriptor: descriptors[requestedIndex - 1], globalIndex: requestedIndex }]
+            : descriptors.map((d, i) => ({ descriptor: d, globalIndex: i + 1 }))
 
     const sharedStyles = `
   @page { size: A4; margin: 0; }
@@ -56,7 +102,6 @@ export async function GET(
   .info { color: #8888AA; font-size: 14px; margin-bottom: 4px; }
   .info span { color: #F0F0F8; }
   .divider { border-top: 2px dashed #2A2A3A; margin: 24px 0; }
-  .tickets { font-size: 14px; white-space: pre-line; line-height: 1.8; }
   .ref-section { text-align: center; margin: 32px 0; }
   .ref-label { font-size: 11px; color: #8888AA; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
   .ref { font-size: 36px; font-weight: bold; color: #E63950; font-family: 'Courier New', monospace; }
@@ -66,68 +111,37 @@ export async function GET(
   .ticket-label { text-align: center; font-size: 13px; color: #8888AA; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
   .page-break { page-break-after: always; border-top: 2px dashed #2A2A3A; margin: 40px 0; }`
 
-    let html: string
+    const sections: string[] = []
 
-    if (hasGroupItems) {
-        // One section per booking_item for group tickets
-        const groupItems = allItems.filter(item => item.ticket_type?.is_group)
-        const nonGroupItems = allItems.filter(item => !item.ticket_type?.is_group)
-        const totalGroupMembers = groupItems.length
+    for (let i = 0; i < toRender.length; i++) {
+        const { descriptor, globalIndex } = toRender[i]
+        const label =
+            total === 1
+                ? 'Your Ticket'
+                : descriptor.isGroup
+                    ? `Ticket ${globalIndex} of ${total} (Group)`
+                    : `Ticket ${globalIndex} of ${total}`
+        const qrDataUrl = await QRCode.toDataURL(descriptor.token, { width: 200, margin: 1 })
+        const isLast = i === toRender.length - 1
 
-        const sections: string[] = []
-
-        for (let idx = 0; idx < groupItems.length; idx++) {
-            const item = groupItems[idx]
-            const qrToken = item.qr_code || booking.booking_ref
-            const qrDataUrl = await QRCode.toDataURL(qrToken, { width: 200, margin: 1 })
-            const ticketName = item.ticket_type?.name || 'Group Ticket'
-            const isLast = idx === groupItems.length - 1 && nonGroupItems.length === 0
-
-            sections.push(`
+        sections.push(`
   <div class="content">
     <div class="event-name">${booking.event?.title || 'Event'}</div>
     <div class="info">Date: <span>${eventDate}</span></div>
     <div class="info">Time: <span>${eventTime}</span></div>
     <div class="info">Venue: <span>${booking.event?.venue_name || 'TBC'}, ${booking.event?.venue_address || ''}</span></div>
     <div class="divider"></div>
-    <div class="ticket-label">${ticketName}</div>
+    <div class="ticket-label">${descriptor.ticketName}</div>
     <div class="ref-section">
-      <div class="ref-label">Ticket ${idx + 1} of ${totalGroupMembers}</div>
-      <div class="ref">${qrToken}</div>
+      <div class="ref-label">${label}</div>
+      <div class="ref">${descriptor.token}</div>
     </div>
     <div class="qr"><img src="${qrDataUrl}" width="200" height="200" alt="QR Code"/></div>
   </div>
   ${isLast ? '' : '<div class="page-break"></div>'}`)
-        }
+    }
 
-        // Append non-group items as a combined section if any
-        if (nonGroupItems.length > 0) {
-            const firstNonGroup = nonGroupItems[0]
-            const qrToken = firstNonGroup.qr_code || booking.booking_ref
-            const qrDataUrl = await QRCode.toDataURL(qrToken, { width: 200, margin: 1 })
-            const ticketLines = nonGroupItems
-                .map(item => {
-                    const name = item.ticket_type?.name || 'Ticket'
-                    return `${name} × ${item.quantity} — £${((item.unit_price_pence * item.quantity) / 100).toFixed(2)}`
-                })
-                .join('\n')
-            sections.push(`
-  <div class="content">
-    <div class="event-name">${booking.event?.title || 'Event'}</div>
-    <div class="info">Date: <span>${eventDate}</span></div>
-    <div class="info">Time: <span>${eventTime}</span></div>
-    <div class="info">Venue: <span>${booking.event?.venue_name || 'TBC'}, ${booking.event?.venue_address || ''}</span></div>
-    <div class="divider"></div>
-    <div class="tickets">${ticketLines}</div>
-    <div class="ref-section">
-      <div class="ref-label">Booking Ref</div>
-      <div class="ref">${booking.booking_ref}</div>
-    </div>
-    <div class="qr"><img src="${qrDataUrl}" width="200" height="200" alt="QR Code"/></div>
-  </div>`)
-        }
-
-        html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Hexlura Ticket - ${booking.booking_ref}</title>
 <style>${sharedStyles}
@@ -139,43 +153,6 @@ export async function GET(
   <div class="footer">Powered by Hexlura.com · Booked ${new Date(booking.created_at).toLocaleDateString('en-GB')}</div>
 </body>
 </html>`
-    } else {
-        // Standard single-QR layout
-        const qrToken = allItems[0]?.qr_code || booking.booking_ref
-        const qrDataUrl = await QRCode.toDataURL(qrToken, { width: 200, margin: 1 })
-
-        const ticketLines = allItems
-            .map(item => {
-                const name = item.ticket_type?.name || 'Ticket'
-                return `${name} × ${item.quantity} — £${((item.unit_price_pence * item.quantity) / 100).toFixed(2)}`
-            })
-            .join('\n')
-
-        html = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Hexlura Ticket - ${booking.booking_ref}</title>
-<style>${sharedStyles}
-</style>
-</head>
-<body>
-  <div class="header"><h1>HEXLURA</h1></div>
-  <div class="content">
-    <div class="event-name">${booking.event?.title || 'Event'}</div>
-    <div class="info">Date: <span>${eventDate}</span></div>
-    <div class="info">Time: <span>${eventTime}</span></div>
-    <div class="info">Venue: <span>${booking.event?.venue_name || 'TBC'}, ${booking.event?.venue_address || ''}</span></div>
-    <div class="divider"></div>
-    <div class="tickets">${ticketLines}</div>
-    <div class="ref-section">
-      <div class="ref-label">Booking Ref</div>
-      <div class="ref">${booking.booking_ref}</div>
-    </div>
-    <div class="qr"><img src="${qrDataUrl}" width="200" height="200" alt="QR Code"/></div>
-  </div>
-  <div class="footer">Powered by Hexlura.com · Booked ${new Date(booking.created_at).toLocaleDateString('en-GB')}</div>
-</body>
-</html>`
-    }
 
     return new NextResponse(html, {
         headers: {

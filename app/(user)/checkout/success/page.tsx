@@ -164,14 +164,39 @@ function SuccessContent() {
                         )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <a
-                            href={`/api/tickets/${booking.booking_ref}/pdf`}
-                            target="_blank"
-                            className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center gap-2"
-                        >
-                            Download Ticket
-                        </a>
+                    {(() => {
+                        const totalTickets = (booking.items ?? []).reduce((sum, item) => {
+                            if (item.ticket_type?.is_group) return sum + (item.ticket_type.group_size ?? 1)
+                            return sum + item.quantity
+                        }, 0)
+                        return (
+                            <div className="flex flex-col gap-2">
+                                {totalTickets <= 1 ? (
+                                    <a
+                                        href={`/api/tickets/${booking.booking_ref}/pdf`}
+                                        target="_blank"
+                                        className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center gap-2"
+                                    >
+                                        Download Ticket
+                                    </a>
+                                ) : (
+                                    Array.from({ length: totalTickets }, (_, i) => (
+                                        <a
+                                            key={i}
+                                            href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`}
+                                            target="_blank"
+                                            style={{ border: '1px solid #2A2A3A', color: '#F0F0F8', padding: '8px 16px', borderRadius: 2, width: '100%', marginBottom: 0, fontSize: 13, textAlign: 'center', display: 'block', textDecoration: 'none', transition: 'border-color 0.15s' }}
+                                            onMouseOver={e => (e.currentTarget.style.borderColor = '#E63950')}
+                                            onMouseOut={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+                                        >
+                                            Download Ticket {i + 1}
+                                        </a>
+                                    ))
+                                )}
+                            </div>
+                        )
+                    })()}
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center" style={{ marginTop: 0 }}>
                         <button
                             disabled
                             className="h-11 px-6 rounded-sm border border-border bg-surface text-muted text-sm font-medium cursor-not-allowed"

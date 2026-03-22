@@ -23,25 +23,29 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
         setSelectedTickets(prev => ({ ...prev, [ticketId]: value }));
     };
 
-    const subtotal = Object.entries(selectedTickets).reduce((sum, [ticketId, quantity]) => {
-        const ticket = ticketTypes.find(t => t.id === ticketId);
-        return sum + (ticket ? ticket.price_pence * quantity : 0);
+    const effectiveQty = (ticket: GroupTicketType) =>
+        ticket.is_group ? 1 : (selectedTickets[ticket.id] || 0);
+
+    const subtotal = ticketTypes.reduce((sum, ticket) => {
+        const qty = effectiveQty(ticket);
+        return sum + ticket.price_pence * qty;
     }, 0);
 
-    const bookingFee = Object.entries(selectedTickets).reduce((sum, [ticketId, quantity]) => {
-        const ticket = ticketTypes.find(t => t.id === ticketId);
-        return sum + (ticket ? calculateBookingFee(ticket.price_pence, quantity) : 0);
+    const bookingFee = ticketTypes.reduce((sum, ticket) => {
+        const qty = effectiveQty(ticket);
+        return sum + (qty > 0 ? calculateBookingFee(ticket.price_pence, qty) : 0);
     }, 0);
 
     const total = subtotal + bookingFee;
-    const hasSelectedTickets = Object.values(selectedTickets).some(q => q > 0);
+    const hasSelectedTickets = ticketTypes.some(t => effectiveQty(t) > 0);
     const isAllSoldOut = ticketTypes.every(t => (t.quantity_total - t.quantity_sold) <= 0);
 
     function handleCheckout() {
         setCheckoutLoading(true);
-        const ticketsParam = Object.entries(selectedTickets)
-            .filter(([, qty]) => qty > 0)
-            .map(([id, qty]) => `${id}:${qty}`)
+        const ticketsParam = ticketTypes
+            .map(ticket => ({ id: ticket.id, qty: effectiveQty(ticket) }))
+            .filter(({ qty }) => qty > 0)
+            .map(({ id, qty }) => `${id}:${qty}`)
             .join(',');
 
         router.push(`/checkout?event_id=${event.id}&tickets=${ticketsParam}`);
@@ -100,6 +104,10 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                 {/* Qty or sold out */}
                                 {isSoldOut ? (
                                     <span style={{ fontSize: 12, color: '#E63950', fontWeight: 600 }}>SOLD OUT</span>
+                                ) : isGroup ? (
+                                    <div style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '6px 12px', color: '#F0F0F8', textAlign: 'center', fontSize: 14, minWidth: 48 }}>
+                                        1
+                                    </div>
                                 ) : (
                                     <select
                                         value={quantity}

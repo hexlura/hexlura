@@ -15,7 +15,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
 
     const { data: bookingRaw } = await supabase
         .from('bookings')
-        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url), items:booking_items(*, ticket_type:ticket_types(name))')
+        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
         .eq('booking_ref', params.ref)
         .eq('user_id', user.id)
         .single()
@@ -65,6 +65,12 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
         !existingRefund
 
     const qrCode = booking.items?.[0]?.qr_code || booking.booking_ref
+
+    type ExtendedItem = { quantity: number; ticket_type?: { is_group?: boolean; group_size?: number } | null }
+    const totalTickets = ((bookingRaw?.items ?? []) as unknown as ExtendedItem[]).reduce((sum, item) => {
+        if (item.ticket_type?.is_group) return sum + (item.ticket_type.group_size ?? 1)
+        return sum + item.quantity
+    }, 0)
 
     return (
         <section className="max-w-3xl mx-auto space-y-8">
@@ -129,14 +135,29 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                    href={`/api/tickets/${booking.booking_ref}/pdf`}
-                    target="_blank"
-                    className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center"
-                >
-                    Download PDF Ticket
-                </a>
+            <div className="flex flex-col gap-3">
+                {totalTickets <= 1 ? (
+                    <a
+                        href={`/api/tickets/${booking.booking_ref}/pdf`}
+                        target="_blank"
+                        className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center"
+                    >
+                        Download PDF Ticket
+                    </a>
+                ) : (
+                    <div className="flex flex-col gap-2">
+                        {Array.from({ length: totalTickets }, (_, i) => (
+                            <a
+                                key={i}
+                                href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`}
+                                target="_blank"
+                                style={{ border: '1px solid #2A2A3A', color: '#F0F0F8', padding: '8px 16px', borderRadius: 2, fontSize: 13, textAlign: 'center', display: 'block', textDecoration: 'none' }}
+                            >
+                                Download Ticket {i + 1}
+                            </a>
+                        ))}
+                    </div>
+                )}
 
                 {canRefund && (
                     <RefundButton bookingId={booking.id} />
