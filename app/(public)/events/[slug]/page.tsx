@@ -136,6 +136,31 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     </div>
                 </div>
 
+                {/* YouTube Embed — LEFT COL */}
+                {event.youtube_url && (() => {
+                    const url = event.youtube_url
+                    let videoId: string | null = null
+                    try {
+                        const parsed = new URL(url)
+                        if (parsed.hostname === 'youtu.be') {
+                            videoId = parsed.pathname.slice(1)
+                        } else {
+                            videoId = parsed.searchParams.get('v')
+                        }
+                    } catch {}
+                    if (!videoId) return null
+                    return (
+                        <div className="md:col-start-1" style={{ aspectRatio: '16/9', width: '100%' }}>
+                            <iframe
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                style={{ width: '100%', height: '100%', border: 'none' }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+                    )
+                })()}
+
                 {/* About This Event — LEFT COL */}
                 <section className="md:col-start-1 space-y-4">
                     <h3 className="text-2xl font-bold">About This Event</h3>

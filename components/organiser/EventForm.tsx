@@ -109,6 +109,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [bannerUrl, setBannerUrl] = useState(event?.banner_url || '')
     const [bannerUploading, setBannerUploading] = useState(false)
     const [bannerError, setBannerError] = useState('')
+    const [youtubeUrl, setYoutubeUrl] = useState(event?.youtube_url || '')
 
     // Section 02
     const [slug, setSlug] = useState(event?.slug || '')
@@ -235,6 +236,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 start_at: startAt ? ukTimeToUTC(startAt) : null,
                 end_at: endAt ? ukTimeToUTC(endAt) : null,
                 banner_url: bannerUrl || null,
+                youtube_url: youtubeUrl || null,
                 status: 'draft',
                 min_age: minAge,
                 max_tickets_per_order: maxTicketsPerOrder,
@@ -265,6 +267,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             start_at: startAt ? new Date(startAt).toISOString() : null,
             end_at: endAt ? new Date(endAt).toISOString() : null,
             banner_url: bannerUrl || null,
+            youtube_url: youtubeUrl || null,
             min_age: minAge,
             max_tickets_per_order: maxTicketsPerOrder,
             refund_policy: refundPolicy,
@@ -366,6 +369,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             start_at: startAt ? new Date(startAt).toISOString() : null,
             end_at: endAt ? new Date(endAt).toISOString() : null,
             banner_url: bannerUrl || null,
+            youtube_url: youtubeUrl || null,
             min_age: minAge,
             max_tickets_per_order: maxTicketsPerOrder,
             refund_policy: refundPolicy,
@@ -596,6 +600,18 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                     <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
                                 </label>
                                 {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
+                                <p className="text-xs mt-1" style={{ color: '#8888AA' }}>Recommended size: 1280×720px (16:9 ratio). Max 5MB. JPG, PNG or WebP.</p>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Promo Video (YouTube URL)</label>
+                                <input
+                                    type="text"
+                                    value={youtubeUrl}
+                                    onChange={e => setYoutubeUrl(e.target.value)}
+                                    className={inputClass}
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                />
+                                <p className="text-xs mt-1" style={{ color: '#8888AA' }}>Paste a YouTube link to show a promo video on your event page.</p>
                             </div>
                         </div>
                     </div>

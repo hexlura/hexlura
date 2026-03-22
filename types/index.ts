@@ -50,6 +50,7 @@ export interface Event {
     start_at: string;
     end_at: string | null;
     banner_url: string | null;
+    youtube_url: string | null;
     status: 'draft' | 'published' | 'cancelled' | 'archived';
     is_featured: boolean;
     featured_order: number;

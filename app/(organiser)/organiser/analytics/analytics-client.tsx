@@ -194,7 +194,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
             </div>
 
             {/* Sales by day of week */}
-            <div className="bg-card border border-border rounded-xl p-6">
+            <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-4">Sales by Day of Week</h2>
                 <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={byDayOfWeek}>
