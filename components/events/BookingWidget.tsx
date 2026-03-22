@@ -80,10 +80,10 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                             {/* Single-line row */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
                                 {/* Name */}
-                                <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#8888AA' : '#F0F0F8', flex: 1, marginRight: 12 }}>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#8888AA' : '#F0F0F8', flex: 1, marginRight: 12, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
                                     {ticket.name}
                                     {isGroup && (
-                                        <span style={{ fontSize: 11, background: '#2A2A3A', color: '#F5A623', padding: '2px 8px', borderRadius: 2, marginLeft: 8 }}>
+                                        <span style={{ fontSize: 11, background: '#2A2A3A', color: '#F5A623', padding: '2px 8px', borderRadius: 2, marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, display: 'inline-block' }}>
                                             Group of {groupSize}
                                         </span>
                                     )}
