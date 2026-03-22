@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { Event, TicketType } from '@/types';
 import { calculateBookingFee, calculateBookingFeePerTicket, formatPence } from '@/lib/fees';
 
+type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
+
 interface BookingWidgetProps {
     event: Event;
-    ticketTypes: TicketType[];
+    ticketTypes: GroupTicketType[];
 }
 
 export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps) {
@@ -70,6 +72,9 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                     const feePerTicket = calculateBookingFeePerTicket(ticket.price_pence);
                     const isExpanded = expanded[ticket.id] || false;
 
+                    const isGroup = ticket.is_group === true;
+                    const groupSize = ticket.group_size || 1;
+
                     return (
                         <div key={ticket.id} style={{ borderBottom: '1px solid #2A2A3A' }}>
                             {/* Single-line row */}
@@ -77,6 +82,11 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                 {/* Name */}
                                 <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#8888AA' : '#F0F0F8', flex: 1, marginRight: 12 }}>
                                     {ticket.name}
+                                    {isGroup && (
+                                        <span style={{ fontSize: 11, background: '#2A2A3A', color: '#F5A623', padding: '2px 8px', borderRadius: 2, marginLeft: 8 }}>
+                                            Group of {groupSize}
+                                        </span>
+                                    )}
                                 </span>
                                 {/* Price + fee */}
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginRight: 16, whiteSpace: 'nowrap' }}>
@@ -110,6 +120,19 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                     </select>
                                 )}
                             </div>
+                            {/* Group ticket info */}
+                            {isGroup && (
+                                <div style={{ paddingBottom: 4 }}>
+                                    <p style={{ fontSize: 12, color: '#8888AA', margin: '4px 0 0' }}>
+                                        1 ticket = {groupSize} people · {groupSize} QR codes will be generated
+                                    </p>
+                                    {quantity > 0 && (
+                                        <p style={{ fontSize: 12, color: '#00E5A0', margin: '4px 0 0' }}>
+                                            = {quantity * groupSize} people total
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                             {/* Expandable description */}
                             {ticket.description && (
                                 <div style={{ paddingBottom: 8 }}>
