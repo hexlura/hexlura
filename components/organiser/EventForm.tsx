@@ -29,6 +29,8 @@ interface TicketTypeRow {
     quantity_total: number
     max_per_order: number
     is_visible: boolean
+    is_group: boolean
+    group_size: number
     sort_order: number
     sale_starts_at: string
     sale_ends_at: string
@@ -129,7 +131,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const defaultTicket: TicketTypeRow = {
         name: 'General Admission', description: '', price_pence: 0, priceStr: '',
         quantity_total: 100, qtyStr: '100', max_per_order: 10, is_visible: true, sort_order: 0,
-        sale_starts_at: '', sale_ends_at: '',
+        sale_starts_at: '', sale_ends_at: '', is_group: false, group_size: 1,
     }
     const [tickets, setTickets] = useState<TicketTypeRow[]>(
         initTickets?.map(tt => ({
@@ -145,6 +147,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             sort_order: tt.sort_order,
             sale_starts_at: tt.sale_starts_at || '',
             sale_ends_at: tt.sale_ends_at || '',
+            is_group: (tt as TicketType & { is_group?: boolean }).is_group ?? false,
+            group_size: (tt as TicketType & { group_size?: number }).group_size ?? 1,
         })) || [defaultTicket]
     )
 
@@ -203,6 +207,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     sort_order: tt.sort_order,
                     sale_starts_at: tt.sale_starts_at || '',
                     sale_ends_at: tt.sale_ends_at || '',
+                    is_group: (tt as Record<string, unknown>).is_group as boolean ?? false,
+                    group_size: (tt as Record<string, unknown>).group_size as number ?? 1,
                 })))
             }
         })
@@ -282,6 +288,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
                     is_visible: tt.is_visible, sort_order: i,
                     sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+                    is_group: tt.is_group, group_size: tt.group_size,
                 }).eq('id', tt.id)
             } else {
                 const { data: newTt } = await supabase.from('ticket_types').insert({
@@ -289,6 +296,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     price_pence: tt.price_pence, quantity_total: tt.quantity_total,
                     max_per_order: tt.max_per_order, is_visible: tt.is_visible, sort_order: i,
                     sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+                    is_group: tt.is_group, group_size: tt.group_size,
                 }).select('id').single()
                 if (newTt) {
                     setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, id: newTt.id } : t))
@@ -385,6 +393,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
                     is_visible: tt.is_visible, sort_order: i,
                     sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+                    is_group: tt.is_group, group_size: tt.group_size,
                 }).eq('id', tt.id)
             } else {
                 const { data: newTt } = await supabase.from('ticket_types').insert({
@@ -392,6 +401,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     price_pence: tt.price_pence, quantity_total: tt.quantity_total,
                     max_per_order: tt.max_per_order, is_visible: tt.is_visible, sort_order: i,
                     sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+                    is_group: tt.is_group, group_size: tt.group_size,
                 }).select('id').single()
                 if (newTt) {
                     setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, id: newTt.id } : t))
@@ -730,6 +740,34 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${tt.is_visible ? 'translate-x-5' : 'translate-x-1'}`} />
                                             </div>
                                         </div>
+                                    </div>
+                                    {/* Group ticket */}
+                                    <div className="border-t border-border mt-2 pt-3 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <span className="text-sm text-text">Group Ticket</span>
+                                                <p className="text-xs text-muted mt-0.5">Each purchase generates one QR code per person in the group</p>
+                                            </div>
+                                            <div
+                                                onClick={() => updateTicket(i, { is_group: !tt.is_group, group_size: !tt.is_group ? 2 : 1 })}
+                                                className={`w-10 h-6 rounded-full relative transition-colors cursor-pointer flex-shrink-0 ml-4 ${tt.is_group ? 'bg-accent' : 'bg-border'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${tt.is_group ? 'translate-x-5' : 'translate-x-1'}`} />
+                                            </div>
+                                        </div>
+                                        {tt.is_group && (
+                                            <div>
+                                                <label className={labelClass}>Group Size</label>
+                                                <input
+                                                    type="number"
+                                                    min={2}
+                                                    max={50}
+                                                    value={tt.group_size}
+                                                    onChange={e => updateTicket(i, { group_size: Math.min(50, Math.max(2, parseInt(e.target.value) || 2)) })}
+                                                    className={inputClass}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

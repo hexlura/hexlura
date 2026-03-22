@@ -143,19 +143,36 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     for (const item of items) {
         const { data: ticketType } = await supabase
             .from('ticket_types')
-            .select('price_pence')
+            .select('price_pence, is_group, group_size')
             .eq('id', item.ticket_type_id)
             .single()
 
-        await supabase.from('booking_items').insert({
-            booking_id: booking.id,
-            ticket_type_id: item.ticket_type_id,
-            quantity: item.quantity,
-            unit_price_pence: ticketType?.price_pence || 0,
-            attendee_name: attendeeName,
-            attendee_email: attendeeEmail,
-            qr_code: randomUUID(),
-        })
+        const tt = ticketType as { price_pence: number; is_group?: boolean; group_size?: number } | null
+
+        if (tt?.is_group && (tt.group_size || 1) > 1) {
+            const totalMembers = item.quantity * (tt.group_size || 1)
+            for (let g = 1; g <= totalMembers; g++) {
+                await supabase.from('booking_items').insert({
+                    booking_id: booking.id,
+                    ticket_type_id: item.ticket_type_id,
+                    quantity: 1,
+                    unit_price_pence: tt.price_pence || 0,
+                    attendee_name: attendeeName,
+                    attendee_email: attendeeEmail,
+                    qr_code: `${booking.booking_ref}-G${g}`,
+                })
+            }
+        } else {
+            await supabase.from('booking_items').insert({
+                booking_id: booking.id,
+                ticket_type_id: item.ticket_type_id,
+                quantity: item.quantity,
+                unit_price_pence: tt?.price_pence || 0,
+                attendee_name: attendeeName,
+                attendee_email: attendeeEmail,
+                qr_code: randomUUID(),
+            })
+        }
 
         // Update quantity_sold
         const { error: rpcError } = await supabase.rpc('increment_quantity_sold', {
@@ -353,19 +370,36 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     for (const item of items) {
         const { data: ticketType } = await supabase
             .from('ticket_types')
-            .select('price_pence')
+            .select('price_pence, is_group, group_size')
             .eq('id', item.ticket_type_id)
             .single()
 
-        await supabase.from('booking_items').insert({
-            booking_id: booking.id,
-            ticket_type_id: item.ticket_type_id,
-            quantity: item.quantity,
-            unit_price_pence: ticketType?.price_pence || 0,
-            attendee_name: attendeeName,
-            attendee_email: attendeeEmail,
-            qr_code: randomUUID(),
-        })
+        const tt = ticketType as { price_pence: number; is_group?: boolean; group_size?: number } | null
+
+        if (tt?.is_group && (tt.group_size || 1) > 1) {
+            const totalMembers = item.quantity * (tt.group_size || 1)
+            for (let g = 1; g <= totalMembers; g++) {
+                await supabase.from('booking_items').insert({
+                    booking_id: booking.id,
+                    ticket_type_id: item.ticket_type_id,
+                    quantity: 1,
+                    unit_price_pence: tt.price_pence || 0,
+                    attendee_name: attendeeName,
+                    attendee_email: attendeeEmail,
+                    qr_code: `${booking.booking_ref}-G${g}`,
+                })
+            }
+        } else {
+            await supabase.from('booking_items').insert({
+                booking_id: booking.id,
+                ticket_type_id: item.ticket_type_id,
+                quantity: item.quantity,
+                unit_price_pence: tt?.price_pence || 0,
+                attendee_name: attendeeName,
+                attendee_email: attendeeEmail,
+                qr_code: randomUUID(),
+            })
+        }
 
         // Update quantity_sold
         const { error: rpcError } = await supabase.rpc('increment_quantity_sold', {

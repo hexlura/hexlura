@@ -12,6 +12,8 @@ interface CheckinResult {
     ticketType?: string
     checkedInAt?: string
     eventTitle?: string
+    groupIndex?: number
+    groupTotal?: number
 }
 
 interface CheckinClientProps {
@@ -25,6 +27,7 @@ interface CheckinClientProps {
 export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, initialCheckedIn }: CheckinClientProps) {
     const [checkedIn, setCheckedIn] = useState(initialCheckedIn)
     const [result, setResult] = useState<CheckinResult | null>(null)
+    const [lastScannedToken, setLastScannedToken] = useState<string | null>(null)
     const [manualRef, setManualRef] = useState('')
     const [lookingUp, setLookingUp] = useState(false)
     const processing = useRef(false)
@@ -32,6 +35,7 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
     async function processCheckin(payload: { qr_token?: string; booking_ref?: string }) {
         if (processing.current) return
         processing.current = true
+        if (payload.qr_token) setLastScannedToken(payload.qr_token)
         try {
             const res = await fetch('/api/checkin', {
                 method: 'POST',
@@ -62,8 +66,23 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
         setManualRef('')
     }
 
+    const groupMatch = result?.type === 'success'
+        ? (result.groupIndex != null
+            ? { index: result.groupIndex, total: result.groupTotal ?? null }
+            : lastScannedToken?.match(/-G(\d+)$/)
+                ? { index: parseInt(lastScannedToken.match(/-G(\d+)$/)![1]), total: null }
+                : null)
+        : null
+
     const resultConfig = result ? {
-        success: { bg: 'bg-success', icon: '✓', title: 'CHECK IN SUCCESSFUL', body: `${result.name} · ${result.ticketType}` },
+        success: {
+            bg: 'bg-success',
+            icon: '✓',
+            title: groupMatch ? 'GROUP TICKET' : 'CHECK IN SUCCESSFUL',
+            body: groupMatch
+                ? `${result.name} · Group member ${groupMatch.index}${groupMatch.total ? ` of ${groupMatch.total}` : ''} checked in`
+                : `${result.name} · ${result.ticketType}`,
+        },
         already: { bg: 'bg-gold', icon: '⚠', title: 'ALREADY CHECKED IN', body: result.checkedInAt ? `Checked in at ${new Date(result.checkedInAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : '' },
         invalid: { bg: 'bg-accent', icon: '✗', title: 'INVALID TICKET', body: 'This ticket was not issued by Hexlura' },
         wrong_event: { bg: 'bg-accent', icon: '✗', title: 'WRONG EVENT', body: result.eventTitle ? `Belongs to: ${result.eventTitle}` : 'This ticket is for a different event' },
