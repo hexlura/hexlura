@@ -14,7 +14,7 @@ interface BookingData {
         start_at: string
         venue_name: string | null
     } | null
-    items: { ticket_type: { name: string } | null; quantity: number }[]
+    items: { ticket_type: { name: string; is_group: boolean | null; group_size: number | null } | null; quantity: number }[]
 }
 
 function SuccessContent() {
@@ -48,7 +48,7 @@ function SuccessContent() {
             while (attempts < maxAttempts) {
                 const { data } = await supabase
                     .from('bookings')
-                    .select('booking_ref, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name))')
+                    .select('booking_ref, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
                     .eq('stripe_payment_intent_id', paymentIntent)
                     .eq('status', 'confirmed')
                     .single()
@@ -139,12 +139,20 @@ function SuccessContent() {
 
                         {booking.items?.length > 0 && (
                             <div className="border-t border-border pt-4 space-y-1 text-sm">
-                                {booking.items.map((item, i) => (
-                                    <div key={i} className="flex justify-between">
-                                        <span className="text-muted">{item.ticket_type?.name || 'Ticket'}</span>
-                                        <span className="text-text">× {item.quantity}</span>
-                                    </div>
-                                ))}
+                                {booking.items.map((item, i) => {
+                                    const isGroup = item.ticket_type?.is_group === true
+                                    const groupSize = item.ticket_type?.group_size ?? 1
+                                    return (
+                                        <div key={i} className="flex justify-between">
+                                            <span className="text-muted">{item.ticket_type?.name || 'Ticket'}</span>
+                                            <span className="text-text">
+                                                {isGroup
+                                                    ? `× ${item.quantity} group (${item.quantity * groupSize} people)`
+                                                    : `× ${item.quantity}`}
+                                            </span>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         )}
 
