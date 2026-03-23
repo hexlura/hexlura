@@ -27,7 +27,7 @@ export async function Navbar() {
         : user?.email?.[0]?.toUpperCase() || '?'
 
     const sellTicketsHref = !user
-        ? '/auth/register?next=/organiser/apply'
+        ? '/sell-tickets'
         : (role === 'organiser' || role === 'admin')
             ? '/organiser'
             : '/organiser/apply'
