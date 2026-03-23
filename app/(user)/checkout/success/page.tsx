@@ -25,6 +25,28 @@ function SuccessContent() {
 
     useEffect(() => {
         async function verifyPayment() {
+            const supabase = createClient()
+
+            // Free booking path — booking_ref passed directly
+            const bookingRef = searchParams.get('booking_ref')
+            if (bookingRef) {
+                const { data } = await supabase
+                    .from('bookings')
+                    .select('booking_ref, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
+                    .eq('booking_ref', bookingRef)
+                    .eq('status', 'confirmed')
+                    .single()
+
+                if (data) {
+                    setBooking(data as unknown as BookingData)
+                } else {
+                    setError('Booking not found. Please check your email for confirmation.')
+                }
+                setLoading(false)
+                return
+            }
+
+            // Stripe payment path
             const paymentIntent = searchParams.get('payment_intent')
             const redirectStatus = searchParams.get('redirect_status')
 
@@ -41,7 +63,6 @@ function SuccessContent() {
             }
 
             // Poll for booking (webhook may take a moment)
-            const supabase = createClient()
             let attempts = 0
             const maxAttempts = 10
 
