@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { calculateBookingFee } from '@/lib/fees'
+import { sendBookingConfirmationEmail } from '@/lib/email'
+import { randomUUID } from 'crypto'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -122,6 +125,104 @@ export async function POST(request: Request) {
     }
 
     const totalPence = ticketSubtotalPence - discountPence + totalBookingFeePence
+
+    // Free booking — bypass Stripe entirely
+    if (ticketSubtotalPence === 0) {
+        const adminClient = createAdminClient()
+
+        const { data: booking, error: bookingError } = await adminClient
+            .from('bookings')
+            .insert({
+                user_id: user.id,
+                event_id,
+                status: 'confirmed',
+                ticket_subtotal_pence: 0,
+                booking_fee_pence: 0,
+                discount_pence: 0,
+                total_pence: 0,
+                promo_code_id: promoCodeId,
+                stripe_payment_intent_id: `free-${randomUUID()}`,
+                payment_method: 'free',
+                confirmed_at: new Date().toISOString(),
+                needs_manual_payout: false,
+            })
+            .select('id, booking_ref')
+            .single()
+
+        if (bookingError || !booking) {
+            return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
+        }
+
+        for (const item of items) {
+            await adminClient.from('booking_items').insert({
+                booking_id: booking.id,
+                ticket_type_id: item.ticket_type_id,
+                quantity: item.quantity,
+                unit_price_pence: 0,
+                attendee_name: attendee_details.full_name,
+                attendee_email: attendee_details.email,
+                qr_code: randomUUID(),
+            })
+
+            const { error: rpcError } = await adminClient.rpc('increment_quantity_sold', {
+                p_ticket_type_id: item.ticket_type_id,
+                p_quantity: item.quantity,
+            })
+            if (rpcError) {
+                const { data: current } = await adminClient
+                    .from('ticket_types')
+                    .select('quantity_sold')
+                    .eq('id', item.ticket_type_id)
+                    .single()
+                await adminClient
+                    .from('ticket_types')
+                    .update({ quantity_sold: (current?.quantity_sold ?? 0) + item.quantity })
+                    .eq('id', item.ticket_type_id)
+            }
+        }
+
+        // Send confirmation email
+        const { data: eventInfo } = await adminClient
+            .from('events')
+            .select('title, start_at, venue_name, venue_address')
+            .eq('id', event_id)
+            .single()
+
+        if (eventInfo && attendee_details.email) {
+            const eventDate = new Intl.DateTimeFormat('en-GB', {
+                weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+            }).format(new Date(eventInfo.start_at))
+            const eventTime = new Intl.DateTimeFormat('en-GB', {
+                hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+            }).format(new Date(eventInfo.start_at))
+
+            const ticketSummary: { name: string; quantity: number; subtotalPence: number }[] = []
+            for (const item of items) {
+                const { data: tt } = await adminClient
+                    .from('ticket_types')
+                    .select('name')
+                    .eq('id', item.ticket_type_id)
+                    .single()
+                if (tt) ticketSummary.push({ name: tt.name, quantity: item.quantity, subtotalPence: 0 })
+            }
+
+            void sendBookingConfirmationEmail({
+                to: attendee_details.email,
+                bookingRef: booking.booking_ref,
+                eventName: eventInfo.title,
+                eventDate,
+                eventTime,
+                venueName: eventInfo.venue_name || 'TBC',
+                venueAddress: eventInfo.venue_address || '',
+                ticketSummary,
+                bookingFeePence: 0,
+                discountPence: 0,
+                totalPence: 0,
+            })
+        }
+
+        return NextResponse.json({ free: true, booking_ref: booking.booking_ref })
+    }
 
     if (totalPence < 50) {
         return NextResponse.json({ error: 'Order total too low' }, { status: 400 })

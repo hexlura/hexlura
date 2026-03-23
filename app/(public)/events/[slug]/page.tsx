@@ -37,6 +37,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     const event = eventData;
     const ticketTypes = event.ticket_types || [];
     const reviews = event.reviews || [];
+    const isAllFree = ticketTypes.length > 0 && ticketTypes.every((t: { price_pence: number }) => t.price_pence === 0);
 
     // Fetch organiser via service client (RLS blocks anon access to organiser_profiles)
     const serviceClient = createServiceClient();
@@ -130,6 +131,18 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         <div className="flex justify-end">
                             <ShareButton title={event.title} />
                         </div>
+
+                        {/* Free event badge */}
+                        {isAllFree && (
+                            <div>
+                                <span style={{ display: 'inline-block', background: 'rgba(0,229,160,0.12)', border: '1px solid #00E5A0', color: '#00E5A0', fontSize: 12, fontWeight: 700, letterSpacing: 2, padding: '4px 12px', textTransform: 'uppercase' }}>
+                                    Free Event
+                                </span>
+                                <p style={{ fontSize: 13, color: '#8888AA', marginTop: 6 }}>
+                                    Reserve your free spot before it fills up
+                                </p>
+                            </div>
+                        )}
 
                         {/* Booking widget */}
                         <BookingWidget event={event} ticketTypes={ticketTypes} />

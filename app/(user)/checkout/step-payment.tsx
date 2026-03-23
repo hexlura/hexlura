@@ -106,6 +106,12 @@ export default function StepPayment() {
                     return
                 }
 
+                // Free booking — skip Stripe, go straight to success
+                if (data.free && data.booking_ref) {
+                    window.location.href = `/checkout/success?booking_ref=${data.booking_ref}`
+                    return
+                }
+
                 setPaymentInfo(data.client_secret, data.payment_intent_id)
             } catch {
                 setError('Network error. Please try again.')

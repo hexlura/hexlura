@@ -39,6 +39,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
     const total = subtotal + bookingFee;
     const hasSelectedTickets = ticketTypes.some(t => effectiveQty(t) > 0);
     const isAllSoldOut = ticketTypes.every(t => (t.quantity_total - t.quantity_sold) <= 0);
+    const isFreeSelection = hasSelectedTickets && subtotal === 0;
 
     function handleCheckout() {
         setCheckoutLoading(true);
@@ -94,12 +95,14 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                 </span>
                                 {/* Price + fee */}
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginRight: 16, whiteSpace: 'nowrap' }}>
-                                    <span style={{ fontSize: 14, color: isSoldOut ? '#8888AA' : '#F0F0F8' }}>
-                                        {formatPence(ticket.price_pence)}
+                                    <span style={{ fontSize: 14, color: isSoldOut ? '#8888AA' : ticket.price_pence === 0 ? '#00E5A0' : '#F0F0F8' }}>
+                                        {ticket.price_pence === 0 ? 'Free' : formatPence(ticket.price_pence)}
                                     </span>
-                                    <span style={{ fontSize: 12, color: '#8888AA' }}>
-                                        +{formatPence(feePerTicket)} fee
-                                    </span>
+                                    {ticket.price_pence > 0 && (
+                                        <span style={{ fontSize: 12, color: '#8888AA' }}>
+                                            +{formatPence(feePerTicket)} fee
+                                        </span>
+                                    )}
                                 </div>
                                 {/* Qty or sold out */}
                                 {isSoldOut ? (
@@ -191,8 +194,13 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                 )}
-                {checkoutLoading ? 'Loading...' : 'Proceed to Checkout'}
+                {checkoutLoading ? 'Loading...' : isFreeSelection ? 'Reserve My Spot' : 'Proceed to Checkout'}
             </Button>
+            {isFreeSelection && (
+                <p style={{ fontSize: 12, color: '#00E5A0', textAlign: 'center', margin: '4px 0 0' }}>
+                    No payment required
+                </p>
+            )}
         </div>
     );
 }
