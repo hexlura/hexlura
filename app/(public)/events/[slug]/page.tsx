@@ -211,13 +211,41 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     </section>
                 )}
 
-                {/* Map Embed Mock — LEFT COL */}
+                {/* Location — LEFT COL */}
                 <section className="md:col-start-1 space-y-4">
                     <h3 className="text-2xl font-bold">Location</h3>
-                    <div className="w-full h-64 bg-muted flex flex-col items-center justify-center border border-border text-muted-foreground">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" x2="9" y1="3" y2="18" /><line x1="15" x2="15" y1="6" y2="21" /></svg>
-                        <span>Mapbox Embed: {event.venue_postcode}</span>
-                    </div>
+                    {(() => {
+                        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address + ' ' + event.venue_name)}`;
+                        return (
+                            <div>
+                                <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0F0F8' }}>{event.venue_name}</p>
+                                <p style={{ fontSize: '14px', color: '#8888AA', marginTop: '4px' }}>{event.venue_address}{event.venue_postcode ? `, ${event.venue_postcode}` : ''}</p>
+                                <a
+                                    href={mapsUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        marginTop: '12px',
+                                        padding: '8px 16px',
+                                        border: '1px solid #2A2A3A',
+                                        borderRadius: '2px',
+                                        color: '#F0F0F8',
+                                        fontSize: '13px',
+                                        textDecoration: 'none',
+                                        transition: 'border-color 0.15s',
+                                    }}
+                                    onMouseOver={e => (e.currentTarget.style.borderColor = '#E63950')}
+                                    onMouseOut={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+                                >
+                                    View on Google Maps
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                                </a>
+                            </div>
+                        );
+                    })()}
                 </section>
 
                 {/* Reviews — LEFT COL */}
