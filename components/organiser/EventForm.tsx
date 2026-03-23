@@ -336,7 +336,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             if (tickets.length === 0) errs.push('At least one ticket type is required')
             tickets.forEach((tt, i) => {
                 if (!tt.name.trim()) errs.push(`Ticket ${i + 1}: name is required`)
-                if (tt.price_pence <= 0) errs.push(`Ticket ${i + 1}: price must be greater than £0`)
+                if (tt.price_pence < 0) errs.push(`Ticket ${i + 1}: price cannot be negative`)
             })
         }
         setStepErrors(errs)
