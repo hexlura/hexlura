@@ -54,6 +54,7 @@ interface CheckoutContextType {
 const CheckoutContext = createContext<CheckoutContextType | null>(null)
 
 function calculateBookingFeePerTicket(pricePence: number): number {
+    if (pricePence === 0) return 0
     return Math.max(50, Math.min(500, Math.round(pricePence * 0.07)))
 }
 

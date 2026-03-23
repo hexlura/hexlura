@@ -167,7 +167,7 @@ export default function StepPayment() {
                     )}
                     <div className="flex justify-between">
                         <span className="text-muted">Hexlura booking fee</span>
-                        <span className="text-text">{formatPence(state.items.reduce((s, i) => s + Math.max(50, Math.min(500, Math.round(i.price_pence * 0.07))) * i.quantity, 0))}</span>
+                        <span className="text-text">{formatPence(state.items.reduce((s, i) => s + (i.price_pence === 0 ? 0 : Math.max(50, Math.min(500, Math.round(i.price_pence * 0.07)))) * i.quantity, 0))}</span>
                     </div>
                     <div className="border-t border-border pt-2 flex justify-between font-bold text-lg">
                         <span>Total</span>

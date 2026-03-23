@@ -7,6 +7,7 @@
  */
 
 export function calculateBookingFeePerTicket(ticketPricePence: number): number {
+    if (ticketPricePence === 0) return 0
     return Math.max(50, Math.min(500, Math.round(ticketPricePence * 0.07)))
 }
 
