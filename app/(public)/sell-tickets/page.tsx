@@ -120,8 +120,8 @@ export default function SellTicketsPage() {
     {
       num: '02',
       icon: <IconStripe />,
-      title: 'CONNECT STRIPE',
-      desc: 'Link your Stripe account to receive direct payouts straight to your bank. Takes 2 minutes.',
+      title: 'SET UP PAYOUTS',
+      desc: 'When you\'re ready to receive payments, connect your bank account via Stripe. Simple, secure, takes 2 minutes.',
     },
     {
       num: '03',
@@ -195,16 +195,6 @@ export default function SellTicketsPage() {
       role: 'Festival Organiser, Birmingham',
       initials: 'RP',
     },
-  ]
-
-  const comparisonRows = [
-    { feature: 'Booking fee', hexlura: '5% + 49p', eventbrite: '6.99% + 99p', fatsoma: '5% + 49p', hexluraGood: true, eventbriteGood: false, fatsomaGood: true },
-    { feature: 'Organiser keeps face value', hexlura: '✅ 100%', eventbrite: '✅ 100%', fatsoma: '✅ 100%', hexluraGood: true, eventbriteGood: true, fatsomaGood: true },
-    { feature: 'Monthly fee', hexlura: '✅ Free', eventbrite: '❌ Paid plans', fatsoma: '✅ Free', hexluraGood: true, eventbriteGood: false, fatsomaGood: true },
-    { feature: 'Instant approval', hexlura: '✅ Yes', eventbrite: '✅ Yes', fatsoma: '✅ Yes', hexluraGood: true, eventbriteGood: true, fatsomaGood: true },
-    { feature: 'Payout speed', hexlura: '✅ 2 days', eventbrite: '❌ 5–7 days', fatsoma: '❌ Varies', hexluraGood: true, eventbriteGood: false, fatsomaGood: false },
-    { feature: 'UK focused', hexlura: '✅ Yes', eventbrite: '❌ Global', fatsoma: '✅ Yes', hexluraGood: true, eventbriteGood: false, fatsomaGood: true },
-    { feature: 'Dark premium design', hexlura: '✅ Yes', eventbrite: '❌ No', fatsoma: '❌ No', hexluraGood: true, eventbriteGood: false, fatsomaGood: false },
   ]
 
   return (
@@ -448,7 +438,7 @@ export default function SellTicketsPage() {
         </div>
       </section>
 
-      {/* ── SECTION 4: PRICING COMPARISON ───────────────────────────────── */}
+      {/* ── SECTION 4: PRICING ──────────────────────────────────────────── */}
       <section style={{
         padding: '100px 24px',
         background: '#13131A',
@@ -471,130 +461,70 @@ export default function SellTicketsPage() {
             fontSize: 56,
             color: '#F0F0F8',
             textAlign: 'center',
-            margin: '0 0 64px',
+            margin: '0 0 48px',
             letterSpacing: 1,
           }}>
-            SEE HOW WE COMPARE
+            ONE SIMPLE FEE
           </h2>
 
-          <div style={{
-            background: '#1A1A24',
-            border: '1px solid #2A2A3A',
-            overflowX: 'auto',
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#0A0A0F' }}>
-                  <th style={{
-                    fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
-                    fontSize: 16,
-                    color: '#8888AA',
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                    padding: '16px 24px',
-                    textAlign: 'left',
-                    borderBottom: '1px solid #2A2A3A',
+          <div style={{ maxWidth: 600, margin: '0 auto' }}>
+            <div style={{
+              background: '#13131A',
+              border: '1px solid #2A2A3A',
+              padding: 48,
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
+                fontSize: 72,
+                color: '#E63950',
+                textAlign: 'center',
+                lineHeight: 1,
+                marginBottom: 8,
+              }}>
+                5% + 49p
+              </div>
+              <p style={{
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: 16,
+                color: '#8888AA',
+                textAlign: 'center',
+                margin: '0 0 32px',
+              }}>
+                per ticket booking fee
+              </p>
+              <div style={{ borderTop: '1px solid #2A2A3A', paddingTop: 32 }}>
+                {[
+                  'Minimum fee: £0.99 per ticket',
+                  'Maximum fee: £5.00 per ticket',
+                  'You keep 100% of face value',
+                ].map(item => (
+                  <div key={item} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    marginBottom: 16,
                   }}>
-                    Feature
-                  </th>
-                  <th style={{
-                    fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
-                    fontSize: 18,
-                    color: '#E63950',
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                    padding: '16px 24px',
-                    textAlign: 'center',
-                    borderBottom: '1px solid #2A2A3A',
-                    background: 'rgba(230,57,80,0.05)',
-                    position: 'relative',
-                  }}>
+                    <span style={{ color: '#00E5A0', fontSize: 18, lineHeight: 1 }}>✓</span>
                     <span style={{
-                      display: 'inline-block',
-                      background: '#E63950',
-                      color: '#fff',
-                      fontSize: 10,
-                      padding: '3px 10px',
-                      letterSpacing: 1,
-                      marginBottom: 6,
                       fontFamily: 'DM Sans, sans-serif',
-                      fontWeight: 600,
+                      fontSize: 15,
+                      color: '#F0F0F8',
                     }}>
-                      BEST VALUE
+                      {item}
                     </span>
-                    <br />
-                    Hexlura
-                  </th>
-                  <th style={{
-                    fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
-                    fontSize: 16,
-                    color: '#8888AA',
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                    padding: '16px 24px',
-                    textAlign: 'center',
-                    borderBottom: '1px solid #2A2A3A',
-                  }}>
-                    Eventbrite
-                  </th>
-                  <th style={{
-                    fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
-                    fontSize: 16,
-                    color: '#8888AA',
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                    padding: '16px 24px',
-                    textAlign: 'center',
-                    borderBottom: '1px solid #2A2A3A',
-                  }}>
-                    Fatsoma
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonRows.map((row, i) => (
-                  <tr key={row.feature} style={{ borderBottom: i < comparisonRows.length - 1 ? '1px solid #2A2A3A' : 'none' }}>
-                    <td style={{
-                      fontFamily: 'DM Sans, sans-serif',
-                      fontSize: 14,
-                      color: '#8888AA',
-                      padding: '16px 24px',
-                    }}>
-                      {row.feature}
-                    </td>
-                    <td style={{
-                      fontFamily: 'DM Sans, sans-serif',
-                      fontSize: 14,
-                      color: row.hexlura.startsWith('✅') ? '#00E5A0' : row.hexlura.startsWith('❌') ? '#E63950' : '#F0F0F8',
-                      fontWeight: 600,
-                      padding: '16px 24px',
-                      textAlign: 'center',
-                      background: 'rgba(230,57,80,0.05)',
-                    }}>
-                      {row.hexlura}
-                    </td>
-                    <td style={{
-                      fontFamily: 'DM Sans, sans-serif',
-                      fontSize: 14,
-                      color: row.eventbrite.startsWith('✅') ? '#00E5A0' : row.eventbrite.startsWith('❌') ? '#E63950' : '#8888AA',
-                      padding: '16px 24px',
-                      textAlign: 'center',
-                    }}>
-                      {row.eventbrite}
-                    </td>
-                    <td style={{
-                      fontFamily: 'DM Sans, sans-serif',
-                      fontSize: 14,
-                      color: row.fatsoma.startsWith('✅') ? '#00E5A0' : row.fatsoma.startsWith('❌') ? '#E63950' : '#8888AA',
-                      padding: '16px 24px',
-                      textAlign: 'center',
-                    }}>
-                      {row.fatsoma}
-                    </td>
-                  </tr>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
+            <p style={{
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: 12,
+              color: '#8888AA',
+              textAlign: 'center',
+              marginTop: 16,
+            }}>
+              Pricing may be updated. Current rates apply at time of purchase.
+            </p>
           </div>
         </div>
       </section>
