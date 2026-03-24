@@ -19,6 +19,7 @@
     "@tiptap/starter-kit": "^3.20.1",
     "html5-qrcode": "^2.3.8",
     "next": "14.2.35",
+    "next-nprogress-bar": "^2.4.7",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "^18",

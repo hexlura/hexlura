@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import NavigationProgress from '@/components/ui/ProgressBar'
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
         className={`${fontBody.variable} ${fontHeading.variable} ${fontMono.variable} font-sans antialiased`}
       >
         {children}
+        <NavigationProgress />
       </body>
     </html>
   );
