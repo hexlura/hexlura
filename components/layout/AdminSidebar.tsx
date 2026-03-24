@@ -25,6 +25,7 @@ const NAV_SECTIONS = [
         links: [
             { href: '/admin/financials', label: 'Financials', exact: false, badge: false },
             { href: '/admin/payouts', label: 'Payouts', exact: false, badge: false },
+            { href: '/admin/refunds', label: 'Refunds', exact: false, badge: false },
         ],
     },
     {
