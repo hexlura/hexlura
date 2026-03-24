@@ -26,14 +26,14 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
 
     const booking = bookingRaw as Booking
 
-    // Check if refund request exists
+    // Check if refund request exists (all statuses)
     const { data: existingRefund } = await supabase
         .from('refund_requests')
-        .select('id, status')
+        .select('id, status, refund_amount_pence')
         .eq('booking_id', booking.id)
-        .neq('status', 'rejected')
+        .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
     const event = booking.event
     const eventDate = event
@@ -57,12 +57,15 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
         }).format(new Date(booking.confirmed_at))
         : ''
 
-    // Can request refund if confirmed, event > 48h away, no pending/approved refund
+    // Only block refund if there's an active (pending/approved) request — rejected ones allow re-request
+    const activeRefund = existingRefund &&
+        (existingRefund.status === 'pending' || existingRefund.status === 'organiser_approved')
+    // Can request refund if confirmed, event > 48h away, no active refund
     const canRefund =
         booking.status === 'confirmed' &&
         event &&
         new Date(event.start_at).getTime() > Date.now() + 48 * 60 * 60 * 1000 &&
-        !existingRefund
+        !activeRefund
 
     const qrCode = booking.items?.[0]?.qr_code || booking.booking_ref
 
@@ -163,9 +166,42 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                     <RefundButton bookingId={booking.id} />
                 )}
 
-                {existingRefund && (
-                    <div className="h-11 px-6 rounded-sm border border-gold/30 bg-gold/10 text-gold text-sm font-medium flex items-center justify-center">
-                        Refund {existingRefund.status}
+                {existingRefund && existingRefund.status === 'pending' && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(245,166,35,0.1)', border: '1px solid #F5A623', color: '#F5A623', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Refund Requested
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>Your request is being reviewed by the organiser.</p>
+                    </div>
+                )}
+                {existingRefund && existingRefund.status === 'organiser_approved' && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(0,100,255,0.1)', border: '1px solid #6B9FFF', color: '#6B9FFF', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Under Review
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>Your refund has been approved by the organiser and is awaiting final confirmation.</p>
+                    </div>
+                )}
+                {existingRefund && existingRefund.status === 'admin_approved' && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(0,229,160,0.1)', border: '1px solid #00E5A0', color: '#00E5A0', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Refunded
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>
+                            Your refund of £{((existingRefund.refund_amount_pence ?? 0) / 100).toFixed(2)} has been processed. Allow 5–10 business days to appear.
+                        </p>
+                    </div>
+                )}
+                {existingRefund && (existingRefund.status === 'organiser_rejected' || existingRefund.status === 'admin_rejected') && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(230,57,80,0.1)', border: '1px solid #E63950', color: '#E63950', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Refund Declined
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>
+                            Your refund request could not be approved. If you believe this is an error, email{' '}
+                            <span style={{ color: '#F0F0F8' }}>support@hexlura.com</span> with your booking reference:{' '}
+                            <span style={{ fontFamily: '"JetBrains Mono", monospace', color: '#E63950' }}>{booking.booking_ref}</span>
+                        </p>
                     </div>
                 )}
             </div>

@@ -23,28 +23,27 @@ export default async function AdminRefundsPage({
         .single()
     if (!profile || profile.role !== 'admin') redirect('/')
 
-    const tab = searchParams.tab || 'pending_admin'
+    const initialTab = searchParams.tab || 'awaiting'
 
-    // Fetch all refund requests with relevant joins
+    // Fetch ALL refund requests with full joins
     const { data: allRequests } = await adminClient
         .from('refund_requests')
         .select(`
             id, status, reason, message, refund_amount_pence, organiser_note, created_at, resolved_at,
             booking:bookings (
-                id, booking_ref, total_pence, ticket_subtotal_pence, booking_fee_pence,
+                id, booking_ref, ticket_subtotal_pence, booking_fee_pence,
                 stripe_payment_intent_id, user_id,
                 event:events (
                     id, title,
                     organiser:organiser_profiles ( org_name )
-                ),
-                items:booking_items ( quantity, ticket_type:ticket_types ( name ) )
+                )
             )
         `)
         .order('created_at', { ascending: false })
 
     const requests = allRequests || []
 
-    // Collect user IDs to fetch profiles
+    // Collect buyer user IDs and fetch profiles
     type ReqWithUserId = { booking: { user_id?: string | null } | null }
     const userIds = Array.from(new Set(
         (requests as unknown as ReqWithUserId[])
@@ -64,15 +63,26 @@ export default async function AdminRefundsPage({
     }
 
     const enriched = (requests as unknown as {
-        id: string; status: string; reason: string; message: string | null
-        refund_amount_pence: number | null; organiser_note: string | null
-        created_at: string; resolved_at: string | null
+        id: string
+        status: string
+        reason: string
+        message: string | null
+        refund_amount_pence: number | null
+        organiser_note: string | null
+        created_at: string
+        resolved_at: string | null
         booking: {
-            id: string; booking_ref: string; total_pence: number | null
-            ticket_subtotal_pence: number | null; booking_fee_pence: number | null
-            stripe_payment_intent_id: string | null; user_id: string | null
-            event: { id: string; title: string; organiser: { org_name: string } | null } | null
-            items: { quantity: number; ticket_type: { name: string } | null }[] | null
+            id: string
+            booking_ref: string
+            ticket_subtotal_pence: number | null
+            booking_fee_pence: number | null
+            stripe_payment_intent_id: string | null
+            user_id: string | null
+            event: {
+                id: string
+                title: string
+                organiser: { org_name: string } | null
+            } | null
         } | null
     }[]).map((r) => ({
         ...r,
@@ -81,11 +91,11 @@ export default async function AdminRefundsPage({
     }))
 
     return (
-        <div className="max-w-5xl">
-            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#F0F0F8', marginBottom: '24px' }}>
+        <div className="max-w-7xl">
+            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#F0F0F8', marginBottom: '32px' }}>
                 REFUND REQUESTS
             </h1>
-            <AdminRefundsClient requests={enriched} initialTab={tab} />
+            <AdminRefundsClient requests={enriched} initialTab={initialTab} />
         </div>
     )
 }

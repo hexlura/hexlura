@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { formatPence } from '@/lib/fees'
+import { useState, useMemo, Fragment } from 'react'
 
 type RefundStatus = 'pending' | 'organiser_approved' | 'organiser_rejected' | 'admin_approved' | 'admin_rejected'
+type Tab = 'awaiting' | 'all' | 'completed'
 
 interface RefundItem {
     id: string
@@ -18,7 +18,6 @@ interface RefundItem {
     booking: {
         id: string
         booking_ref: string
-        total_pence: number | null
         ticket_subtotal_pence: number | null
         booking_fee_pence: number | null
         stripe_payment_intent_id: string | null
@@ -28,190 +27,48 @@ interface RefundItem {
             title: string
             organiser: { org_name: string } | null
         } | null
-        items: { quantity: number; ticket_type: { name: string } | null }[] | null
     } | null
 }
 
-type Tab = 'pending_admin' | 'all' | 'completed'
-
-const STATUS_LABELS: Record<RefundStatus, string> = {
-    pending: 'Pending Organiser',
-    organiser_approved: 'Awaiting Admin',
-    organiser_rejected: 'Organiser Rejected',
-    admin_approved: 'Approved',
-    admin_rejected: 'Denied',
+function fmt(pence: number | null): string {
+    if (!pence && pence !== 0) return '£0.00'
+    return `£${(pence / 100).toFixed(2)}`
 }
 
-const STATUS_COLORS: Record<RefundStatus, string> = {
-    pending: '#F5A623',
-    organiser_approved: '#7C7CFF',
-    organiser_rejected: '#E63950',
-    admin_approved: '#00E5A0',
-    admin_rejected: '#E63950',
+function fmtDate(d: string): string {
+    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-function fmtDate(d: string) {
-    return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+function truncate(s: string, n: number): string {
+    return s.length > n ? s.slice(0, n) + '…' : s
 }
 
-function AdminRefundCard({
-    request,
-    onUpdate,
-}: {
-    request: RefundItem
-    onUpdate: (id: string, newStatus: RefundStatus) => void
-}) {
-    const [loading, setLoading] = useState(false)
-    const [successMsg, setSuccessMsg] = useState('')
-    const [errorMsg, setErrorMsg] = useState('')
+const STATUS_BADGE: Record<RefundStatus, { bg: string; color: string; border: string; label: string }> = {
+    pending: { bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623', label: 'Pending Organiser' },
+    organiser_approved: { bg: 'rgba(0,100,255,0.1)', color: '#6B9FFF', border: '1px solid #6B9FFF', label: 'Awaiting Admin' },
+    organiser_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Organiser Rejected' },
+    admin_approved: { bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0', label: 'Refunded' },
+    admin_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Denied by Admin' },
+}
 
-    const booking = request.booking
-    const refundPence = request.refund_amount_pence ?? booking?.ticket_subtotal_pence ?? 0
-    const feePence = booking?.booking_fee_pence ?? 0
-    const totalPence = booking?.total_pence ?? 0
+const thStyle: React.CSSProperties = {
+    background: '#0A0A0F',
+    fontSize: '11px',
+    color: '#8888AA',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    padding: '12px 16px',
+    textAlign: 'left',
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
+}
 
-    async function handleAdminAction(action: 'confirm' | 'deny') {
-        setLoading(true)
-        setErrorMsg('')
-
-        const res = await fetch('/api/admin/refund', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                booking_id: booking?.id,
-                refund_request_id: request.id,
-                action,
-                amount_pence: refundPence,
-            }),
-        })
-
-        const json = await res.json()
-        setLoading(false)
-
-        if (!res.ok) {
-            setErrorMsg(json.error || 'Something went wrong')
-            return
-        }
-
-        const newStatus: RefundStatus = action === 'confirm' ? 'admin_approved' : 'admin_rejected'
-        setSuccessMsg(action === 'confirm' ? `Refund of ${formatPence(refundPence)} processed` : 'Refund denied')
-        onUpdate(request.id, newStatus)
-    }
-
-    const isActionable = request.status === 'organiser_approved'
-
-    return (
-        <div style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '20px', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                <div style={{ flex: 1, minWidth: '200px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#F0F0F8' }}>
-                            {request.buyer?.full_name || 'Guest'}
-                        </p>
-                        <span style={{
-                            fontSize: '11px',
-                            padding: '2px 8px',
-                            borderRadius: '2px',
-                            background: `${STATUS_COLORS[request.status]}18`,
-                            color: STATUS_COLORS[request.status],
-                            border: `1px solid ${STATUS_COLORS[request.status]}44`,
-                        }}>
-                            {STATUS_LABELS[request.status]}
-                        </span>
-                    </div>
-                    <p style={{ fontSize: '12px', color: '#8888AA', marginBottom: '8px' }}>{request.buyer?.email || '—'}</p>
-
-                    <p style={{ fontSize: '13px', color: '#F0F0F8', fontWeight: 500 }}>{booking?.event?.title || 'Unknown Event'}</p>
-                    {booking?.event?.organiser && (
-                        <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '1px' }}>by {booking.event.organiser.org_name}</p>
-                    )}
-                    <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '2px', fontFamily: 'monospace' }}>{booking?.booking_ref}</p>
-
-                    {booking?.items && booking.items.length > 0 && (
-                        <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '4px' }}>
-                            {booking.items.map(i => `${i.ticket_type?.name || 'Ticket'} × ${i.quantity}`).join(', ')}
-                        </p>
-                    )}
-                </div>
-
-                <div style={{ textAlign: 'right', minWidth: '160px' }}>
-                    <p style={{ fontSize: '11px', color: '#8888AA', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Amount Paid</p>
-                    <p style={{ fontSize: '15px', fontWeight: 700, color: '#F0F0F8' }}>{formatPence(totalPence)}</p>
-                    <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Refund Amount</p>
-                    <p style={{ fontSize: '17px', fontWeight: 700, color: '#00E5A0' }}>{formatPence(refundPence)}</p>
-                    {feePence > 0 && (
-                        <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '2px' }}>
-                            Booking fee of {formatPence(feePence)} will NOT be refunded
-                        </p>
-                    )}
-                </div>
-            </div>
-
-            <div style={{ paddingTop: '12px', borderTop: '1px solid #2A2A3A' }}>
-                <p style={{ fontSize: '12px', color: '#8888AA', marginBottom: '2px' }}>Buyer reason</p>
-                <p style={{ fontSize: '13px', color: '#F0F0F8' }}>{request.reason}</p>
-                {request.message && (
-                    <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '4px', fontStyle: 'italic' }}>{request.message}</p>
-                )}
-                {request.organiser_note && (
-                    <p style={{ fontSize: '12px', color: '#F5A623', marginTop: '6px' }}>
-                        Organiser note: {request.organiser_note}
-                    </p>
-                )}
-                <p style={{ fontSize: '11px', color: '#555566', marginTop: '6px' }}>Requested {fmtDate(request.created_at)}</p>
-            </div>
-
-            {successMsg && (
-                <p style={{ fontSize: '13px', color: '#00E5A0', marginTop: '12px', fontWeight: 600 }}>{successMsg}</p>
-            )}
-
-            {errorMsg && (
-                <p style={{ fontSize: '12px', color: '#E63950', marginTop: '8px' }}>{errorMsg}</p>
-            )}
-
-            {isActionable && !successMsg && (
-                <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                    <button
-                        onClick={() => handleAdminAction('confirm')}
-                        disabled={loading}
-                        style={{
-                            background: '#00E5A0',
-                            border: '1px solid #00E5A0',
-                            color: '#0A0A0F',
-                            padding: '8px 20px',
-                            borderRadius: '2px',
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.6 : 1,
-                        }}
-                    >
-                        {loading ? 'Processing...' : `Confirm Refund — ${formatPence(refundPence)}`}
-                    </button>
-                    <button
-                        onClick={() => handleAdminAction('deny')}
-                        disabled={loading}
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid #E63950',
-                            color: '#E63950',
-                            padding: '8px 20px',
-                            borderRadius: '2px',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.6 : 1,
-                            transition: 'background 0.15s, color 0.15s',
-                        }}
-                        onMouseEnter={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.background = '#E63950'; (e.currentTarget as HTMLButtonElement).style.color = '#ffffff' } }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#E63950' }}
-                    >
-                        Deny Refund
-                    </button>
-                </div>
-            )}
-        </div>
-    )
+const tdBase: React.CSSProperties = {
+    padding: '12px 16px',
+    fontSize: '13px',
+    color: '#F0F0F8',
+    borderBottom: '1px solid #2A2A3A',
+    verticalAlign: 'top',
 }
 
 export function AdminRefundsClient({
@@ -221,29 +78,72 @@ export function AdminRefundsClient({
     requests: RefundItem[]
     initialTab: string
 }) {
-    const [tab, setTab] = useState<Tab>((initialTab as Tab) || 'pending_admin')
-    const [items, setItems] = useState(requests)
+    const validTab = (initialTab === 'awaiting' || initialTab === 'all' || initialTab === 'completed') ? initialTab as Tab : 'awaiting'
+    const [tab, setTab] = useState<Tab>(validTab)
+    const [items, setItems] = useState<RefundItem[]>(requests)
+    const [loadingId, setLoadingId] = useState<string | null>(null)
+    const [errors, setErrors] = useState<Record<string, string>>({})
 
-    function handleUpdate(id: string, newStatus: RefundStatus) {
+    // Stats (always from full list)
+    const awaitingCount = items.filter(r => r.status === 'organiser_approved').length
+    const pendingOrgCount = items.filter(r => r.status === 'pending').length
+    const totalRefunded = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.refund_amount_pence ?? 0), 0)
+    const totalFeesKept = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.booking?.booking_fee_pence ?? 0), 0)
+    const rejectedCount = items.filter(r => r.status === 'admin_rejected' || r.status === 'organiser_rejected').length
+
+    const filtered = useMemo(() => {
+        if (tab === 'awaiting') return items.filter(r => r.status === 'organiser_approved')
+        if (tab === 'completed') return items.filter(r => r.status === 'admin_approved' || r.status === 'admin_rejected')
+        return items
+    }, [items, tab])
+
+    function setError(id: string, msg: string) {
+        setErrors(prev => ({ ...prev, [id]: msg }))
+    }
+
+    async function handleAction(id: string, action: 'confirm' | 'deny', bookingId: string, amountPence: number) {
+        setLoadingId(id)
+        setError(id, '')
+        const res = await fetch('/api/admin/refund', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ booking_id: bookingId, refund_request_id: id, action, amount_pence: amountPence }),
+        })
+        const json = await res.json()
+        setLoadingId(null)
+        if (!res.ok) { setError(id, json.error || 'Something went wrong'); return }
+        const newStatus: RefundStatus = action === 'confirm' ? 'admin_approved' : 'admin_rejected'
         setItems(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r))
     }
 
-    const tabs: { key: Tab; label: string }[] = [
-        { key: 'pending_admin', label: 'Awaiting Admin Review' },
+    const tabs: { key: Tab; label: string; count?: number }[] = [
+        { key: 'awaiting', label: 'Awaiting Review', count: awaitingCount },
         { key: 'all', label: 'All Requests' },
         { key: 'completed', label: 'Completed' },
     ]
 
-    const filtered = items.filter(r => {
-        if (tab === 'pending_admin') return r.status === 'organiser_approved'
-        if (tab === 'completed') return r.status === 'admin_approved' || r.status === 'admin_rejected'
-        return true
-    })
-
     return (
         <div>
+            {/* Stats Bar */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '28px' }}>
+                {[
+                    { label: 'Awaiting Review', value: String(awaitingCount), color: '#F5A623' },
+                    { label: 'Pending Organiser', value: String(pendingOrgCount), color: '#6B9FFF' },
+                    { label: 'Total Refunded', value: fmt(totalRefunded), color: '#00E5A0' },
+                    { label: 'Total Fees Kept', value: fmt(totalFeesKept), color: '#F0F0F8' },
+                    { label: 'Rejected Total', value: String(rejectedCount), color: '#E63950' },
+                ].map((stat) => (
+                    <div key={stat.label} style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '16px 20px' }}>
+                        <div style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '32px', color: stat.color, lineHeight: 1 }}>
+                            {stat.value}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#8888AA', marginTop: '4px' }}>{stat.label}</div>
+                    </div>
+                ))}
+            </div>
+
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid #2A2A3A', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #2A2A3A', marginBottom: '20px' }}>
                 {tabs.map(t => (
                     <button
                         key={t.key}
@@ -258,25 +158,116 @@ export function AdminRefundsClient({
                             color: tab === t.key ? '#F0F0F8' : '#8888AA',
                             cursor: 'pointer',
                             transition: 'color 0.15s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
                         }}
                     >
                         {t.label}
-                        {t.key === 'pending_admin' && (
-                            <span style={{ marginLeft: '6px', background: '#E63950', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '11px' }}>
-                                {items.filter(r => r.status === 'organiser_approved').length}
+                        {t.count !== undefined && (
+                            <span style={{ background: '#E63950', color: '#fff', borderRadius: '10px', padding: '1px 7px', fontSize: '11px', fontWeight: 700 }}>
+                                {t.count}
                             </span>
                         )}
                     </button>
                 ))}
             </div>
 
-            {filtered.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#8888AA', padding: '40px 0' }}>No refund requests in this category</p>
-            ) : (
-                filtered.map(r => (
-                    <AdminRefundCard key={r.id} request={r} onUpdate={handleUpdate} />
-                ))
-            )}
+            {/* Table */}
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#13131A', border: '1px solid #2A2A3A' }}>
+                    <thead>
+                        <tr>
+                            {['Buyer', 'Organiser', 'Event', 'Booking Ref', 'Paid', 'Refund', 'Fee', 'Status', 'Requested', 'Action'].map(h => (
+                                <th key={h} style={thStyle}>{h}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filtered.length === 0 ? (
+                            <tr>
+                                <td colSpan={10} style={{ ...tdBase, textAlign: 'center', color: '#8888AA', padding: '48px 16px' }}>
+                                    No refund requests in this category
+                                </td>
+                            </tr>
+                        ) : filtered.map(r => {
+                            const badge = STATUS_BADGE[r.status]
+                            const isLoading = loadingId === r.id
+                            const err = errors[r.id]
+                            const refundPence = r.refund_amount_pence ?? r.booking?.ticket_subtotal_pence ?? 0
+                            const isActionable = r.status === 'organiser_approved'
+                            return (
+                                <Fragment key={r.id}>
+                                    <tr
+                                        style={{ background: 'transparent', transition: 'background 0.1s' }}
+                                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#1A1A24'}
+                                        onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
+                                    >
+                                        <td style={tdBase}>
+                                            <div style={{ fontWeight: 500 }}>{r.buyer?.full_name || 'Guest'}</div>
+                                            <div style={{ fontSize: '12px', color: '#8888AA', marginTop: '2px' }}>{r.buyer?.email || '—'}</div>
+                                        </td>
+                                        <td style={{ ...tdBase, color: '#8888AA', fontSize: '12px' }}>
+                                            {r.booking?.event?.organiser?.org_name || '—'}
+                                        </td>
+                                        <td style={tdBase}>{truncate(r.booking?.event?.title || '—', 28)}</td>
+                                        <td style={{ ...tdBase, fontFamily: '"JetBrains Mono", monospace', color: '#E63950', whiteSpace: 'nowrap' }}>
+                                            {r.booking?.booking_ref || '—'}
+                                        </td>
+                                        <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>{fmt(r.booking?.ticket_subtotal_pence ?? null)}</td>
+                                        <td style={{ ...tdBase, whiteSpace: 'nowrap', color: '#00E5A0' }}>{fmt(refundPence)}</td>
+                                        <td style={{ ...tdBase, whiteSpace: 'nowrap', color: '#8888AA' }}>{fmt(r.booking?.booking_fee_pence ?? null)}</td>
+                                        <td style={tdBase}>
+                                            <span style={{
+                                                background: badge.bg,
+                                                color: badge.color,
+                                                border: badge.border,
+                                                padding: '3px 8px',
+                                                fontSize: '11px',
+                                                borderRadius: '2px',
+                                                whiteSpace: 'nowrap',
+                                                display: 'inline-block',
+                                            }}>
+                                                {badge.label}
+                                            </span>
+                                        </td>
+                                        <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
+                                        <td style={tdBase}>
+                                            {isActionable ? (
+                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                    <button
+                                                        onClick={() => handleAction(r.id, 'confirm', r.booking?.id ?? '', refundPence)}
+                                                        disabled={isLoading}
+                                                        style={{ background: '#00E5A0', border: '1px solid #00E5A0', color: '#0A0A0F', padding: '5px 10px', borderRadius: '2px', fontSize: '12px', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                                                    >
+                                                        {isLoading ? '…' : `Confirm ${fmt(refundPence)}`}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleAction(r.id, 'deny', r.booking?.id ?? '', refundPence)}
+                                                        disabled={isLoading}
+                                                        style={{ background: 'transparent', border: '1px solid #E63950', color: '#E63950', padding: '5px 10px', borderRadius: '2px', fontSize: '12px', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1 }}
+                                                    >
+                                                        Deny
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span style={{ color: '#555566' }}>—</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                    {err && (
+                                        <tr>
+                                            <td colSpan={10} style={{ padding: '0 16px 10px', borderBottom: '1px solid #2A2A3A', background: '#13131A' }}>
+                                                <span style={{ fontSize: '12px', color: '#E63950' }}>{err}</span>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </Fragment>
+                            )
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     )
 }
