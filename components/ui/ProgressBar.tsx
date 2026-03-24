@@ -12,27 +12,29 @@ function ProgressBarInner() {
     const searchParams = useSearchParams()
     const started = useRef(false)
 
-    // Start bar on anchor clicks (before navigation completes)
+    // Patch history.pushState and replaceState to catch ALL navigation (links + router.push)
     useEffect(() => {
-        function handleClick(e: MouseEvent) {
-            const target = (e.target as HTMLElement).closest('a')
-            if (!target) return
-            const href = target.getAttribute('href')
-            if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return
-            if (target.target === '_blank') return
-            try {
-                const url = new URL(href, window.location.href)
-                if (url.origin !== window.location.origin) return
-                if (url.pathname === window.location.pathname && url.search === window.location.search) return
-            } catch {
-                return
+        const originalPush = history.pushState.bind(history)
+        const originalReplace = history.replaceState.bind(history)
+
+        function interceptPush(data: unknown, unused: string, url?: string | URL | null) {
+            if (url) {
+                try {
+                    const next = new URL(String(url), window.location.href)
+                    const same = next.pathname === window.location.pathname && next.search === window.location.search
+                    if (!same) { NProgress.start(); started.current = true }
+                } catch { /* ignore */ }
             }
-            NProgress.start()
-            started.current = true
+            return originalPush(data, unused, url)
         }
 
-        document.addEventListener('click', handleClick)
-        return () => document.removeEventListener('click', handleClick)
+        history.pushState = interceptPush as typeof history.pushState
+        history.replaceState = originalReplace
+
+        return () => {
+            history.pushState = originalPush
+            history.replaceState = originalReplace
+        }
     }, [])
 
     // Stop bar when route finishes
