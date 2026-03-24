@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import BookingWidget from '@/components/events/BookingWidget';
 import ShareButton from '@/components/events/ShareButton';
 import { Review } from '@/types';
+import LikeButton from '@/components/events/LikeButton';
 
 export const revalidate = 60;
 
@@ -46,6 +47,23 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         .select('id, org_name, organiser_type, logo_url, slug')
         .eq('id', event.organiser_id)
         .single();
+
+    // Fetch like count and current user like status
+    const { data: { user } } = await supabase.auth.getUser();
+    const { count: likeCount } = await supabase
+        .from('likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', event.id);
+    let userLiked = false;
+    if (user) {
+        const { data: userLike } = await supabase
+            .from('likes')
+            .select('id')
+            .eq('event_id', event.id)
+            .eq('user_id', user.id)
+            .single();
+        userLiked = !!userLike;
+    }
 
     // Fetch organiser's total published events count
     let organiserEventCount = 0;
@@ -147,8 +165,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             )
                         })()}
 
-                        {/* Share button */}
-                        <div className="flex justify-end">
+                        {/* Like + Share buttons */}
+                        <div className="flex justify-end gap-2">
+                            <LikeButton
+                                eventId={event.id}
+                                initialLiked={userLiked}
+                                initialCount={likeCount ?? 0}
+                                isLoggedIn={!!user}
+                            />
                             <ShareButton title={event.title} />
                         </div>
 

@@ -5,7 +5,9 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import EventCard from '@/components/events/EventCard';
 import ShareButton from '@/components/events/ShareButton';
-import { Event } from '@/types';
+import FollowButton from '@/components/organisers/FollowButton';
+import ReviewsSection from '@/components/organisers/ReviewsSection';
+import { Event, Review } from '@/types';
 
 export const revalidate = 60;
 
@@ -35,25 +37,71 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .order('start_at', { ascending: true });
 
     const events = eventsData || [];
-
-    // Provide the organiser to the event cards manually since we didn't join it to avoid circular lookups overhead
     const eventsWithOrganiser = events.map(ev => ({ ...ev, organiser }));
 
-    // Retrieve average rating for this organiser
-    const { data: reviewsData } = await supabase
-        .from('reviews')
-        .select('rating, events!inner(organiser_id)')
-        .eq('events.organiser_id', organiser.id);
+    // Follower count
+    const { count: followerCount } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('organiser_id', organiser.id);
 
+    // Current user follow status
+    const { data: { user } } = await supabase.auth.getUser();
+    let userFollowing = false;
+    if (user) {
+        const { data: followRow } = await supabase
+            .from('follows')
+            .select('id')
+            .eq('organiser_id', organiser.id)
+            .eq('user_id', user.id)
+            .single();
+        userFollowing = !!followRow;
+    }
+
+    // Reviews for this organiser's events
+    const eventIds = events.map(e => e.id);
+    let reviews: (Review & { user?: { full_name: string | null } })[] = [];
     let averageRating = 0;
     let reviewCount = 0;
 
-    if (reviewsData && reviewsData.length > 0) {
-        const validReviews = reviewsData.filter(r => r.rating != null);
-        if (validReviews.length > 0) {
-            const sum = validReviews.reduce((acc, curr) => acc + (curr.rating as number), 0);
-            averageRating = sum / validReviews.length;
-            reviewCount = validReviews.length;
+    if (eventIds.length > 0) {
+        const { data: reviewsData } = await supabase
+            .from('reviews')
+            .select('*, user:profiles(full_name)')
+            .in('event_id', eventIds)
+            .eq('is_visible', true)
+            .order('created_at', { ascending: false });
+
+        reviews = reviewsData || [];
+        reviewCount = reviews.length;
+        if (reviewCount > 0) {
+            const sum = reviews.reduce((acc, r) => acc + (r.rating ?? 0), 0);
+            averageRating = sum / reviewCount;
+        }
+    }
+
+    // Check if current user is eligible to review (confirmed booking for this organiser)
+    let canReview = false;
+    let hasReviewed = false;
+    if (user && eventIds.length > 0) {
+        const { data: booking } = await supabase
+            .from('bookings')
+            .select('id, event_id')
+            .eq('user_id', user.id)
+            .eq('status', 'confirmed')
+            .in('event_id', eventIds)
+            .limit(1)
+            .single();
+        canReview = !!booking;
+
+        if (canReview) {
+            const { data: existingReview } = await supabase
+                .from('reviews')
+                .select('id')
+                .eq('user_id', user.id)
+                .in('event_id', eventIds)
+                .single();
+            hasReviewed = !!existingReview;
         }
     }
 
@@ -82,7 +130,13 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                                 </a>
                             )}
                         </div>
-                        <div className="flex md:justify-end">
+                        <div className="flex md:justify-end gap-3">
+                            <FollowButton
+                                organiserId={organiser.id}
+                                initialFollowing={userFollowing}
+                                initialCount={followerCount ?? 0}
+                                isLoggedIn={!!user}
+                            />
                             <ShareButton title={organiser.org_name} />
                         </div>
                     </div>
@@ -107,7 +161,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
             </div>
 
             {/* Events Grid */}
-            <div className="space-y-6">
+            <div className="space-y-6 mb-16">
                 <h2 className="text-2xl font-bold border-b pb-4">Upcoming Events by {organiser.org_name}</h2>
 
                 {eventsWithOrganiser.length > 0 ? (
@@ -123,6 +177,17 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                     </div>
                 )}
             </div>
+
+            {/* Reviews Section */}
+            <ReviewsSection
+                organiserId={organiser.id}
+                reviews={reviews}
+                averageRating={averageRating}
+                reviewCount={reviewCount}
+                canReview={canReview}
+                hasReviewed={hasReviewed}
+                isLoggedIn={!!user}
+            />
 
         </div>
     );
