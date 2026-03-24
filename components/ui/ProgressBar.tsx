@@ -1,7 +1,8 @@
 'use client'
+import { Suspense } from 'react'
 import { AppProgressBar as ProgressBar } from 'next-nprogress-bar'
 
-export default function NavigationProgress() {
+function ProgressBarInner() {
     return (
         <ProgressBar
             height="3px"
@@ -9,5 +10,13 @@ export default function NavigationProgress() {
             options={{ showSpinner: false }}
             shallowRouting
         />
+    )
+}
+
+export default function NavigationProgress() {
+    return (
+        <Suspense fallback={null}>
+            <ProgressBarInner />
+        </Suspense>
     )
 }
