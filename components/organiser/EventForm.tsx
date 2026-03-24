@@ -126,6 +126,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [venueAddress, setVenueAddress] = useState(_initAddr)
     const [venueCity, setVenueCity] = useState(_initCity)
     const [venuePostcode, setVenuePostcode] = useState(event?.venue_postcode || '')
+    const [postcodeStatus, setPostcodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+    const [postcodeMsg, setPostcodeMsg] = useState('')
 
     // Section 03 — Ticket Types
     const defaultTicket: TicketTypeRow = {
@@ -507,6 +509,31 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         setPromos(prev => prev.filter(p => p.id !== promoId))
     }
 
+    async function lookupPostcode() {
+        const pc = venuePostcode.trim()
+        if (pc.length < 5) return
+        setPostcodeStatus('loading')
+        setPostcodeMsg('Looking up postcode...')
+        try {
+            const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(pc)}`)
+            const json = await res.json()
+            if (json.status === 200 && json.result) {
+                const town = json.result.admin_district || json.result.parish || ''
+                if (town) setVenueCity(town)
+                if (!venueAddress.trim()) setVenueAddress('')
+                setPostcodeStatus('success')
+                setPostcodeMsg(`✓ Postcode found: ${town}`)
+                setTimeout(() => { setPostcodeStatus('idle'); setPostcodeMsg('') }, 3000)
+            } else {
+                setPostcodeStatus('error')
+                setPostcodeMsg('Postcode not found — please enter manually')
+            }
+        } catch {
+            setPostcodeStatus('error')
+            setPostcodeMsg('Postcode not found — please enter manually')
+        }
+    }
+
     const inputClass = "w-full bg-surface border border-border rounded-lg px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
     const labelClass = "text-xs text-muted block mb-1.5"
 
@@ -672,7 +699,44 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             </div>
                             <div>
                                 <label className={labelClass}>Postcode *</label>
-                                <input type="text" value={venuePostcode} onChange={e => setVenuePostcode(e.target.value.toUpperCase())} className={inputClass} placeholder="SW1A 1AA" required />
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="text"
+                                        value={venuePostcode}
+                                        onChange={e => setVenuePostcode(e.target.value.toUpperCase())}
+                                        onBlur={lookupPostcode}
+                                        className={inputClass}
+                                        placeholder="SW1A 1AA"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={lookupPostcode}
+                                        style={{
+                                            border: '1px solid #2A2A3A',
+                                            color: '#8888AA',
+                                            padding: '4px 10px',
+                                            fontSize: 12,
+                                            borderRadius: 2,
+                                            marginLeft: 8,
+                                            background: 'transparent',
+                                            cursor: 'pointer',
+                                            whiteSpace: 'nowrap',
+                                            flexShrink: 0,
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.borderColor = '#E63950')}
+                                        onMouseLeave={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+                                    >
+                                        Look Up
+                                    </button>
+                                </div>
+                                {postcodeMsg && (
+                                    <p style={{
+                                        fontSize: 12,
+                                        marginTop: 4,
+                                        color: postcodeStatus === 'success' ? '#00E5A0' : postcodeStatus === 'error' ? '#E63950' : '#8888AA',
+                                    }}>{postcodeMsg}</p>
+                                )}
                             </div>
                         </div>
                     </div>
