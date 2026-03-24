@@ -17,12 +17,47 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json() as {
         booking_id: string
-        type: 'full' | 'partial'
+        refund_request_id: string
+        action: 'confirm' | 'deny'
         amount_pence?: number
-        refund_request_id?: string
     }
-    const { booking_id, type, amount_pence, refund_request_id } = body
+    const { booking_id, refund_request_id, action, amount_pence } = body
 
+    if (!booking_id || !refund_request_id || !action) {
+        return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Verify refund request status is organiser_approved
+    const { data: refundReq } = await adminClient
+        .from('refund_requests')
+        .select('id, status, refund_amount_pence')
+        .eq('id', refund_request_id)
+        .single()
+
+    if (!refundReq) return NextResponse.json({ error: 'Refund request not found' }, { status: 404 })
+
+    if (refundReq.status !== 'organiser_approved') {
+        return NextResponse.json({ error: 'Refund request has not been approved by organiser' }, { status: 400 })
+    }
+
+    if (action === 'deny') {
+        await adminClient
+            .from('refund_requests')
+            .update({ status: 'admin_rejected', resolved_at: new Date().toISOString() })
+            .eq('id', refund_request_id)
+
+        await logAuditAction({
+            actorId: user.id,
+            action: 'admin_deny_refund',
+            entityType: 'booking',
+            entityId: booking_id,
+            metadata: { refund_request_id },
+        })
+
+        return NextResponse.json({ success: true })
+    }
+
+    // action === 'confirm'
     const { data: booking } = await adminClient
         .from('bookings')
         .select('id, booking_ref, total_pence, stripe_payment_intent_id, status')
@@ -31,10 +66,11 @@ export async function POST(request: NextRequest) {
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
-    const refundAmount = type === 'full' ? (booking.total_pence || 0) : (amount_pence || 0)
+    // Use refund_amount_pence from the request (ticket subtotal only, not booking fee)
+    const refundAmount = amount_pence ?? refundReq.refund_amount_pence ?? 0
 
-    // Stripe refund (if payment intent exists)
-    if (booking.stripe_payment_intent_id) {
+    // Stripe partial refund for refund_amount_pence only
+    if (booking.stripe_payment_intent_id && refundAmount > 0) {
         try {
             const stripe = (await import('stripe')).default
             const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-02-25.clover' })
@@ -52,16 +88,14 @@ export async function POST(request: NextRequest) {
         .update({ status: 'refunded' })
         .eq('id', booking_id)
 
-    if (refund_request_id) {
-        await adminClient
-            .from('refund_requests')
-            .update({ status: 'approved', resolved_at: new Date().toISOString() })
-            .eq('id', refund_request_id)
-    }
+    await adminClient
+        .from('refund_requests')
+        .update({ status: 'admin_approved', resolved_at: new Date().toISOString() })
+        .eq('id', refund_request_id)
 
     await logAuditAction({
         actorId: user.id,
-        action: type === 'full' ? 'admin_full_refund' : 'admin_partial_refund',
+        action: 'admin_confirm_refund',
         entityType: 'booking',
         entityId: booking_id,
         metadata: { amount_pence: refundAmount, booking_ref: booking.booking_ref },

@@ -127,6 +127,26 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             </div>
                         </div>
 
+                        {/* Refund policy badge */}
+                        {event.refund_policy && (() => {
+                            const policyMap: Record<string, { label: string; bg: string; color: string; border: string }> = {
+                                no_refunds: { label: 'No Refunds', bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950' },
+                                '48_hours': { label: 'Refunds up to 48hrs before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
+                                '7_days': { label: 'Refunds up to 7 days before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
+                                full_refunds: { label: 'Full Refunds Available', bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0' },
+                            }
+                            const policy = policyMap[event.refund_policy]
+                            if (!policy) return null
+                            return (
+                                <div>
+                                    <span style={{ display: 'inline-flex', padding: '6px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginTop: '12px', background: policy.bg, color: policy.color, border: policy.border }}>
+                                        {policy.label}
+                                    </span>
+                                    <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '6px' }}>Booking fees are non-refundable</p>
+                                </div>
+                            )
+                        })()}
+
                         {/* Share button */}
                         <div className="flex justify-end">
                             <ShareButton title={event.title} />

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { formatPence } from '@/lib/fees'
 
 const REASONS = [
     'Changed plans',
@@ -10,6 +11,13 @@ const REASONS = [
     'Other',
 ]
 
+interface EligibilityState {
+    eligible: boolean
+    ineligibleReason: string
+    refundAmountPence: number
+    bookingFeePence: number
+}
+
 export default function RefundButton({ bookingId }: { bookingId: string }) {
     const [open, setOpen] = useState(false)
     const [reason, setReason] = useState('')
@@ -17,6 +25,57 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
     const [loading, setLoading] = useState(false)
     const [submitted, setSubmitted] = useState(false)
     const [error, setError] = useState('')
+    const [eligibility, setEligibility] = useState<EligibilityState | null>(null)
+
+    useEffect(() => {
+        async function checkEligibility() {
+            const supabase = createClient()
+            const { data } = await supabase
+                .from('bookings')
+                .select('ticket_subtotal_pence, booking_fee_pence, checked_in, event:events(start_at, refund_policy)')
+                .eq('id', bookingId)
+                .single()
+
+            if (!data) return
+
+            const now = new Date()
+            const event = data.event as unknown as { start_at: string; refund_policy: string | null } | null
+            if (!event) return
+
+            const eventDate = new Date(event.start_at)
+            const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+            const alreadyCheckedIn = (data as { checked_in?: boolean }).checked_in === true
+            const refundPolicy = event.refund_policy
+            const ticketSubtotal = data.ticket_subtotal_pence ?? 0
+            const bookingFee = data.booking_fee_pence ?? 0
+
+            let eligible = false
+            let ineligibleReason = ''
+
+            if (alreadyCheckedIn) {
+                ineligibleReason = 'This ticket has already been used'
+            } else if (refundPolicy === 'no_refunds') {
+                ineligibleReason = 'This event does not offer refunds'
+            } else if (refundPolicy === '48_hours' && hoursUntilEvent < 48) {
+                ineligibleReason = 'Refund window has closed (48 hours before event)'
+            } else if (refundPolicy === '7_days' && hoursUntilEvent < 168) {
+                ineligibleReason = 'Refund window has closed (7 days before event)'
+            } else if (now > eventDate) {
+                ineligibleReason = 'Event has already taken place'
+            } else {
+                eligible = true
+            }
+
+            setEligibility({
+                eligible,
+                ineligibleReason,
+                refundAmountPence: ticketSubtotal,
+                bookingFeePence: bookingFee,
+            })
+        }
+
+        checkEligibility()
+    }, [bookingId])
 
     async function handleSubmit() {
         if (!reason) {
@@ -43,6 +102,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                 user_id: user.id,
                 reason,
                 message: message.trim() || null,
+                refund_amount_pence: eligibility?.refundAmountPence ?? null,
             })
 
         if (insertError) {
@@ -63,19 +123,68 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
         )
     }
 
-    return (
-        <>
+    // Not yet loaded
+    if (!eligibility) {
+        return (
             <button
-                onClick={() => setOpen(true)}
-                className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition"
+                disabled
+                className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium opacity-40 cursor-not-allowed"
             >
                 Request Refund
             </button>
+        )
+    }
+
+    // Ineligible
+    if (!eligibility.eligible) {
+        return (
+            <div>
+                <button
+                    disabled
+                    style={{ opacity: 0.4, cursor: 'not-allowed' }}
+                    className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium w-full"
+                >
+                    Refund Not Available
+                </button>
+                <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '6px' }}>{eligibility.ineligibleReason}</p>
+            </div>
+        )
+    }
+
+    return (
+        <>
+            <div>
+                <button
+                    onClick={() => setOpen(true)}
+                    className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition w-full"
+                >
+                    Request Refund
+                </button>
+                {eligibility.refundAmountPence > 0 && (
+                    <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '6px' }}>
+                        Refund amount: {formatPence(eligibility.refundAmountPence)}
+                        {eligibility.bookingFeePence > 0 && ` (booking fee of ${formatPence(eligibility.bookingFeePence)} is non-refundable)`}
+                    </p>
+                )}
+            </div>
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
                     <div className="bg-surface border border-border rounded-none p-6 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
                         <h3 className="font-heading text-2xl text-text">REQUEST REFUND</h3>
+
+                        {eligibility.refundAmountPence > 0 && (
+                            <div style={{ background: 'rgba(0,229,160,0.05)', border: '1px solid rgba(0,229,160,0.2)', padding: '10px 14px', borderRadius: '2px' }}>
+                                <p style={{ fontSize: '13px', color: '#00E5A0', fontWeight: 600 }}>
+                                    Refund amount: {formatPence(eligibility.refundAmountPence)}
+                                </p>
+                                {eligibility.bookingFeePence > 0 && (
+                                    <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '3px' }}>
+                                        Booking fee of {formatPence(eligibility.bookingFeePence)} is non-refundable
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-text">Reason</label>
