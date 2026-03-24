@@ -47,11 +47,15 @@ export default async function AccountPage() {
     // Next 3 upcoming
     const nextUpcoming = upcomingBookings.slice(0, 3)
 
+    const isOrganiserOrAdmin = profile?.role === 'organiser' || profile?.role === 'admin'
+
     const quickLinks = [
         { label: 'My Bookings', href: '/bookings', description: 'View all your tickets' },
         { label: 'Browse Events', href: '/events', description: 'Discover new events' },
         { label: 'Account Settings', href: '/account/settings', description: 'Update your profile' },
-        { label: 'Apply as Organiser', href: '/organiser/apply', description: 'Start hosting events' },
+        isOrganiserOrAdmin
+            ? { label: 'Organiser Dashboard', href: '/organiser', description: 'Manage your events' }
+            : { label: 'Apply as Organiser', href: '/organiser/apply', description: 'Start hosting events' },
     ]
 
     return (
