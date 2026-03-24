@@ -32,7 +32,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
             const supabase = createClient()
             const { data } = await supabase
                 .from('bookings')
-                .select('ticket_subtotal_pence, booking_fee_pence, checked_in, event:events(start_at, refund_policy)')
+                .select('ticket_subtotal_pence, booking_fee_pence, event:events(start_at, refund_policy), items:booking_items(checkins(id))')
                 .eq('id', bookingId)
                 .single()
 
@@ -44,7 +44,8 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
 
             const eventDate = new Date(event.start_at)
             const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60)
-            const alreadyCheckedIn = (data as { checked_in?: boolean }).checked_in === true
+            const items = data.items as unknown as { checkins: { id: string }[] }[] | null
+            const alreadyCheckedIn = (items ?? []).some(i => i.checkins && i.checkins.length > 0)
             const refundPolicy = event.refund_policy
             const ticketSubtotal = data.ticket_subtotal_pence ?? 0
             const bookingFee = data.booking_fee_pence ?? 0
