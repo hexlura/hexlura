@@ -210,6 +210,22 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
                     })}
                 </nav>
 
+                {/* My Account link */}
+                <div style={{ borderTop: '1px solid #2A2A3A', margin: '0 12px 0 12px', paddingTop: '16px', paddingBottom: '8px' }}>
+                    <button
+                        onClick={() => handleNavClick('/account')}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
+                        style={{ fontSize: '14px', color: '#8888AA' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#F0F0F8')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#8888AA')}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                        My Account
+                    </button>
+                </div>
+
                 {/* User footer */}
                 <div className="p-4 border-t border-border">
                     <div className="text-xs text-muted mb-0.5 truncate">{orgName}</div>
