@@ -87,7 +87,7 @@ export function AdminRefundsClient({
     // Stats (always from full list)
     const awaitingCount = items.filter(r => r.status === 'organiser_approved').length
     const pendingOrgCount = items.filter(r => r.status === 'pending').length
-    const totalRefunded = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.refund_amount_pence ?? 0), 0)
+    const totalRefunded = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.refund_amount_pence ?? r.booking?.ticket_subtotal_pence ?? 0), 0)
     const totalFeesKept = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.booking?.booking_fee_pence ?? 0), 0)
     const rejectedCount = items.filter(r => r.status === 'admin_rejected' || r.status === 'organiser_rejected').length
 

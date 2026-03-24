@@ -89,7 +89,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
     const rejected = items.filter(r => r.status === 'organiser_rejected' || r.status === 'admin_rejected').length
     const totalRefunded = items
         .filter(r => r.status === 'admin_approved')
-        .reduce((sum, r) => sum + (r.refund_amount_pence ?? 0), 0)
+        .reduce((sum, r) => sum + (r.refund_amount_pence ?? r.booking?.ticket_subtotal_pence ?? 0), 0)
 
     const filtered = useMemo(() => {
         let list = [...items]
