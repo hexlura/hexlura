@@ -44,7 +44,11 @@ export async function updateSession(request: NextRequest) {
     const isOrganiserRoute = pathname.startsWith('/organiser/')
     const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
     const isAuthRoute = (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register'))
-    const isProtectedRoute = isAdminRoute || isOrganiserRoute || isAccountRoute
+    // /checkin routes (excludes /checkin/login which is public)
+    const isCheckinRoute = pathname.startsWith('/checkin') && !pathname.startsWith('/checkin/login')
+    // /organiser/events/[id]/checkin — door_staff allowed here too
+    const isOrganiserCheckinPath = /^\/organiser\/events\/[^/]+\/checkin/.test(pathname)
+    const isProtectedRoute = isAdminRoute || isOrganiserRoute || isAccountRoute || isCheckinRoute
 
     // Helper: redirect while preserving session cookies
     function redirectTo(path: string): NextResponse {
@@ -86,7 +90,21 @@ export async function updateSession(request: NextRequest) {
     if (isAuthRoute) {
         if (role === 'admin') return redirectTo('/admin')
         if (role === 'organiser') return redirectTo('/organiser')
+        if (role === 'door_staff') return redirectTo('/checkin')
         return redirectTo('/account')
+    }
+
+    // Door staff: only allowed on /checkin routes and organiser event checkin
+    if (role === 'door_staff' && !isCheckinRoute && !isOrganiserCheckinPath) {
+        return redirectTo('/checkin')
+    }
+
+    // /checkin routes: require door_staff, organiser, or admin
+    if (isCheckinRoute) {
+        if (role !== 'door_staff' && role !== 'organiser' && role !== 'admin') {
+            return redirectTo('/')
+        }
+        return supabaseResponse
     }
 
     // Admin routes: must be admin
@@ -99,8 +117,12 @@ export async function updateSession(request: NextRequest) {
         const isExempt = pathname === '/organiser/apply'
 
         if (!isExempt) {
-            // Regular organiser routes: must be organiser or admin
-            if (role !== 'organiser' && role !== 'admin') {
+            if (isOrganiserCheckinPath) {
+                // Checkin scanner: organiser, admin, or door_staff
+                if (role !== 'organiser' && role !== 'admin' && role !== 'door_staff') {
+                    return redirectTo('/')
+                }
+            } else if (role !== 'organiser' && role !== 'admin') {
                 return redirectTo('/')
             }
         }

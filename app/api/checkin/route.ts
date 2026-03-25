@@ -18,6 +18,13 @@ export async function POST(req: Request) {
 
         const adminClient = createAdminClient()
 
+        // Role check — only door_staff, organiser, admin may check in tickets
+        const { data: checkerProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
+        const checkerRole = checkerProfile?.role as string | undefined
+        if (!checkerRole || !['door_staff', 'organiser', 'admin'].includes(checkerRole)) {
+            return NextResponse.json({ success: false, message: 'Unauthorized', code: 'INVALID' }, { status: 403 })
+        }
+
         // Step 1 — Find the ticket
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let bookingItem: any = null

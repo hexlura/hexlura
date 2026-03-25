@@ -1,9 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import type { OrganiserProfile } from '@/types'
+
+interface DoorStaffMember {
+    id: string
+    user_id: string
+    full_name: string | null
+    email: string | null
+}
 
 interface SettingsClientProps {
     organiser: OrganiserProfile
@@ -26,6 +33,55 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
     const [logoUploading, setLogoUploading] = useState(false)
     const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
     const [showCloseModal, setShowCloseModal] = useState(false)
+
+    // Door staff
+    const [doorStaff, setDoorStaff] = useState<DoorStaffMember[]>([])
+    const [doorStaffEmail, setDoorStaffEmail] = useState('')
+    const [addingStaff, setAddingStaff] = useState(false)
+    const [doorStaffError, setDoorStaffError] = useState('')
+    const [doorStaffSuccess, setDoorStaffSuccess] = useState('')
+    const [removingId, setRemovingId] = useState<string | null>(null)
+
+    useEffect(() => {
+        fetch('/api/organiser/door-staff')
+            .then(r => r.json())
+            .then(data => { if (data.staff) setDoorStaff(data.staff) })
+            .catch(() => {})
+    }, [])
+
+    async function addDoorStaff(e: React.FormEvent) {
+        e.preventDefault()
+        setAddingStaff(true)
+        setDoorStaffError('')
+        setDoorStaffSuccess('')
+        const res = await fetch('/api/organiser/door-staff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: doorStaffEmail }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+            setDoorStaffError(data.error || 'Failed to add door staff')
+        } else {
+            setDoorStaffSuccess('Door staff added successfully')
+            setDoorStaffEmail('')
+            setDoorStaff(prev => [...prev, data.member])
+        }
+        setAddingStaff(false)
+    }
+
+    async function removeDoorStaff(userId: string, id: string) {
+        setRemovingId(id)
+        const res = await fetch('/api/organiser/door-staff', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId }),
+        })
+        if (res.ok) {
+            setDoorStaff(prev => prev.filter(s => s.id !== id))
+        }
+        setRemovingId(null)
+    }
 
     // Notification toggles
     const [notifyNewBooking, setNotifyNewBooking] = useState(true)
@@ -307,6 +363,65 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                     </Button>
                 </form>
             </Section>
+
+            {/* Door Staff */}
+            <div className="bg-card border border-border rounded-none p-6 mb-6">
+                <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '24px', color: '#F0F0F8', marginBottom: '8px', letterSpacing: '1px' }}>
+                    DOOR STAFF
+                </h2>
+                <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '20px' }}>
+                    Add staff who can scan tickets at your events. They will only have access to the check-in scanner.
+                </p>
+
+                <form onSubmit={addDoorStaff} className="flex gap-2 mb-4">
+                    <input
+                        type="email"
+                        value={doorStaffEmail}
+                        onChange={e => setDoorStaffEmail(e.target.value)}
+                        placeholder="Staff Email Address"
+                        required
+                        className="flex-1 bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                    />
+                    <button
+                        type="submit"
+                        disabled={addingStaff || !doorStaffEmail}
+                        className="px-4 py-2 bg-accent text-white text-sm rounded-sm disabled:opacity-50 hover:bg-[#cc2f43] transition-colors whitespace-nowrap"
+                    >
+                        {addingStaff ? 'Adding...' : 'Add Door Staff'}
+                    </button>
+                </form>
+
+                {doorStaffError && (
+                    <p className="text-sm text-accent mb-3">{doorStaffError}</p>
+                )}
+                {doorStaffSuccess && (
+                    <p className="text-sm text-success mb-3">{doorStaffSuccess}</p>
+                )}
+
+                {doorStaff.length > 0 && (
+                    <div className="divide-y divide-border border border-border rounded-sm">
+                        {doorStaff.map(member => (
+                            <div key={member.id} className="flex items-center justify-between px-3 py-2.5">
+                                <div>
+                                    <p className="text-sm text-text">{member.full_name || 'Unknown'}</p>
+                                    <p className="text-xs text-muted">{member.email}</p>
+                                </div>
+                                <button
+                                    onClick={() => removeDoorStaff(member.user_id, member.id)}
+                                    disabled={removingId === member.id}
+                                    className="text-xs text-accent border border-accent/50 px-3 py-1 rounded-sm hover:bg-accent/10 disabled:opacity-50 transition-colors"
+                                >
+                                    {removingId === member.id ? '...' : 'Remove'}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {doorStaff.length === 0 && (
+                    <p className="text-xs text-muted">No door staff added yet.</p>
+                )}
+            </div>
 
             {/* Danger Zone */}
             <div className="bg-card border border-accent/30 rounded-none p-6">
