@@ -7,13 +7,15 @@ import Link from 'next/link'
 const QrScanner = dynamic(() => import('@/components/organiser/QrScanner').then(m => m.QrScanner), { ssr: false })
 
 interface CheckinResult {
-    type: 'success' | 'already' | 'invalid' | 'wrong_event'
-    name?: string
-    ticketType?: string
-    checkedInAt?: string
-    eventTitle?: string
-    groupIndex?: number
-    groupTotal?: number
+    success: boolean
+    message: string
+    code: string
+    data?: {
+        attendee_name: string
+        ticket_type: string
+        event_name: string
+        checked_in_at: string
+    }
 }
 
 interface CheckinClientProps {
@@ -24,10 +26,20 @@ interface CheckinClientProps {
     initialCheckedIn: number
 }
 
+const RESULT_STYLES: Record<string, { bg: string; border: string; color: string; icon: string; title: string }> = {
+    SUCCESS:          { bg: 'rgba(0,229,160,0.1)',  border: '#00E5A0', color: '#00E5A0', icon: '✓', title: 'CHECK IN SUCCESSFUL' },
+    ALREADY_SCANNED:  { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'ALREADY CHECKED IN' },
+    WRONG_EVENT:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'WRONG EVENT' },
+    TOO_EARLY:        { bg: 'rgba(245,166,35,0.1)', border: '#F5A623', color: '#F5A623', icon: '⚠', title: 'TOO EARLY' },
+    EVENT_ENDED:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'EVENT ENDED' },
+    CANCELLED:        { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'EVENT CANCELLED' },
+    CANCELLED_TICKET: { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'TICKET CANCELLED' },
+    INVALID:          { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'INVALID TICKET' },
+}
+
 export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, initialCheckedIn }: CheckinClientProps) {
     const [checkedIn, setCheckedIn] = useState(initialCheckedIn)
     const [result, setResult] = useState<CheckinResult | null>(null)
-    const [lastScannedToken, setLastScannedToken] = useState<string | null>(null)
     const [manualRef, setManualRef] = useState('')
     const [lookingUp, setLookingUp] = useState(false)
     const processing = useRef(false)
@@ -35,16 +47,15 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
     async function processCheckin(payload: { qr_token?: string; booking_ref?: string }) {
         if (processing.current) return
         processing.current = true
-        if (payload.qr_token) setLastScannedToken(payload.qr_token)
         try {
             const res = await fetch('/api/checkin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...payload, event_id: eventId }),
             })
-            const data = await res.json()
+            const data: CheckinResult = await res.json()
             setResult(data)
-            if (data.type === 'success') setCheckedIn(c => c + 1)
+            if (data.success) setCheckedIn(c => c + 1)
             setTimeout(() => {
                 setResult(null)
                 processing.current = false
@@ -56,7 +67,7 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
 
     const handleScan = useCallback((value: string) => {
         processCheckin({ qr_token: value })
-    }, [eventId])
+    }, [eventId]) // eslint-disable-line react-hooks/exhaustive-deps
 
     async function handleManualLookup() {
         if (!manualRef.trim()) return
@@ -66,27 +77,7 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
         setManualRef('')
     }
 
-    const groupMatch = result?.type === 'success'
-        ? (result.groupIndex != null
-            ? { index: result.groupIndex, total: result.groupTotal ?? null }
-            : lastScannedToken?.match(/-G(\d+)$/)
-                ? { index: parseInt(lastScannedToken.match(/-G(\d+)$/)![1]), total: null }
-                : null)
-        : null
-
-    const resultConfig = result ? {
-        success: {
-            bg: 'bg-success',
-            icon: '✓',
-            title: groupMatch ? 'GROUP TICKET' : 'CHECK IN SUCCESSFUL',
-            body: groupMatch
-                ? `${result.name} · Group member ${groupMatch.index}${groupMatch.total ? ` of ${groupMatch.total}` : ''} checked in`
-                : `${result.name} · ${result.ticketType}`,
-        },
-        already: { bg: 'bg-gold', icon: '⚠', title: 'ALREADY CHECKED IN', body: result.checkedInAt ? `Checked in at ${new Date(result.checkedInAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : '' },
-        invalid: { bg: 'bg-accent', icon: '✗', title: 'INVALID TICKET', body: 'This ticket was not issued by Hexlura' },
-        wrong_event: { bg: 'bg-accent', icon: '✗', title: 'WRONG EVENT', body: result.eventTitle ? `Belongs to: ${result.eventTitle}` : 'This ticket is for a different event' },
-    }[result.type] : null
+    const cardStyle = result ? (RESULT_STYLES[result.code] ?? RESULT_STYLES.INVALID) : null
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
@@ -145,11 +136,27 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
             </div>
 
             {/* Result overlay */}
-            {result && resultConfig && (
-                <div className={`fixed inset-0 ${resultConfig.bg} flex flex-col items-center justify-center z-50 text-white`}>
-                    <div className="text-7xl mb-4">{resultConfig.icon}</div>
-                    <h2 className="font-heading text-3xl tracking-widest mb-2">{resultConfig.title}</h2>
-                    <p className="text-lg opacity-90">{resultConfig.body}</p>
+            {result && cardStyle && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
+                    <div
+                        style={{
+                            background: cardStyle.bg,
+                            border: `1px solid ${cardStyle.border}`,
+                            color: cardStyle.color,
+                        }}
+                        className="w-full max-w-sm rounded-none p-8 text-center"
+                    >
+                        <div className="text-6xl mb-4">{cardStyle.icon}</div>
+                        <h2 className="font-heading text-2xl tracking-widest mb-3">{cardStyle.title}</h2>
+                        <p className="text-base mb-4">{result.message}</p>
+                        {result.success && result.data && (
+                            <div className="text-sm space-y-1 opacity-80 border-t pt-4 mt-2" style={{ borderColor: cardStyle.border }}>
+                                <p className="font-semibold">{result.data.attendee_name}</p>
+                                <p>{result.data.ticket_type}</p>
+                                <p>{result.data.checked_in_at}</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

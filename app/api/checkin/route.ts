@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: Request) {
     try {
@@ -7,116 +8,155 @@ export async function POST(req: Request) {
         const { qr_token, booking_ref, event_id } = body
 
         if (!qr_token && !booking_ref) {
-            return NextResponse.json({ type: 'invalid', message: 'No token or ref provided' }, { status: 400 })
+            return NextResponse.json({ success: false, message: 'Invalid ticket — not found in system', code: 'INVALID' })
         }
 
+        // Auth check with anon client
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return NextResponse.json({ type: 'invalid', message: 'Unauthorized' }, { status: 401 })
+        if (!user) return NextResponse.json({ success: false, message: 'Unauthorized', code: 'INVALID' }, { status: 401 })
 
-        // Verify organiser owns the event
-        const { data: organiser } = await supabase
-            .from('organiser_profiles').select('id').eq('user_id', user.id).single()
-        if (!organiser) return NextResponse.json({ type: 'invalid' }, { status: 403 })
+        const adminClient = createAdminClient()
 
-        let bookingItem: {
-            id: string; qr_code: string | null;
-            booking: { id: string; status: string; event_id: string; event: { id: string; title: string; organiser_id: string } | null } | null;
-            ticket_type: { name: string } | null;
-            attendee_name: string | null;
-        } | null = null
+        // Step 1 — Find the ticket
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let bookingItem: any = null
 
         if (qr_token) {
-            const { data } = await supabase
+            const { data } = await adminClient
                 .from('booking_items')
-                .select('id, qr_code, attendee_name, ticket_type:ticket_types(name), booking:bookings(id, status, event_id, event:events(id, title, organiser_id))')
+                .select(`
+                    id, qr_code, attendee_name,
+                    ticket_type:ticket_types(name),
+                    booking:bookings(id, status, event_id,
+                        event:events(id, title, start_at, end_at, status)
+                    )
+                `)
                 .eq('qr_code', qr_token)
-                .single()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            bookingItem = data as any
+                .maybeSingle()
+            bookingItem = data
         } else if (booking_ref) {
-            // Find by booking ref
-            const { data: booking } = await supabase
+            const { data: booking } = await adminClient
                 .from('bookings')
-                .select('id, status, event_id, event:events(id, title, organiser_id)')
+                .select('id, status, event_id, event:events(id, title, start_at, end_at, status)')
                 .eq('booking_ref', booking_ref)
-                .single()
+                .maybeSingle()
 
             if (booking) {
-                const { data: items } = await supabase
+                const { data: items } = await adminClient
                     .from('booking_items')
                     .select('id, qr_code, attendee_name, ticket_type:ticket_types(name)')
-                    .eq('booking_id', booking.id)
+                    .eq('booking_id', (booking as { id: string }).id)
                     .limit(1)
                 if (items && items[0]) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    bookingItem = { ...items[0], booking: booking as any } as any
+                    bookingItem = { ...items[0], booking }
                 }
             }
         }
 
-        if (!bookingItem) {
-            return NextResponse.json({ type: 'invalid', message: 'Ticket not found' })
+        if (!bookingItem || !bookingItem.booking) {
+            return NextResponse.json({ success: false, message: 'Invalid ticket — not found in system', code: 'INVALID' })
         }
 
         const bk = bookingItem.booking
-        if (!bk) return NextResponse.json({ type: 'invalid' })
+        const event = bk.event
 
-        // Check booking status
-        if (bk.status !== 'confirmed') {
-            return NextResponse.json({ type: 'invalid', message: 'Booking is not confirmed' })
-        }
-
-        // Check event matches
+        // Step 2 — Check event match
         if (event_id && bk.event_id !== event_id) {
             return NextResponse.json({
-                type: 'wrong_event',
-                eventTitle: (bk.event as { title?: string } | null)?.title || 'Unknown event',
+                success: false,
+                message: `This ticket is for ${event?.title ?? 'another event'}, not this event`,
+                code: 'WRONG_EVENT',
             })
         }
 
-        // Check organiser owns this event
-        const eventOrganiserId = (bk.event as { organiser_id?: string } | null)?.organiser_id
-        if (eventOrganiserId !== organiser.id) {
-            return NextResponse.json({ type: 'invalid', message: 'Not your event' }, { status: 403 })
+        // Step 3 — Check event status
+        if (event?.status === 'cancelled') {
+            return NextResponse.json({ success: false, message: 'This event has been cancelled', code: 'CANCELLED' })
         }
 
-        // Check if already checked in
-        const { data: existing } = await supabase
+        // Step 4 — Check event timing
+        if (event?.start_at) {
+            const now = Date.now()
+            const startAt = new Date(event.start_at).getTime()
+            const endAt = event.end_at ? new Date(event.end_at).getTime() : startAt + 4 * 60 * 60 * 1000
+
+            const openAt = startAt - 3 * 60 * 60 * 1000
+            const closedAt = Math.min(endAt + 2 * 60 * 60 * 1000, startAt + 24 * 60 * 60 * 1000)
+
+            if (now < openAt) {
+                const formattedOpen = new Intl.DateTimeFormat('en-GB', {
+                    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
+                }).format(new Date(openAt))
+                return NextResponse.json({
+                    success: false,
+                    message: `Check-in opens at ${formattedOpen} — 3 hours before the event`,
+                    code: 'TOO_EARLY',
+                })
+            }
+
+            if (now > closedAt) {
+                return NextResponse.json({ success: false, message: 'This event has ended', code: 'EVENT_ENDED' })
+            }
+        }
+
+        // Step 5 — Check booking status
+        if (bk.status === 'cancelled' || bk.status === 'refunded') {
+            return NextResponse.json({ success: false, message: 'This ticket has been cancelled or refunded', code: 'CANCELLED_TICKET' })
+        }
+
+        // Step 6 — Check if already scanned
+        const { data: existing } = await adminClient
             .from('checkins')
             .select('checked_in_at')
             .eq('booking_item_id', bookingItem.id)
-            .single()
+            .maybeSingle()
 
-        if (existing) {
+        if (existing?.checked_in_at) {
+            const checkedAt = new Date(existing.checked_in_at)
+            const formattedTime = new Intl.DateTimeFormat('en-GB', {
+                hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
+            }).format(checkedAt)
+            const formattedDate = new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Europe/London',
+            }).format(checkedAt)
             return NextResponse.json({
-                type: 'already',
-                checkedInAt: existing.checked_in_at,
-                name: bookingItem.attendee_name,
-                ticketType: (bookingItem.ticket_type as { name?: string } | null)?.name || 'Ticket',
+                success: false,
+                message: `Already checked in at ${formattedTime} on ${formattedDate}`,
+                code: 'ALREADY_SCANNED',
             })
         }
 
-        // Insert checkin
-        const { error } = await supabase
+        // Step 7 — SUCCESS — Mark as checked in
+        const { error } = await adminClient
             .from('checkins')
             .insert({
                 booking_item_id: bookingItem.id,
-                qr_token: bookingItem.qr_code || booking_ref || '',
+                qr_token: bookingItem.qr_code || booking_ref || 'manual',
                 checked_in_by: user.id,
             })
 
         if (error) {
-            return NextResponse.json({ type: 'invalid', message: error.message }, { status: 500 })
+            return NextResponse.json({ success: false, message: 'Failed to record check-in', code: 'INVALID' }, { status: 500 })
         }
 
+        const checkedInAt = new Intl.DateTimeFormat('en-GB', {
+            hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
+        }).format(new Date())
+
         return NextResponse.json({
-            type: 'success',
-            name: bookingItem.attendee_name || 'Attendee',
-            ticketType: (bookingItem.ticket_type as { name?: string } | null)?.name || 'Ticket',
+            success: true,
+            message: 'Welcome! Checked in successfully',
+            code: 'SUCCESS',
+            data: {
+                attendee_name: bookingItem.attendee_name || 'Attendee',
+                ticket_type: bookingItem.ticket_type?.name || 'Ticket',
+                event_name: event?.title || '',
+                checked_in_at: checkedInAt,
+            },
         })
     } catch (err) {
         console.error('Checkin error:', err)
-        return NextResponse.json({ type: 'invalid', message: 'Server error' }, { status: 500 })
+        return NextResponse.json({ success: false, message: 'Server error', code: 'INVALID' }, { status: 500 })
     }
 }
