@@ -27,7 +27,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
     const { data: eventData, error } = await supabase
         .from('events')
-        .select('*, checkin_start_at, checkin_end_at, ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
+        .select('*, ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
         .eq('slug', slug)
         .single();
 
