@@ -39,7 +39,18 @@ function PaymentForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <PaymentElement options={{ layout: 'tabs' }} />
+            <PaymentElement options={{
+                layout: {
+                    type: 'accordion',
+                    defaultCollapsed: false,
+                    radios: false,
+                    spacedAccordionItems: false
+                },
+                wallets: {
+                    applePay: 'always' as 'auto',
+                    googlePay: 'always' as 'auto'
+                }
+            }} />
 
             <label className="flex items-start gap-3 cursor-pointer">
                 <input
