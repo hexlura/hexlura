@@ -50,7 +50,126 @@ export async function POST(req: NextRequest) {
 
     if (event.type === 'payment_intent.payment_failed') {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
-        console.error('Payment failed:', paymentIntent.id, paymentIntent.last_payment_error?.message)
+        const bookingRef = paymentIntent.metadata?.booking_ref
+
+        if (bookingRef) {
+            try {
+                const supabase = createAdminClient()
+
+                const { data: booking } = await supabase
+                    .from('bookings')
+                    .select('id, status')
+                    .eq('booking_ref', bookingRef)
+                    .maybeSingle()
+
+                if (booking && booking.status === 'pending') {
+                    await supabase
+                        .from('bookings')
+                        .update({ status: 'cancelled' })
+                        .eq('id', booking.id)
+
+                    const { data: bookingItems } = await supabase
+                        .from('booking_items')
+                        .select('ticket_type_id, quantity')
+                        .eq('booking_id', booking.id)
+
+                    if (bookingItems) {
+                        for (const item of bookingItems) {
+                            const { data: tt } = await supabase
+                                .from('ticket_types')
+                                .select('quantity_sold')
+                                .eq('id', item.ticket_type_id)
+                                .single()
+
+                            if (tt) {
+                                await supabase
+                                    .from('ticket_types')
+                                    .update({ quantity_sold: Math.max(0, tt.quantity_sold - item.quantity) })
+                                    .eq('id', item.ticket_type_id)
+                            }
+                        }
+                    }
+
+                    console.log('Payment failed — booking cancelled and tickets released:', bookingRef)
+                }
+            } catch (err) {
+                console.error('Error handling payment_intent.payment_failed:', err)
+            }
+        } else {
+            console.error('Payment failed:', paymentIntent.id, paymentIntent.last_payment_error?.message)
+        }
+    }
+
+    if ((event.type as string) === 'transfer.failed') {
+        const transfer = event.data.object as Stripe.Transfer
+
+        try {
+            const supabase = createAdminClient()
+
+            const { data: payout } = await supabase
+                .from('payouts')
+                .select('id, amount_pence')
+                .eq('stripe_transfer_id', transfer.id)
+                .maybeSingle()
+
+            if (payout) {
+                await supabase
+                    .from('payouts')
+                    .update({ status: 'failed' })
+                    .eq('id', payout.id)
+
+                const { data: adminUser } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('role', 'admin')
+                    .limit(1)
+                    .maybeSingle()
+
+                if (adminUser) {
+                    const amountPounds = ((payout.amount_pence ?? 0) / 100).toFixed(2)
+                    await supabase.from('notifications').insert({
+                        user_id: adminUser.id,
+                        type: 'payout_failed',
+                        title: 'Payout transfer failed',
+                        body: `Payout transfer failed for £${amountPounds} — manual action required`,
+                    })
+                }
+            }
+
+            console.log('Transfer failed — payout marked as failed:', transfer.id)
+        } catch (err) {
+            console.error('Error handling transfer.failed:', err)
+        }
+    }
+
+    if (event.type === 'account.updated') {
+        const account = event.data.object as Stripe.Account
+
+        try {
+            const supabase = createAdminClient()
+
+            const { data: organiserProfile } = await supabase
+                .from('organiser_profiles')
+                .select('id')
+                .eq('stripe_account_id', account.id)
+                .maybeSingle()
+
+            if (organiserProfile) {
+                if (account.charges_enabled && account.payouts_enabled) {
+                    // Attempt to set stripe_verified if column exists — ignore error if not
+                    await supabase
+                        .from('organiser_profiles')
+                        .update({ stripe_verified: true } as Record<string, unknown>)
+                        .eq('id', organiserProfile.id)
+
+                    console.log('Stripe account verified for organiser:', account.id)
+                }
+            }
+
+            console.log('account.updated received:', account.id)
+        } catch (err) {
+            console.error('Error handling account.updated:', err)
+        }
     }
 
     return NextResponse.json({ received: true }, { status: 200 })
