@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
         const supabase = createClient()
         await supabase
             .from('organiser_profiles')
-            .update({ stripe_account_id: stripeAccountId })
+            .update({ stripe_account_id: stripeAccountId, payout_method: 'stripe_connect' })
             .eq('user_id', state)
 
         return NextResponse.redirect(`${appUrl}/organiser/settings?success=stripe_connected`)

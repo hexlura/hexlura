@@ -15,11 +15,16 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
     const [website, setWebsite] = useState(organiser.website || '')
     const [vatRegistered, setVatRegistered] = useState(organiser.vat_registered)
     const [vatNumber, setVatNumber] = useState(organiser.vat_number || '')
+    const [payoutMethod, setPayoutMethod] = useState<'bank_transfer' | 'stripe_connect'>(organiser.payout_method ?? 'bank_transfer')
+    const [bankAccountName, setBankAccountName] = useState(organiser.bank_account_name || '')
+    const [bankSortCode, setBankSortCode] = useState(organiser.bank_sort_code || '')
+    const [bankAccountNumber, setBankAccountNumber] = useState(organiser.bank_account_number || '')
+    const [payoutSaving, setPayoutSaving] = useState(false)
+    const [payoutSaved, setPayoutSaved] = useState(false)
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const [logoUploading, setLogoUploading] = useState(false)
     const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
-    const [showDisconnectModal, setShowDisconnectModal] = useState(false)
     const [showCloseModal, setShowCloseModal] = useState(false)
 
     // Notification toggles
@@ -38,6 +43,31 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
         setSaving(false)
+    }
+
+    async function savePayoutMethod(e: React.FormEvent) {
+        e.preventDefault()
+        setPayoutSaving(true)
+        const supabase = createClient()
+        if (payoutMethod === 'bank_transfer') {
+            await supabase
+                .from('organiser_profiles')
+                .update({
+                    payout_method: 'bank_transfer',
+                    bank_account_name: bankAccountName,
+                    bank_sort_code: bankSortCode,
+                    bank_account_number: bankAccountNumber,
+                })
+                .eq('id', organiser.id)
+        } else {
+            await supabase
+                .from('organiser_profiles')
+                .update({ payout_method: 'stripe_connect' })
+                .eq('id', organiser.id)
+        }
+        setPayoutSaved(true)
+        setTimeout(() => setPayoutSaved(false), 2000)
+        setPayoutSaving(false)
     }
 
     async function saveVat(e: React.FormEvent) {
@@ -176,28 +206,106 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                 <p className="text-xs text-muted mt-3">Notification preferences are saved automatically</p>
             </Section>
 
-            {/* Bank Account */}
-            <Section title="Bank Account">
-                {organiser.stripe_account_id ? (
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-success text-sm">✓ Bank account connected</span>
-                        </div>
-                        <div className="flex gap-3">
-                            <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
-                                <Button variant="secondary" size="sm">Manage Bank Account</Button>
-                            </a>
-                            <Button variant="danger" size="sm" onClick={() => setShowDisconnectModal(true)}>Disconnect</Button>
-                        </div>
+            {/* Payout Method */}
+            <Section title="Payout Method">
+                <form onSubmit={savePayoutMethod} className="space-y-4">
+                    <div className="flex flex-col gap-3">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="payoutMethod"
+                                value="bank_transfer"
+                                checked={payoutMethod === 'bank_transfer'}
+                                onChange={() => setPayoutMethod('bank_transfer')}
+                                className="mt-0.5"
+                            />
+                            <div>
+                                <p className="text-sm text-text font-medium">Bank Transfer</p>
+                                <p className="text-xs text-muted">Admin manually transfers earnings to your UK bank account</p>
+                            </div>
+                        </label>
+                        <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="payoutMethod"
+                                value="stripe_connect"
+                                checked={payoutMethod === 'stripe_connect'}
+                                onChange={() => setPayoutMethod('stripe_connect')}
+                                className="mt-0.5"
+                            />
+                            <div>
+                                <p className="text-sm text-text font-medium">Stripe Connect</p>
+                                <p className="text-xs text-muted">Automated payouts directly to your Stripe account</p>
+                            </div>
+                        </label>
                     </div>
-                ) : (
-                    <div>
-                        <p className="text-sm text-muted mb-3">Connect your bank account to receive payouts</p>
-                        <a href="/api/stripe/connect">
-                            <Button variant="primary" size="md">Connect with Stripe</Button>
-                        </a>
-                    </div>
-                )}
+
+                    {payoutMethod === 'bank_transfer' && (
+                        <div className="space-y-3 pt-2 border-t border-border">
+                            <div>
+                                <label className="text-xs text-muted block mb-1.5">Account Holder Name</label>
+                                <input
+                                    type="text"
+                                    value={bankAccountName}
+                                    onChange={e => setBankAccountName(e.target.value)}
+                                    placeholder="Full name or company name"
+                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs text-muted block mb-1.5">Sort Code</label>
+                                    <input
+                                        type="text"
+                                        value={bankSortCode}
+                                        onChange={e => setBankSortCode(e.target.value)}
+                                        placeholder="00-00-00"
+                                        maxLength={8}
+                                        className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted block mb-1.5">Account Number</label>
+                                    <input
+                                        type="text"
+                                        value={bankAccountNumber}
+                                        onChange={e => setBankAccountNumber(e.target.value)}
+                                        placeholder="12345678"
+                                        maxLength={8}
+                                        className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                    />
+                                </div>
+                            </div>
+                            {organiser.bank_account_number && (
+                                <p className="text-xs text-success">✓ Bank details on file — ending {organiser.bank_account_number.slice(-4)}</p>
+                            )}
+                        </div>
+                    )}
+
+                    {payoutMethod === 'stripe_connect' && (
+                        <div className="pt-2 border-t border-border space-y-3">
+                            {organiser.stripe_account_id ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-success text-sm">✓ Stripe account connected</span>
+                                    <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
+                                        <Button type="button" variant="secondary" size="sm">Manage in Stripe</Button>
+                                    </a>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p className="text-xs text-muted mb-2">You&apos;ll be redirected to Stripe to connect your account</p>
+                                    <a href="/api/stripe/connect">
+                                        <Button type="button" variant="primary" size="sm">Connect with Stripe</Button>
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <Button type="submit" variant="primary" size="md" disabled={payoutSaving}>
+                        {payoutSaved ? 'Saved ✓' : payoutSaving ? 'Saving...' : 'Save Payout Method'}
+                    </Button>
+                </form>
             </Section>
 
             {/* Danger Zone */}
@@ -209,20 +317,6 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                 </p>
                 <Button variant="danger" size="md" onClick={() => setShowCloseModal(true)}>Close Organiser Account</Button>
             </div>
-
-            {/* Disconnect Modal */}
-            {showDisconnectModal && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
-                        <h3 className="font-heading text-xl text-text mb-3">Disconnect Bank Account?</h3>
-                        <p className="text-sm text-muted mb-4">You will stop receiving automatic payouts until you reconnect.</p>
-                        <div className="flex gap-3">
-                            <Button variant="danger" size="md" onClick={() => setShowDisconnectModal(false)}>Disconnect</Button>
-                            <Button variant="secondary" size="md" onClick={() => setShowDisconnectModal(false)}>Cancel</Button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Close Account Modal */}
             {showCloseModal && (

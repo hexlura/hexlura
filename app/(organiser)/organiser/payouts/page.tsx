@@ -11,7 +11,7 @@ export default async function OrganiserPayoutsPage() {
     const serviceClient = createServiceClient()
     const { data: organiser } = await serviceClient
         .from('organiser_profiles')
-        .select('id, stripe_account_id')
+        .select('id, stripe_account_id, payout_method, bank_account_number')
         .eq('user_id', user.id)
         .single()
     if (!organiser) redirect('/organiser/pending')
@@ -49,28 +49,52 @@ export default async function OrganiserPayoutsPage() {
             <div className="bg-card border border-border rounded-none p-6 mb-6">
                 <p className="text-xs text-muted uppercase tracking-wider mb-1">Available Balance</p>
                 <p className="font-heading text-5xl text-text">{formatPence(pendingBalance)}</p>
-                {!organiser.stripe_account_id ? (
-                    <p className="text-xs text-muted mt-2">Connect Stripe to receive payouts</p>
-                ) : (
-                    <p className="text-xs text-success mt-2">Bank account connected ✓</p>
-                )}
+                <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full border border-border text-muted">
+                        {organiser.payout_method === 'stripe_connect' ? 'Stripe Connect' : 'Bank Transfer'}
+                    </span>
+                    {organiser.payout_method === 'bank_transfer' && organiser.bank_account_number && (
+                        <span className="text-xs text-muted">ending ···· {String(organiser.bank_account_number).slice(-4)}</span>
+                    )}
+                    {organiser.payout_method === 'stripe_connect' && organiser.stripe_account_id && (
+                        <span className="text-xs text-success">✓ Connected</span>
+                    )}
+                </div>
             </div>
 
-            {/* Stripe status banner */}
-            {!organiser.stripe_account_id ? (
-                <div className="bg-gold/10 border border-gold/30 rounded-none p-4 mb-6 flex items-center justify-between">
-                    <div>
-                        <p className="text-gold text-sm font-medium">Connect your bank account to receive payouts</p>
-                        <p className="text-muted text-xs mt-0.5">Required to receive automatic Stripe payouts</p>
+            {/* Payout method status banner */}
+            {organiser.payout_method === 'bank_transfer' ? (
+                organiser.bank_account_number ? (
+                    <div className="bg-success/10 border border-success/20 rounded-none p-4 mb-6">
+                        <p className="text-success text-sm">✓ Bank details on file — payouts processed by admin</p>
                     </div>
-                    <a href="/api/stripe/connect" className="px-4 py-2 bg-gold text-black text-sm rounded-sm font-medium hover:bg-yellow-400 transition-colors">
-                        Connect with Stripe
-                    </a>
-                </div>
+                ) : (
+                    <div className="bg-gold/10 border border-gold/30 rounded-none p-4 mb-6 flex items-center justify-between">
+                        <div>
+                            <p className="text-gold text-sm font-medium">Add your bank details to receive payouts</p>
+                            <p className="text-muted text-xs mt-0.5">Go to Settings → Payout Method to add your UK bank account</p>
+                        </div>
+                        <a href="/organiser/settings" className="px-4 py-2 bg-gold text-black text-sm rounded-sm font-medium hover:bg-yellow-400 transition-colors">
+                            Add Bank Details
+                        </a>
+                    </div>
+                )
             ) : (
-                <div className="bg-success/10 border border-success/20 rounded-none p-4 mb-6">
-                    <p className="text-success text-sm">✓ Bank account connected</p>
-                </div>
+                organiser.stripe_account_id ? (
+                    <div className="bg-success/10 border border-success/20 rounded-none p-4 mb-6">
+                        <p className="text-success text-sm">✓ Stripe account connected — automatic payouts enabled</p>
+                    </div>
+                ) : (
+                    <div className="bg-gold/10 border border-gold/30 rounded-none p-4 mb-6 flex items-center justify-between">
+                        <div>
+                            <p className="text-gold text-sm font-medium">Connect your Stripe account to receive payouts</p>
+                            <p className="text-muted text-xs mt-0.5">Required for automatic Stripe payouts</p>
+                        </div>
+                        <a href="/api/stripe/connect" className="px-4 py-2 bg-gold text-black text-sm rounded-sm font-medium hover:bg-yellow-400 transition-colors">
+                            Connect with Stripe
+                        </a>
+                    </div>
+                )
             )}
 
             {/* Payouts table */}

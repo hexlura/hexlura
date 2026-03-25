@@ -20,7 +20,7 @@ export default async function AdminPayoutsPage({
 
     const { data: dueData } = await adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, status, scheduled_at, created_at, organiser_id, event_id, organiser_profiles(org_name, profiles(full_name, email)), events(title, end_at, start_at)')
+        .select('id, gross_pence, net_pence, status, scheduled_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, profiles(full_name, email)), events(title, end_at, start_at)')
         .eq('status', 'pending')
 
     type PayoutWithRelated = {
@@ -34,7 +34,7 @@ export default async function AdminPayoutsPage({
         organiser_id: string
         event_id: string | null
         stripe_transfer_id: string | null
-        organiser_profiles: { org_name: string; profiles: { full_name: string | null; email: string | null } | null } | null
+        organiser_profiles: { org_name: string; payout_method?: string; profiles: { full_name: string | null; email: string | null } | null } | null
         events: { title: string; end_at: string | null; start_at: string } | null
     }
 
@@ -50,7 +50,7 @@ export default async function AdminPayoutsPage({
 
     let query = adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, paid_at, stripe_transfer_id, created_at, organiser_id, event_id, organiser_profiles(org_name), events(title)', { count: 'exact' })
+        .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, paid_at, stripe_transfer_id, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method), events(title)', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(offset, offset + pageSize - 1)
 

@@ -27,6 +27,10 @@ export interface OrganiserProfile {
     vat_registered: boolean;
     stripe_account_id: string | null;
     organiser_type: 'individual' | 'artist' | 'club_venue' | 'event_company' | 'charity' | 'education';
+    payout_method: 'stripe_connect' | 'bank_transfer';
+    bank_account_name: string | null;
+    bank_sort_code: string | null;
+    bank_account_number: string | null;
     is_approved: boolean;
     is_suspended: boolean;
     approved_at: string | null;

@@ -17,7 +17,7 @@ interface PayoutRow {
     created_at: string
     organiser_id: string
     event_id: string | null
-    organiser_profiles: { org_name: string; profiles?: { full_name: string | null; email: string | null } | null } | null
+    organiser_profiles: { org_name: string; payout_method?: string; profiles?: { full_name: string | null; email: string | null } | null } | null
     events: { title: string; end_at?: string | null; start_at?: string } | null
 }
 
@@ -171,14 +171,14 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Organiser', 'Event', 'Gross (£)', 'Net Paid (£)', 'Status', 'Scheduled', 'Paid Date'].map(h => (
+                            {['Organiser', 'Event', 'Gross (£)', 'Net Paid (£)', 'Method', 'Status', 'Scheduled', 'Paid Date'].map(h => (
                                 <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {allPayouts.length === 0 && (
-                            <tr><td colSpan={7} className="text-center text-muted text-xs py-12">No payouts</td></tr>
+                            <tr><td colSpan={8} className="text-center text-muted text-xs py-12">No payouts</td></tr>
                         )}
                         {allPayouts.map(p => (
                             <tr key={p.id} className="border-b border-border/50 hover:bg-surface transition-colors">
@@ -186,6 +186,11 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <td className="py-3 px-4 text-muted text-xs max-w-[150px] truncate">{p.events?.title ?? '—'}</td>
                                 <td className="py-3 px-4 text-text text-xs">{formatPence(p.gross_pence || 0)}</td>
                                 <td className="py-3 px-4 text-text text-xs">{formatPence(p.net_pence || 0)}</td>
+                                <td className="py-3 px-4">
+                                    <span className="text-xs px-2 py-0.5 rounded-full border border-border text-muted">
+                                        {p.organiser_profiles?.payout_method === 'stripe_connect' ? 'Stripe' : 'Bank'}
+                                    </span>
+                                </td>
                                 <td className="py-3 px-4">
                                     <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[p.status] || STATUS_BADGE.pending}`}>
                                         {p.status}
@@ -215,7 +220,12 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                     <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Process Payout</h3>
                         <p className="text-sm text-muted mb-2">{confirmModal.organiser_profiles?.org_name}</p>
-                        <p className="text-sm text-muted mb-4">Send {formatPence(confirmModal.net_pence || 0)} via Stripe?</p>
+                        <p className="text-sm text-muted mb-1">Amount: <span className="text-text font-medium">{formatPence(confirmModal.net_pence || 0)}</span></p>
+                        <p className="text-sm text-muted mb-4">
+                            {confirmModal.organiser_profiles?.payout_method === 'stripe_connect'
+                                ? 'This will trigger an automatic Stripe transfer.'
+                                : 'Mark as paid after sending the bank transfer manually.'}
+                        </p>
                         <div className="flex gap-3">
                             <Button variant="primary" size="md" onClick={() => handleProcessPayout(confirmModal)} disabled={loading === confirmModal.id}>
                                 {loading === confirmModal.id ? 'Processing...' : 'Confirm Payout'}
