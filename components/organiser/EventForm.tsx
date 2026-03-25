@@ -8,6 +8,7 @@ import { calculateBookingFeePerTicket, formatPence } from '@/lib/fees'
 import type { Event, TicketType, PromoCode } from '@/types'
 import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
+import { DateTimePicker } from '@/components/organiser/DateTimePicker'
 
 const RichTextEditor = dynamic(
     () => import('@/components/organiser/RichTextEditor').then(m => m.RichTextEditor),
@@ -669,19 +670,19 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Start Date & Time *</label>
-                                <input type="datetime-local" value={startAt} onChange={e => setStartAt(e.target.value)} min={new Date().toISOString().slice(0, 16)} className={inputClass} required />
+                                <DateTimePicker value={startAt} onChange={setStartAt} min={new Date().toISOString().slice(0, 16)} placeholder="Select start date & time" required className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass}>End Date & Time</label>
-                                <input type="datetime-local" value={endAt} onChange={e => setEndAt(e.target.value)} min={startAt || new Date().toISOString().slice(0, 16)} className={inputClass} />
+                                <DateTimePicker value={endAt} onChange={setEndAt} min={startAt || new Date().toISOString().slice(0, 16)} placeholder="Select end date & time" className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass}>Check-in Opens</label>
-                                <input type="datetime-local" value={checkinStartAt} onChange={e => setCheckinStartAt(e.target.value)} className={inputClass} />
+                                <DateTimePicker value={checkinStartAt} onChange={setCheckinStartAt} placeholder="Select check-in open time" className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass}>Check-in Closes</label>
-                                <input type="datetime-local" value={checkinEndAt} onChange={e => setCheckinEndAt(e.target.value)} className={inputClass} />
+                                <DateTimePicker value={checkinEndAt} onChange={setCheckinEndAt} placeholder="Select check-in close time" className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass}>Timezone</label>

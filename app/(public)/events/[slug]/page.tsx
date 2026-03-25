@@ -84,10 +84,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         timeZone: 'Europe/London',
     }).format(new Date(event.start_at));
 
-    const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' };
-    const startTime = new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date(event.start_at));
+    const timeOptions: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' };
+    const startTime = new Intl.DateTimeFormat('en-US', timeOptions).format(new Date(event.start_at));
     const endTime = event.end_at && event.end_at !== event.start_at
-        ? new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date(event.end_at))
+        ? new Intl.DateTimeFormat('en-US', timeOptions).format(new Date(event.end_at))
         : null;
 
     return (
@@ -148,9 +148,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         {/* Check-in window */}
                         {event.checkin_start_at && (() => {
                             const fmtOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' }
-                            const openStr = new Intl.DateTimeFormat('en-GB', fmtOpts).format(new Date(event.checkin_start_at))
+                            const openStr = new Intl.DateTimeFormat('en-US', fmtOpts).format(new Date(event.checkin_start_at))
                             const closeStr = event.checkin_end_at
-                                ? new Intl.DateTimeFormat('en-GB', fmtOpts).format(new Date(event.checkin_end_at))
+                                ? new Intl.DateTimeFormat('en-US', fmtOpts).format(new Date(event.checkin_end_at))
                                 : null
                             const windowStr = closeStr ? `Opens ${openStr} · Closes ${closeStr}` : `Opens ${openStr}`
                             return (
