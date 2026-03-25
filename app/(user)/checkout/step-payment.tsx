@@ -47,8 +47,8 @@ function PaymentForm() {
                     spacedAccordionItems: false
                 },
                 wallets: {
-                    applePay: 'always' as 'auto',
-                    googlePay: 'always' as 'auto'
+                    applePay: 'auto',
+                    googlePay: 'auto'
                 }
             }} />
 
