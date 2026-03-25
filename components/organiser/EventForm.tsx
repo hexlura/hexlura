@@ -117,6 +117,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [slug, setSlug] = useState(event?.slug || '')
     const [startAt, setStartAt] = useState(toDatetimeLocal(event?.start_at))
     const [endAt, setEndAt] = useState(toDatetimeLocal(event?.end_at))
+    const [checkinStartAt, setCheckinStartAt] = useState(toDatetimeLocal((event as (typeof event & { checkin_start_at?: string }))?.checkin_start_at))
+    const [checkinEndAt, setCheckinEndAt] = useState(toDatetimeLocal((event as (typeof event & { checkin_end_at?: string }))?.checkin_end_at))
     const [venueName, setVenueName] = useState(event?.venue_name || '')
     // Parse city from stored venue_address (saved as "street, city")
     const _rawAddr = event?.venue_address || ''
@@ -243,6 +245,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 venue_postcode: venuePostcode,
                 start_at: startAt ? ukTimeToUTC(startAt) : null,
                 end_at: endAt ? ukTimeToUTC(endAt) : null,
+                checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
+                checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
                 banner_url: bannerUrl || null,
                 youtube_url: youtubeUrl || null,
                 status: 'draft',
@@ -274,6 +278,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             venue_postcode: venuePostcode,
             start_at: startAt ? new Date(startAt).toISOString() : null,
             end_at: endAt ? new Date(endAt).toISOString() : null,
+            checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
+            checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
             banner_url: bannerUrl || null,
             youtube_url: youtubeUrl || null,
             min_age: minAge,
@@ -378,6 +384,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             venue_postcode: venuePostcode,
             start_at: startAt ? new Date(startAt).toISOString() : null,
             end_at: endAt ? new Date(endAt).toISOString() : null,
+            checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
+            checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
             banner_url: bannerUrl || null,
             youtube_url: youtubeUrl || null,
             min_age: minAge,
@@ -666,6 +674,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             <div>
                                 <label className={labelClass}>End Date & Time</label>
                                 <input type="datetime-local" value={endAt} onChange={e => setEndAt(e.target.value)} min={startAt || new Date().toISOString().slice(0, 16)} className={inputClass} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Check-in Opens</label>
+                                <input type="datetime-local" value={checkinStartAt} onChange={e => setCheckinStartAt(e.target.value)} className={inputClass} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Check-in Closes</label>
+                                <input type="datetime-local" value={checkinEndAt} onChange={e => setCheckinEndAt(e.target.value)} className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass}>Timezone</label>
