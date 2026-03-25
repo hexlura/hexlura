@@ -84,11 +84,29 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         timeZone: 'Europe/London',
     }).format(new Date(event.start_at));
 
-    const timeOptions: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' };
-    const startTime = new Intl.DateTimeFormat('en-US', timeOptions).format(new Date(event.start_at));
-    const endTime = event.end_at && event.end_at !== event.start_at
-        ? new Intl.DateTimeFormat('en-US', timeOptions).format(new Date(event.end_at))
+    const timeOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' };
+    const shortDateOpts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', timeZone: 'Europe/London' };
+
+    // Compare calendar dates in London tz (en-CA gives YYYY-MM-DD)
+    const startDateUK = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date(event.start_at));
+    const endDateUK = event.end_at ? new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date(event.end_at)) : null;
+    const isMultiDay = !!endDateUK && endDateUK !== startDateUK;
+
+    const startTime = new Intl.DateTimeFormat('en-US', timeOpts).format(new Date(event.start_at));
+    const endTime = event.end_at
+        ? new Intl.DateTimeFormat('en-US', timeOpts).format(new Date(event.end_at))
         : null;
+    const endShortDate = event.end_at
+        ? new Intl.DateTimeFormat('en-GB', shortDateOpts).format(new Date(event.end_at))
+        : null;
+
+    // Helper: format a UTC ISO string as "10 Apr, 9:30 PM" in London tz
+    function fmtCheckin(iso: string): string {
+        const d = new Date(iso);
+        const date = new Intl.DateTimeFormat('en-GB', shortDateOpts).format(d);
+        const time = new Intl.DateTimeFormat('en-US', timeOpts).format(d);
+        return `${date}, ${time}`;
+    }
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
@@ -131,7 +149,15 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                 </div>
                                 <div>
                                     <h4 className="font-semibold">{formattedDate}</h4>
-                                    <p className="text-muted-foreground text-sm">{startTime} {endTime ? `- ${endTime}` : 'onwards'} (UK Time)</p>
+                                    {isMultiDay ? (
+                                        <p className="text-muted-foreground text-sm">
+                                            {startTime} → {endShortDate}, {endTime} (UK Time)
+                                        </p>
+                                    ) : (
+                                        <p className="text-muted-foreground text-sm">
+                                            {startTime}{endTime && endTime !== startTime ? ` – ${endTime}` : ''} (UK Time)
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex gap-4">
@@ -147,11 +173,8 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
                         {/* Check-in window */}
                         {event.checkin_start_at && (() => {
-                            const fmtOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' }
-                            const openStr = new Intl.DateTimeFormat('en-US', fmtOpts).format(new Date(event.checkin_start_at))
-                            const closeStr = event.checkin_end_at
-                                ? new Intl.DateTimeFormat('en-US', fmtOpts).format(new Date(event.checkin_end_at))
-                                : null
+                            const openStr = fmtCheckin(event.checkin_start_at)
+                            const closeStr = event.checkin_end_at ? fmtCheckin(event.checkin_end_at) : null
                             const windowStr = closeStr ? `Opens ${openStr} · Closes ${closeStr}` : `Opens ${openStr}`
                             return (
                                 <div>
