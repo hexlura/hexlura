@@ -27,7 +27,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
     const { data: eventData, error } = await supabase
         .from('events')
-        .select('*, ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
+        .select('*, checkin_start_at, checkin_end_at, ticket_types(*), reviews(*, user:profiles(full_name, avatar_url))')
         .eq('slug', slug)
         .single();
 
@@ -144,6 +144,27 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                 </div>
                             </div>
                         </div>
+
+                        {/* Check-in window */}
+                        {event.checkin_start_at && (() => {
+                            const fmtOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' }
+                            const openStr = new Intl.DateTimeFormat('en-GB', fmtOpts).format(new Date(event.checkin_start_at))
+                            const closeStr = event.checkin_end_at
+                                ? new Intl.DateTimeFormat('en-GB', fmtOpts).format(new Date(event.checkin_end_at))
+                                : null
+                            const windowStr = closeStr ? `Opens ${openStr} · Closes ${closeStr}` : `Opens ${openStr}`
+                            return (
+                                <div>
+                                    <p style={{ fontSize: '11px', color: '#8888AA', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                                        DOORS / CHECK-IN
+                                    </p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#F0F0F8' }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h10"/><path d="M18 8l4 4-4 4"/><path d="M8 12h14"/></svg>
+                                        {windowStr}
+                                    </div>
+                                </div>
+                            )
+                        })()}
 
                         {/* Refund policy badge */}
                         {event.refund_policy && (() => {

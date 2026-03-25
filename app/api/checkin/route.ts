@@ -29,7 +29,7 @@ export async function POST(req: Request) {
                     id, qr_code, attendee_name,
                     ticket_type:ticket_types(name),
                     booking:bookings(id, status, event_id,
-                        event:events(id, title, start_at, end_at, status)
+                        event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)
                     )
                 `)
                 .eq('qr_code', qr_token)
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         } else if (booking_ref) {
             const { data: booking } = await adminClient
                 .from('bookings')
-                .select('id, status, event_id, event:events(id, title, start_at, end_at, status)')
+                .select('id, status, event_id, event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)')
                 .eq('booking_ref', booking_ref)
                 .maybeSingle()
 
@@ -77,26 +77,31 @@ export async function POST(req: Request) {
 
         // Step 4 — Check event timing
         if (event?.start_at) {
-            const now = Date.now()
-            const startAt = new Date(event.start_at).getTime()
-            const endAt = event.end_at ? new Date(event.end_at).getTime() : startAt + 4 * 60 * 60 * 1000
+            const now = new Date()
+            const eventStart = new Date(event.start_at)
+            const eventEnd = event.end_at ? new Date(event.end_at) : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000)
 
-            const openAt = startAt - 3 * 60 * 60 * 1000
-            const closedAt = Math.min(endAt + 2 * 60 * 60 * 1000, startAt + 24 * 60 * 60 * 1000)
+            const checkinOpens: Date = event.checkin_start_at
+                ? new Date(event.checkin_start_at)
+                : new Date(eventStart.getTime() - 2 * 60 * 60 * 1000)
 
-            if (now < openAt) {
+            const checkinCloses: Date = event.checkin_end_at
+                ? new Date(event.checkin_end_at)
+                : new Date(eventEnd.getTime() + 1 * 60 * 60 * 1000)
+
+            if (now < checkinOpens) {
                 const formattedOpen = new Intl.DateTimeFormat('en-GB', {
                     hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
-                }).format(new Date(openAt))
+                }).format(checkinOpens)
                 return NextResponse.json({
                     success: false,
-                    message: `Check-in opens at ${formattedOpen} — 3 hours before the event`,
+                    message: `Check-in opens at ${formattedOpen}`,
                     code: 'TOO_EARLY',
                 })
             }
 
-            if (now > closedAt) {
-                return NextResponse.json({ success: false, message: 'This event has ended', code: 'EVENT_ENDED' })
+            if (now > checkinCloses) {
+                return NextResponse.json({ success: false, message: 'Check-in has closed for this event', code: 'EVENT_ENDED' })
             }
         }
 
