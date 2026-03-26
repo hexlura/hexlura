@@ -4,15 +4,15 @@
 
 @layer base {
   :root {
-    --background: #0A0A0F;
-    --surface: #13131A;
-    --card: #1A1A24;
-    --border: #2A2A3A;
+    --background: #FFFFFF;
+    --surface: #F5F5F7;
+    --card: #FFFFFF;
+    --border: #C0C0C8;
     --accent: #E63950;
     --gold: #F5A623;
-    --text: #F0F0F8;
+    --text: #0A0A0F;
     --muted: #8888AA;
-    --success: #00E5A0;
+    --success: #00C48A;
   }
 
   body {
