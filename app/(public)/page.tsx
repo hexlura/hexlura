@@ -5,11 +5,11 @@ import { createClient } from '@/lib/supabase/server';
 import { Event } from '@/types';
 
 const CITIES = [
-    { name: 'London',     photo: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&q=80' },
-    { name: 'Manchester', photo: 'https://images.unsplash.com/photo-1588436706487-9d55d73a39e3?w=600&q=80' },
-    { name: 'Birmingham', photo: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80' },
-    { name: 'Edinburgh',  photo: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&q=80' },
-    { name: 'Liverpool',  photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
+    { name: 'London',     photo: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&q=80' },
+    { name: 'Manchester', photo: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=400&q=80' },
+    { name: 'Birmingham', photo: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=400&q=80' },
+    { name: 'Edinburgh',  photo: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80' },
+    { name: 'Liverpool',  photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80' },
     { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=400&q=80' },
 ];
 
@@ -60,12 +60,12 @@ export default async function HomePage() {
     };
 
     return (
-        <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
+        <div style={{ background: '#FFFFFF', minHeight: '100vh', padding: '0 24px' }}>
 
             {/* CITY CARDS SECTION */}
-            <section style={{ padding: '32px 24px 0' }}>
+            <section style={{ marginTop: '48px' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '22px', color: '#0A0A0F', marginBottom: '16px', letterSpacing: '1px' }}>
+                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', marginBottom: '16px', letterSpacing: '1px' }}>
                         EXPLORE BY CITY
                     </h2>
                     <div className="city-scroll" style={scrollContainerStyle}>
@@ -76,13 +76,14 @@ export default async function HomePage() {
                                 className="city-card"
                                 style={{
                                     flexShrink: 0,
-                                    width: '200px',
-                                    height: '140px',
+                                    width: '180px',
+                                    height: '260px',
                                     overflow: 'hidden',
                                     position: 'relative',
                                     cursor: 'pointer',
                                     display: 'block',
                                     textDecoration: 'none',
+                                    borderRadius: 0,
                                 }}
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -90,10 +91,32 @@ export default async function HomePage() {
                                     src={photo}
                                     alt={name}
                                     className="city-card-img"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s', display: 'block' }}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        objectPosition: 'center center',
+                                        transition: 'transform 0.4s ease',
+                                        display: 'block',
+                                    }}
                                 />
-                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }} />
-                                <span style={{ position: 'absolute', bottom: '8px', left: '10px', fontSize: '16px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: '100px',
+                                    background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+                                }} />
+                                <span style={{
+                                    position: 'absolute',
+                                    bottom: '14px',
+                                    left: '14px',
+                                    fontSize: '22px',
+                                    fontFamily: '"Bebas Neue", sans-serif',
+                                    color: '#FFFFFF',
+                                    letterSpacing: '1px',
+                                }}>
                                     {name}
                                 </span>
                             </Link>
@@ -103,17 +126,17 @@ export default async function HomePage() {
             </section>
 
             {/* CATEGORY ROWS */}
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 48px' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '48px' }}>
                 {categories.length === 0 ? (
                     <div style={{ padding: '60px 0', textAlign: 'center', color: '#666677' }}>
                         <p>No events yet. Check back soon!</p>
                     </div>
                 ) : (
-                    categories.map(([category, catEvents]) => (
+                    categories.map(([category, catEvents], index) => (
                         <section key={category}>
                             {/* Section header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '40px 0 16px' }}>
-                                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '24px', color: '#0A0A0F', letterSpacing: '1px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: index === 0 ? '48px' : '40px', marginBottom: '16px' }}>
+                                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px' }}>
                                     {category.toUpperCase()}
                                 </h2>
                                 <Link
@@ -127,7 +150,7 @@ export default async function HomePage() {
                             {/* Horizontal scroll row */}
                             <div
                                 className="drag-scroll"
-                                style={{ ...scrollContainerStyle, cursor: 'grab' }}
+                                style={{ ...scrollContainerStyle, gap: '16px', cursor: 'grab' }}
                             >
                                 {catEvents.map((event) => {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,7 +166,7 @@ export default async function HomePage() {
                                             href={`/events/${ev.slug}`}
                                             className="event-portrait-card"
                                             style={{
-                                                width: '200px',
+                                                width: '220px',
                                                 flexShrink: 0,
                                                 overflow: 'hidden',
                                                 border: '1px solid #E0E0E0',
@@ -155,7 +178,7 @@ export default async function HomePage() {
                                             }}
                                         >
                                             {/* Portrait image area */}
-                                            <div style={{ width: '200px', height: '280px', overflow: 'hidden', position: 'relative' }}>
+                                            <div style={{ width: '220px', height: '300px', overflow: 'hidden', position: 'relative' }}>
                                                 {ev.banner_url?.startsWith('http') ? (
                                                     // eslint-disable-next-line @next/next/no-img-element
                                                     <img
@@ -166,18 +189,18 @@ export default async function HomePage() {
                                                     />
                                                 ) : (
                                                     <div style={{ width: '100%', height: '100%', background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
+                                                        <span style={{ color: '#C0C0C8', fontSize: '13px' }}>No image</span>
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Card body */}
-                                            <div style={{ padding: '10px 8px' }}>
-                                                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                                            <div style={{ padding: '10px 6px 12px', background: '#FFFFFF' }}>
+                                                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
                                                     {dateStr}
                                                 </p>
                                                 <p style={{
-                                                    fontSize: '14px',
+                                                    fontSize: '15px',
                                                     color: '#0A0A0F',
                                                     fontWeight: 700,
                                                     lineHeight: 1.3,
@@ -212,7 +235,7 @@ export default async function HomePage() {
                 // City card image hover
                 document.querySelectorAll('.city-card').forEach(function(card) {
                     var img = card.querySelector('.city-card-img');
-                    card.addEventListener('mouseenter', function() { if (img) img.style.transform = 'scale(1.05)'; });
+                    card.addEventListener('mouseenter', function() { if (img) img.style.transform = 'scale(1.08)'; });
                     card.addEventListener('mouseleave', function() { if (img) img.style.transform = 'scale(1)'; });
                 });
 
