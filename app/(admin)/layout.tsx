@@ -56,7 +56,7 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="flex min-h-screen" style={{ background: '#0A0A0F' }}>
+        <div className="flex min-h-screen" style={{ background: '#F5F5F7' }}>
             {impersonatedName && <ImpersonationBanner impersonatedName={impersonatedName} />}
             <AdminSidebar
                 adminName={profile.full_name ?? 'Admin'}

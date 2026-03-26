@@ -47,14 +47,14 @@ const STATUS_BADGE: Record<RefundStatus, { bg: string; color: string; border: st
     pending: { bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623', label: 'Pending Organiser' },
     organiser_approved: { bg: 'rgba(0,100,255,0.1)', color: '#6B9FFF', border: '1px solid #6B9FFF', label: 'Awaiting Admin' },
     organiser_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Organiser Rejected' },
-    admin_approved: { bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0', label: 'Refunded' },
+    admin_approved: { bg: 'rgba(0,196,138,0.1)', color: '#00C48A', border: '1px solid #00C48A', label: 'Refunded' },
     admin_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Denied by Admin' },
 }
 
 const thStyle: React.CSSProperties = {
-    background: '#0A0A0F',
+    background: '#F5F5F7',
     fontSize: '11px',
-    color: '#8888AA',
+    color: '#666677',
     textTransform: 'uppercase',
     letterSpacing: '1px',
     padding: '12px 16px',
@@ -66,8 +66,8 @@ const thStyle: React.CSSProperties = {
 const tdBase: React.CSSProperties = {
     padding: '12px 16px',
     fontSize: '13px',
-    color: '#F0F0F8',
-    borderBottom: '1px solid #2A2A3A',
+    color: '#0A0A0F',
+    borderBottom: '1px solid #C0C0C8',
     verticalAlign: 'top',
 }
 
@@ -129,21 +129,21 @@ export function AdminRefundsClient({
                 {[
                     { label: 'Awaiting Review', value: String(awaitingCount), color: '#F5A623' },
                     { label: 'Pending Organiser', value: String(pendingOrgCount), color: '#6B9FFF' },
-                    { label: 'Total Refunded', value: fmt(totalRefunded), color: '#00E5A0' },
-                    { label: 'Total Fees Kept', value: fmt(totalFeesKept), color: '#F0F0F8' },
+                    { label: 'Total Refunded', value: fmt(totalRefunded), color: '#00C48A' },
+                    { label: 'Total Fees Kept', value: fmt(totalFeesKept), color: '#0A0A0F' },
                     { label: 'Rejected Total', value: String(rejectedCount), color: '#E63950' },
                 ].map((stat) => (
-                    <div key={stat.label} style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '16px 20px' }}>
+                    <div key={stat.label} style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', padding: '16px 20px' }}>
                         <div style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '32px', color: stat.color, lineHeight: 1 }}>
                             {stat.value}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#8888AA', marginTop: '4px' }}>{stat.label}</div>
+                        <div style={{ fontSize: '12px', color: '#666677', marginTop: '4px' }}>{stat.label}</div>
                     </div>
                 ))}
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #2A2A3A', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #C0C0C8', marginBottom: '20px' }}>
                 {tabs.map(t => (
                     <button
                         key={t.key}
@@ -155,7 +155,7 @@ export function AdminRefundsClient({
                             background: 'transparent',
                             border: 'none',
                             borderBottom: tab === t.key ? '2px solid #E63950' : '2px solid transparent',
-                            color: tab === t.key ? '#F0F0F8' : '#8888AA',
+                            color: tab === t.key ? '#0A0A0F' : '#666677',
                             cursor: 'pointer',
                             transition: 'color 0.15s',
                             display: 'flex',
@@ -175,7 +175,7 @@ export function AdminRefundsClient({
 
             {/* Table */}
             <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#13131A', border: '1px solid #2A2A3A' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#FFFFFF', border: '1px solid #C0C0C8' }}>
                     <thead>
                         <tr>
                             {['Buyer', 'Organiser', 'Event', 'Booking Ref', 'Paid', 'Refund', 'Fee', 'Status', 'Requested', 'Action'].map(h => (
@@ -186,7 +186,7 @@ export function AdminRefundsClient({
                     <tbody>
                         {filtered.length === 0 ? (
                             <tr>
-                                <td colSpan={10} style={{ ...tdBase, textAlign: 'center', color: '#8888AA', padding: '48px 16px' }}>
+                                <td colSpan={10} style={{ ...tdBase, textAlign: 'center', color: '#666677', padding: '48px 16px' }}>
                                     No refund requests in this category
                                 </td>
                             </tr>
@@ -200,14 +200,14 @@ export function AdminRefundsClient({
                                 <Fragment key={r.id}>
                                     <tr
                                         style={{ background: 'transparent', transition: 'background 0.1s' }}
-                                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#1A1A24'}
+                                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#F5F5F7'}
                                         onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
                                     >
                                         <td style={tdBase}>
                                             <div style={{ fontWeight: 500 }}>{r.buyer?.full_name || 'Guest'}</div>
-                                            <div style={{ fontSize: '12px', color: '#8888AA', marginTop: '2px' }}>{r.buyer?.email || '—'}</div>
+                                            <div style={{ fontSize: '12px', color: '#666677', marginTop: '2px' }}>{r.buyer?.email || '—'}</div>
                                         </td>
-                                        <td style={{ ...tdBase, color: '#8888AA', fontSize: '12px' }}>
+                                        <td style={{ ...tdBase, color: '#666677', fontSize: '12px' }}>
                                             {r.booking?.event?.organiser?.org_name || '—'}
                                         </td>
                                         <td style={tdBase}>{truncate(r.booking?.event?.title || '—', 28)}</td>
@@ -215,8 +215,8 @@ export function AdminRefundsClient({
                                             {r.booking?.booking_ref || '—'}
                                         </td>
                                         <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>{fmt(r.booking?.ticket_subtotal_pence ?? null)}</td>
-                                        <td style={{ ...tdBase, whiteSpace: 'nowrap', color: '#00E5A0' }}>{fmt(refundPence)}</td>
-                                        <td style={{ ...tdBase, whiteSpace: 'nowrap', color: '#8888AA' }}>{fmt(r.booking?.booking_fee_pence ?? null)}</td>
+                                        <td style={{ ...tdBase, whiteSpace: 'nowrap', color: '#00C48A' }}>{fmt(refundPence)}</td>
+                                        <td style={{ ...tdBase, whiteSpace: 'nowrap', color: '#666677' }}>{fmt(r.booking?.booking_fee_pence ?? null)}</td>
                                         <td style={tdBase}>
                                             <span style={{
                                                 background: badge.bg,
@@ -238,7 +238,7 @@ export function AdminRefundsClient({
                                                     <button
                                                         onClick={() => handleAction(r.id, 'confirm', r.booking?.id ?? '', refundPence)}
                                                         disabled={isLoading}
-                                                        style={{ background: '#00E5A0', border: '1px solid #00E5A0', color: '#0A0A0F', padding: '5px 10px', borderRadius: '2px', fontSize: '12px', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                                                        style={{ background: '#00C48A', border: '1px solid #00C48A', color: '#FFFFFF', padding: '5px 10px', borderRadius: '2px', fontSize: '12px', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}
                                                     >
                                                         {isLoading ? '…' : `Confirm ${fmt(refundPence)}`}
                                                     </button>
@@ -257,7 +257,7 @@ export function AdminRefundsClient({
                                     </tr>
                                     {err && (
                                         <tr>
-                                            <td colSpan={10} style={{ padding: '0 16px 10px', borderBottom: '1px solid #2A2A3A', background: '#13131A' }}>
+                                            <td colSpan={10} style={{ padding: '0 16px 10px', borderBottom: '1px solid #C0C0C8', background: '#FFFFFF' }}>
                                                 <span style={{ fontSize: '12px', color: '#E63950' }}>{err}</span>
                                             </td>
                                         </tr>

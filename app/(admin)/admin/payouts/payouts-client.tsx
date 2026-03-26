@@ -108,7 +108,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
 
             {/* Due Payouts */}
             {duePayouts.length > 0 && (
-                <div className="bg-[#1A1A00] border border-gold/30 rounded-none p-6 mb-8">
+                <div className="bg-amber-50 border border-gold/30 rounded-none p-6 mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-sm font-medium text-gold">Payouts Due</h2>

@@ -179,7 +179,7 @@ export default async function AdminDashboardPage() {
             {/* KPI Row 2 */}
             <div className="grid grid-cols-4 gap-4 mb-8">
                 {kpis2.map(kpi => (
-                    <div key={kpi.label} className={`border rounded-none p-5 ${kpi.amber ? 'bg-[#2A1F00] border-gold/40' : 'bg-card border-border'}`}>
+                    <div key={kpi.label} className={`border rounded-none p-5 ${kpi.amber ? 'bg-amber-50 border-gold/40' : 'bg-card border-border'}`}>
                         <p className={`text-xs uppercase tracking-wider mb-1 ${kpi.amber ? 'text-gold' : 'text-muted'}`}>{kpi.label}</p>
                         <p className={`font-heading text-3xl ${kpi.amber ? 'text-gold' : 'text-text'}`}>{kpi.value}</p>
                         <p className={`text-xs mt-2 ${kpi.amber ? 'text-gold/60' : 'text-muted'}`}>{kpi.sub}</p>

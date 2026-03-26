@@ -34,11 +34,11 @@ export function FinancialsClient({ monthlyData, cumulativeData }: Props) {
                 <p className="text-xs text-muted mb-4">Last 12 months</p>
                 <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3A" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#8888AA', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#8888AA', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#C0C0C8" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Legend wrapperStyle={{ fontSize: 11, color: '#8888AA' }} />
+                        <Legend wrapperStyle={{ fontSize: 11, color: '#666677' }} />
                         <Bar dataKey="gmv" name="GMV" fill="#E63950" radius={[3, 3, 0, 0]} />
                         <Bar dataKey="revenue" name="Revenue" fill="#F5A623" radius={[3, 3, 0, 0]} />
                     </BarChart>
@@ -56,9 +56,9 @@ export function FinancialsClient({ monthlyData, cumulativeData }: Props) {
                                 <stop offset="95%" stopColor="#E63950" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3A" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#8888AA', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#8888AA', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#C0C0C8" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
                         <Tooltip content={<ChartTooltip />} />
                         <Area type="monotone" dataKey="cumulative" name="Cumulative GMV" stroke="#E63950" strokeWidth={2} fill="url(#gmvGrad)" />
                     </AreaChart>
