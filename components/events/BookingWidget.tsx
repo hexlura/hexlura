@@ -184,7 +184,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
             )}
 
             <Button
-                className="w-full h-14 text-lg font-bold mt-2 bg-accent text-white hover:bg-accent/90"
+                className="w-full h-14 text-lg font-bold mt-2 bg-[#0A0A0F] text-white hover:bg-[#2a2a3f]"
                 disabled={!hasSelectedTickets || checkoutLoading}
                 onClick={handleCheckout}
             >

@@ -137,7 +137,7 @@ export default function StepDetails() {
 
                 <button
                     onClick={handleContinue}
-                    className="w-full h-12 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition"
+                    className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition"
                 >
                     Continue to Payment
                 </button>

@@ -113,7 +113,7 @@ function SuccessContent() {
                 <p className="text-muted">{error}</p>
                 <button
                     onClick={() => window.history.back()}
-                    className="h-11 px-8 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition"
+                    className="h-11 px-8 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition"
                 >
                     Try Again
                 </button>
@@ -196,7 +196,7 @@ function SuccessContent() {
                                     <a
                                         href={`/api/tickets/${booking.booking_ref}/pdf`}
                                         target="_blank"
-                                        className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center gap-2"
+                                        className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center gap-2"
                                     >
                                         Download Ticket
                                     </a>

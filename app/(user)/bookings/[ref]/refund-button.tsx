@@ -228,7 +228,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                             <button
                                 onClick={handleSubmit}
                                 disabled={loading}
-                                className="flex-1 h-11 rounded-sm bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition disabled:opacity-50"
+                                className="flex-1 h-11 rounded-sm bg-[#0A0A0F] text-white text-sm font-semibold hover:bg-[#2a2a3f] transition disabled:opacity-50"
                             >
                                 {loading ? 'Submitting...' : 'Submit Request'}
                             </button>

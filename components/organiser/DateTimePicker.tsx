@@ -215,7 +215,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                 type="button"
                                 onClick={handleOK}
                                 disabled={!draftDate}
-                                className="px-5 py-2 bg-accent text-white text-sm font-semibold rounded-sm disabled:opacity-40 hover:bg-[#cc2f43] transition-colors"
+                                className="px-5 py-2 bg-[#0A0A0F] text-white text-sm font-semibold rounded-sm disabled:opacity-40 hover:bg-[#2a2a3f] transition-colors"
                             >
                                 OK
                             </button>

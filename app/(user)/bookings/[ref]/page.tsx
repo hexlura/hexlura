@@ -143,7 +143,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                     <a
                         href={`/api/tickets/${booking.booking_ref}/pdf`}
                         target="_blank"
-                        className="h-11 px-6 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 transition flex items-center justify-center"
+                        className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
                     >
                         Download PDF Ticket
                     </a>

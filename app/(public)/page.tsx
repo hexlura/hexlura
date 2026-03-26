@@ -53,7 +53,7 @@ export default async function HomePage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-                        <Link href="/events" className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
+                        <Link href="/events" className="flex items-center justify-center bg-[#0A0A0F] hover:bg-[#2a2a3f] text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
                             Find Events
                         </Link>
                         <Link href={sellTicketsHref} className="flex items-center justify-center bg-transparent border-2 border-[#C0C0C8] text-[#0A0A0F] hover:bg-[#C0C0C8]/20 font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">

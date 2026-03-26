@@ -62,7 +62,7 @@ export async function Navbar() {
                             </Link>
                             <Link
                                 href="/auth/register"
-                                className="inline-flex items-center justify-center text-sm font-semibold text-white bg-accent border-0 px-5 py-2 rounded-sm hover:opacity-90 transition"
+                                className="inline-flex items-center justify-center text-sm font-semibold text-white bg-[#0A0A0F] border-0 px-5 py-2 rounded-sm hover:opacity-90 transition"
                             >
                                 Get Started
                             </Link>
