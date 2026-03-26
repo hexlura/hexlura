@@ -13,6 +13,8 @@ const CITIES = [
     { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=400&q=80' },
 ];
 
+const MARQUEE_TEXT = 'GIGS \u00B7 CLUB NIGHTS \u00B7 FESTIVALS \u00B7 COMEDY \u00B7 THEATRE & ARTS \u00B7 SPORTS \u00B7 FOOD & DRINK \u00B7 NETWORKING \u00B7 ';
+
 function formatOverlayDate(isoDate: string): string {
     const d = new Date(isoDate);
     const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(d);
@@ -26,6 +28,21 @@ function getMinPrice(ticketTypes: Array<{ price_pence: number }>): string {
     const min = Math.min(...ticketTypes.map((t) => t.price_pence));
     if (min === 0) return 'Free';
     return `From £${(min / 100).toFixed(2)}`;
+}
+
+// Render marquee text with red bullets
+function MarqueeSegment({ text }: { text: string }) {
+    const parts = text.split('\u00B7');
+    return (
+        <span style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '18px', color: '#FFFFFF', letterSpacing: '2px', whiteSpace: 'nowrap' }}>
+            {parts.map((part, i) => (
+                <React.Fragment key={i}>
+                    {part}
+                    {i < parts.length - 1 && <span style={{ color: '#E63950' }}> · </span>}
+                </React.Fragment>
+            ))}
+        </span>
+    );
 }
 
 export default async function HomePage() {
@@ -51,15 +68,68 @@ export default async function HomePage() {
     return (
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
 
+            {/* ── SECTION 1: BOLD HEADLINE ── */}
+            <section style={{ padding: '48px 24px 32px', background: '#FFFFFF' }}>
+                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px', margin: '0 0 12px 0' }}>
+                    UK&apos;S PREMIER EVENT PLATFORM
+                </p>
+                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(56px, 7vw, 96px)', color: '#0A0A0F', lineHeight: 0.9, margin: 0 }}>
+                    DISCOVER
+                </h1>
+                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(56px, 7vw, 96px)', color: '#0A0A0F', lineHeight: 0.9, margin: 0 }}>
+                    LIVE EVENTS
+                </h1>
+                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(56px, 7vw, 96px)', color: '#E63950', lineHeight: 0.9, margin: 0 }}>
+                    NEAR YOU
+                </h1>
+                <p style={{ fontSize: '16px', color: '#666677', marginTop: '20px', maxWidth: '500px', lineHeight: 1.5 }}>
+                    Book tickets to concerts, club nights, festivals, comedy and more across the UK.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '28px' }}>
+                    <Link
+                        href="/events"
+                        style={{
+                            background: '#0A0A0F',
+                            color: '#FFFFFF',
+                            padding: '14px 32px',
+                            fontSize: '15px',
+                            fontWeight: 700,
+                            borderRadius: 0,
+                            border: 'none',
+                            textDecoration: 'none',
+                            display: 'inline-block',
+                            letterSpacing: '0.3px',
+                        }}
+                    >
+                        Find Events
+                    </Link>
+                    <Link
+                        href="/sell-tickets"
+                        style={{
+                            background: 'transparent',
+                            color: '#0A0A0F',
+                            padding: '14px 32px',
+                            fontSize: '15px',
+                            fontWeight: 700,
+                            borderRadius: 0,
+                            border: '2px solid #0A0A0F',
+                            textDecoration: 'none',
+                            display: 'inline-block',
+                            letterSpacing: '0.3px',
+                        }}
+                    >
+                        Sell Tickets
+                    </Link>
+                </div>
+            </section>
+
             {/* ── CITY CARDS ── */}
-            <section style={{ marginTop: '48px' }}>
+            <section style={{ marginTop: '0' }}>
                 <div style={{ padding: '0 24px', marginBottom: '16px' }}>
                     <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px' }}>
                         EXPLORE BY CITY
                     </h2>
                 </div>
-
-                {/* Scroll row — full padded width, no max-width */}
                 <div
                     className="city-scroll"
                     style={{
@@ -77,11 +147,9 @@ export default async function HomePage() {
                             href={`/events?city=${encodeURIComponent(name)}`}
                             className="city-card"
                             style={{
-                                /* 5 cards exactly fill (100vw - 48px side padding - 5×12px gaps) */
                                 flex: '0 0 calc((100vw - 48px - 60px) / 5)',
                                 minWidth: '130px',
                                 maxWidth: '260px',
-                                /* portrait 2:3 ratio */
                                 aspectRatio: '2 / 3',
                                 position: 'relative',
                                 overflow: 'hidden',
@@ -106,13 +174,27 @@ export default async function HomePage() {
                                     transition: 'transform 0.4s ease',
                                 }}
                             />
-                            {/* gradient overlay */}
                             <div style={{
                                 position: 'absolute',
                                 inset: 0,
                                 background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.82) 100%)',
                                 pointerEvents: 'none',
                             }} />
+                            {/* Red top border — shown on hover via JS */}
+                            <div
+                                className="city-card-border"
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: '3px',
+                                    background: '#E63950',
+                                    opacity: 0,
+                                    transition: 'opacity 0.2s',
+                                    pointerEvents: 'none',
+                                }}
+                            />
                             <span style={{
                                 position: 'absolute',
                                 bottom: '14px',
@@ -131,6 +213,28 @@ export default async function HomePage() {
                 </div>
             </section>
 
+            {/* ── SECTION 2: MARQUEE ── */}
+            <div style={{
+                width: '100%',
+                background: '#0A0A0F',
+                padding: '14px 0',
+                overflow: 'hidden',
+                margin: '40px 0',
+            }}>
+                <div
+                    className="marquee-inner"
+                    style={{
+                        display: 'flex',
+                        whiteSpace: 'nowrap',
+                        animation: 'marquee 20s linear infinite',
+                    }}
+                >
+                    {/* Two copies for seamless loop */}
+                    <MarqueeSegment text={MARQUEE_TEXT} />
+                    <MarqueeSegment text={MARQUEE_TEXT} />
+                </div>
+            </div>
+
             {/* ── CATEGORY ROWS ── */}
             <div style={{ paddingBottom: '48px' }}>
                 {categories.length === 0 ? (
@@ -139,9 +243,7 @@ export default async function HomePage() {
                     </div>
                 ) : (
                     categories.map(([category, catEvents], index) => (
-                        <section key={category} style={{ marginTop: index === 0 ? '48px' : '40px' }}>
-
-                            {/* Section header */}
+                        <section key={category} style={{ marginTop: index === 0 ? '0' : '40px' }}>
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
@@ -160,7 +262,6 @@ export default async function HomePage() {
                                 </Link>
                             </div>
 
-                            {/* Horizontal scroll row */}
                             <div
                                 className="drag-scroll"
                                 style={{
@@ -187,7 +288,6 @@ export default async function HomePage() {
                                             href={`/events/${ev.slug}`}
                                             className="event-portrait-card"
                                             style={{
-                                                /* 5 cards exactly fill (100vw - 48px side padding - 4×12px gaps) */
                                                 flex: '0 0 calc((100vw - 48px - 48px) / 5)',
                                                 minWidth: '130px',
                                                 maxWidth: '280px',
@@ -195,12 +295,12 @@ export default async function HomePage() {
                                                 cursor: 'pointer',
                                                 textDecoration: 'none',
                                                 display: 'block',
-                                                transition: 'transform 0.2s',
+                                                transition: 'transform 0.2s, box-shadow 0.2s, border-left 0.2s',
                                                 borderRadius: '4px',
                                                 overflow: 'hidden',
+                                                borderLeft: '3px solid transparent',
                                             }}
                                         >
-                                            {/* Portrait image 3:4 */}
                                             {ev.banner_url?.startsWith('http') ? (
                                                 <div style={{ width: '100%', aspectRatio: '3 / 4', position: 'relative', overflow: 'hidden' }}>
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -217,7 +317,6 @@ export default async function HomePage() {
                                                             transition: 'transform 0.3s',
                                                         }}
                                                     />
-                                                    {/* BookMyShow-style date bar at bottom */}
                                                     <div style={{
                                                         position: 'absolute',
                                                         bottom: 0,
@@ -244,7 +343,6 @@ export default async function HomePage() {
                                                 </div>
                                             )}
 
-                                            {/* Text body */}
                                             <div style={{ padding: '8px 6px 12px' }}>
                                                 <p style={{
                                                     fontSize: '14px',
@@ -285,30 +383,100 @@ export default async function HomePage() {
                 )}
             </div>
 
-            {/* Client-side interactions */}
+            {/* ── SECTION 3: ORGANISER CTA ── */}
+            <section style={{
+                background: '#0A0A0F',
+                padding: '80px 24px',
+                textAlign: 'center',
+                marginTop: '60px',
+            }}>
+                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
+                    FOR ORGANISERS
+                </p>
+                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(48px, 5vw, 72px)', color: '#FFFFFF', margin: '0 0 8px 0', lineHeight: 0.95 }}>
+                    SELLING TICKETS?
+                </h2>
+                <h3 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#8888AA', margin: '0 0 24px 0', fontWeight: 400 }}>
+                    JOIN HUNDREDS OF UK ORGANISERS
+                </h3>
+                <p style={{ fontSize: '16px', color: '#8888AA', marginBottom: '40px', lineHeight: 1.5 }}>
+                    Free to start. No monthly fees. You keep 100% of ticket face value.
+                </p>
+                <Link
+                    href="/sell-tickets"
+                    style={{
+                        display: 'inline-block',
+                        background: '#E63950',
+                        color: '#FFFFFF',
+                        padding: '16px 48px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        borderRadius: 0,
+                        border: 'none',
+                        textDecoration: 'none',
+                        letterSpacing: '0.3px',
+                    }}
+                >
+                    Start Selling Free →
+                </Link>
+                <Link
+                    href="/auth/login"
+                    style={{
+                        display: 'block',
+                        fontSize: '13px',
+                        color: '#8888AA',
+                        marginTop: '16px',
+                        textDecoration: 'none',
+                    }}
+                >
+                    Already have an account? Sign in →
+                </Link>
+            </section>
+
+            {/* Marquee keyframes + client-side interactions */}
+            <Script id="homepage-styles" strategy="afterInteractive">{`
+                var style = document.createElement('style');
+                style.textContent = '@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }';
+                document.head.appendChild(style);
+            `}</Script>
+
             <Script id="homepage-interactions" strategy="afterInteractive">{`
                 document.querySelectorAll('.drag-scroll, .city-scroll').forEach(function(el) {
                     el.style.msOverflowStyle = 'none';
                 });
 
+                // City card hover — image scale + red top border
                 document.querySelectorAll('.city-card').forEach(function(card) {
                     var img = card.querySelector('.city-card-img');
-                    card.addEventListener('mouseenter', function() { if (img) img.style.transform = 'scale(1.07)'; });
-                    card.addEventListener('mouseleave', function() { if (img) img.style.transform = 'scale(1)'; });
+                    var border = card.querySelector('.city-card-border');
+                    card.addEventListener('mouseenter', function() {
+                        if (img) img.style.transform = 'scale(1.07)';
+                        if (border) border.style.opacity = '1';
+                    });
+                    card.addEventListener('mouseleave', function() {
+                        if (img) img.style.transform = 'scale(1)';
+                        if (border) border.style.opacity = '0';
+                    });
                 });
 
+                // Event card hover — lift + red left border + shadow
                 document.querySelectorAll('.event-portrait-card').forEach(function(card) {
                     var img = card.querySelector('.portrait-img');
                     card.addEventListener('mouseenter', function() {
                         card.style.transform = 'translateY(-3px)';
+                        card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)';
+                        card.style.borderLeft = '3px solid #E63950';
                         if (img) img.style.transform = 'scale(1.04)';
                     });
                     card.addEventListener('mouseleave', function() {
                         card.style.transform = 'translateY(0)';
+                        card.style.boxShadow = 'none';
+                        card.style.borderLeft = '3px solid transparent';
                         if (img) img.style.transform = 'scale(1)';
                     });
                 });
 
+                // Drag-to-scroll
                 document.querySelectorAll('.drag-scroll').forEach(function(el) {
                     var isDown = false, startX = 0, scrollLeft = 0;
                     el.addEventListener('mousedown', function(e) {
