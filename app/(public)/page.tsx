@@ -10,7 +10,7 @@ const CITIES = [
     { name: 'Birmingham', photo: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80' },
     { name: 'Edinburgh',  photo: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&q=80' },
     { name: 'Liverpool',  photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-    { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1603059748268-a6f48c74b46a?w=600&q=80' },
+    { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=400&q=80' },
 ];
 
 function formatCardDate(isoDate: string, location: string): string {
@@ -52,7 +52,7 @@ export default async function HomePage() {
     const scrollContainerStyle: React.CSSProperties = {
         display: 'flex',
         overflowX: 'auto',
-        gap: '12px',
+        gap: '16px',
         paddingBottom: '8px',
         scrollBehavior: 'smooth',
         WebkitOverflowScrolling: 'touch',
@@ -76,8 +76,8 @@ export default async function HomePage() {
                                 className="city-card"
                                 style={{
                                     flexShrink: 0,
-                                    width: '140px',
-                                    height: '180px',
+                                    width: '200px',
+                                    height: '140px',
                                     overflow: 'hidden',
                                     position: 'relative',
                                     cursor: 'pointer',
@@ -93,7 +93,7 @@ export default async function HomePage() {
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s', display: 'block' }}
                                 />
                                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }} />
-                                <span style={{ position: 'absolute', bottom: '8px', left: '10px', fontSize: '14px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                <span style={{ position: 'absolute', bottom: '8px', left: '10px', fontSize: '16px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
                                     {name}
                                 </span>
                             </Link>
@@ -112,8 +112,8 @@ export default async function HomePage() {
                     categories.map(([category, catEvents]) => (
                         <section key={category}>
                             {/* Section header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '32px 0 16px' }}>
-                                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '22px', color: '#0A0A0F', letterSpacing: '1px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '40px 0 16px' }}>
+                                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '24px', color: '#0A0A0F', letterSpacing: '1px' }}>
                                     {category.toUpperCase()}
                                 </h2>
                                 <Link
@@ -143,7 +143,7 @@ export default async function HomePage() {
                                             href={`/events/${ev.slug}`}
                                             className="event-portrait-card"
                                             style={{
-                                                width: '160px',
+                                                width: '200px',
                                                 flexShrink: 0,
                                                 overflow: 'hidden',
                                                 border: '1px solid #E0E0E0',
@@ -155,7 +155,7 @@ export default async function HomePage() {
                                             }}
                                         >
                                             {/* Portrait image area */}
-                                            <div style={{ width: '160px', height: '213px', overflow: 'hidden', position: 'relative' }}>
+                                            <div style={{ width: '200px', height: '280px', overflow: 'hidden', position: 'relative' }}>
                                                 {ev.banner_url?.startsWith('http') ? (
                                                     // eslint-disable-next-line @next/next/no-img-element
                                                     <img
@@ -169,19 +169,15 @@ export default async function HomePage() {
                                                         <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
                                                     </div>
                                                 )}
-                                                {/* Category badge */}
-                                                <span style={{ position: 'absolute', top: 0, left: 0, background: '#E63950', color: '#FFFFFF', fontSize: '10px', fontWeight: 700, padding: '3px 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                    {category}
-                                                </span>
                                             </div>
 
                                             {/* Card body */}
-                                            <div style={{ padding: '10px' }}>
+                                            <div style={{ padding: '10px 8px' }}>
                                                 <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                                                     {dateStr}
                                                 </p>
                                                 <p style={{
-                                                    fontSize: '13px',
+                                                    fontSize: '14px',
                                                     color: '#0A0A0F',
                                                     fontWeight: 700,
                                                     lineHeight: 1.3,
@@ -193,7 +189,7 @@ export default async function HomePage() {
                                                 } as React.CSSProperties}>
                                                     {ev.title}
                                                 </p>
-                                                <p style={{ fontSize: '12px', color: '#0A0A0F', fontWeight: 600 }}>
+                                                <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                                                     {priceStr}
                                                 </p>
                                             </div>
