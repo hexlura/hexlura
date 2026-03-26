@@ -112,11 +112,11 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
             <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 md:gap-8">
 
-                {/* Banner — LEFT COL, ROW 1 | mobile: 16:9, desktop: 4:3 */}
-                <div className="md:col-start-1 relative w-full overflow-hidden aspect-video md:aspect-[4/3]">
+                {/* Banner — LEFT COL, ROW 1 | mobile: 3:4, desktop: 2:3 */}
+                <div className="md:col-start-1 relative w-full overflow-hidden aspect-[3/4] md:aspect-[2/3]">
                     {event.banner_url?.startsWith('http') ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover" />
+                        <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover object-top" />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-r from-neutral-800 to-neutral-900 flex items-center justify-center">
                             <span className="text-white text-xl">No image provided</span>

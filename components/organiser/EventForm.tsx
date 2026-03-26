@@ -646,7 +646,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                     <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
                                 </label>
                                 {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
-                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Recommended size: 1280×720px (16:9 ratio). Max 5MB. JPG, PNG or WebP.</p>
+                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Recommended: Portrait format 800×1200px (2:3 ratio). Max 5MB. JPG, PNG or WebP. Portrait images look best on the platform.</p>
                             </div>
                             <div>
                                 <label className={labelClass}>Promo Video (YouTube URL)</label>
