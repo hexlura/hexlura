@@ -188,11 +188,11 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Account Type</label>
                         <span style={{
-                            background: '#1A1A24',
-                            border: '1px solid #2A2A3A',
-                            color: '#8888AA',
+                            background: '#F5F5F7',
+                            border: '1px solid #C0C0C8',
+                            color: '#666677',
                             fontSize: '13px',
-                            borderRadius: '6px',
+                            borderRadius: '2px',
                             padding: '4px 12px',
                             display: 'inline-block',
                         }}>
@@ -366,10 +366,10 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
 
             {/* Door Staff */}
             <div className="bg-card border border-border rounded-none p-6 mb-6">
-                <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '24px', color: '#F0F0F8', marginBottom: '8px', letterSpacing: '1px' }}>
+                <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '24px', color: '#0A0A0F', marginBottom: '8px', letterSpacing: '1px' }}>
                     DOOR STAFF
                 </h2>
-                <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '20px' }}>
+                <p style={{ fontSize: '13px', color: '#666677', marginBottom: '20px' }}>
                     Add staff who can scan tickets at your events. They will only have access to the check-in scanner.
                 </p>
 
@@ -385,7 +385,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                     <button
                         type="submit"
                         disabled={addingStaff || !doorStaffEmail}
-                        className="px-4 py-2 bg-accent text-white text-sm rounded-sm disabled:opacity-50 hover:bg-[#cc2f43] transition-colors whitespace-nowrap"
+                        className="px-4 py-2 bg-[#0A0A0F] text-white text-sm rounded-sm disabled:opacity-50 hover:bg-[#333333] transition-colors whitespace-nowrap"
                     >
                         {addingStaff ? 'Adding...' : 'Add Door Staff'}
                     </button>
@@ -409,7 +409,7 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                                 <button
                                     onClick={() => removeDoorStaff(member.user_id, member.id)}
                                     disabled={removingId === member.id}
-                                    className="text-xs text-accent border border-accent/50 px-3 py-1 rounded-sm hover:bg-accent/10 disabled:opacity-50 transition-colors"
+                                    className="text-xs text-[#666677] border border-[#C0C0C8] px-3 py-1 rounded-sm hover:text-[#0A0A0F] hover:border-[#0A0A0F] disabled:opacity-50 transition-colors"
                                 >
                                     {removingId === member.id ? '...' : 'Remove'}
                                 </button>

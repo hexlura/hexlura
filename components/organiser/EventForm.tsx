@@ -567,7 +567,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             </div>
 
             {/* Step indicator */}
-            <div style={{ background: '#F5F5F7', borderRadius: 16, padding: 24, marginBottom: 32 }}>
+            <div style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', borderRadius: 2, padding: 24, marginBottom: 32 }}>
                 {/* Mobile */}
                 <div className="sm:hidden text-center">
                     <p style={{ color: '#666677', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 5</p>
@@ -584,14 +584,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <div style={{
                                         width: 32, height: 32, borderRadius: '50%',
-                                        background: done || active ? '#E63950' : '#C0C0C8',
+                                        background: done || active ? '#0A0A0F' : '#C0C0C8',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0,
                                     }}>{done ? '✓' : stepNum}</div>
                                     <span style={{ fontSize: 11, marginTop: 6, whiteSpace: 'nowrap', color: active ? '#0A0A0F' : '#666677' }}>{label}</span>
                                 </div>
                                 {idx < 4 && (
-                                    <div style={{ flex: 1, height: 2, background: done ? '#E63950' : '#C0C0C8', margin: '0 8px 20px 8px' }} />
+                                    <div style={{ flex: 1, height: 2, background: done ? '#0A0A0F' : '#C0C0C8', margin: '0 8px 20px 8px' }} />
                                 )}
                             </div>
                         )
@@ -600,7 +600,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             </div>
 
             {/* Step content */}
-            <div style={{ background: '#FFFFFF', borderRadius: 16, padding: 28, minHeight: 400 }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 28, minHeight: 400 }}>
 
                 {/* Step 1 — Basic Info */}
                 {currentStep === 1 && (
@@ -953,7 +953,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                         <button
                             type="button"
                             onClick={goToPrev}
-                            style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}
+                            style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 2, cursor: 'pointer', fontSize: 14 }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
                         >← Back</button>
@@ -963,26 +963,26 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             type="button"
                             onClick={saveDraft}
                             disabled={saving}
-                            style={{ background: 'transparent', border: '1px solid #E63950', color: '#E63950', padding: '12px 24px', borderRadius: 8, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, opacity: saving ? 0.6 : 1 }}
-                            onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'rgba(230,57,80,0.08)' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                            style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, opacity: saving ? 0.6 : 1 }}
+                            onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
                         >{saving ? 'Saving...' : 'Save Draft'}</button>
                         {currentStep < 5 ? (
                             <button
                                 type="button"
                                 onClick={goToNext}
-                                style={{ background: '#E63950', color: '#fff', padding: '12px 32px', borderRadius: 8, cursor: 'pointer', fontSize: 14, border: 'none' }}
-                                onMouseEnter={e => { e.currentTarget.style.opacity = '0.9' }}
-                                onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+                                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: 'pointer', fontSize: 14, border: 'none' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { e.currentTarget.style.background = '#0A0A0F' }}
                             >Next →</button>
                         ) : (
                             <button
                                 type="button"
                                 onClick={handlePublish}
                                 disabled={publishing}
-                                style={{ background: '#E63950', color: '#fff', padding: '12px 32px', borderRadius: 8, cursor: publishing ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: publishing ? 0.7 : 1 }}
-                                onMouseEnter={e => { if (!publishing) e.currentTarget.style.opacity = '0.9' }}
-                                onMouseLeave={e => { if (!publishing) e.currentTarget.style.opacity = '1' }}
+                                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: publishing ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: publishing ? 0.7 : 1 }}
+                                onMouseEnter={e => { if (!publishing) e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { if (!publishing) e.currentTarget.style.background = '#0A0A0F' }}
                             >{publishing ? 'Publishing...' : 'Publish Event'}</button>
                         )}
                     </div>
@@ -992,9 +992,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             {/* Ticket type preset modal */}
             {showTicketPresetModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 16, padding: 24, width: '100%', maxWidth: 500 }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 24, width: '100%', maxWidth: 500 }}>
                         <div className="flex items-center justify-between mb-5">
-                            <h3 style={{ fontFamily: 'var(--font-bebas-neue, Bebas Neue, sans-serif)', fontSize: 20, color: '#fff', letterSpacing: '0.05em' }}>Choose Ticket Type</h3>
+                            <h3 style={{ fontFamily: 'var(--font-bebas-neue, Bebas Neue, sans-serif)', fontSize: 20, color: '#0A0A0F', letterSpacing: '0.05em' }}>Choose Ticket Type</h3>
                             <button type="button" onClick={() => setShowTicketPresetModal(false)} className="text-muted hover:text-text text-lg leading-none">✕</button>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
@@ -1031,7 +1031,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#C0C0C8' }}
                                 >
                                     <div style={{ fontSize: 24, marginBottom: 8 }}>{preset.icon}</div>
-                                    <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 4 }}>{preset.name}</div>
+                                    <div style={{ fontWeight: 700, color: '#0A0A0F', fontSize: 14, marginBottom: 4 }}>{preset.name}</div>
                                     <div style={{ color: '#666677', fontSize: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preset.description}</div>
                                 </button>
                             ))}
