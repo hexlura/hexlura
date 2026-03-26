@@ -13,12 +13,12 @@ const CITIES = [
     { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=400&q=80' },
 ];
 
-function formatCardDate(isoDate: string, location: string): string {
+function formatOverlayDate(isoDate: string): string {
     const d = new Date(isoDate);
+    const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(d);
     const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: 'Europe/London' }).format(d);
-    const month = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'Europe/London' }).format(d).toUpperCase();
-    const loc = (location || '').toUpperCase();
-    return loc ? `${day} ${month} · ${loc}` : `${day} ${month}`;
+    const month = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'Europe/London' }).format(d);
+    return `${weekday}, ${day} ${month}`;
 }
 
 function getMinPrice(ticketTypes: Array<{ price_pence: number }>): string {
@@ -54,7 +54,6 @@ export default async function HomePage() {
         overflowX: 'auto',
         gap: '16px',
         paddingBottom: '8px',
-        scrollBehavior: 'smooth',
         WebkitOverflowScrolling: 'touch',
         scrollbarWidth: 'none',
     };
@@ -75,9 +74,11 @@ export default async function HomePage() {
                                 href={`/events?city=${encodeURIComponent(name)}`}
                                 className="city-card"
                                 style={{
+                                    width: 'calc((100vw - 48px - 80px) / 5)',
+                                    minWidth: '160px',
+                                    maxWidth: '220px',
+                                    height: '280px',
                                     flexShrink: 0,
-                                    width: '180px',
-                                    height: '260px',
                                     overflow: 'hidden',
                                     position: 'relative',
                                     cursor: 'pointer',
@@ -95,7 +96,7 @@ export default async function HomePage() {
                                         width: '100%',
                                         height: '100%',
                                         objectFit: 'cover',
-                                        objectPosition: 'center center',
+                                        objectPosition: 'center',
                                         transition: 'transform 0.4s ease',
                                         display: 'block',
                                     }}
@@ -105,14 +106,14 @@ export default async function HomePage() {
                                     bottom: 0,
                                     left: 0,
                                     right: 0,
-                                    height: '100px',
+                                    height: '120px',
                                     background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
                                 }} />
                                 <span style={{
                                     position: 'absolute',
                                     bottom: '14px',
                                     left: '14px',
-                                    fontSize: '22px',
+                                    fontSize: '24px',
                                     fontFamily: '"Bebas Neue", sans-serif',
                                     color: '#FFFFFF',
                                     letterSpacing: '1px',
@@ -150,7 +151,7 @@ export default async function HomePage() {
                             {/* Horizontal scroll row */}
                             <div
                                 className="drag-scroll"
-                                style={{ ...scrollContainerStyle, gap: '16px', cursor: 'grab' }}
+                                style={{ ...scrollContainerStyle, cursor: 'grab' }}
                             >
                                 {catEvents.map((event) => {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,7 +159,7 @@ export default async function HomePage() {
                                     const ticketTypes: Array<{ price_pence: number }> = ev.ticket_types || [];
                                     const priceStr = getMinPrice(ticketTypes);
                                     const location = ev.venue_city || ev.venue_name || '';
-                                    const dateStr = formatCardDate(ev.start_at, location);
+                                    const overlayDate = formatOverlayDate(ev.start_at);
 
                                     return (
                                         <Link
@@ -166,45 +167,63 @@ export default async function HomePage() {
                                             href={`/events/${ev.slug}`}
                                             className="event-portrait-card"
                                             style={{
-                                                width: '220px',
+                                                width: 'calc((100vw - 48px - 64px) / 5)',
+                                                minWidth: '155px',
+                                                maxWidth: '230px',
                                                 flexShrink: 0,
-                                                overflow: 'hidden',
-                                                border: '1px solid #E0E0E0',
                                                 background: '#FFFFFF',
+                                                border: 'none',
                                                 cursor: 'pointer',
                                                 textDecoration: 'none',
                                                 display: 'block',
-                                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                                transition: 'transform 0.2s',
+                                                overflow: 'hidden',
                                             }}
                                         >
-                                            {/* Portrait image area */}
-                                            <div style={{ width: '220px', height: '300px', overflow: 'hidden', position: 'relative' }}>
-                                                {ev.banner_url?.startsWith('http') ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
+                                            {/* Portrait image area with date overlay */}
+                                            {ev.banner_url?.startsWith('http') ? (
+                                                <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', position: 'relative' }}>
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         src={ev.banner_url}
                                                         alt={ev.title}
                                                         className="portrait-img"
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s', display: 'block' }}
                                                     />
-                                                ) : (
-                                                    <div style={{ width: '100%', height: '100%', background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <span style={{ color: '#C0C0C8', fontSize: '13px' }}>No image</span>
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        bottom: 0,
+                                                        left: 0,
+                                                        right: 0,
+                                                        background: 'linear-gradient(transparent, rgba(0,0,0,0.75))',
+                                                        padding: '20px 10px 8px',
+                                                    }}>
+                                                        <span style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 600 }}>
+                                                            {overlayDate}
+                                                        </span>
                                                     </div>
-                                                )}
-                                            </div>
+                                                </div>
+                                            ) : (
+                                                <div style={{
+                                                    width: '100%',
+                                                    aspectRatio: '3/4',
+                                                    background: '#F0F0F0',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}>
+                                                    <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
+                                                </div>
+                                            )}
 
                                             {/* Card body */}
-                                            <div style={{ padding: '10px 6px 12px', background: '#FFFFFF' }}>
-                                                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
-                                                    {dateStr}
-                                                </p>
+                                            <div style={{ padding: '8px 4px 12px' }}>
                                                 <p style={{
-                                                    fontSize: '15px',
+                                                    fontSize: '14px',
                                                     color: '#0A0A0F',
                                                     fontWeight: 700,
                                                     lineHeight: 1.3,
-                                                    marginBottom: '6px',
+                                                    marginBottom: '4px',
                                                     display: '-webkit-box',
                                                     WebkitLineClamp: 2,
                                                     WebkitBoxOrient: 'vertical',
@@ -212,6 +231,19 @@ export default async function HomePage() {
                                                 } as React.CSSProperties}>
                                                     {ev.title}
                                                 </p>
+                                                {location ? (
+                                                    <p style={{
+                                                        fontSize: '12px',
+                                                        color: '#666677',
+                                                        marginBottom: '4px',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 1,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
+                                                    } as React.CSSProperties}>
+                                                        {location}
+                                                    </p>
+                                                ) : null}
                                                 <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                                                     {priceStr}
                                                 </p>
@@ -244,12 +276,10 @@ export default async function HomePage() {
                     var img = card.querySelector('.portrait-img');
                     card.addEventListener('mouseenter', function() {
                         card.style.transform = 'translateY(-4px)';
-                        card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
                         if (img) img.style.transform = 'scale(1.05)';
                     });
                     card.addEventListener('mouseleave', function() {
                         card.style.transform = 'translateY(0)';
-                        card.style.boxShadow = 'none';
                         if (img) img.style.transform = 'scale(1)';
                     });
                 });
