@@ -45,9 +45,9 @@ const STATUS_BADGE: Record<RefundStatus, { bg: string; color: string; border: st
 }
 
 const dropdownStyle: React.CSSProperties = {
-    background: '#1A1A24',
-    border: '1px solid #2A2A3A',
-    color: '#F0F0F8',
+    background: '#FFFFFF',
+    border: '1px solid #C0C0C8',
+    color: '#0A0A0F',
     padding: '8px 12px',
     borderRadius: '2px',
     fontSize: '13px',
@@ -55,9 +55,9 @@ const dropdownStyle: React.CSSProperties = {
 }
 
 const thStyle: React.CSSProperties = {
-    background: '#0A0A0F',
+    background: '#F0F0F0',
     fontSize: '11px',
-    color: '#8888AA',
+    color: '#0A0A0F',
     textTransform: 'uppercase',
     letterSpacing: '1px',
     padding: '12px 16px',
@@ -69,8 +69,8 @@ const thStyle: React.CSSProperties = {
 const tdBase: React.CSSProperties = {
     padding: '12px 16px',
     fontSize: '13px',
-    color: '#F0F0F8',
-    borderBottom: '1px solid #2A2A3A',
+    color: '#0A0A0F',
+    borderBottom: '1px solid #C0C0C8',
     verticalAlign: 'top',
 }
 
@@ -147,13 +147,13 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                     { label: 'Pending', value: String(pending), color: '#F5A623' },
                     { label: 'Approved by You', value: String(approved), color: '#00E5A0' },
                     { label: 'Rejected', value: String(rejected), color: '#E63950' },
-                    { label: 'Total Refunded', value: fmt(totalRefunded), color: '#F0F0F8' },
+                    { label: 'Total Refunded', value: fmt(totalRefunded), color: '#0A0A0F' },
                 ].map((stat) => (
-                    <div key={stat.label} style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '16px 20px' }}>
+                    <div key={stat.label} style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', padding: '16px 20px' }}>
                         <div style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '32px', color: stat.color, lineHeight: 1 }}>
                             {stat.value}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#8888AA', marginTop: '4px' }}>{stat.label}</div>
+                        <div style={{ fontSize: '12px', color: '#666677', marginTop: '4px' }}>{stat.label}</div>
                     </div>
                 ))}
             </div>
@@ -177,7 +177,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
 
             {/* Table */}
             <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#13131A', border: '1px solid #2A2A3A' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#FFFFFF', border: '1px solid #C0C0C8' }}>
                     <thead>
                         <tr>
                             {['Buyer', 'Event', 'Booking Ref', 'Ticket Amount', 'Refund Amount', 'Fee Kept', 'Requested', 'Status', 'Action'].map(h => (
@@ -188,7 +188,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                     <tbody>
                         {filtered.length === 0 ? (
                             <tr>
-                                <td colSpan={9} style={{ ...tdBase, textAlign: 'center', color: '#8888AA', padding: '48px 16px' }}>
+                                <td colSpan={9} style={{ ...tdBase, textAlign: 'center', color: '#666677', padding: '48px 16px' }}>
                                     No refund requests found
                                 </td>
                             </tr>
@@ -201,12 +201,12 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                 <Fragment key={r.id}>
                                     <tr
                                         style={{ background: 'transparent', transition: 'background 0.1s' }}
-                                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#1A1A24'}
+                                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#F5F5F7'}
                                         onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
                                     >
                                         <td style={tdBase}>
                                             <div style={{ fontWeight: 500 }}>{r.buyer?.full_name || 'Guest'}</div>
-                                            <div style={{ fontSize: '12px', color: '#8888AA', marginTop: '2px' }}>{r.buyer?.email || '—'}</div>
+                                            <div style={{ fontSize: '12px', color: '#666677', marginTop: '2px' }}>{r.buyer?.email || '—'}</div>
                                         </td>
                                         <td style={tdBase}>{truncate(r.booking?.event?.title || '—', 30)}</td>
                                         <td style={{ ...tdBase, fontFamily: '"JetBrains Mono", monospace', color: '#E63950' }}>
@@ -214,7 +214,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                         </td>
                                         <td style={tdBase}>{fmt(r.booking?.ticket_subtotal_pence ?? null)}</td>
                                         <td style={tdBase}>{fmt(r.refund_amount_pence)}</td>
-                                        <td style={{ ...tdBase, color: '#8888AA' }}>{fmt(r.booking?.booking_fee_pence ?? null)}</td>
+                                        <td style={{ ...tdBase, color: '#666677' }}>{fmt(r.booking?.booking_fee_pence ?? null)}</td>
                                         <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
                                         <td style={tdBase}>
                                             <span style={{
@@ -236,7 +236,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                                     <button
                                                         onClick={() => handleApprove(r.id)}
                                                         disabled={isLoading}
-                                                        style={{ background: 'transparent', border: '1px solid #00E5A0', color: '#00E5A0', padding: '4px 10px', borderRadius: '2px', fontSize: '12px', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
+                                                        style={{ background: 'transparent', border: '1px solid #0A0A0F', color: '#0A0A0F', padding: '4px 10px', borderRadius: '2px', fontSize: '12px', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
                                                     >
                                                         Approve
                                                     </button>
@@ -254,14 +254,14 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                         </td>
                                     </tr>
                                     {isRejecting && (
-                                        <tr style={{ background: '#1A1A24' }}>
-                                            <td colSpan={9} style={{ padding: '12px 16px', borderBottom: '1px solid #2A2A3A' }}>
+                                        <tr style={{ background: '#F5F5F7' }}>
+                                            <td colSpan={9} style={{ padding: '12px 16px', borderBottom: '1px solid #C0C0C8' }}>
                                                 <textarea
                                                     value={rejectNote}
                                                     onChange={e => setRejectNote(e.target.value)}
                                                     rows={2}
                                                     placeholder="Reason for rejection (optional)..."
-                                                    style={{ width: '100%', background: '#0A0A0F', border: '1px solid #2A2A3A', color: '#F0F0F8', padding: '8px 12px', fontSize: '13px', borderRadius: '2px', resize: 'vertical', boxSizing: 'border-box' }}
+                                                    style={{ width: '100%', background: '#FFFFFF', border: '1px solid #C0C0C8', color: '#0A0A0F', padding: '8px 12px', fontSize: '13px', borderRadius: '2px', resize: 'vertical', boxSizing: 'border-box' }}
                                                 />
                                                 <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                                                     <button
@@ -273,7 +273,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                                     </button>
                                                     <button
                                                         onClick={() => setRejectingId(null)}
-                                                        style={{ background: 'transparent', border: '1px solid #2A2A3A', color: '#8888AA', padding: '6px 14px', borderRadius: '2px', fontSize: '12px', cursor: 'pointer' }}
+                                                        style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '6px 14px', borderRadius: '2px', fontSize: '12px', cursor: 'pointer' }}
                                                     >
                                                         Cancel
                                                     </button>
@@ -284,7 +284,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                     )}
                                     {err && !isRejecting && (
                                         <tr>
-                                            <td colSpan={9} style={{ padding: '0 16px 10px', borderBottom: '1px solid #2A2A3A', background: '#13131A' }}>
+                                            <td colSpan={9} style={{ padding: '0 16px 10px', borderBottom: '1px solid #C0C0C8', background: '#F5F5F7' }}>
                                                 <span style={{ fontSize: '12px', color: '#E63950' }}>{err}</span>
                                             </td>
                                         </tr>

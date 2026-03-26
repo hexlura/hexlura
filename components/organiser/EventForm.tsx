@@ -567,10 +567,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             </div>
 
             {/* Step indicator */}
-            <div style={{ background: '#13131A', borderRadius: 16, padding: 24, marginBottom: 32 }}>
+            <div style={{ background: '#F5F5F7', borderRadius: 16, padding: 24, marginBottom: 32 }}>
                 {/* Mobile */}
                 <div className="sm:hidden text-center">
-                    <p style={{ color: '#8888AA', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 5</p>
+                    <p style={{ color: '#666677', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 5</p>
                     <p className="font-heading text-text text-lg">{STEP_LABELS[currentStep - 1]}</p>
                 </div>
                 {/* Desktop */}
@@ -584,14 +584,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <div style={{
                                         width: 32, height: 32, borderRadius: '50%',
-                                        background: done || active ? '#E63950' : '#2A2A3A',
+                                        background: done || active ? '#E63950' : '#C0C0C8',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0,
                                     }}>{done ? '✓' : stepNum}</div>
-                                    <span style={{ fontSize: 11, marginTop: 6, whiteSpace: 'nowrap', color: active ? '#F0F0F8' : '#8888AA' }}>{label}</span>
+                                    <span style={{ fontSize: 11, marginTop: 6, whiteSpace: 'nowrap', color: active ? '#0A0A0F' : '#666677' }}>{label}</span>
                                 </div>
                                 {idx < 4 && (
-                                    <div style={{ flex: 1, height: 2, background: done ? '#E63950' : '#2A2A3A', margin: '0 8px 20px 8px' }} />
+                                    <div style={{ flex: 1, height: 2, background: done ? '#E63950' : '#C0C0C8', margin: '0 8px 20px 8px' }} />
                                 )}
                             </div>
                         )
@@ -600,7 +600,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             </div>
 
             {/* Step content */}
-            <div style={{ background: '#1A1A24', borderRadius: 16, padding: 28, minHeight: 400 }}>
+            <div style={{ background: '#FFFFFF', borderRadius: 16, padding: 28, minHeight: 400 }}>
 
                 {/* Step 1 — Basic Info */}
                 {currentStep === 1 && (
@@ -646,7 +646,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                     <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
                                 </label>
                                 {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
-                                <p className="text-xs mt-1" style={{ color: '#8888AA' }}>Recommended size: 1280×720px (16:9 ratio). Max 5MB. JPG, PNG or WebP.</p>
+                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Recommended size: 1280×720px (16:9 ratio). Max 5MB. JPG, PNG or WebP.</p>
                             </div>
                             <div>
                                 <label className={labelClass}>Promo Video (YouTube URL)</label>
@@ -657,7 +657,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                     className={inputClass}
                                     placeholder="https://www.youtube.com/watch?v=..."
                                 />
-                                <p className="text-xs mt-1" style={{ color: '#8888AA' }}>Paste a YouTube link to show a promo video on your event page.</p>
+                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Paste a YouTube link to show a promo video on your event page.</p>
                             </div>
                         </div>
                     </div>
@@ -730,8 +730,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                         type="button"
                                         onClick={lookupPostcode}
                                         style={{
-                                            border: '1px solid #2A2A3A',
-                                            color: '#8888AA',
+                                            border: '1px solid #C0C0C8',
+                                            color: '#666677',
                                             padding: '4px 10px',
                                             fontSize: 12,
                                             borderRadius: 2,
@@ -742,7 +742,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                             flexShrink: 0,
                                         }}
                                         onMouseEnter={e => (e.currentTarget.style.borderColor = '#E63950')}
-                                        onMouseLeave={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+                                        onMouseLeave={e => (e.currentTarget.style.borderColor = '#C0C0C8')}
                                     >
                                         Look Up
                                     </button>
@@ -751,7 +751,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                     <p style={{
                                         fontSize: 12,
                                         marginTop: 4,
-                                        color: postcodeStatus === 'success' ? '#00E5A0' : postcodeStatus === 'error' ? '#E63950' : '#8888AA',
+                                        color: postcodeStatus === 'success' ? '#00C48A' : postcodeStatus === 'error' ? '#E63950' : '#666677',
                                     }}>{postcodeMsg}</p>
                                 )}
                             </div>
@@ -948,14 +948,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 )}
 
                 {/* Navigation bar */}
-                <div style={{ borderTop: '1px solid #2A2A3A', paddingTop: 24, marginTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ borderTop: '1px solid #C0C0C8', paddingTop: 24, marginTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     {currentStep > 1 ? (
                         <button
                             type="button"
                             onClick={goToPrev}
-                            style={{ background: 'transparent', border: '1px solid #2A2A3A', color: '#8888AA', padding: '12px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#F0F0F8'; e.currentTarget.style.color = '#F0F0F8' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#2A2A3A'; e.currentTarget.style.color = '#8888AA' }}
+                            style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
                         >← Back</button>
                     ) : <div />}
                     <div style={{ display: 'flex', gap: 12 }}>
@@ -992,7 +992,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             {/* Ticket type preset modal */}
             {showTicketPresetModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div style={{ background: '#13131A', border: '1px solid #2A2A3A', borderRadius: 16, padding: 24, width: '100%', maxWidth: 500 }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 16, padding: 24, width: '100%', maxWidth: 500 }}>
                         <div className="flex items-center justify-between mb-5">
                             <h3 style={{ fontFamily: 'var(--font-bebas-neue, Bebas Neue, sans-serif)', fontSize: 20, color: '#fff', letterSpacing: '0.05em' }}>Choose Ticket Type</h3>
                             <button type="button" onClick={() => setShowTicketPresetModal(false)} className="text-muted hover:text-text text-lg leading-none">✕</button>
@@ -1019,8 +1019,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                         )
                                     }}
                                     style={{
-                                        background: '#1A1A24',
-                                        border: '1px solid #2A2A3A',
+                                        background: '#FFFFFF',
+                                        border: '1px solid #C0C0C8',
                                         borderRadius: 12,
                                         padding: 16,
                                         cursor: 'pointer',
@@ -1028,11 +1028,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                         transition: 'border-color 0.15s, background 0.15s',
                                     }}
                                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#E63950' }}
-                                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#2A2A3A' }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#C0C0C8' }}
                                 >
                                     <div style={{ fontSize: 24, marginBottom: 8 }}>{preset.icon}</div>
                                     <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 4 }}>{preset.name}</div>
-                                    <div style={{ color: '#8888AA', fontSize: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preset.description}</div>
+                                    <div style={{ color: '#666677', fontSize: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preset.description}</div>
                                 </button>
                             ))}
                         </div>

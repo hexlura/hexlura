@@ -164,13 +164,13 @@ export default function SellTicketsPage() {
     },
     {
       icon: <IconGroup />,
-      iconColor: '#00E5A0',
+      iconColor: '#00C48A',
       title: 'Group Tickets',
       desc: 'Sell group packages with individual QR codes generated for each member of the group.',
     },
     {
       icon: <IconBank />,
-      iconColor: '#00E5A0',
+      iconColor: '#00C48A',
       title: 'Fast Payouts',
       desc: 'Receive your earnings 2 business days after your event ends, directly to your bank.',
     },
@@ -190,7 +190,7 @@ export default function SellTicketsPage() {
       initials: 'SK',
     },
     {
-      quote: 'We switched from Eventbrite and saved hundreds in fees. The dark design matches our brand perfectly and our customers love it.',
+      quote: 'We switched from Eventbrite and saved hundreds in fees. The clean design matches our brand perfectly and our customers love it.',
       name: 'Raj P',
       role: 'Festival Organiser, Birmingham',
       initials: 'RP',
@@ -198,7 +198,7 @@ export default function SellTicketsPage() {
   ]
 
   return (
-    <div style={{ background: '#0A0A0F', color: '#F0F0F8' }}>
+    <div style={{ background: '#FFFFFF', color: '#0A0A0F' }}>
 
       {/* ── SECTION 1: HERO ─────────────────────────────────────────────── */}
       <section style={{
@@ -206,7 +206,7 @@ export default function SellTicketsPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(230,57,80,0.15), transparent)',
+        background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(230,57,80,0.08), transparent)',
         padding: '80px 24px',
         textAlign: 'center',
       }}>
@@ -228,7 +228,7 @@ export default function SellTicketsPage() {
               display: 'block',
               fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
               fontSize: 'clamp(56px, 10vw, 96px)',
-              color: '#F0F0F8',
+              color: '#0A0A0F',
               letterSpacing: 2,
             }}>
               SELL TICKETS.
@@ -247,7 +247,7 @@ export default function SellTicketsPage() {
           <p style={{
             fontFamily: 'DM Sans, sans-serif',
             fontSize: 20,
-            color: '#8888AA',
+            color: '#666677',
             maxWidth: 560,
             lineHeight: 1.6,
             margin: '24px auto',
@@ -259,7 +259,7 @@ export default function SellTicketsPage() {
             <Link
               href="/auth/register?next=/organiser/apply"
               style={{
-                background: '#E63950',
+                background: '#0A0A0F',
                 color: '#fff',
                 padding: '16px 32px',
                 fontSize: 16,
@@ -275,8 +275,8 @@ export default function SellTicketsPage() {
             <a
               href="#how-it-works"
               style={{
-                border: '1px solid #2A2A3A',
-                color: '#F0F0F8',
+                border: '1px solid #C0C0C8',
+                color: '#0A0A0F',
                 padding: '16px 32px',
                 fontSize: 16,
                 borderRadius: 2,
@@ -285,8 +285,8 @@ export default function SellTicketsPage() {
                 display: 'inline-block',
                 transition: 'border-color 0.2s',
               }}
-              onMouseOver={e => (e.currentTarget.style.borderColor = '#F0F0F8')}
-              onMouseOut={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+              onMouseOver={e => (e.currentTarget.style.borderColor = '#0A0A0F')}
+              onMouseOut={e => (e.currentTarget.style.borderColor = '#C0C0C8')}
             >
               See How It Works
             </a>
@@ -295,7 +295,7 @@ export default function SellTicketsPage() {
           <p style={{
             fontFamily: 'DM Sans, sans-serif',
             fontSize: 13,
-            color: '#8888AA',
+            color: '#666677',
             marginTop: 20,
           }}>
             No setup fees · No monthly subscription · Instant approval
@@ -305,9 +305,9 @@ export default function SellTicketsPage() {
 
       {/* ── SECTION 2: STATS BAR ────────────────────────────────────────── */}
       <section style={{
-        background: '#13131A',
-        borderTop: '1px solid #2A2A3A',
-        borderBottom: '1px solid #2A2A3A',
+        background: '#F0F0F0',
+        borderTop: '1px solid #C0C0C8',
+        borderBottom: '1px solid #C0C0C8',
         padding: '32px 24px',
       }}>
         <div style={{
@@ -328,7 +328,7 @@ export default function SellTicketsPage() {
             <div key={stat.label} style={{
               textAlign: 'center',
               padding: '16px 24px',
-              borderLeft: i > 0 ? '1px solid #2A2A3A' : 'none',
+              borderLeft: i > 0 ? '1px solid #C0C0C8' : 'none',
             }}>
               <div style={{
                 fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
@@ -342,7 +342,7 @@ export default function SellTicketsPage() {
               <div style={{
                 fontFamily: 'DM Sans, sans-serif',
                 fontSize: 13,
-                color: '#8888AA',
+                color: '#666677',
                 textTransform: 'uppercase',
                 letterSpacing: 1,
               }}>
@@ -370,7 +370,7 @@ export default function SellTicketsPage() {
           <h2 style={{
             fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
             fontSize: 56,
-            color: '#F0F0F8',
+            color: '#0A0A0F',
             textAlign: 'center',
             margin: '0 0 64px',
             letterSpacing: 1,
@@ -389,15 +389,15 @@ export default function SellTicketsPage() {
               <div
                 key={step.num}
                 style={{
-                  background: '#13131A',
-                  border: '1px solid #2A2A3A',
+                  background: '#F5F5F7',
+                  border: '1px solid #C0C0C8',
                   padding: 32,
                   position: 'relative',
                   transition: 'border-color 0.2s',
                   cursor: 'default',
                 }}
                 onMouseOver={e => (e.currentTarget.style.borderColor = '#E63950')}
-                onMouseOut={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+                onMouseOut={e => (e.currentTarget.style.borderColor = '#C0C0C8')}
               >
                 <div style={{
                   position: 'absolute',
@@ -405,7 +405,7 @@ export default function SellTicketsPage() {
                   right: 20,
                   fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
                   fontSize: 64,
-                  color: '#2A2A3A',
+                  color: '#C0C0C8',
                   lineHeight: 1,
                   userSelect: 'none',
                 }}>
@@ -417,7 +417,7 @@ export default function SellTicketsPage() {
                 <h3 style={{
                   fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
                   fontSize: 24,
-                  color: '#F0F0F8',
+                  color: '#0A0A0F',
                   margin: '0 0 12px',
                   letterSpacing: 0.5,
                 }}>
@@ -426,7 +426,7 @@ export default function SellTicketsPage() {
                 <p style={{
                   fontFamily: 'DM Sans, sans-serif',
                   fontSize: 14,
-                  color: '#8888AA',
+                  color: '#666677',
                   lineHeight: 1.7,
                   margin: 0,
                 }}>
@@ -441,8 +441,8 @@ export default function SellTicketsPage() {
       {/* ── SECTION 4: PRICING ──────────────────────────────────────────── */}
       <section style={{
         padding: '100px 24px',
-        background: '#13131A',
-        borderTop: '1px solid #2A2A3A',
+        background: '#F0F0F0',
+        borderTop: '1px solid #C0C0C8',
       }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <p style={{
@@ -459,7 +459,7 @@ export default function SellTicketsPage() {
           <h2 style={{
             fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
             fontSize: 56,
-            color: '#F0F0F8',
+            color: '#0A0A0F',
             textAlign: 'center',
             margin: '0 0 48px',
             letterSpacing: 1,
@@ -469,8 +469,8 @@ export default function SellTicketsPage() {
 
           <div style={{ maxWidth: 600, margin: '0 auto' }}>
             <div style={{
-              background: '#13131A',
-              border: '1px solid #2A2A3A',
+              background: '#FFFFFF',
+              border: '1px solid #C0C0C8',
               padding: 48,
             }}>
               <div style={{
@@ -486,13 +486,13 @@ export default function SellTicketsPage() {
               <p style={{
                 fontFamily: 'DM Sans, sans-serif',
                 fontSize: 16,
-                color: '#8888AA',
+                color: '#666677',
                 textAlign: 'center',
                 margin: '0 0 32px',
               }}>
                 per ticket booking fee
               </p>
-              <div style={{ borderTop: '1px solid #2A2A3A', paddingTop: 32 }}>
+              <div style={{ borderTop: '1px solid #C0C0C8', paddingTop: 32 }}>
                 {[
                   'Minimum fee: £0.99 per ticket',
                   'Maximum fee: £5.00 per ticket',
@@ -504,11 +504,11 @@ export default function SellTicketsPage() {
                     gap: 12,
                     marginBottom: 16,
                   }}>
-                    <span style={{ color: '#00E5A0', fontSize: 18, lineHeight: 1 }}>✓</span>
+                    <span style={{ color: '#00C48A', fontSize: 18, lineHeight: 1 }}>✓</span>
                     <span style={{
                       fontFamily: 'DM Sans, sans-serif',
                       fontSize: 15,
-                      color: '#F0F0F8',
+                      color: '#0A0A0F',
                     }}>
                       {item}
                     </span>
@@ -519,7 +519,7 @@ export default function SellTicketsPage() {
             <p style={{
               fontFamily: 'DM Sans, sans-serif',
               fontSize: 12,
-              color: '#8888AA',
+              color: '#666677',
               textAlign: 'center',
               marginTop: 16,
             }}>
@@ -546,7 +546,7 @@ export default function SellTicketsPage() {
           <h2 style={{
             fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
             fontSize: 56,
-            color: '#F0F0F8',
+            color: '#0A0A0F',
             textAlign: 'center',
             margin: '0 0 64px',
             letterSpacing: 1,
@@ -565,20 +565,20 @@ export default function SellTicketsPage() {
               <div
                 key={feature.title}
                 style={{
-                  background: '#13131A',
-                  border: '1px solid #2A2A3A',
+                  background: '#F5F5F7',
+                  border: '1px solid #C0C0C8',
                   padding: 32,
                   transition: 'border-color 0.2s',
                   cursor: 'default',
                 }}
                 onMouseOver={e => (e.currentTarget.style.borderColor = feature.iconColor)}
-                onMouseOut={e => (e.currentTarget.style.borderColor = '#2A2A3A')}
+                onMouseOut={e => (e.currentTarget.style.borderColor = '#C0C0C8')}
               >
                 <div style={{
                   width: 56,
                   height: 56,
-                  background: '#1A1A24',
-                  border: '1px solid #2A2A3A',
+                  background: '#FFFFFF',
+                  border: '1px solid #C0C0C8',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -590,7 +590,7 @@ export default function SellTicketsPage() {
                 <h3 style={{
                   fontFamily: 'DM Sans, sans-serif',
                   fontSize: 18,
-                  color: '#F0F0F8',
+                  color: '#0A0A0F',
                   fontWeight: 600,
                   margin: '0 0 12px',
                 }}>
@@ -599,7 +599,7 @@ export default function SellTicketsPage() {
                 <p style={{
                   fontFamily: 'DM Sans, sans-serif',
                   fontSize: 14,
-                  color: '#8888AA',
+                  color: '#666677',
                   lineHeight: 1.7,
                   margin: 0,
                 }}>
@@ -614,8 +614,8 @@ export default function SellTicketsPage() {
       {/* ── SECTION 6: TESTIMONIALS ─────────────────────────────────────── */}
       <section style={{
         padding: '100px 24px',
-        background: '#13131A',
-        borderTop: '1px solid #2A2A3A',
+        background: '#F5F5F7',
+        borderTop: '1px solid #C0C0C8',
       }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <p style={{
@@ -632,7 +632,7 @@ export default function SellTicketsPage() {
           <h2 style={{
             fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
             fontSize: 56,
-            color: '#F0F0F8',
+            color: '#0A0A0F',
             textAlign: 'center',
             margin: '0 0 64px',
             letterSpacing: 1,
@@ -651,8 +651,8 @@ export default function SellTicketsPage() {
               <div
                 key={t.name}
                 style={{
-                  background: '#1A1A24',
-                  border: '1px solid #2A2A3A',
+                  background: '#FFFFFF',
+                  border: '1px solid #C0C0C8',
                   padding: 32,
                 }}
               >
@@ -670,21 +670,21 @@ export default function SellTicketsPage() {
                 <p style={{
                   fontFamily: 'DM Sans, sans-serif',
                   fontSize: 16,
-                  color: '#F0F0F8',
+                  color: '#0A0A0F',
                   lineHeight: 1.7,
                   fontStyle: 'italic',
                   marginBottom: 24,
                 }}>
                   {t.quote}
                 </p>
-                <div style={{ borderTop: '1px solid #2A2A3A', marginBottom: 20 }} />
+                <div style={{ borderTop: '1px solid #C0C0C8', marginBottom: 20 }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{
                     width: 40,
                     height: 40,
                     borderRadius: '50%',
-                    background: '#2A2A3A',
-                    color: '#F0F0F8',
+                    background: '#C0C0C8',
+                    color: '#0A0A0F',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -699,7 +699,7 @@ export default function SellTicketsPage() {
                     <div style={{
                       fontFamily: 'DM Sans, sans-serif',
                       fontSize: 14,
-                      color: '#F0F0F8',
+                      color: '#0A0A0F',
                       fontWeight: 600,
                     }}>
                       {t.name}
@@ -707,7 +707,7 @@ export default function SellTicketsPage() {
                     <div style={{
                       fontFamily: 'DM Sans, sans-serif',
                       fontSize: 13,
-                      color: '#8888AA',
+                      color: '#666677',
                     }}>
                       {t.role}
                     </div>
@@ -722,8 +722,8 @@ export default function SellTicketsPage() {
       {/* ── SECTION 7: FINAL CTA ────────────────────────────────────────── */}
       <section style={{
         padding: 'clamp(80px, 10vw, 120px) 24px',
-        background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(230,57,80,0.12), transparent)',
-        borderTop: '1px solid #2A2A3A',
+        background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(230,57,80,0.06), transparent)',
+        borderTop: '1px solid #C0C0C8',
         textAlign: 'center',
       }}>
         <p style={{
@@ -739,7 +739,7 @@ export default function SellTicketsPage() {
         <h2 style={{
           fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif',
           fontSize: 'clamp(48px, 8vw, 72px)',
-          color: '#F0F0F8',
+          color: '#0A0A0F',
           margin: '0 0 0',
           letterSpacing: 1,
           lineHeight: 1,
@@ -749,7 +749,7 @@ export default function SellTicketsPage() {
         <p style={{
           fontFamily: 'DM Sans, sans-serif',
           fontSize: 18,
-          color: '#8888AA',
+          color: '#666677',
           maxWidth: 500,
           margin: '16px auto 40px',
           lineHeight: 1.6,
@@ -778,7 +778,7 @@ export default function SellTicketsPage() {
             style={{
               fontFamily: 'DM Sans, sans-serif',
               fontSize: 14,
-              color: '#8888AA',
+              color: '#666677',
               textDecoration: 'none',
             }}
             onMouseOver={undefined}
@@ -808,13 +808,13 @@ export default function SellTicketsPage() {
           }
           .sell-stats-grid > div {
             border-left: none !important;
-            border-top: 1px solid #2A2A3A;
+            border-top: 1px solid #C0C0C8;
           }
           .sell-stats-grid > div:nth-child(odd) {
             border-left: none !important;
           }
           .sell-stats-grid > div:nth-child(even) {
-            border-left: 1px solid #2A2A3A !important;
+            border-left: 1px solid #C0C0C8 !important;
           }
           .sell-steps-grid {
             grid-template-columns: 1fr !important;

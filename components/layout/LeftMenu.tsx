@@ -41,18 +41,18 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
     const isActive = (href: string) => pathname === href
 
     const linkClass = (href: string) =>
-        `block text-[15px] py-2.5 transition-colors ${isActive(href) ? 'text-[#E63950]' : 'text-[#F0F0F8] hover:text-[#E63950]'}`
+        `block text-[15px] py-2.5 transition-colors ${isActive(href) ? 'text-[#E63950]' : 'text-[#0A0A0F] hover:text-[#E63950]'}`
 
     const heading = (label: string) => (
         <p
-            className="text-[11px] uppercase text-[#8888AA] mb-3 mt-6 tracking-[2px]"
+            className="text-[11px] uppercase text-[#666677] mb-3 mt-6 tracking-[2px]"
             style={{ fontFamily: '"JetBrains Mono", monospace' }}
         >
             {label}
         </p>
     )
 
-    const divider = <div className="border-t border-[#2A2A3A]" />
+    const divider = <div className="border-t border-[#C0C0C8]" />
 
     return (
         <>
@@ -72,7 +72,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
             {/* Backdrop */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-50 bg-black/70"
+                    className="fixed inset-0 z-50 bg-black/40"
                     onClick={close}
                     aria-hidden="true"
                 />
@@ -80,18 +80,18 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
 
             {/* Slide panel */}
             <div
-                className={`fixed top-0 left-0 z-50 h-screen bg-[#0A0A0F] border-r border-[#2A2A3A] overflow-y-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`fixed top-0 left-0 z-50 h-screen bg-[#FFFFFF] border-r border-[#C0C0C8] overflow-y-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
                 style={{ width: 'min(300px, 85vw)' }}
             >
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                     <div>
                         <p className="font-heading text-2xl text-[#E63950] tracking-wider">HEXLURA</p>
-                        <p className="text-xs text-[#8888AA] mt-0.5">UK Event Tickets</p>
+                        <p className="text-xs text-[#666677] mt-0.5">UK Event Tickets</p>
                     </div>
                     <button
                         onClick={close}
-                        className="text-[#8888AA] hover:text-white transition-colors"
+                        className="text-[#666677] hover:text-[#0A0A0F] transition-colors"
                         aria-label="Close menu"
                     >
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -108,7 +108,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search events, venues..."
-                            className="w-full bg-[#1A1A24] border border-[#2A2A3A] rounded-lg px-4 py-2.5 text-sm text-[#F0F0F8] placeholder-[#8888AA] outline-none focus:border-[#E63950] transition-colors"
+                            className="w-full bg-[#FFFFFF] border border-[#C0C0C8] rounded-lg px-4 py-2.5 text-sm text-[#0A0A0F] placeholder-[#666677] outline-none focus:border-[#E63950] transition-colors"
                         />
                     </form>
 
@@ -119,7 +119,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                         <Link href="/events" onClick={close} className={linkClass('/events')}>All Events</Link>
                         <Link href="/events?date=today" onClick={close} className={linkClass('/events?date=today')}>Events Today</Link>
                         <Link href="/events?date=weekend" onClick={close} className={linkClass('/events?date=weekend')}>This Weekend</Link>
-                        <Link href="/events" onClick={close} className="block text-[15px] py-2.5 text-[#F0F0F8] hover:text-[#E63950] transition-colors">Near Me</Link>
+                        <Link href="/events" onClick={close} className="block text-[15px] py-2.5 text-[#0A0A0F] hover:text-[#E63950] transition-colors">Near Me</Link>
                     </div>
 
                     {/* Categories */}
