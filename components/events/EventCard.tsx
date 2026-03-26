@@ -69,7 +69,7 @@ export default function EventCard({ event }: EventCardProps) {
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="group block rounded-none bg-[#1A1A24] border border-[#2A2A3A] hover:border-[#E63950] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+            className="group block rounded-none bg-[#FFFFFF] border border-[#C0C0C8] hover:border-[#E63950] hover:-translate-y-0.5 hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden"
         >
             {/* Image — 3:2 aspect ratio */}
             <div className="relative overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
@@ -82,8 +82,8 @@ export default function EventCard({ event }: EventCardProps) {
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                 ) : (
-                    <div className="w-full h-full bg-[#2A2A3A] flex items-center justify-center">
-                        <span className="text-[#8888AA] text-xs">No image</span>
+                    <div className="w-full h-full bg-[#C0C0C8] flex items-center justify-center">
+                        <span className="text-[#666677] text-xs">No image</span>
                     </div>
                 )}
                 {/* Category badge */}
@@ -115,7 +115,7 @@ export default function EventCard({ event }: EventCardProps) {
                     className="mb-1.5"
                     style={{
                         fontSize: '13px',
-                        color: '#F0F0F8',
+                        color: '#0A0A0F',
                         fontWeight: 600,
                         lineHeight: 1.35,
                         display: '-webkit-box',
@@ -129,10 +129,10 @@ export default function EventCard({ event }: EventCardProps) {
                 {/* Venue */}
                 <p
                     className="flex items-center gap-1 truncate mb-2.5"
-                    style={{ fontSize: '12px', color: '#8888AA' }}
+                    style={{ fontSize: '12px', color: '#666677' }}
                 >
                     <svg width="10" height="12" viewBox="0 0 10 12" fill="none" aria-hidden="true" className="shrink-0">
-                        <path d="M5 0C2.79 0 1 1.79 1 4c0 2.97 4 8 4 8s4-5.03 4-8c0-2.21-1.79-4-4-4zm0 5.5C4.17 5.5 3.5 4.83 3.5 4S4.17 2.5 5 2.5 6.5 3.17 6.5 4 5.83 5.5 5 5.5z" fill="#8888AA" />
+                        <path d="M5 0C2.79 0 1 1.79 1 4c0 2.97 4 8 4 8s4-5.03 4-8c0-2.21-1.79-4-4-4zm0 5.5C4.17 5.5 3.5 4.83 3.5 4S4.17 2.5 5 2.5 6.5 3.17 6.5 4 5.83 5.5 5 5.5z" fill="#666677" />
                     </svg>
                     <span className="truncate">
                         {event.venue_name}{event.venue_address && `, ${event.venue_address.split(',')[0]}`}
@@ -143,9 +143,9 @@ export default function EventCard({ event }: EventCardProps) {
             {/* Footer */}
             <div
                 className="flex items-center justify-between px-3 py-2"
-                style={{ borderTop: '1px solid #2A2A3A' }}
+                style={{ borderTop: '1px solid #C0C0C8' }}
             >
-                <span style={{ fontSize: '13px', color: '#F0F0F8', fontWeight: 700 }}>
+                <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 700 }}>
                     {priceDisplay}
                 </span>
                 {isSoldOut ? (
@@ -154,8 +154,8 @@ export default function EventCard({ event }: EventCardProps) {
                         Sold out
                     </span>
                 ) : (
-                    <span className="flex items-center gap-1.5" style={{ fontSize: '11px', color: '#00E5A0' }}>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00E5A0]" />
+                    <span className="flex items-center gap-1.5" style={{ fontSize: '11px', color: '#00C48A' }}>
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00C48A]" />
                         On sale
                     </span>
                 )}

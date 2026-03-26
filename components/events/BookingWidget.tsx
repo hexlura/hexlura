@@ -81,25 +81,25 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                     const groupSize = ticket.group_size || 1;
 
                     return (
-                        <div key={ticket.id} style={{ borderBottom: '1px solid #2A2A3A' }}>
+                        <div key={ticket.id} style={{ borderBottom: '1px solid #C0C0C8' }}>
                             {/* Single-line row */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
                                 {/* Name */}
-                                <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#8888AA' : '#F0F0F8', flex: 1, marginRight: 12, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#666677' : '#0A0A0F', flex: 1, marginRight: 12, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
                                     {ticket.name}
                                     {isGroup && (
-                                        <span style={{ fontSize: 11, background: '#2A2A3A', color: '#F5A623', padding: '2px 8px', borderRadius: 2, marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, display: 'inline-block' }}>
+                                        <span style={{ fontSize: 11, background: '#C0C0C8', color: '#F5A623', padding: '2px 8px', borderRadius: 2, marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, display: 'inline-block' }}>
                                             Group of {groupSize}
                                         </span>
                                     )}
                                 </span>
                                 {/* Price + fee */}
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginRight: 16, whiteSpace: 'nowrap' }}>
-                                    <span style={{ fontSize: 14, color: isSoldOut ? '#8888AA' : ticket.price_pence === 0 ? '#00E5A0' : '#F0F0F8' }}>
+                                    <span style={{ fontSize: 14, color: isSoldOut ? '#666677' : ticket.price_pence === 0 ? '#00C48A' : '#0A0A0F' }}>
                                         {ticket.price_pence === 0 ? 'Free' : formatPence(ticket.price_pence)}
                                     </span>
                                     {ticket.price_pence > 0 && (
-                                        <span style={{ fontSize: 12, color: '#8888AA' }}>
+                                        <span style={{ fontSize: 12, color: '#666677' }}>
                                             +{formatPence(feePerTicket)} fee
                                         </span>
                                     )}
@@ -108,7 +108,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                 {isSoldOut ? (
                                     <span style={{ fontSize: 12, color: '#E63950', fontWeight: 600 }}>SOLD OUT</span>
                                 ) : isGroup ? (
-                                    <div style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '6px 12px', color: '#F0F0F8', textAlign: 'center', fontSize: 14, minWidth: 48 }}>
+                                    <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', padding: '6px 12px', color: '#0A0A0F', textAlign: 'center', fontSize: 14, minWidth: 48 }}>
                                         1
                                     </div>
                                 ) : (
@@ -116,9 +116,9 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                         value={quantity}
                                         onChange={e => handleQuantityChange(ticket.id, parseInt(e.target.value))}
                                         style={{
-                                            background: '#1A1A24',
-                                            color: '#F0F0F8',
-                                            border: '1px solid #2A2A3A',
+                                            background: '#FFFFFF',
+                                            color: '#0A0A0F',
+                                            border: '1px solid #C0C0C8',
                                             padding: '6px 12px',
                                             borderRadius: 2,
                                             fontSize: 14,
@@ -134,7 +134,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                             {/* Group ticket info */}
                             {isGroup && (
                                 <div style={{ paddingBottom: 4 }}>
-                                    <p style={{ fontSize: 12, color: '#8888AA', margin: '4px 0 0' }}>
+                                    <p style={{ fontSize: 12, color: '#666677', margin: '4px 0 0' }}>
                                         1 ticket = {groupSize} people · {groupSize} QR codes will be generated
                                     </p>
                                     {quantity > 0 && (
@@ -150,12 +150,12 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                                     <button
                                         type="button"
                                         onClick={() => setExpanded(prev => ({ ...prev, [ticket.id]: !isExpanded }))}
-                                        style={{ fontSize: 12, color: '#8888AA', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                                        style={{ fontSize: 12, color: '#666677', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                                     >
                                         {isExpanded ? '▲ Hide' : '▼ Details'}
                                     </button>
                                     {isExpanded && (
-                                        <p style={{ fontSize: 13, color: '#8888AA', padding: '8px 0 0', margin: 0 }}>
+                                        <p style={{ fontSize: 13, color: '#666677', padding: '8px 0 0', margin: 0 }}>
                                             {ticket.description}
                                         </p>
                                     )}
@@ -197,7 +197,7 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
                 {checkoutLoading ? 'Loading...' : isFreeSelection ? 'Reserve My Spot' : 'Proceed to Checkout'}
             </Button>
             {isFreeSelection && (
-                <p style={{ fontSize: 12, color: '#00E5A0', textAlign: 'center', margin: '4px 0 0' }}>
+                <p style={{ fontSize: 12, color: '#00C48A', textAlign: 'center', margin: '4px 0 0' }}>
                     No payment required
                 </p>
             )}

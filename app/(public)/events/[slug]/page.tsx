@@ -129,7 +129,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     <div className="md:sticky md:top-8 flex flex-col gap-6">
 
                         {/* Event title */}
-                        <h1 className="uppercase tracking-tight leading-none" style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#F0F0F8' }}>
+                        <h1 className="uppercase tracking-tight leading-none" style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F' }}>
                             {event.title}
                         </h1>
 
@@ -178,10 +178,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             const windowStr = closeStr ? `Opens ${openStr} · Closes ${closeStr}` : `Opens ${openStr}`
                             return (
                                 <div>
-                                    <p style={{ fontSize: '11px', color: '#8888AA', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                                    <p style={{ fontSize: '11px', color: '#666677', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
                                         DOORS / CHECK-IN
                                     </p>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#F0F0F8' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#0A0A0F' }}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h10"/><path d="M18 8l4 4-4 4"/><path d="M8 12h14"/></svg>
                                         {windowStr}
                                     </div>
@@ -204,7 +204,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                     <span style={{ display: 'inline-flex', padding: '6px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginTop: '12px', background: policy.bg, color: policy.color, border: policy.border }}>
                                         {policy.label}
                                     </span>
-                                    <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '6px' }}>Booking fees are non-refundable</p>
+                                    <p style={{ fontSize: '11px', color: '#666677', marginTop: '6px' }}>Booking fees are non-refundable</p>
                                 </div>
                             )
                         })()}
@@ -226,7 +226,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                 <span style={{ display: 'inline-block', background: 'rgba(0,229,160,0.12)', border: '1px solid #00E5A0', color: '#00E5A0', fontSize: 12, fontWeight: 700, letterSpacing: 2, padding: '4px 12px', textTransform: 'uppercase' }}>
                                     Free Event
                                 </span>
-                                <p style={{ fontSize: 13, color: '#8888AA', marginTop: 6 }}>
+                                <p style={{ fontSize: 13, color: '#666677', marginTop: 6 }}>
                                     Reserve your free spot before it fills up
                                 </p>
                             </div>
@@ -275,27 +275,27 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                 {/* Organiser Card — LEFT COL */}
                 {organiser && (
                     <section className="md:col-start-1">
-                        <p style={{ fontSize: '11px', color: '#8888AA', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                        <p style={{ fontSize: '11px', color: '#666677', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
                             ORGANISED BY
                         </p>
-                        <div style={{ background: '#1A1A24', border: '1px solid #2A2A3A', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                             <div
                                 className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center"
-                                style={{ width: '56px', height: '56px', background: '#2A2A3A' }}
+                                style={{ width: '56px', height: '56px', background: '#C0C0C8' }}
                             >
                                 {organiser.logo_url ? (
                                     <Image src={organiser.logo_url} alt="" fill className="object-cover" />
                                 ) : (
-                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#F0F0F8' }}>
+                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#0A0A0F' }}>
                                         {organiser.org_name.charAt(0).toUpperCase()}
                                     </span>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p style={{ fontSize: '16px', color: '#F0F0F8', fontWeight: 600, lineHeight: 1.3 }}>
+                                <p style={{ fontSize: '16px', color: '#0A0A0F', fontWeight: 600, lineHeight: 1.3 }}>
                                     {organiser.org_name}
                                 </p>
-                                <p style={{ fontSize: '13px', color: '#8888AA', marginTop: '2px' }}>
+                                <p style={{ fontSize: '13px', color: '#666677', marginTop: '2px' }}>
                                     {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
                                     {' · '}
                                     {organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
@@ -304,7 +304,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             <Link
                                 href={`/organisers/${organiser.slug}`}
                                 className="shrink-0 transition-colors hover:border-[#E63950]"
-                                style={{ fontSize: '13px', padding: '6px 16px', border: '1px solid #2A2A3A', borderRadius: '2px', color: '#F0F0F8', background: 'transparent', whiteSpace: 'nowrap' }}
+                                style={{ fontSize: '13px', padding: '6px 16px', border: '1px solid #C0C0C8', borderRadius: '2px', color: '#0A0A0F', background: 'transparent', whiteSpace: 'nowrap' }}
                             >
                                 View Profile
                             </Link>
@@ -319,8 +319,8 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address + ' ' + event.venue_name)}`;
                         return (
                             <div>
-                                <p style={{ fontSize: '16px', fontWeight: 700, color: '#F0F0F8' }}>{event.venue_name}</p>
-                                <p style={{ fontSize: '14px', color: '#8888AA', marginTop: '4px' }}>{event.venue_address}{event.venue_postcode ? `, ${event.venue_postcode}` : ''}</p>
+                                <p style={{ fontSize: '16px', fontWeight: 700, color: '#0A0A0F' }}>{event.venue_name}</p>
+                                <p style={{ fontSize: '14px', color: '#666677', marginTop: '4px' }}>{event.venue_address}{event.venue_postcode ? `, ${event.venue_postcode}` : ''}</p>
                                 <a
                                     href={mapsUrl}
                                     target="_blank"
@@ -332,9 +332,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                         gap: '8px',
                                         marginTop: '12px',
                                         padding: '8px 16px',
-                                        border: '1px solid #2A2A3A',
+                                        border: '1px solid #C0C0C8',
                                         borderRadius: '2px',
-                                        color: '#F0F0F8',
+                                        color: '#0A0A0F',
                                         fontSize: '13px',
                                         textDecoration: 'none',
                                         transition: 'border-color 0.15s',

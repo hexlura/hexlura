@@ -56,7 +56,7 @@ export async function Navbar() {
                         <>
                             <Link
                                 href="/auth/login"
-                                className="hidden md:inline-flex items-center justify-center text-sm font-medium text-white border border-white bg-transparent px-5 py-2 rounded-sm hover:bg-white hover:text-black transition"
+                                className="hidden md:inline-flex items-center justify-center text-sm font-medium text-[#0A0A0F] border border-[#C0C0C8] bg-transparent px-5 py-2 rounded-sm hover:bg-[#F5F5F7] hover:text-[#0A0A0F] transition"
                             >
                                 Log In
                             </Link>

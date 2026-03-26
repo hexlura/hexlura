@@ -41,14 +41,14 @@ export default async function HomePage() {
     return (
         <div className="flex flex-col min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="relative w-full py-24 md:py-40 bg-black text-white overflow-hidden flex flex-col items-center justify-center text-center px-4">
-                <div className="absolute inset-0 bg-gradient-to-br from-red-950/40 via-black to-blue-950/20 z-0 pointer-events-none" />
+            <section className="relative w-full py-24 md:py-40 bg-[#F5F5F7] text-[#0A0A0F] overflow-hidden flex flex-col items-center justify-center text-center px-4">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-blue-50 z-0 pointer-events-none" />
 
                 <div className="relative z-10 max-w-5xl mx-auto space-y-6">
                     <h1 className="text-6xl md:text-[120px] leading-none font-bold tracking-tighter" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
                         LIVE EVERY MOMENT
                     </h1>
-                    <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto font-light">
+                    <p className="text-xl md:text-2xl text-[#666677] max-w-2xl mx-auto font-light">
                         Book tickets to the UK&apos;s best concerts, sports, comedy, festivals and more.
                     </p>
 
@@ -56,7 +56,7 @@ export default async function HomePage() {
                         <Link href="/events" className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
                             Find Events
                         </Link>
-                        <Link href={sellTicketsHref} className="flex items-center justify-center bg-transparent border-2 border-white text-white hover:bg-white/10 hover:text-white font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
+                        <Link href={sellTicketsHref} className="flex items-center justify-center bg-transparent border-2 border-[#C0C0C8] text-[#0A0A0F] hover:bg-[#C0C0C8]/20 font-bold h-14 px-8 text-lg rounded-full w-full sm:w-auto">
                             Sell Tickets
                         </Link>
                     </div>
@@ -75,7 +75,7 @@ export default async function HomePage() {
                             style={{
                                 fontFamily: '"Bebas Neue", sans-serif',
                                 fontSize: '22px',
-                                color: '#F0F0F8',
+                                color: '#0A0A0F',
                                 letterSpacing: '1px',
                             }}
                         >
