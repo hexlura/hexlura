@@ -59,7 +59,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
             {/* Hamburger button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="text-white p-1 mr-3 hover:opacity-70 transition-opacity flex-shrink-0"
+                className="text-[#0A0A0F] p-1 mr-3 hover:opacity-70 transition-opacity flex-shrink-0"
                 aria-label="Open menu"
             >
                 <svg width="22" height="20" viewBox="0 0 22 20" fill="none" aria-hidden="true">
