@@ -130,10 +130,10 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
     return (
         <>
             {/* Mobile header bar — hidden on desktop */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-[#0A0A0F] border-b border-[#2A2A3A] flex items-center px-4 gap-3">
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center px-4 gap-3">
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="text-white p-2 -ml-2"
+                    className="text-[#0A0A0F] p-2 -ml-2"
                     type="button"
                     aria-label="Open menu"
                 >
@@ -168,7 +168,7 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
                 {/* X close button — mobile only */}
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden absolute top-4 right-4 text-white hover:text-accent transition-colors"
+                    className="lg:hidden absolute top-4 right-4 text-[#666677] hover:text-[#0A0A0F] transition-colors"
                     type="button"
                     aria-label="Close menu"
                 >
@@ -221,13 +221,13 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
                 </nav>
 
                 {/* My Account link */}
-                <div style={{ borderTop: '1px solid #2A2A3A', margin: '0 12px 0 12px', paddingTop: '16px', paddingBottom: '8px' }}>
+                <div style={{ borderTop: '1px solid #C0C0C8', margin: '0 12px 0 12px', paddingTop: '16px', paddingBottom: '8px' }}>
                     <button
                         onClick={() => handleNavClick('/account')}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
-                        style={{ fontSize: '14px', color: '#8888AA' }}
-                        onMouseEnter={e => (e.currentTarget.style.color = '#F0F0F8')}
-                        onMouseLeave={e => (e.currentTarget.style.color = '#8888AA')}
+                        style={{ fontSize: '14px', color: '#666677' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#0A0A0F')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#666677')}
                     >
                         <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />

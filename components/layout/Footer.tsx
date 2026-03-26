@@ -28,7 +28,7 @@ function FooterColumn({ heading, links }: { heading: string; links: { label: str
     return (
         <div>
             <h3
-                className="text-white font-bold mb-4"
+                className="text-[#0A0A0F] font-bold mb-4"
                 style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '2px', fontSize: '1rem' }}
             >
                 {heading}
@@ -51,7 +51,7 @@ function FooterColumn({ heading, links }: { heading: string; links: { label: str
 
 export function Footer() {
     return (
-        <footer style={{ background: '#0A0A0F', borderTop: '1px solid #2A2A3A' }}>
+        <footer style={{ background: '#F5F5F7', borderTop: '1px solid #C0C0C8' }}>
             <div className="max-w-7xl mx-auto px-6 py-16">
                 {/* 4-column grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
@@ -69,7 +69,7 @@ export function Footer() {
                         <p className="text-sm text-muted">
                             © 2026 Hexlura Ltd
                         </p>
-                        <p className="text-xs mt-1" style={{ color: '#555570' }}>
+                        <p className="text-xs mt-1" style={{ color: '#666677' }}>
                             Registered in England &amp; Wales
                         </p>
                     </div>
@@ -87,7 +87,7 @@ export function Footer() {
                 {/* Bottom bar */}
                 <div
                     className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8"
-                    style={{ borderTop: '1px solid #2A2A3A' }}
+                    style={{ borderTop: '1px solid #C0C0C8' }}
                 >
                     {/* Social links */}
                     <div className="flex items-center gap-4">

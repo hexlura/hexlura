@@ -72,10 +72,10 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
     return (
         <>
             {/* Mobile header bar — hidden on desktop */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-[#0A0A0F] border-b border-[#2A2A3A] flex items-center px-4 gap-3">
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center px-4 gap-3">
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="text-white p-2 -ml-2"
+                    className="text-[#0A0A0F] p-2 -ml-2"
                     type="button"
                     aria-label="Open menu"
                 >
@@ -105,12 +105,12 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
                     'lg:translate-x-0',
                     isOpen ? 'translate-x-0' : '-translate-x-full',
                 ].join(' ')}
-                style={{ width: '240px', background: '#0A0A0F', borderRight: '1px solid #2A2A3A' }}
+                style={{ width: '240px', background: '#FFFFFF', borderRight: '1px solid #C0C0C8' }}
             >
                 {/* X close button — mobile only */}
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden absolute top-4 right-4 text-white hover:text-accent transition-colors"
+                    className="lg:hidden absolute top-4 right-4 text-[#666677] hover:text-[#0A0A0F] transition-colors"
                     type="button"
                     aria-label="Close menu"
                 >

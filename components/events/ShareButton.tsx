@@ -27,14 +27,14 @@ export default function ShareButton({ title }: ShareButtonProps) {
     return (
         <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 transition-colors hover:border-[#F0F0F8] hover:text-[#F0F0F8]"
+            className="flex items-center gap-1.5 transition-colors hover:border-[#0A0A0F] hover:text-[#0A0A0F]"
             style={{
                 fontSize: '13px',
                 padding: '6px 14px',
-                border: '1px solid #2A2A3A',
+                border: '1px solid #C0C0C8',
                 borderRadius: '2px',
                 background: 'transparent',
-                color: copied ? '#00E5A0' : '#8888AA',
+                color: copied ? '#00C48A' : '#666677',
                 cursor: 'pointer',
             }}
         >

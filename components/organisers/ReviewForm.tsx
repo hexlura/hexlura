@@ -53,7 +53,7 @@ export default function ReviewForm({ organiserId, onSubmitted }: ReviewFormProps
                             border: 'none',
                             cursor: 'pointer',
                             fontSize: '24px',
-                            color: star <= (hover || rating) ? '#F5A623' : '#2A2A3A',
+                            color: star <= (hover || rating) ? '#F5A623' : '#C0C0C8',
                             padding: '0 2px',
                             lineHeight: 1,
                         }}
@@ -68,9 +68,9 @@ export default function ReviewForm({ organiserId, onSubmitted }: ReviewFormProps
                 placeholder="Share your experience..."
                 rows={4}
                 style={{
-                    background: '#1A1A24',
-                    border: '1px solid #2A2A3A',
-                    color: '#F0F0F8',
+                    background: '#FFFFFF',
+                    border: '1px solid #C0C0C8',
+                    color: '#0A0A0F',
                     padding: '12px',
                     borderRadius: '2px',
                     minHeight: '80px',
@@ -89,9 +89,9 @@ export default function ReviewForm({ organiserId, onSubmitted }: ReviewFormProps
                     padding: '8px 20px',
                     fontSize: '13px',
                     borderRadius: '2px',
-                    border: '1px solid #2A2A3A',
-                    background: loading ? '#2A2A3A' : '#E63950',
-                    color: '#F0F0F8',
+                    border: '1px solid #0A0A0F',
+                    background: loading ? '#C0C0C8' : '#0A0A0F',
+                    color: '#FFFFFF',
                     cursor: loading ? 'default' : 'pointer',
                     fontWeight: 600,
                 }}

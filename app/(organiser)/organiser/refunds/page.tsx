@@ -32,7 +32,7 @@ export default async function OrganiserRefundsPage() {
     if (eventIds.length === 0) {
         return (
             <div>
-                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#F0F0F8', marginBottom: '32px' }}>
+                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', marginBottom: '32px' }}>
                     REFUND REQUESTS
                 </h1>
                 <OrganiserRefundsClient requests={[]} />
@@ -51,7 +51,7 @@ export default async function OrganiserRefundsPage() {
     if (bookingIds.length === 0) {
         return (
             <div>
-                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#F0F0F8', marginBottom: '32px' }}>
+                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', marginBottom: '32px' }}>
                     REFUND REQUESTS
                 </h1>
                 <OrganiserRefundsClient requests={[]} />
@@ -120,7 +120,7 @@ export default async function OrganiserRefundsPage() {
 
     return (
         <div>
-            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#F0F0F8', marginBottom: '32px' }}>
+            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', marginBottom: '32px' }}>
                 REFUND REQUESTS
             </h1>
             <OrganiserRefundsClient requests={enriched} />
