@@ -1,9 +1,19 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkinLimiter, getIP } from '@/lib/rate-limit'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
+        const ip = getIP(req)
+        const { success } = checkinLimiter(ip)
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Too many scan attempts. Please slow down.' },
+                { status: 429 }
+            )
+        }
+
         const body = await req.json()
         const { qr_token, booking_ref, event_id } = body
 

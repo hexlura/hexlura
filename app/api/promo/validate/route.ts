@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { promoLimiter, getIP } from '@/lib/rate-limit'
 
 interface ValidateRequest {
     code: string
@@ -7,7 +8,16 @@ interface ValidateRequest {
     ticket_subtotal_pence: number
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+    const ip = getIP(request)
+    const { success } = promoLimiter(ip)
+    if (!success) {
+        return NextResponse.json(
+            { error: 'Too many attempts. Please try again later.' },
+            { status: 429 }
+        )
+    }
+
     const body = (await request.json()) as ValidateRequest
     const { code, event_id, ticket_subtotal_pence } = body
 
