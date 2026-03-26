@@ -79,8 +79,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `Sales ended for: ${ticketType.name}` }, { status: 400 })
         }
 
-        // Availability check
-        const available = ticketType.quantity_total - ticketType.quantity_sold
+        // Availability check — include active reservations from other sessions
+        const reserveClient = createAdminClient()
+        const { data: activeReservations } = await reserveClient
+            .from('reservations')
+            .select('quantity')
+            .eq('ticket_type_id', item.ticket_type_id)
+            .eq('status', 'active')
+            .gt('expires_at', new Date().toISOString())
+
+        const reservedQty = activeReservations?.reduce((sum, r) => sum + r.quantity, 0) ?? 0
+        const available = ticketType.quantity_total - ticketType.quantity_sold - reservedQty
         if (item.quantity > available) {
             return NextResponse.json(
                 { error: `Tickets no longer available for: ${ticketType.name}` },
@@ -249,6 +258,17 @@ export async function POST(request: Request) {
             attendee_phone: attendee_details.phone,
         },
     })
+
+    // Confirm active reservations for this user so they aren't double-counted
+    const confirmClient = createAdminClient()
+    for (const item of items) {
+        await confirmClient
+            .from('reservations')
+            .update({ status: 'confirmed' })
+            .eq('user_id', user.id)
+            .eq('ticket_type_id', item.ticket_type_id)
+            .eq('status', 'active')
+    }
 
     return NextResponse.json({
         client_secret: paymentIntent.client_secret,

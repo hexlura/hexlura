@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { useCheckout } from '@/lib/checkout-context'
 import { formatPence } from '@/lib/fees'
 import OrderSummary from './order-summary'
@@ -10,6 +11,26 @@ export default function StepDetails() {
     const [fullName, setFullName] = useState(state.attendeeDetails.full_name)
     const [email, setEmail] = useState(state.attendeeDetails.email)
     const [phone, setPhone] = useState(state.attendeeDetails.phone)
+    const [nameLocked, setNameLocked] = useState(false)
+    const [emailLocked, setEmailLocked] = useState(false)
+    useEffect(() => {
+        async function fetchProfile() {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name, phone')
+                .eq('id', user.id)
+                .single()
+            if (profile?.full_name) { setFullName(profile.full_name); setNameLocked(true) }
+            if (user.email) { setEmail(user.email); setEmailLocked(true) }
+            if (profile?.phone && !phone) setPhone(profile.phone)
+        }
+        fetchProfile()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     const [promoInput, setPromoInput] = useState(state.promo?.code || '')
     const [promoLoading, setPromoLoading] = useState(false)
     const [promoError, setPromoError] = useState('')
@@ -76,26 +97,54 @@ export default function StepDetails() {
                 <div className="space-y-4">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="full_name" className="text-sm font-medium text-text">Full Name</label>
-                        <input
-                            id="full_name"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            placeholder="John Doe"
-                            className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-                        />
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                id="full_name"
+                                value={fullName}
+                                onChange={nameLocked ? undefined : (e) => setFullName(e.target.value)}
+                                readOnly={nameLocked}
+                                placeholder="John Doe"
+                                className="h-11 w-full rounded-sm border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                style={nameLocked ? {
+                                    background: '#F5F5F7', border: '1px solid #C0C0C8',
+                                    color: '#0A0A0F', cursor: 'not-allowed', paddingLeft: '16px', paddingRight: '36px',
+                                } : undefined}
+                            />
+                            {nameLocked && (
+                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666677" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                </span>
+                            )}
+                        </div>
                         {errors.full_name && <span className="text-xs text-accent">{errors.full_name}</span>}
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label htmlFor="email" className="text-sm font-medium text-text">Email Address</label>
-                        <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="you@example.com"
-                            className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-                        />
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={emailLocked ? undefined : (e) => setEmail(e.target.value)}
+                                readOnly={emailLocked}
+                                placeholder="you@example.com"
+                                className="h-11 w-full rounded-sm border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                style={emailLocked ? {
+                                    background: '#F5F5F7', border: '1px solid #C0C0C8',
+                                    color: '#0A0A0F', cursor: 'not-allowed', paddingLeft: '16px', paddingRight: '36px',
+                                } : undefined}
+                            />
+                            {emailLocked && (
+                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666677" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                </span>
+                            )}
+                        </div>
                         {errors.email && <span className="text-xs text-accent">{errors.email}</span>}
                     </div>
 
@@ -106,9 +155,10 @@ export default function StepDetails() {
                             type="tel"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            placeholder="+44 7700 000000"
+                            placeholder="+44 7700 900000"
                             className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                         />
+                        <span style={{ fontSize: 12, color: '#666677' }}>We&apos;ll only contact you about this booking</span>
                         {errors.phone && <span className="text-xs text-accent">{errors.phone}</span>}
                     </div>
                 </div>

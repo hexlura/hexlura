@@ -258,6 +258,22 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
     console.log('Booking created:', booking.booking_ref)
 
+    // Update profile phone if provided
+    const attendeePhone = meta.attendee_phone
+    if (attendeePhone && userId) {
+        await supabase.from('profiles').update({ phone: attendeePhone }).eq('id', userId)
+    }
+
+    // Mark reservations as confirmed for this user
+    for (const item of items) {
+        await supabase
+            .from('reservations')
+            .update({ status: 'confirmed' })
+            .eq('user_id', userId)
+            .eq('ticket_type_id', item.ticket_type_id)
+            .in('status', ['active', 'confirmed'])
+    }
+
     // Insert booking_items
     for (const item of items) {
         const { data: ticketType } = await supabase
@@ -484,6 +500,22 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     }
 
     console.log('Booking created:', booking.booking_ref)
+
+    // Update profile phone if provided
+    const attendeePhoneCS = meta.attendee_phone
+    if (attendeePhoneCS && userId) {
+        await supabase.from('profiles').update({ phone: attendeePhoneCS }).eq('id', userId)
+    }
+
+    // Mark reservations as confirmed for this user
+    for (const item of items) {
+        await supabase
+            .from('reservations')
+            .update({ status: 'confirmed' })
+            .eq('user_id', userId)
+            .eq('ticket_type_id', item.ticket_type_id)
+            .in('status', ['active', 'confirmed'])
+    }
 
     // Insert booking_items
     for (const item of items) {

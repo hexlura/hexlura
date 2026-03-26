@@ -21,6 +21,9 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
     const [restoredToast, setRestoredToast] = useState(false);
+    const [reservationExpiry, setReservationExpiry] = useState<Date | null>(null);
+    const [countdown, setCountdown] = useState('');
+    const [reservationError, setReservationError] = useState('');
     const widgetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -41,6 +44,26 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
             // ignore malformed data
         }
     }, [event.id]);
+
+    useEffect(() => {
+        if (!reservationExpiry) return;
+        const tick = () => {
+            const diff = reservationExpiry.getTime() - Date.now();
+            if (diff <= 0) {
+                setCountdown('');
+                setReservationExpiry(null);
+                setReservationError('Reservation expired — please try again');
+                setCheckoutLoading(false);
+            } else {
+                const m = Math.floor(diff / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                setCountdown(`${m}:${s.toString().padStart(2, '0')}`);
+            }
+        };
+        tick();
+        const interval = setInterval(tick, 1000);
+        return () => clearInterval(interval);
+    }, [reservationExpiry]);
 
     const handleQuantityChange = (ticketId: string, value: number) => {
         setSelectedTickets(prev => ({ ...prev, [ticketId]: value }));
@@ -66,6 +89,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
 
     async function handleCheckout() {
         setCheckoutLoading(true);
+        setReservationError('');
 
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
@@ -83,12 +107,37 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
             return;
         }
 
-        const ticketsParam = ticketTypes
+        const selectedItems = ticketTypes
             .map(ticket => ({ id: ticket.id, qty: effectiveQty(ticket) }))
-            .filter(({ qty }) => qty > 0)
-            .map(({ id, qty }) => `${id}:${qty}`)
-            .join(',');
+            .filter(({ qty }) => qty > 0);
 
+        const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+        try {
+            const res = await fetch('/api/reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tickets: selectedItems.map(({ id, qty }) => ({ ticket_type_id: id, quantity: qty })),
+                    session_id: sessionId,
+                }),
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                setReservationError('Sorry, these tickets just sold out');
+                setCheckoutLoading(false);
+                return;
+            }
+
+            setReservationExpiry(new Date(data.expires_at));
+        } catch {
+            setReservationError('Failed to reserve tickets. Please try again.');
+            setCheckoutLoading(false);
+            return;
+        }
+
+        const ticketsParam = selectedItems.map(({ id, qty }) => `${id}:${qty}`).join(',');
         router.push(`/checkout?event_id=${event.id}&tickets=${ticketsParam}`);
     }
 
@@ -245,6 +294,16 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
             {isFreeSelection && (
                 <p style={{ fontSize: 12, color: '#00C48A', textAlign: 'center', margin: '4px 0 0' }}>
                     No payment required
+                </p>
+            )}
+            {countdown && (
+                <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', margin: '4px 0 0' }}>
+                    Tickets held for {countdown}
+                </p>
+            )}
+            {!countdown && reservationError && (
+                <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', margin: '4px 0 0' }}>
+                    {reservationError}
                 </p>
             )}
         </div>
