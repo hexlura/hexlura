@@ -28,25 +28,6 @@ function getMinPrice(ticketTypes: Array<{ price_pence: number }>): string {
     return `From £${(min / 100).toFixed(2)}`;
 }
 
-// Scroll row: display flex, overflow-x auto, hide scrollbar
-const scrollRow: React.CSSProperties = {
-    display: 'flex',
-    overflowX: 'auto',
-    gap: '16px',
-    paddingBottom: '8px',
-    WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none',
-};
-
-// Section header wrapper — constrained to readable width
-const sectionHeader: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0 24px',
-    marginBottom: '16px',
-};
-
 export default async function HomePage() {
     const supabase = createClient();
 
@@ -58,7 +39,6 @@ export default async function HomePage() {
 
     const events = (eventsRaw || []) as Event[];
 
-    // Group events by category
     const categoryMap = new Map<string, Event[]>();
     for (const event of events) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,55 +48,48 @@ export default async function HomePage() {
     }
     const categories = Array.from(categoryMap.entries());
 
-    // City card: exactly 5 visible, fluid, portrait
-    // 6 cities so 5 gaps of 16px = 80px; page padding = 48px
-    const cityCardStyle: React.CSSProperties = {
-        width: 'calc((100vw - 48px - 80px) / 5)',
-        minWidth: '140px',
-        height: 'calc((100vw - 48px - 80px) / 5 * 1.4)',
-        minHeight: '196px',
-        flexShrink: 0,
-        overflow: 'hidden',
-        position: 'relative',
-        cursor: 'pointer',
-        display: 'block',
-        textDecoration: 'none',
-        borderRadius: 0,
-    };
-
-    // Event card: exactly 5 visible, fluid, portrait 3:4
-    // 4 gaps of 16px = 64px; page padding = 48px
-    const eventCardStyle: React.CSSProperties = {
-        width: 'calc((100vw - 48px - 64px) / 5)',
-        minWidth: '140px',
-        flexShrink: 0,
-        background: '#FFFFFF',
-        border: 'none',
-        cursor: 'pointer',
-        textDecoration: 'none',
-        display: 'block',
-        transition: 'transform 0.2s',
-        overflow: 'hidden',
-    };
-
     return (
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
 
-            {/* CITY CARDS SECTION */}
+            {/* ── CITY CARDS ── */}
             <section style={{ marginTop: '48px' }}>
-                <div style={sectionHeader}>
+                <div style={{ padding: '0 24px', marginBottom: '16px' }}>
                     <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px' }}>
                         EXPLORE BY CITY
                     </h2>
                 </div>
-                {/* Scroll row — full width with page padding */}
-                <div className="city-scroll" style={{ ...scrollRow, padding: '0 24px 8px' }}>
+
+                {/* Scroll row — full padded width, no max-width */}
+                <div
+                    className="city-scroll"
+                    style={{
+                        display: 'flex',
+                        overflowX: 'auto',
+                        gap: '12px',
+                        padding: '0 24px 8px',
+                        scrollbarWidth: 'none',
+                        WebkitOverflowScrolling: 'touch',
+                    }}
+                >
                     {CITIES.map(({ name, photo }) => (
                         <Link
                             key={name}
                             href={`/events?city=${encodeURIComponent(name)}`}
                             className="city-card"
-                            style={cityCardStyle}
+                            style={{
+                                /* 5 cards exactly fill (100vw - 48px side padding - 5×12px gaps) */
+                                flex: '0 0 calc((100vw - 48px - 60px) / 5)',
+                                minWidth: '130px',
+                                maxWidth: '260px',
+                                /* portrait 2:3 ratio */
+                                aspectRatio: '2 / 3',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                cursor: 'pointer',
+                                display: 'block',
+                                textDecoration: 'none',
+                                borderRadius: '4px',
+                            }}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -124,26 +97,27 @@ export default async function HomePage() {
                                 alt={name}
                                 className="city-card-img"
                                 style={{
+                                    position: 'absolute',
+                                    inset: 0,
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
                                     objectPosition: 'center',
                                     transition: 'transform 0.4s ease',
-                                    display: 'block',
                                 }}
                             />
+                            {/* gradient overlay */}
                             <div style={{
                                 position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                height: '45%',
-                                background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+                                inset: 0,
+                                background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.82) 100%)',
+                                pointerEvents: 'none',
                             }} />
                             <span style={{
                                 position: 'absolute',
-                                bottom: '12px',
+                                bottom: '14px',
                                 left: '12px',
+                                right: '12px',
                                 fontSize: '22px',
                                 fontFamily: '"Bebas Neue", sans-serif',
                                 color: '#FFFFFF',
@@ -157,7 +131,7 @@ export default async function HomePage() {
                 </div>
             </section>
 
-            {/* CATEGORY ROWS */}
+            {/* ── CATEGORY ROWS ── */}
             <div style={{ paddingBottom: '48px' }}>
                 {categories.length === 0 ? (
                     <div style={{ padding: '60px 24px', textAlign: 'center', color: '#666677' }}>
@@ -166,8 +140,15 @@ export default async function HomePage() {
                 ) : (
                     categories.map(([category, catEvents], index) => (
                         <section key={category} style={{ marginTop: index === 0 ? '48px' : '40px' }}>
+
                             {/* Section header */}
-                            <div style={sectionHeader}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0 24px',
+                                marginBottom: '16px',
+                            }}>
                                 <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px' }}>
                                     {category.toUpperCase()}
                                 </h2>
@@ -179,10 +160,18 @@ export default async function HomePage() {
                                 </Link>
                             </div>
 
-                            {/* Horizontal scroll row — full width */}
+                            {/* Horizontal scroll row */}
                             <div
                                 className="drag-scroll"
-                                style={{ ...scrollRow, padding: '0 24px 8px', cursor: 'grab' }}
+                                style={{
+                                    display: 'flex',
+                                    overflowX: 'auto',
+                                    gap: '12px',
+                                    padding: '0 24px 8px',
+                                    scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch',
+                                    cursor: 'grab',
+                                }}
                             >
                                 {catEvents.map((event) => {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,28 +186,47 @@ export default async function HomePage() {
                                             key={ev.id}
                                             href={`/events/${ev.slug}`}
                                             className="event-portrait-card"
-                                            style={eventCardStyle}
+                                            style={{
+                                                /* 5 cards exactly fill (100vw - 48px side padding - 4×12px gaps) */
+                                                flex: '0 0 calc((100vw - 48px - 48px) / 5)',
+                                                minWidth: '130px',
+                                                maxWidth: '280px',
+                                                background: '#FFFFFF',
+                                                cursor: 'pointer',
+                                                textDecoration: 'none',
+                                                display: 'block',
+                                                transition: 'transform 0.2s',
+                                                borderRadius: '4px',
+                                                overflow: 'hidden',
+                                            }}
                                         >
-                                            {/* Portrait image — 3:4 aspect ratio with date overlay */}
+                                            {/* Portrait image 3:4 */}
                                             {ev.banner_url?.startsWith('http') ? (
-                                                <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', position: 'relative' }}>
+                                                <div style={{ width: '100%', aspectRatio: '3 / 4', position: 'relative', overflow: 'hidden' }}>
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         src={ev.banner_url}
                                                         alt={ev.title}
                                                         className="portrait-img"
-                                                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s', display: 'block' }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            inset: 0,
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: 'cover',
+                                                            transition: 'transform 0.3s',
+                                                        }}
                                                     />
-                                                    {/* Date overlay — BookMyShow style */}
+                                                    {/* BookMyShow-style date bar at bottom */}
                                                     <div style={{
                                                         position: 'absolute',
                                                         bottom: 0,
                                                         left: 0,
                                                         right: 0,
-                                                        background: 'linear-gradient(transparent, rgba(0,0,0,0.78))',
-                                                        padding: '28px 10px 10px',
+                                                        background: 'rgba(0,0,0,0.62)',
+                                                        padding: '6px 10px 8px',
                                                     }}>
-                                                        <span style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: 700, letterSpacing: '0.2px' }}>
+                                                        <span style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: 700 }}>
                                                             {overlayDate}
                                                         </span>
                                                     </div>
@@ -226,7 +234,7 @@ export default async function HomePage() {
                                             ) : (
                                                 <div style={{
                                                     width: '100%',
-                                                    aspectRatio: '3/4',
+                                                    aspectRatio: '3 / 4',
                                                     background: '#F0F0F0',
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -236,7 +244,7 @@ export default async function HomePage() {
                                                 </div>
                                             )}
 
-                                            {/* Card body */}
+                                            {/* Text body */}
                                             <div style={{ padding: '8px 6px 12px' }}>
                                                 <p style={{
                                                     fontSize: '14px',
@@ -264,7 +272,7 @@ export default async function HomePage() {
                                                         {location}
                                                     </p>
                                                 ) : null}
-                                                <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600, marginTop: '2px' }}>
+                                                <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                                                     {priceStr}
                                                 </p>
                                             </div>
@@ -279,24 +287,21 @@ export default async function HomePage() {
 
             {/* Client-side interactions */}
             <Script id="homepage-interactions" strategy="afterInteractive">{`
-                // Hide webkit scrollbars
                 document.querySelectorAll('.drag-scroll, .city-scroll').forEach(function(el) {
                     el.style.msOverflowStyle = 'none';
                 });
 
-                // City card hover
                 document.querySelectorAll('.city-card').forEach(function(card) {
                     var img = card.querySelector('.city-card-img');
-                    card.addEventListener('mouseenter', function() { if (img) img.style.transform = 'scale(1.08)'; });
+                    card.addEventListener('mouseenter', function() { if (img) img.style.transform = 'scale(1.07)'; });
                     card.addEventListener('mouseleave', function() { if (img) img.style.transform = 'scale(1)'; });
                 });
 
-                // Event card hover
                 document.querySelectorAll('.event-portrait-card').forEach(function(card) {
                     var img = card.querySelector('.portrait-img');
                     card.addEventListener('mouseenter', function() {
-                        card.style.transform = 'translateY(-4px)';
-                        if (img) img.style.transform = 'scale(1.05)';
+                        card.style.transform = 'translateY(-3px)';
+                        if (img) img.style.transform = 'scale(1.04)';
                     });
                     card.addEventListener('mouseleave', function() {
                         card.style.transform = 'translateY(0)';
@@ -304,11 +309,8 @@ export default async function HomePage() {
                     });
                 });
 
-                // Drag-to-scroll
                 document.querySelectorAll('.drag-scroll').forEach(function(el) {
-                    var isDown = false;
-                    var startX = 0;
-                    var scrollLeft = 0;
+                    var isDown = false, startX = 0, scrollLeft = 0;
                     el.addEventListener('mousedown', function(e) {
                         isDown = true;
                         el.style.cursor = 'grabbing';
@@ -321,8 +323,7 @@ export default async function HomePage() {
                     el.addEventListener('mousemove', function(e) {
                         if (!isDown) return;
                         e.preventDefault();
-                        var x = e.pageX - el.offsetLeft;
-                        el.scrollLeft = scrollLeft - (x - startX);
+                        el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX);
                     });
                 });
             `}</Script>
