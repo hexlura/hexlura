@@ -233,7 +233,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         )}
 
                         {/* Booking widget */}
-                        <BookingWidget event={event} ticketTypes={ticketTypes} />
+                        <div id="booking-widget">
+                            <BookingWidget event={event} ticketTypes={ticketTypes} />
+                        </div>
                     </div>
                 </div>
 

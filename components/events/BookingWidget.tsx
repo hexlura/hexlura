@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Event, TicketType } from '@/types';
 import { calculateBookingFee, calculateBookingFeePerTicket, formatPence } from '@/lib/fees';
@@ -11,13 +12,35 @@ type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
 interface BookingWidgetProps {
     event: Event;
     ticketTypes: GroupTicketType[];
+    initialQuantities?: Record<string, number>;
 }
 
-export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps) {
+export default function BookingWidget({ event, ticketTypes, initialQuantities }: BookingWidgetProps) {
     const router = useRouter();
-    const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>({});
+    const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>(initialQuantities ?? {});
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    const [restoredToast, setRestoredToast] = useState(false);
+    const widgetRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const raw = localStorage.getItem('hexlura_pending_checkout');
+        if (!raw) return;
+        try {
+            const pending = JSON.parse(raw);
+            if (pending.eventId === event.id && pending.tickets) {
+                setSelectedTickets(pending.tickets);
+                localStorage.removeItem('hexlura_pending_checkout');
+                setRestoredToast(true);
+                setTimeout(() => setRestoredToast(false), 4000);
+                setTimeout(() => {
+                    widgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        } catch {
+            // ignore malformed data
+        }
+    }, [event.id]);
 
     const handleQuantityChange = (ticketId: string, value: number) => {
         setSelectedTickets(prev => ({ ...prev, [ticketId]: value }));
@@ -41,8 +64,25 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
     const isAllSoldOut = ticketTypes.every(t => (t.quantity_total - t.quantity_sold) <= 0);
     const isFreeSelection = hasSelectedTickets && subtotal === 0;
 
-    function handleCheckout() {
+    async function handleCheckout() {
         setCheckoutLoading(true);
+
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+            const returnUrl = window.location.pathname;
+            const eventSlug = returnUrl.split('/events/')[1];
+            localStorage.setItem('hexlura_pending_checkout', JSON.stringify({
+                eventSlug,
+                eventId: event.id,
+                tickets: selectedTickets,
+                returnUrl,
+            }));
+            router.push(`/auth/login?next=${encodeURIComponent(returnUrl)}`);
+            return;
+        }
+
         const ticketsParam = ticketTypes
             .map(ticket => ({ id: ticket.id, qty: effectiveQty(ticket) }))
             .filter(({ qty }) => qty > 0)
@@ -65,8 +105,14 @@ export default function BookingWidget({ event, ticketTypes }: BookingWidgetProps
     }
 
     return (
-        <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24 flex flex-col gap-6">
+        <div ref={widgetRef} className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24 flex flex-col gap-6">
             <h3 className="text-xl font-bold">Select Tickets</h3>
+
+            {restoredToast && (
+                <div style={{ fontSize: '12px', color: '#00C48A', background: 'rgba(0,196,138,0.08)', border: '1px solid rgba(0,196,138,0.3)', borderRadius: '2px', padding: '8px 12px' }}>
+                    Your ticket selection has been restored
+                </div>
+            )}
 
             <div>
                 {ticketTypes.map(ticket => {
