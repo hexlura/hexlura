@@ -57,6 +57,14 @@ export default function MobileBottomNav() {
   const pathname = usePathname()
   const [role, setRole] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -71,6 +79,8 @@ export default function MobileBottomNav() {
       if (data?.role) setRole(data.role)
     })
   }, [])
+
+  if (!isMobile) return null
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'

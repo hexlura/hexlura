@@ -29,12 +29,12 @@ export async function GET(request: Request) {
                         avatar_url: user.user_metadata?.avatar_url || null,
                         role: 'user',
                     })
-                    const dest = (next && next !== '/') ? next : '/'
+                    const dest = (next && next !== '/' && next !== '/account') ? next : '/'
                     return NextResponse.redirect(`${origin}${dest}`)
                 }
 
-                // If a specific next destination was requested, honour it
-                if (next && next !== '/') {
+                // If a specific next destination was requested (booking flow), honour it
+                if (next && next !== '/' && next !== '/account') {
                     return NextResponse.redirect(`${origin}${next}`)
                 }
 
@@ -44,6 +44,8 @@ export async function GET(request: Request) {
                     return NextResponse.redirect(`${origin}/admin`)
                 } else if (role === 'organiser') {
                     return NextResponse.redirect(`${origin}/organiser`)
+                } else if (role === 'door_staff') {
+                    return NextResponse.redirect(`${origin}/checkin`)
                 } else {
                     return NextResponse.redirect(`${origin}/`)
                 }

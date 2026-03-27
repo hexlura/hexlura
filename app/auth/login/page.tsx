@@ -24,8 +24,12 @@ function LoginContent() {
             setError(result.error)
             setLoading(false)
         } else if (result?.redirectTo) {
-            // Default post-login destination is homepage, not /account
-            const dest = result.redirectTo === '/account' ? '/' : result.redirectTo
+            // Priority: booking flow next param > homepage
+            // next param of /account or / both resolve to homepage
+            let dest = '/'
+            if (next && next !== '/account' && next !== '/') {
+                dest = next
+            }
             router.push(dest)
         }
     }
