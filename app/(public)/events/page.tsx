@@ -192,7 +192,7 @@ export default async function BrowseEventsPage({
 
                 {/* Results Grid */}
                 {events.length > 0 ? (
-                    <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-[14px]">
+                    <div className="grid grid-cols-2 min-[1024px]:grid-cols-3 min-[1280px]:grid-cols-4 gap-5">
                         {events.map((event) => (
                             <EventCard key={event.id} event={event} />
                         ))}

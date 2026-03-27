@@ -165,7 +165,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                 <h2 className="text-2xl font-bold border-b pb-4">Upcoming Events by {organiser.org_name}</h2>
 
                 {eventsWithOrganiser.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 min-[1024px]:grid-cols-3 min-[1280px]:grid-cols-4 gap-5">
                         {eventsWithOrganiser.map((event) => (
                             <EventCard key={event.id} event={event as Event} />
                         ))}

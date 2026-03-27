@@ -8,29 +8,9 @@ interface EventCardProps {
     showOrganiser?: boolean;
 }
 
-const categoryBadgeColor: Record<string, string> = {
-    'Club Nights':           '#F5A623',
-    'Gigs & Live Music':     '#E63950',
-    'Comedy':                '#F5A623',
-    'Theatre & Arts':        '#9B59B6',
-    'Festivals':             '#E63950',
-    'Food & Drink':          '#27AE60',
-    'Sports & Fitness':      '#2980B9',
-    'Business & Networking': '#7F8C8D',
-    'Family & Kids':         '#F39C12',
-    'Classes & Workshops':   '#16A085',
-    'Dating & Social':       '#E91E8C',
-    'Culture & Heritage':    '#8E44AD',
-};
-
-function getCategoryColor(category: string): string {
-    return categoryBadgeColor[category] ?? '#E63950';
-}
-
 function extractCity(venueAddress: string | null | undefined): string {
     if (!venueAddress) return '';
     const parts = venueAddress.split(',').map(p => p.trim()).filter(Boolean);
-    // Walk from the end, skip postcodes (start with letter+digit pattern)
     const postcodeRe = /^[A-Z]{1,2}\d/i;
     for (let i = parts.length - 1; i >= 0; i--) {
         if (!postcodeRe.test(parts[i])) return parts[i].toUpperCase();
@@ -54,13 +34,16 @@ export default function EventCard({ event }: EventCardProps) {
     const isSoldOut = totalTickets > 0 && totalTickets - soldTickets === 0;
 
     const dateStr = new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short',
         day: 'numeric',
         month: 'short',
         timeZone: 'Europe/London',
-    }).format(new Date(event.start_at)).toUpperCase();
+    }).format(new Date(event.start_at));
 
     const city = extractCity(event.venue_address);
-    const dateCityLine = city ? `${dateStr} · ${city}` : dateStr;
+    const dateOverlay = city ? `${dateStr} · ${city}` : dateStr;
+
+    const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
 
     const priceDisplay = minPrice !== Infinity
         ? `From £${(minPrice / 100).toFixed(2)}`
@@ -69,93 +52,112 @@ export default function EventCard({ event }: EventCardProps) {
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="group block rounded-none bg-[#FFFFFF] border border-[#C0C0C8] hover:border-[#E63950] hover:-translate-y-0.5 hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden"
+            className="group block bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950]"
+            style={{
+                width: '100%',
+                border: '1px solid #E0E0E0',
+                borderRadius: 0,
+                cursor: 'pointer',
+                borderLeft: '3px solid transparent',
+            }}
         >
-            {/* Image — 3:2 aspect ratio */}
-            <div className="relative overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
+            {/* Portrait image — 3:4 aspect ratio */}
+            <div className="relative overflow-hidden" style={{ width: '100%', aspectRatio: '3 / 4' }}>
                 {event.banner_url ? (
                     <Image
                         src={event.banner_url}
                         alt={event.title}
                         fill
-                        sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
                     />
                 ) : (
-                    <div className="w-full h-full bg-[#C0C0C8] flex items-center justify-center">
-                        <span className="text-[#666677] text-xs">No image</span>
+                    <div className="w-full h-full bg-[#F0F0F0] flex items-center justify-center">
+                        <span className="text-[#C0C0C8] text-xs">No image</span>
                     </div>
                 )}
-                {/* Category badge */}
-                <span
-                    className="absolute top-2 left-2 text-white text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-[3px]"
-                    style={{ backgroundColor: getCategoryColor(event.category) }}
-                >
-                    {event.category}
-                </span>
-            </div>
 
-            {/* Card body */}
-            <div className="px-3 pt-2.5">
-                {/* Date + city */}
-                <p
-                    className="truncate mb-1"
+                {/* Category badge — top left */}
+                <span
+                    className="absolute top-2 left-2 text-white uppercase"
                     style={{
-                        fontSize: '11px',
-                        color: '#E63950',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
+                        background: '#E63950',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        padding: '3px 8px',
                         letterSpacing: '0.5px',
                     }}
                 >
-                    {dateCityLine}
-                </p>
-                {/* Title — max 2 lines */}
-                <p
-                    className="mb-1.5"
+                    {event.category}
+                </span>
+
+                {/* Date overlay — bottom */}
+                <div
+                    className="absolute bottom-0 left-0 right-0"
                     style={{
-                        fontSize: '13px',
+                        background: 'linear-gradient(transparent, rgba(0,0,0,0.75))',
+                        padding: '20px 10px 8px',
+                    }}
+                >
+                    <span style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 600 }}>
+                        {dateOverlay}
+                    </span>
+                </div>
+            </div>
+
+            {/* Card body */}
+            <div style={{ padding: '10px 10px 0' }}>
+                {/* Title */}
+                <p
+                    style={{
+                        fontSize: '14px',
                         color: '#0A0A0F',
-                        fontWeight: 600,
-                        lineHeight: 1.35,
+                        fontWeight: 700,
+                        lineHeight: 1.3,
+                        marginBottom: '4px',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                    }}
+                    } as React.CSSProperties}
                 >
                     {event.title}
                 </p>
+
                 {/* Venue */}
-                <p
-                    className="flex items-center gap-1 truncate mb-2.5"
-                    style={{ fontSize: '12px', color: '#666677' }}
-                >
-                    <svg width="10" height="12" viewBox="0 0 10 12" fill="none" aria-hidden="true" className="shrink-0">
-                        <path d="M5 0C2.79 0 1 1.79 1 4c0 2.97 4 8 4 8s4-5.03 4-8c0-2.21-1.79-4-4-4zm0 5.5C4.17 5.5 3.5 4.83 3.5 4S4.17 2.5 5 2.5 6.5 3.17 6.5 4 5.83 5.5 5 5.5z" fill="#666677" />
-                    </svg>
-                    <span className="truncate">
-                        {event.venue_name}{event.venue_address && `, ${event.venue_address.split(',')[0]}`}
-                    </span>
-                </p>
+                {venueLine && (
+                    <p
+                        style={{
+                            fontSize: '12px',
+                            color: '#666677',
+                            marginBottom: '6px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 1,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                        } as React.CSSProperties}
+                    >
+                        {venueLine}
+                    </p>
+                )}
             </div>
 
-            {/* Footer */}
+            {/* Footer row */}
             <div
-                className="flex items-center justify-between px-3 py-2"
-                style={{ borderTop: '1px solid #C0C0C8' }}
+                className="flex items-center justify-between"
+                style={{ padding: '6px 10px 14px' }}
             >
-                <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 700 }}>
+                <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                     {priceDisplay}
                 </span>
                 {isSoldOut ? (
-                    <span className="flex items-center gap-1.5" style={{ fontSize: '11px', color: '#E63950' }}>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#E63950]" />
+                    <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#E63950' }}>
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E63950' }} />
                         Sold out
                     </span>
                 ) : (
-                    <span className="flex items-center gap-1.5" style={{ fontSize: '11px', color: '#00C48A' }}>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00C48A]" />
+                    <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#00C48A' }}>
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#00C48A' }} />
                         On sale
                     </span>
                 )}
