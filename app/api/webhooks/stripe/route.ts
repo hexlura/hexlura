@@ -2,8 +2,14 @@ import Stripe from 'stripe'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
-import { sendBookingConfirmationEmail } from '@/lib/email'
+import { render } from '@react-email/components'
+import BookingConfirmation from '@/emails/booking-confirmation'
+import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
+
+function getResend() {
+    return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 export async function POST(req: NextRequest) {
     const body = await req.text()
@@ -369,14 +375,22 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
     if (eventData && attendeeEmail) {
         const eventDate = new Intl.DateTimeFormat('en-GB', {
-            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         }).format(new Date(eventData.start_at))
 
-        const eventTime = new Intl.DateTimeFormat('en-GB', {
-            hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+        const startTime = new Intl.DateTimeFormat('en-GB', {
+            hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
         }).format(new Date(eventData.start_at))
 
-        const ticketSummary: { name: string; quantity: number; subtotalPence: number }[] = []
+        const endTime = eventData.end_at
+            ? new Intl.DateTimeFormat('en-GB', {
+                hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
+            }).format(new Date(eventData.end_at))
+            : null
+
+        const eventTime = endTime ? `${startTime} - ${endTime} UK Time` : `${startTime} UK Time`
+
+        const ticketItems: { name: string; quantity: number; price: string }[] = []
         for (const item of items) {
             const { data: tt } = await supabase
                 .from('ticket_types')
@@ -384,27 +398,39 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                 .eq('id', item.ticket_type_id)
                 .single()
             if (tt) {
-                ticketSummary.push({
+                ticketItems.push({
                     name: tt.name,
                     quantity: item.quantity,
-                    subtotalPence: tt.price_pence * item.quantity,
+                    price: `£${((tt.price_pence * item.quantity) / 100).toFixed(2)}`,
                 })
             }
         }
 
-        void sendBookingConfirmationEmail({
-            to: attendeeEmail,
-            bookingRef: booking.booking_ref,
-            eventName: eventData.title,
-            eventDate,
-            eventTime,
-            venueName: eventData.venue_name || 'TBC',
-            venueAddress: eventData.venue_address || '',
-            ticketSummary,
-            bookingFeePence,
-            discountPence,
-            totalPence,
-        })
+        void (async () => {
+            try {
+                const html = await render(BookingConfirmation({
+                    buyerName: attendeeName || 'Valued Customer',
+                    eventName: eventData.title,
+                    eventDate,
+                    eventTime,
+                    venueName: eventData.venue_name || 'TBC',
+                    venueAddress: eventData.venue_address || '',
+                    bookingRef: booking.booking_ref,
+                    ticketItems,
+                    totalPaid: `£${(totalPence / 100).toFixed(2)}`,
+                    downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+                }))
+
+                await getResend().emails.send({
+                    from: 'Hexlura <noreply@hexlura.com>',
+                    to: attendeeEmail,
+                    subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
+                    html,
+                })
+            } catch (err) {
+                console.error('Failed to send booking confirmation email:', err)
+            }
+        })()
     }
 }
 
@@ -613,14 +639,22 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
     if (eventData && attendeeEmail) {
         const eventDate = new Intl.DateTimeFormat('en-GB', {
-            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         }).format(new Date(eventData.start_at))
 
-        const eventTime = new Intl.DateTimeFormat('en-GB', {
-            hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+        const startTime = new Intl.DateTimeFormat('en-GB', {
+            hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
         }).format(new Date(eventData.start_at))
 
-        const ticketSummary: { name: string; quantity: number; subtotalPence: number }[] = []
+        const endTime = eventData.end_at
+            ? new Intl.DateTimeFormat('en-GB', {
+                hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
+            }).format(new Date(eventData.end_at))
+            : null
+
+        const eventTime = endTime ? `${startTime} - ${endTime} UK Time` : `${startTime} UK Time`
+
+        const ticketItems: { name: string; quantity: number; price: string }[] = []
         for (const item of items) {
             const { data: tt } = await supabase
                 .from('ticket_types')
@@ -628,26 +662,38 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 .eq('id', item.ticket_type_id)
                 .single()
             if (tt) {
-                ticketSummary.push({
+                ticketItems.push({
                     name: tt.name,
                     quantity: item.quantity,
-                    subtotalPence: tt.price_pence * item.quantity,
+                    price: `£${((tt.price_pence * item.quantity) / 100).toFixed(2)}`,
                 })
             }
         }
 
-        void sendBookingConfirmationEmail({
-            to: attendeeEmail,
-            bookingRef: booking.booking_ref,
-            eventName: eventData.title,
-            eventDate,
-            eventTime,
-            venueName: eventData.venue_name || 'TBC',
-            venueAddress: eventData.venue_address || '',
-            ticketSummary,
-            bookingFeePence,
-            discountPence,
-            totalPence,
-        })
+        void (async () => {
+            try {
+                const html = await render(BookingConfirmation({
+                    buyerName: attendeeName || 'Valued Customer',
+                    eventName: eventData.title,
+                    eventDate,
+                    eventTime,
+                    venueName: eventData.venue_name || 'TBC',
+                    venueAddress: eventData.venue_address || '',
+                    bookingRef: booking.booking_ref,
+                    ticketItems,
+                    totalPaid: `£${(totalPence / 100).toFixed(2)}`,
+                    downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+                }))
+
+                await getResend().emails.send({
+                    from: 'Hexlura <noreply@hexlura.com>',
+                    to: attendeeEmail,
+                    subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
+                    html,
+                })
+            } catch (err) {
+                console.error('Failed to send booking confirmation email:', err)
+            }
+        })()
     }
 }
