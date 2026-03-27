@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
+import { Resend } from 'resend'
+
+function getResend() {
+    return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 export async function POST(request: NextRequest) {
     const supabase = createClient()
@@ -30,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Verify refund request status is organiser_approved
     const { data: refundReq } = await adminClient
         .from('refund_requests')
-        .select('id, status, refund_amount_pence')
+        .select('id, status, refund_amount_pence, user_id, booking:bookings ( event:events ( title ) )')
         .eq('id', refund_request_id)
         .single()
 
@@ -53,6 +58,29 @@ export async function POST(request: NextRequest) {
             entityId: booking_id,
             metadata: { refund_request_id },
         })
+
+        // Notify buyer refund was denied
+        const buyerUserId = refundReq.user_id as string | null
+        if (buyerUserId) {
+            void (async () => {
+                try {
+                    const { data: { user: buyerUser } } = await adminClient.auth.admin.getUserById(buyerUserId)
+                    if (!buyerUser?.email) return
+
+                    const refundBookingData = refundReq.booking as unknown as { event: { title: string } | null } | null
+                    const eventName = refundBookingData?.event?.title || 'your event'
+
+                    await getResend().emails.send({
+                        from: 'Hexlura <noreply@hexlura.com>',
+                        to: buyerUser.email,
+                        subject: 'Update on your refund request',
+                        html: `<p>Hi,</p><p>Unfortunately, your refund request for <strong>${eventName}</strong> could not be approved.</p><p>If you have any questions, please contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
+                    })
+                } catch (err) {
+                    console.error('Failed to send refund denied email:', err)
+                }
+            })()
+        }
 
         return NextResponse.json({ success: true })
     }
@@ -100,6 +128,30 @@ export async function POST(request: NextRequest) {
         entityId: booking_id,
         metadata: { amount_pence: refundAmount, booking_ref: booking.booking_ref },
     })
+
+    // Notify buyer refund was processed
+    const buyerUserId = refundReq.user_id as string | null
+    if (buyerUserId) {
+        void (async () => {
+            try {
+                const { data: { user: buyerUser } } = await adminClient.auth.admin.getUserById(buyerUserId)
+                if (!buyerUser?.email) return
+
+                const refundBookingData = refundReq.booking as unknown as { event: { title: string } | null } | null
+                const eventName = refundBookingData?.event?.title || 'your event'
+                const refundFormatted = `£${(refundAmount / 100).toFixed(2)}`
+
+                await getResend().emails.send({
+                    from: 'Hexlura <noreply@hexlura.com>',
+                    to: buyerUser.email,
+                    subject: `Your refund of ${refundFormatted} has been processed`,
+                    html: `<p>Hi,</p><p>Your refund of <strong>${refundFormatted}</strong> for <strong>${eventName}</strong> has been processed.</p><p>Please allow 5–10 business days for the funds to appear on your statement.</p><p>If you have any questions, contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
+                })
+            } catch (err) {
+                console.error('Failed to send refund confirmation email:', err)
+            }
+        })()
+    }
 
     return NextResponse.json({ success: true })
 }

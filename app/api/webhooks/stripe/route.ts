@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { render } from '@react-email/components'
 import BookingConfirmation from '@/emails/booking-confirmation'
+import NewBookingOrganiser from '@/emails/new-booking-organiser'
+import PayoutFailedAdmin from '@/emails/payout-failed-admin'
 import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
 
@@ -114,7 +116,7 @@ export async function POST(req: NextRequest) {
 
             const { data: payout } = await supabase
                 .from('payouts')
-                .select('id, amount_pence')
+                .select('id, amount_pence, organiser_id, event_id')
                 .eq('stripe_transfer_id', transfer.id)
                 .maybeSingle()
 
@@ -140,6 +142,49 @@ export async function POST(req: NextRequest) {
                         body: `Payout transfer failed for £${amountPounds} — manual action required`,
                     })
                 }
+
+                // Send payout failed email to admin
+                void (async () => {
+                    try {
+                        let organiserName = 'Unknown Organiser'
+                        let eventName = 'Unknown Event'
+
+                        if (payout.organiser_id) {
+                            const { data: orgProfile } = await supabase
+                                .from('organiser_profiles')
+                                .select('org_name')
+                                .eq('id', payout.organiser_id)
+                                .single()
+                            if (orgProfile?.org_name) organiserName = orgProfile.org_name
+                        }
+
+                        if (payout.event_id) {
+                            const { data: eventRow } = await supabase
+                                .from('events')
+                                .select('title')
+                                .eq('id', payout.event_id)
+                                .single()
+                            if (eventRow?.title) eventName = eventRow.title
+                        }
+
+                        const html = await render(PayoutFailedAdmin({
+                            organiserName,
+                            eventName,
+                            amount: `£${((payout.amount_pence ?? 0) / 100).toFixed(2)}`,
+                            failureReason: 'Stripe transfer failed — check Stripe dashboard for details',
+                            dashboardUrl: 'https://www.hexlura.com/admin/payouts',
+                        }))
+
+                        await getResend().emails.send({
+                            from: 'Hexlura <noreply@hexlura.com>',
+                            to: 'support@hexlura.com',
+                            subject: '⚠️ Payout failed — manual action required',
+                            html,
+                        })
+                    } catch (err) {
+                        console.error('Failed to send payout failed email:', err)
+                    }
+                })()
             }
 
             console.log('Transfer failed — payout marked as failed:', transfer.id)
@@ -369,7 +414,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     // Send confirmation email
     const { data: eventData } = await supabase
         .from('events')
-        .select('title, start_at, end_at, venue_name, venue_address')
+        .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
         .eq('id', eventId)
         .single()
 
@@ -406,6 +451,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
             }
         }
 
+        // Buyer confirmation email
         void (async () => {
             try {
                 const html = await render(BookingConfirmation({
@@ -431,6 +477,45 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                 console.error('Failed to send booking confirmation email:', err)
             }
         })()
+
+        // Organiser new booking notification
+        if (eventData.organiser_id) {
+            void (async () => {
+                try {
+                    const { data: orgProfile } = await supabase
+                        .from('organiser_profiles')
+                        .select('user_id, org_name')
+                        .eq('id', eventData.organiser_id)
+                        .single()
+
+                    if (!orgProfile?.user_id) return
+
+                    const { data: { user: orgUser } } = await supabase.auth.admin.getUserById(orgProfile.user_id)
+                    if (!orgUser?.email) return
+
+                    const html = await render(NewBookingOrganiser({
+                        organiserName: orgProfile.org_name || 'Organiser',
+                        eventName: eventData.title,
+                        eventDate,
+                        buyerName: attendeeName || 'Customer',
+                        buyerEmail: attendeeEmail,
+                        ticketItems,
+                        totalRevenue: `£${((ticketSubtotalPence - discountPence) / 100).toFixed(2)}`,
+                        bookingRef: booking.booking_ref,
+                        dashboardUrl: 'https://www.hexlura.com/organiser/events',
+                    }))
+
+                    await getResend().emails.send({
+                        from: 'Hexlura <noreply@hexlura.com>',
+                        to: orgUser.email,
+                        subject: `New booking for ${eventData.title} 💰`,
+                        html,
+                    })
+                } catch (err) {
+                    console.error('Failed to send organiser booking notification:', err)
+                }
+            })()
+        }
     }
 }
 
@@ -633,7 +718,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     // Send confirmation email
     const { data: eventData } = await supabase
         .from('events')
-        .select('title, start_at, end_at, venue_name, venue_address')
+        .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
         .eq('id', eventId)
         .single()
 
@@ -670,6 +755,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             }
         }
 
+        // Buyer confirmation email
         void (async () => {
             try {
                 const html = await render(BookingConfirmation({
@@ -695,5 +781,44 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 console.error('Failed to send booking confirmation email:', err)
             }
         })()
+
+        // Organiser new booking notification
+        if (eventData.organiser_id) {
+            void (async () => {
+                try {
+                    const { data: orgProfile } = await supabase
+                        .from('organiser_profiles')
+                        .select('user_id, org_name')
+                        .eq('id', eventData.organiser_id)
+                        .single()
+
+                    if (!orgProfile?.user_id) return
+
+                    const { data: { user: orgUser } } = await supabase.auth.admin.getUserById(orgProfile.user_id)
+                    if (!orgUser?.email) return
+
+                    const html = await render(NewBookingOrganiser({
+                        organiserName: orgProfile.org_name || 'Organiser',
+                        eventName: eventData.title,
+                        eventDate,
+                        buyerName: attendeeName || 'Customer',
+                        buyerEmail: attendeeEmail,
+                        ticketItems,
+                        totalRevenue: `£${((ticketSubtotalPence - discountPence) / 100).toFixed(2)}`,
+                        bookingRef: booking.booking_ref,
+                        dashboardUrl: 'https://www.hexlura.com/organiser/events',
+                    }))
+
+                    await getResend().emails.send({
+                        from: 'Hexlura <noreply@hexlura.com>',
+                        to: orgUser.email,
+                        subject: `New booking for ${eventData.title} 💰`,
+                        html,
+                    })
+                } catch (err) {
+                    console.error('Failed to send organiser booking notification:', err)
+                }
+            })()
+        }
     }
 }

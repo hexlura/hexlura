@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { render } from '@react-email/components'
+import RefundAdminReview from '@/emails/refund-admin-review'
+import { Resend } from 'resend'
+
+function getResend() {
+    return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 export async function POST(request: NextRequest) {
     const supabase = createClient()
@@ -38,14 +45,14 @@ export async function POST(request: NextRequest) {
     // Fetch refund request with booking → event to verify organiser ownership
     const { data: refundReq } = await adminClient
         .from('refund_requests')
-        .select('id, status, booking:bookings ( event:events ( organiser_id ) )')
+        .select('id, status, reason, refund_amount_pence, user_id, booking:bookings ( id, booking_ref, booking_fee_pence, event:events ( title, organiser_id ) )')
         .eq('id', refund_request_id)
         .single()
 
     if (!refundReq) return NextResponse.json({ error: 'Refund request not found' }, { status: 404 })
 
     // Verify ownership
-    const bookingData = refundReq.booking as unknown as { event: { organiser_id: string } | null } | null
+    const bookingData = refundReq.booking as unknown as { id: string; booking_ref: string; booking_fee_pence: number; event: { title: string; organiser_id: string } | null } | null
     const eventOrganiserId = bookingData?.event?.organiser_id
     if (eventOrganiserId !== organiser.id) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -61,6 +68,58 @@ export async function POST(request: NextRequest) {
             .from('refund_requests')
             .update({ status: 'organiser_approved' })
             .eq('id', refund_request_id)
+
+        // Notify admin of refund awaiting review
+        void (async () => {
+            try {
+                // Get organiser name
+                const { data: orgProfile } = await adminClient
+                    .from('organiser_profiles')
+                    .select('org_name')
+                    .eq('id', organiser.id)
+                    .single()
+
+                // Get buyer name and email
+                const buyerUserId = refundReq.user_id as string | null
+                let buyerName = 'Customer'
+                let buyerEmail = ''
+
+                if (buyerUserId) {
+                    const { data: buyerProfile } = await adminClient
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', buyerUserId)
+                        .single()
+                    if (buyerProfile?.full_name) buyerName = buyerProfile.full_name
+
+                    const { data: { user: buyerUser } } = await adminClient.auth.admin.getUserById(buyerUserId)
+                    if (buyerUser?.email) buyerEmail = buyerUser.email
+                }
+
+                const refundAmountPence = (refundReq.refund_amount_pence as number | null) ?? 0
+                const feeKeptPence = (bookingData?.booking_fee_pence as number | null) ?? 0
+
+                const html = await render(RefundAdminReview({
+                    eventName: bookingData?.event?.title || 'Unknown Event',
+                    organiserName: orgProfile?.org_name || 'Organiser',
+                    buyerName,
+                    buyerEmail,
+                    bookingRef: bookingData?.booking_ref || refund_request_id,
+                    refundAmount: `£${(refundAmountPence / 100).toFixed(2)}`,
+                    feeKept: `£${(feeKeptPence / 100).toFixed(2)}`,
+                    reviewUrl: 'https://www.hexlura.com/admin/refunds',
+                }))
+
+                await getResend().emails.send({
+                    from: 'Hexlura <noreply@hexlura.com>',
+                    to: 'support@hexlura.com',
+                    subject: `Refund awaiting review — ${bookingData?.booking_ref || refund_request_id}`,
+                    html,
+                })
+            } catch (err) {
+                console.error('Failed to send refund admin review email:', err)
+            }
+        })()
     } else {
         await adminClient
             .from('refund_requests')
