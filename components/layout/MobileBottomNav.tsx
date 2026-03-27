@@ -95,11 +95,16 @@ export default function MobileBottomNav() {
         left: 0,
         right: 0,
         height: 64,
+        minHeight: 64,
+        maxHeight: 64,
+        flexShrink: 0,
         background: '#FFFFFF',
         borderTop: '1px solid #E0E0E0',
         display: 'flex',
         zIndex: 50,
         paddingBottom: 'env(safe-area-inset-bottom)',
+        willChange: 'auto',
+        transform: 'translateZ(0)',
       }}
     >
       {navItems.map((item) => {
@@ -110,6 +115,7 @@ export default function MobileBottomNav() {
             href={item.href}
             style={{
               flex: 1,
+              height: '100%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',

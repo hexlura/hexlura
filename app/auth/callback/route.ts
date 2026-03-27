@@ -29,7 +29,7 @@ export async function GET(request: Request) {
                         avatar_url: user.user_metadata?.avatar_url || null,
                         role: 'user',
                     })
-                    const dest = (next && next !== '/') ? next : '/account'
+                    const dest = (next && next !== '/') ? next : '/'
                     return NextResponse.redirect(`${origin}${dest}`)
                 }
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
                 } else if (role === 'organiser') {
                     return NextResponse.redirect(`${origin}/organiser`)
                 } else {
-                    return NextResponse.redirect(`${origin}/account`)
+                    return NextResponse.redirect(`${origin}/`)
                 }
             }
 
