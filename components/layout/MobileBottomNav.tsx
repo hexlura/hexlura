@@ -1,0 +1,133 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+
+function HomeIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.75L12 3l9 6.75V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.75z" />
+      <path d="M9 22V12h6v10" />
+    </svg>
+  )
+}
+
+function SearchIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <path d="M21 21l-4.35-4.35" />
+    </svg>
+  )
+}
+
+function TicketIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z" />
+    </svg>
+  )
+}
+
+function PersonIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" />
+    </svg>
+  )
+}
+
+function GridIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  )
+}
+
+const BASE_ITEMS = [
+  { label: 'Home', href: '/', icon: <HomeIcon /> },
+  { label: 'Explore', href: '/events', icon: <SearchIcon /> },
+  { label: 'Tickets', href: '/bookings', icon: <TicketIcon /> },
+  { label: 'Profile', href: '/account', icon: <PersonIcon /> },
+]
+
+const DASHBOARD_ITEM = { label: 'Dashboard', href: '/organiser', icon: <GridIcon /> }
+
+export default function MobileBottomNav() {
+  const pathname = usePathname()
+  const [role, setRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (data?.role) setRole(data.role)
+    })
+  }, [])
+
+  const navItems = (role === 'organiser' || role === 'admin')
+    ? [...BASE_ITEMS, DASHBOARD_ITEM]
+    : BASE_ITEMS
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/'
+    return pathname === href || pathname.startsWith(href + '/')  || pathname === href
+  }
+
+  return (
+    <nav
+      className="md:hidden"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 64,
+        background: '#FFFFFF',
+        borderTop: '1px solid #E0E0E0',
+        display: 'flex',
+        zIndex: 50,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      {navItems.map((item) => {
+        const active = isActive(item.href)
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              cursor: 'pointer',
+              color: active ? '#E63950' : '#8888AA',
+              transition: 'color 0.15s',
+              textDecoration: 'none',
+            }}
+          >
+            {item.icon}
+            <span style={{ fontSize: 10, fontWeight: 500, lineHeight: 1 }}>
+              {item.label}
+            </span>
+          </Link>
+        )
+      })}
+    </nav>
+  )
+}

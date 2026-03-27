@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import NavigationProgress from '@/components/ui/ProgressBar'
+import MobileBottomNav from '@/components/layout/MobileBottomNav'
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -32,10 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fontBody.variable} ${fontHeading.variable} ${fontMono.variable} font-sans antialiased`}
+        className={`${fontBody.variable} ${fontHeading.variable} ${fontMono.variable} font-sans antialiased pb-16 md:pb-0`}
       >
         {children}
         <NavigationProgress />
+        <MobileBottomNav />
       </body>
     </html>
   );
