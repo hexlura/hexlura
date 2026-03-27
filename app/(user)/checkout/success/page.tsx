@@ -217,14 +217,6 @@ function SuccessContent() {
                             </div>
                         )
                     })()}
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center" style={{ marginTop: 0 }}>
-                        <button
-                            disabled
-                            className="h-11 px-6 rounded-sm border border-border bg-surface text-muted text-sm font-medium cursor-not-allowed"
-                        >
-                            Add to Google Wallet
-                        </button>
-                    </div>
                 </>
             )}
 
