@@ -3,6 +3,17 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { OrganiserSidebar } from '@/components/layout/OrganiserSidebar'
 
+async function getUserTeamAccess(userId: string) {
+    const serviceClient = createServiceClient()
+    const { data } = await serviceClient
+        .from('organiser_team')
+        .select('privilege, organiser:organiser_profiles!organiser_id(org_name)')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle()
+    return data as { privilege: string; organiser: { org_name: string } | null } | null
+}
+
 export default async function OrganiserLayout({
     children,
 }: {
@@ -21,22 +32,30 @@ export default async function OrganiserLayout({
 
     const role = profileRes.data?.role || 'user'
 
-    // Only organisers and admins can access organiser routes
-    if (role !== 'organiser' && role !== 'admin') {
-        redirect('/')
-    }
-
-    // Redirect unapproved organisers to pending (admins bypass this)
-    if (role === 'organiser' && !organiserRes.data?.is_approved) {
-        redirect('/organiser/pending')
-    }
-
+    let teamPrivilege: string | null = null
     const userName = profileRes.data?.full_name || 'Organiser'
-    const orgName = organiserRes.data?.org_name || ''
+    let orgName = organiserRes.data?.org_name || ''
+
+    if (role === 'organiser' || role === 'admin') {
+        // Redirect unapproved organisers to pending (admins bypass this)
+        if (role === 'organiser' && !organiserRes.data?.is_approved) {
+            redirect('/organiser/pending')
+        }
+    } else {
+        // Check organiser_team membership for non-organiser users
+        const teamAccess = await getUserTeamAccess(user.id)
+        if (!teamAccess) redirect('/')
+
+        if (teamAccess.privilege === 'door_staff') redirect('/checkin')
+
+        // co_organiser or event_manager — allow access
+        teamPrivilege = teamAccess.privilege
+        orgName = teamAccess.organiser?.org_name || ''
+    }
 
     return (
         <div className="flex min-h-screen bg-background">
-            <OrganiserSidebar userName={userName} orgName={orgName} />
+            <OrganiserSidebar userName={userName} orgName={orgName} teamPrivilege={teamPrivilege} />
             <main className="flex-1 min-h-screen px-8 pb-8 pt-14 lg:pt-8 lg:ml-[220px]">
                 {children}
             </main>

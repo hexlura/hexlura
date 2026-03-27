@@ -28,10 +28,24 @@ export async function POST(req: NextRequest) {
 
         const adminClient = createAdminClient()
 
-        // Role check — only door_staff, organiser, admin may check in tickets
+        // Role check — organiser, admin, door_staff (profile role), or organiser_team door_staff
         const { data: checkerProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
         const checkerRole = checkerProfile?.role as string | undefined
-        if (!checkerRole || !['door_staff', 'organiser', 'admin'].includes(checkerRole)) {
+        let isAuthorized = !!checkerRole && ['door_staff', 'organiser', 'admin'].includes(checkerRole)
+
+        if (!isAuthorized) {
+            // Check organiser_team for door_staff privilege (new team system)
+            const { data: teamMember } = await adminClient
+                .from('organiser_team')
+                .select('privilege')
+                .eq('user_id', user.id)
+                .eq('privilege', 'door_staff')
+                .eq('status', 'active')
+                .maybeSingle()
+            isAuthorized = !!teamMember
+        }
+
+        if (!isAuthorized) {
             return NextResponse.json({ success: false, message: 'Unauthorized', code: 'INVALID' }, { status: 403 })
         }
 

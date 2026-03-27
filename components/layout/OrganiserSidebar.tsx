@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 interface OrganiserSidebarProps {
     userName: string
     orgName: string
+    teamPrivilege?: string | null
 }
 
 const navLinks = [
@@ -48,6 +49,16 @@ const navLinks = [
         icon: (
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+            </svg>
+        ),
+    },
+    {
+        href: '/organiser/team',
+        label: 'Team',
+        exact: false,
+        icon: (
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM2 8a2 2 0 11-4 0 2 2 0 014 0zM16.5 17c0-2.485-2.015-4.5-4.5-4.5S7.5 14.515 7.5 17H16.5zM4 17a4.5 4.5 0 014.5-4.5c.17 0 .336.009.5.027A6.016 6.016 0 004 17zM18 17a6.016 6.016 0 00-5-5.473A4.5 4.5 0 0118 17z" />
             </svg>
         ),
     },
@@ -95,7 +106,10 @@ const navLinks = [
     },
 ]
 
-export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
+// Routes accessible to event_manager team members
+const EVENT_MANAGER_ALLOWED = ['/organiser/events', '/organiser/bookings', '/organiser/attendees']
+
+export function OrganiserSidebar({ userName, orgName, teamPrivilege }: OrganiserSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const [loadingPath, setLoadingPath] = useState('')
@@ -105,6 +119,21 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
         setLoadingPath('')
         setIsOpen(false)
     }, [pathname])
+
+    // Redirect event_manager away from restricted routes
+    useEffect(() => {
+        if (teamPrivilege === 'event_manager') {
+            const allowed = EVENT_MANAGER_ALLOWED.some(r => pathname.startsWith(r))
+            if (!allowed && pathname !== '/organiser') {
+                router.replace('/organiser/events')
+            }
+        }
+    }, [pathname, teamPrivilege, router])
+
+    // For event_manager, hide restricted nav items
+    const visibleLinks = teamPrivilege === 'event_manager'
+        ? navLinks.filter(l => l.href === '/organiser' || EVENT_MANAGER_ALLOWED.some(r => l.href.startsWith(r)))
+        : navLinks
 
     const isActive = (href: string, exact: boolean) => {
         if (exact) return pathname === href
@@ -186,7 +215,7 @@ export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
 
                 {/* Navigation */}
                 <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
-                    {navLinks.map((link) => {
+                    {visibleLinks.map((link) => {
                         const active = isActive(link.href, link.exact)
                         const loading = loadingPath === link.href
                         return (

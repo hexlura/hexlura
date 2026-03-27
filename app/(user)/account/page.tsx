@@ -16,8 +16,8 @@ export default async function AccountPage() {
     // Service client for profile reads — bypasses RLS so role is always correct
     const serviceClient = createServiceClient()
 
-    // Fetch profile, bookings, and organiser status in parallel
-    const [{ data: profile }, { data: bookingsRaw }, { data: organiserProfile }] = await Promise.all([
+    // Fetch profile, bookings, organiser status, and team memberships in parallel
+    const [{ data: profile }, { data: bookingsRaw }, { data: organiserProfile }, { data: teamMemberships }] = await Promise.all([
         serviceClient
             .from('profiles')
             .select('full_name, email, avatar_url, role, created_at')
@@ -33,6 +33,11 @@ export default async function AccountPage() {
             .select('is_approved')
             .eq('user_id', user.id)
             .maybeSingle(),
+        serviceClient
+            .from('organiser_team')
+            .select('id, privilege, organiser:organiser_profiles!organiser_id(org_name)')
+            .eq('user_id', user.id)
+            .eq('status', 'active'),
     ])
 
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'there'
@@ -171,6 +176,50 @@ export default async function AccountPage() {
                     ))}
                 </div>
             </div>
+
+            {/* Team Access */}
+            {teamMemberships && teamMemberships.length > 0 && (
+                <div className="space-y-4">
+                    <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, color: '#0A0A0F', marginBottom: 16 }}>TEAM ACCESS</h2>
+                    <div className="space-y-3">
+                        {teamMemberships.map((tm) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const org = tm.organiser as any
+                            const privilege = tm.privilege as string
+                            const badgeStyle =
+                                privilege === 'co_organiser' ? { background: 'rgba(230,57,80,0.1)', color: '#E63950' } :
+                                privilege === 'event_manager' ? { background: 'rgba(245,166,35,0.1)', color: '#F5A623' } :
+                                { background: 'rgba(0,196,138,0.1)', color: '#00C48A' }
+                            const badgeLabel =
+                                privilege === 'co_organiser' ? 'Co-organiser' :
+                                privilege === 'event_manager' ? 'Event Manager' : 'Door Staff'
+                            const isDoorStaff = privilege === 'door_staff'
+                            return (
+                                <div key={tm.id} style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                                    <div>
+                                        <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0F', margin: '0 0 4px' }}>{org?.org_name || 'Organiser'}</p>
+                                        <span style={{ ...badgeStyle, fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>
+                                            {badgeLabel}
+                                        </span>
+                                    </div>
+                                    <Link
+                                        href={isDoorStaff ? '/checkin' : '/organiser'}
+                                        style={{
+                                            display: 'inline-block', padding: '8px 20px', fontSize: 13, fontWeight: 600,
+                                            textDecoration: 'none',
+                                            ...(isDoorStaff
+                                                ? { border: '1px solid #0A0A0F', color: '#0A0A0F', background: 'transparent' }
+                                                : { background: '#0A0A0F', color: '#fff' }),
+                                        }}
+                                    >
+                                        {isDoorStaff ? 'Open Scanner' : 'Go to Dashboard'}
+                                    </Link>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Account Info */}
             <div className="bg-surface border border-border rounded-none p-6 space-y-4">
