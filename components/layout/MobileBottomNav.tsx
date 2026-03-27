@@ -51,23 +51,18 @@ function GridIcon() {
   )
 }
 
-const BASE_ITEMS = [
-  { label: 'Home', href: '/', icon: <HomeIcon /> },
-  { label: 'Explore', href: '/events', icon: <SearchIcon /> },
-  { label: 'Tickets', href: '/bookings', icon: <TicketIcon /> },
-  { label: 'Profile', href: '/account', icon: <PersonIcon /> },
-]
-
-const DASHBOARD_ITEM = { label: 'Dashboard', href: '/organiser', icon: <GridIcon /> }
+const DASHBOARD_ITEM = { label: 'Dashboard', href: '/organiser', icon: <GridIcon />, protected: false }
 
 export default function MobileBottomNav() {
   const pathname = usePathname()
   const [role, setRole] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
+      setIsLoggedIn(true)
       const { data } = await supabase
         .from('profiles')
         .select('role')
@@ -77,14 +72,31 @@ export default function MobileBottomNav() {
     })
   }, [])
 
-  const navItems = (role === 'organiser' || role === 'admin')
-    ? [...BASE_ITEMS, DASHBOARD_ITEM]
-    : BASE_ITEMS
-
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
-    return pathname === href || pathname.startsWith(href + '/')  || pathname === href
+    return pathname === href || pathname.startsWith(href + '/')
   }
+
+  // Resolve href: protected tabs redirect to login if unauthenticated
+  const resolveHref = (href: string, requiresAuth: boolean) => {
+    if (requiresAuth && !isLoggedIn) {
+      return `/auth/login?next=${encodeURIComponent(href)}`
+    }
+    return href
+  }
+
+  type NavItem = { label: string; href: string; icon: React.ReactNode; protected: boolean }
+
+  const baseItems: NavItem[] = [
+    { label: 'Home',    href: '/',         icon: <HomeIcon />,   protected: false },
+    { label: 'Explore', href: '/events',   icon: <SearchIcon />, protected: false },
+    { label: 'Tickets', href: '/bookings', icon: <TicketIcon />, protected: true  },
+    { label: 'Profile', href: '/account',  icon: <PersonIcon />, protected: true  },
+  ]
+
+  const navItems: NavItem[] = (role === 'organiser' || role === 'admin')
+    ? [...baseItems, DASHBOARD_ITEM]
+    : baseItems
 
   return (
     <nav
@@ -103,16 +115,17 @@ export default function MobileBottomNav() {
         display: 'flex',
         zIndex: 50,
         paddingBottom: 'env(safe-area-inset-bottom)',
-        willChange: 'auto',
+        willChange: 'transform',
         transform: 'translateZ(0)',
       }}
     >
       {navItems.map((item) => {
         const active = isActive(item.href)
+        const href = resolveHref(item.href, item.protected)
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={href}
             style={{
               flex: 1,
               height: '100%',

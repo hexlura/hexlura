@@ -182,6 +182,9 @@ export default async function HomePage() {
                                 display: 'block',
                                 textDecoration: 'none',
                                 borderRadius: '4px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                                border: '1px solid rgba(0,0,0,0.06)',
+                                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                             }}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -230,6 +233,7 @@ export default async function HomePage() {
                                 color: '#FFFFFF',
                                 letterSpacing: '1px',
                                 lineHeight: 1,
+                                textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                             }}>
                                 {name}
                             </span>
@@ -477,15 +481,19 @@ export default async function HomePage() {
                     el.style.msOverflowStyle = 'none';
                 });
 
-                // City card hover — image scale + red top border
+                // City card hover — lift + shadow + image scale + red top border
                 document.querySelectorAll('.city-card').forEach(function(card) {
                     var img = card.querySelector('.city-card-img');
                     var border = card.querySelector('.city-card-border');
                     card.addEventListener('mouseenter', function() {
+                        card.style.transform = 'translateY(-6px)';
+                        card.style.boxShadow = '0 12px 32px rgba(0,0,0,0.20)';
                         if (img) img.style.transform = 'scale(1.07)';
                         if (border) border.style.opacity = '1';
                     });
                     card.addEventListener('mouseleave', function() {
+                        card.style.transform = '';
+                        card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
                         if (img) img.style.transform = 'scale(1)';
                         if (border) border.style.opacity = '0';
                     });
