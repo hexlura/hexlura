@@ -181,13 +181,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
 
             {/* ─── SECTION 1: HERO COVER BANNER ─── */}
-            <div style={{
-                position: 'relative',
-                width: '100%',
-                height: 'clamp(220px, 28vw, 320px)',
-                overflow: 'hidden',
-            }}>
-                {/* Background */}
+            <div className="h-[140px] md:h-[200px]" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
                 {organiser.cover_url ? (
                     <Image
                         src={organiser.cover_url}
@@ -198,134 +192,48 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                         priority
                     />
                 ) : (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #E63950 100%)',
-                    }}>
-                        {/* Dot pattern overlay */}
-                        <div style={{
-                            position: 'absolute',
-                            inset: 0,
-                            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
-                            backgroundSize: '20px 20px',
-                        }} />
-                    </div>
+                    <div style={{ position: 'absolute', inset: 0, background: '#F5F5F7' }} />
                 )}
-
-                {/* Bottom dark gradient overlay */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 200,
-                    background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-                    pointerEvents: 'none',
-                }} />
-
-                {/* Organiser type badge — top left */}
-                <div style={{
-                    position: 'absolute',
-                    top: 20,
-                    left: 24,
-                    background: 'rgba(0,0,0,0.5)',
-                    color: '#FFFFFF',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: '6px 14px',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    backdropFilter: 'blur(4px)',
-                    WebkitBackdropFilter: 'blur(4px)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                }}>
-                    {typeLabel}
-                </div>
-
-                {/* Follow + Share buttons — top right */}
-                <div style={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 24,
-                    display: 'flex',
-                    gap: 10,
-                    alignItems: 'center',
-                }}>
-                    <div style={{
-                        background: 'rgba(0,0,0,0.45)',
-                        backdropFilter: 'blur(6px)',
-                        WebkitBackdropFilter: 'blur(6px)',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        padding: '2px 4px',
-                    }}>
-                        <ShareButton title={organiser.org_name} />
-                    </div>
-                    <div style={{
-                        background: 'rgba(0,0,0,0.45)',
-                        backdropFilter: 'blur(6px)',
-                        WebkitBackdropFilter: 'blur(6px)',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        padding: '2px 4px',
-                    }}>
-                        <FollowButton
-                            organiserId={organiser.id}
-                            initialFollowing={userFollowing}
-                            initialCount={followerCount ?? 0}
-                            isLoggedIn={!!user}
-                        />
-                    </div>
-                </div>
             </div>
 
-            {/* ─── SECTION 2: PROFILE INFO (overlapping banner) ─── */}
+            {/* ─── SECTION 2: PROFILE INFO ─── */}
             <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-                <div style={{
-                    position: 'relative',
-                    marginTop: -60,
-                    zIndex: 10,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'flex-end',
-                    gap: 24,
-                    paddingBottom: 28,
-                    borderBottom: '1px solid #E0E0E0',
-                    flexWrap: 'wrap',
-                }}>
+                <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 py-6 border-b border-[#E0E0E0]">
+
                     {/* Avatar */}
-                    <div style={{
-                        width: 100,
-                        height: 100,
-                        borderRadius: '50%',
-                        border: '4px solid #FFFFFF',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                        background: '#E63950',
-                        overflow: 'hidden',
-                        flexShrink: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'relative',
-                    }}>
-                        {organiser.logo_url ? (
-                            <Image
-                                src={organiser.logo_url}
-                                alt={organiser.org_name}
-                                fill
-                                className="object-cover"
-                            />
-                        ) : (
-                            <span style={{ fontSize: 36, color: '#FFFFFF', fontWeight: 900, lineHeight: 1 }}>
-                                {initials}
-                            </span>
-                        )}
+                    <div className="flex justify-center md:block flex-shrink-0">
+                        <div style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: '50%',
+                            border: '2px solid #E0E0E0',
+                            background: '#E63950',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative',
+                        }}>
+                            {organiser.logo_url ? (
+                                <Image
+                                    src={organiser.logo_url}
+                                    alt={organiser.org_name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <span style={{ fontSize: 30, color: '#FFFFFF', fontWeight: 900, lineHeight: 1 }}>
+                                    {initials}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Info */}
-                    <div style={{ flex: 1, minWidth: 220 }}>
+                    <div className="flex-1 text-center md:text-left">
                         <h1 style={{
                             fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(24px, 4vw, 32px)',
+                            fontSize: 36,
                             fontWeight: 900,
                             color: '#0A0A0F',
                             letterSpacing: '1px',
@@ -336,11 +244,11 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                         </h1>
 
                         <p style={{
-                            fontSize: 13,
+                            fontSize: 11,
                             color: '#E63950',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             textTransform: 'uppercase',
-                            letterSpacing: '1px',
+                            letterSpacing: '1.5px',
                             margin: '0 0 8px',
                         }}>
                             {typeLabel}
@@ -352,20 +260,16 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                                 color: '#666677',
                                 maxWidth: 500,
                                 lineHeight: 1.6,
-                                margin: 0,
-                            }}>
+                                margin: '0 auto 0',
+                            }}
+                                className="md:mx-0"
+                            >
                                 {organiser.description}
                             </p>
                         )}
 
                         {/* Stats row */}
-                        <div style={{
-                            display: 'flex',
-                            gap: 24,
-                            marginTop: 16,
-                            flexWrap: 'wrap',
-                            alignItems: 'center',
-                        }}>
+                        <div className="flex justify-center md:justify-start flex-wrap gap-x-6 gap-y-2 mt-3 items-center">
                             <div>
                                 <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0F' }}>
                                     {(followerCount ?? 0).toLocaleString()}
@@ -399,7 +303,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
 
                         {/* Social links */}
                         {(organiser.social_instagram || organiser.social_facebook || organiser.social_website || organiser.website) && (
-                            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                            <div className="flex justify-center md:justify-start flex-wrap gap-[10px] mt-3">
                                 {organiser.social_instagram && (
                                     <a
                                         href={organiser.social_instagram}
@@ -467,6 +371,18 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                             </div>
                         )}
                     </div>
+
+                    {/* Follow + Share buttons — right side */}
+                    <div className="flex flex-row justify-center md:justify-end gap-2 w-full md:w-auto md:flex-shrink-0 md:self-start md:pt-1">
+                        <ShareButton title={organiser.org_name} />
+                        <FollowButton
+                            organiserId={organiser.id}
+                            initialFollowing={userFollowing}
+                            initialCount={followerCount ?? 0}
+                            isLoggedIn={!!user}
+                        />
+                    </div>
+
                 </div>
             </div>
 
