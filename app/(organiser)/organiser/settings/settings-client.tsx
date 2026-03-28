@@ -5,6 +5,14 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import type { OrganiserProfile } from '@/types'
 
+type OrganiserWithExtras = OrganiserProfile & {
+    cover_url?: string | null
+    social_instagram?: string | null
+    social_facebook?: string | null
+    social_website?: string | null
+    location?: string | null
+}
+
 interface DoorStaffMember {
     id: string
     user_id: string
@@ -16,7 +24,8 @@ interface SettingsClientProps {
     organiser: OrganiserProfile
 }
 
-export function SettingsClient({ organiser }: SettingsClientProps) {
+export function SettingsClient({ organiser: organiserProp }: SettingsClientProps) {
+    const organiser = organiserProp as OrganiserWithExtras
     const [orgName, setOrgName] = useState(organiser.org_name)
     const [description, setDescription] = useState(organiser.description || '')
     const [website, setWebsite] = useState(organiser.website || '')
@@ -33,6 +42,18 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
     const [logoUploading, setLogoUploading] = useState(false)
     const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
     const [showCloseModal, setShowCloseModal] = useState(false)
+
+    // Cover photo
+    const [coverUrl, setCoverUrl] = useState(organiser.cover_url || '')
+    const [coverUploading, setCoverUploading] = useState(false)
+
+    // Social links
+    const [socialInstagram, setSocialInstagram] = useState(organiser.social_instagram || '')
+    const [socialFacebook, setSocialFacebook] = useState(organiser.social_facebook || '')
+    const [socialWebsite, setSocialWebsite] = useState(organiser.social_website || '')
+    const [location, setLocation] = useState(organiser.location || '')
+    const [socialSaving, setSocialSaving] = useState(false)
+    const [socialSaved, setSocialSaved] = useState(false)
 
     // Door staff
     const [doorStaff, setDoorStaff] = useState<DoorStaffMember[]>([])
@@ -157,6 +178,42 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
         setLogoUploading(false)
     }
 
+    async function uploadCover(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        if (file.size > 5 * 1024 * 1024) return alert('File must be under 5MB')
+        setCoverUploading(true)
+        const supabase = createClient()
+        const ext = file.name.split('.').pop()
+        const path = `${organiser.id}/cover.${ext}`
+        const { error } = await supabase.storage.from('organiser-covers').upload(path, file, { upsert: true })
+        if (!error) {
+            const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
+            const url = urlData.publicUrl
+            await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)
+            setCoverUrl(url)
+        }
+        setCoverUploading(false)
+    }
+
+    async function saveSocialLinks(e: React.FormEvent) {
+        e.preventDefault()
+        setSocialSaving(true)
+        const supabase = createClient()
+        await supabase
+            .from('organiser_profiles')
+            .update({
+                social_instagram: socialInstagram || null,
+                social_facebook: socialFacebook || null,
+                social_website: socialWebsite || null,
+                location: location || null,
+            })
+            .eq('id', organiser.id)
+        setSocialSaved(true)
+        setTimeout(() => setSocialSaved(false), 2000)
+        setSocialSaving(false)
+    }
+
     function Section({ title, children }: { title: string; children: React.ReactNode }) {
         return (
             <div className="bg-card border border-border rounded-none p-6 mb-6">
@@ -182,6 +239,28 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
 
     return (
         <>
+            {/* Cover Photo */}
+            <div className="bg-card border border-border rounded-none p-6 mb-6">
+                <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">Cover Photo</h2>
+                <div style={{ width: '100%', height: 160, marginBottom: 12, border: '1px solid #E0E0E0', overflow: 'hidden', position: 'relative' }}>
+                    {coverUrl ? (
+                        <img src={coverUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                        <div style={{
+                            width: '100%', height: '100%',
+                            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #E63950 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>No cover photo</span>
+                        </div>
+                    )}
+                </div>
+                <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors inline-block">
+                    {coverUploading ? 'Uploading...' : 'Change Cover Photo'}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCover} className="hidden" />
+                </label>
+            </div>
+
             {/* Profile */}
             <Section title="Profile">
                 <form onSubmit={saveProfile} className="space-y-4">
@@ -421,6 +500,56 @@ export function SettingsClient({ organiser }: SettingsClientProps) {
                 {doorStaff.length === 0 && (
                     <p className="text-xs text-muted">No door staff added yet.</p>
                 )}
+            </div>
+
+            {/* Social Links */}
+            <div className="bg-card border border-border rounded-none p-6 mb-6">
+                <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">Social Links</h2>
+                <form onSubmit={saveSocialLinks} className="space-y-4">
+                    <div>
+                        <label className="text-xs text-muted block mb-1.5">Instagram</label>
+                        <input
+                            type="url"
+                            value={socialInstagram}
+                            onChange={e => setSocialInstagram(e.target.value)}
+                            placeholder="https://instagram.com/yourpage"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-muted block mb-1.5">Facebook</label>
+                        <input
+                            type="url"
+                            value={socialFacebook}
+                            onChange={e => setSocialFacebook(e.target.value)}
+                            placeholder="https://facebook.com/yourpage"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-muted block mb-1.5">Website</label>
+                        <input
+                            type="url"
+                            value={socialWebsite}
+                            onChange={e => setSocialWebsite(e.target.value)}
+                            placeholder="https://yourwebsite.com"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs text-muted block mb-1.5">Location / City</label>
+                        <input
+                            type="text"
+                            value={location}
+                            onChange={e => setLocation(e.target.value)}
+                            placeholder="London, UK"
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        />
+                    </div>
+                    <Button type="submit" variant="primary" size="md" disabled={socialSaving}>
+                        {socialSaved ? 'Saved ✓' : socialSaving ? 'Saving...' : 'Save Social Links'}
+                    </Button>
+                </form>
             </div>
 
             {/* Danger Zone */}
