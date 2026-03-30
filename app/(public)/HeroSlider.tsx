@@ -56,13 +56,6 @@ function BrandSlide() {
                 <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', maxWidth: '480px', marginTop: '20px', lineHeight: 1.6 }}>
                     Concerts, club nights, festivals, comedy and more — discover the best live events happening across the UK, all in one place.
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '16px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>🔒 Payments by Stripe</span>
-                    <span style={{ color: '#E63950' }}>·</span>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>⚡ Instant e-tickets</span>
-                    <span style={{ color: '#E63950' }}>·</span>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>✓ Free to browse</span>
-                </div>
                 <Link
                     href="/events"
                     className="hero-cta-btn"

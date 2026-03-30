@@ -105,11 +105,7 @@ export default async function HomePage() {
                 gap: '24px',
                 flexWrap: 'wrap',
             }}>
-                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🔒 Payments secured by Stripe</span>
-                <span style={{ color: '#8888AA' }}>·</span>
-                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🎫 Instant e-tickets</span>
-                <span style={{ color: '#8888AA' }}>·</span>
-                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>✓ UK registered company</span>
+                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🔒 Secure payments powered by Stripe</span>
             </div>
 
             {/* ── CITY CARDS ── */}
