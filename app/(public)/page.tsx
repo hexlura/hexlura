@@ -6,6 +6,21 @@ import { Event } from '@/types';
 import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
 
 
+const CATEGORIES = [
+    { name: 'Club Nights', emoji: '🌙', bg: '#6C3FB5' },
+    { name: 'Gigs & Live Music', emoji: '🎵', bg: '#E63950' },
+    { name: 'Festivals', emoji: '🎪', bg: '#00C48A' },
+    { name: 'Comedy', emoji: '😂', bg: '#F5A623' },
+    { name: 'Theatre & Arts', emoji: '🎭', bg: '#C850C0' },
+    { name: 'Sports & Fitness', emoji: '🏆', bg: '#0066FF' },
+    { name: 'Food & Drink', emoji: '🍷', bg: '#FF6B35' },
+    { name: 'Family & Kids', emoji: '🎈', bg: '#43E97B' },
+    { name: 'Business & Networking', emoji: '💼', bg: '#434343' },
+    { name: 'Classes & Workshops', emoji: '📚', bg: '#4158D0' },
+    { name: 'Dating & Social', emoji: '💫', bg: '#F093FB' },
+    { name: 'Culture & Heritage', emoji: '🎨', bg: '#F5576C' },
+]
+
 function formatOverlayDate(isoDate: string): string {
     const d = new Date(isoDate);
     const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(d);
@@ -87,7 +102,70 @@ export default async function HomePage() {
                 @media (max-width: 768px) { .full-bleed { margin-left: -20px; margin-right: -20px; } }
                 .city-scroll::-webkit-scrollbar { display: none; }
                 .drag-scroll::-webkit-scrollbar { display: none; }
+                .category-scroll::-webkit-scrollbar { display: none; }
+                .cat-circle { width: 64px; height: 64px; font-size: 26px; }
+                @media (max-width: 768px) { .cat-circle { width: 56px; height: 56px; } }
             `}</style>
+
+            {/* ── CATEGORY ICONS ROW ── */}
+            <div className="full-bleed" style={{ background: '#FFFFFF', padding: '12px 24px 0' }}>
+                <div
+                    className="category-scroll"
+                    style={{
+                        display: 'flex',
+                        overflowX: 'auto',
+                        gap: '20px',
+                        padding: '12px 0 16px',
+                        scrollbarWidth: 'none',
+                        WebkitOverflowScrolling: 'touch',
+                        cursor: 'grab',
+                    }}
+                >
+                    {CATEGORIES.map((cat) => (
+                        <Link
+                            key={cat.name}
+                            href={`/events?category=${encodeURIComponent(cat.name)}`}
+                            className="cat-item"
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '8px',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                textDecoration: 'none',
+                                transition: 'transform 0.2s',
+                            }}
+                        >
+                            <div
+                                className="cat-circle"
+                                style={{
+                                    borderRadius: '50%',
+                                    background: cat.bg,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                                    transition: 'box-shadow 0.2s, transform 0.2s',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                {cat.emoji}
+                            </div>
+                            <span style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: '#0A0A0F',
+                                textAlign: 'center',
+                                maxWidth: '68px',
+                                lineHeight: 1.3,
+                            }}>
+                                {cat.name}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
 
             {/* ── HERO SLIDER ── */}
             <div className="full-bleed">
@@ -463,6 +541,31 @@ export default async function HomePage() {
                         card.style.transform = 'translateY(0)';
                         card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
                         if (img) img.style.transform = 'scale(1)';
+                    });
+                });
+
+                // Category item hover
+                document.querySelectorAll('.cat-item').forEach(function(item) {
+                    item.addEventListener('mouseenter', function() { item.style.transform = 'translateY(-3px)'; });
+                    item.addEventListener('mouseleave', function() { item.style.transform = 'translateY(0)'; });
+                });
+
+                // Category drag-to-scroll
+                document.querySelectorAll('.category-scroll').forEach(function(el) {
+                    var isDown = false, startX = 0, scrollLeft = 0;
+                    el.addEventListener('mousedown', function(e) {
+                        isDown = true;
+                        el.style.cursor = 'grabbing';
+                        startX = e.pageX - el.offsetLeft;
+                        scrollLeft = el.scrollLeft;
+                        e.preventDefault();
+                    });
+                    el.addEventListener('mouseleave', function() { isDown = false; el.style.cursor = 'grab'; });
+                    el.addEventListener('mouseup', function() { isDown = false; el.style.cursor = 'grab'; });
+                    el.addEventListener('mousemove', function(e) {
+                        if (!isDown) return;
+                        e.preventDefault();
+                        el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX);
                     });
                 });
 
