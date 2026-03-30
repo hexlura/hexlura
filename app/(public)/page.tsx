@@ -103,7 +103,10 @@ export default async function HomePage() {
                 .city-scroll::-webkit-scrollbar { display: none; }
                 .drag-scroll::-webkit-scrollbar { display: none; }
                 .category-scroll::-webkit-scrollbar { display: none; }
-                @media (min-width: 768px) { .category-scroll { justify-content: center; } }
+                @media (min-width: 769px) { .category-scroll { justify-content: center; overflow-x: hidden; } }
+                @media (max-width: 768px) { .category-scroll { justify-content: flex-start; overflow-x: auto; } }
+                .slider-wrapper { padding: 0 48px; width: 100%; }
+                @media (max-width: 768px) { .slider-wrapper { padding: 0 16px; } }
                 .cat-circle { width: 64px; height: 64px; font-size: 26px; }
                 @media (max-width: 768px) { .cat-circle { width: 56px; height: 56px; } }
             `}</style>
@@ -171,7 +174,9 @@ export default async function HomePage() {
 
             {/* ── HERO SLIDER ── */}
             <div className="full-bleed">
-                <HeroSlider slides={slides} />
+                <div className="slider-wrapper">
+                    <HeroSlider slides={slides} />
+                </div>
             </div>
 
             {/* ── STRIPE TRUST BAR ── */}

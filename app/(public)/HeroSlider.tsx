@@ -297,7 +297,7 @@ export function HeroSlider({ slides }: { slides: SlideData[] }) {
     return (
         <div
             className="hero-slider"
-            style={{ width: '100%', height: '520px', position: 'relative', overflow: 'hidden', background: '#0A0A0F' }}
+            style={{ width: '100%', height: '520px', position: 'relative', overflow: 'hidden', background: '#0A0A0F', borderRadius: '16px' }}
             onMouseEnter={() => { isPausedRef.current = true }}
             onMouseLeave={() => { isPausedRef.current = false }}
             onTouchStart={e => { touchStartXRef.current = e.touches[0].clientX }}
