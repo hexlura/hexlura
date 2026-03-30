@@ -53,7 +53,7 @@ function BrandSlide() {
                 </p>
                 <h1 className="hero-h1-brand" style={{ color: '#FFFFFF' }}>FIND. BOOK.</h1>
                 <h1 className="hero-h1-brand" style={{ color: '#E63950' }}>EXPERIENCE.</h1>
-                <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', maxWidth: '480px', marginTop: '20px', lineHeight: 1.6 }}>
+                <p className="slide-desc" style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', maxWidth: '480px', marginTop: '20px', lineHeight: 1.6 }}>
                     Concerts, club nights, festivals, comedy and more — discover the best live events happening across the UK, all in one place.
                 </p>
                 <Link
@@ -138,7 +138,7 @@ function EventSlide({ event }: { event: FeaturedEvent }) {
                         <span>&#128197;</span> {dateStr}{event.venue_name ? ` · ${event.venue_name}` : ''}
                     </p>
                     {event.venue_address && (
-                        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>
+                        <p className="slide-desc" style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>
                             &#128205; {event.venue_address}
                         </p>
                     )}
@@ -182,10 +182,10 @@ function OrganiserSlide() {
                 </p>
                 <h1 className="hero-h1" style={{ color: '#FFFFFF' }}>SELL TICKETS.</h1>
                 <h1 className="hero-h1" style={{ color: '#E63950' }}>KEEP 100%.</h1>
-                <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', maxWidth: '440px', marginTop: '16px', lineHeight: 1.6 }}>
+                <p className="slide-desc" style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', maxWidth: '440px', marginTop: '16px', lineHeight: 1.6 }}>
                     No monthly fees. No contracts. You keep every penny of face value. Instant setup, fast payouts.
                 </p>
-                <div style={{ display: 'flex', gap: '32px', marginTop: '24px', flexWrap: 'wrap' }}>
+                <div className="slide-stats" style={{ display: 'flex', gap: '32px', marginTop: '24px', flexWrap: 'wrap' }}>
                     {[
                         { num: '\u00A30', label: 'Monthly Fees' },
                         { num: '100%', label: 'Revenue Yours' },
@@ -234,7 +234,7 @@ function FomoSlide() {
                     </p>
                     <h1 className="hero-h1-fomo" style={{ color: '#FFFFFF' }}>DON&apos;T</h1>
                     <h1 className="hero-h1-fomo" style={{ color: '#E63950' }}>MISS OUT</h1>
-                    <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.7)', maxWidth: '420px', marginTop: '16px', lineHeight: 1.6 }}>
+                    <p className="slide-desc" style={{ fontSize: '16px', color: 'rgba(255,255,255,0.7)', maxWidth: '420px', marginTop: '16px', lineHeight: 1.6 }}>
                         Thousands of live events happening across the UK. Your next unforgettable night starts here.
                     </p>
                     <Link
@@ -356,6 +356,8 @@ export function HeroSlider({ slides }: { slides: SlideData[] }) {
                 }
                 .slide-text { text-align: left; }
                 @media (max-width: 768px) { .slide-text { text-align: center; } }
+                @media (max-width: 768px) { .slide-desc { display: none !important; } }
+                @media (max-width: 768px) { .slide-stats { display: none !important; } }
             `}</style>
 
             {/* Slide with fade */}
