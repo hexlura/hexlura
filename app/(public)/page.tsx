@@ -244,7 +244,7 @@ export default async function HomePage() {
                         className="drag-scroll"
                         style={{
                             display: 'flex',
-                            alignItems: 'stretch',
+                            alignItems: 'flex-end',
                             overflowX: 'auto',
                             gap: '16px',
                             padding: '0 0 8px',
@@ -267,15 +267,13 @@ export default async function HomePage() {
                                     href={`/events/${ev.slug}`}
                                     className="event-portrait-card"
                                     style={{
-                                        flex: '0 0 calc((100% - 64px) / 5)',
-                                        minWidth: '150px',
-                                        maxWidth: '200px',
+                                        width: '200px',
+                                        flexShrink: 0,
                                         background: 'transparent',
                                         cursor: 'pointer',
                                         textDecoration: 'none',
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        height: '100%',
                                         transition: 'transform 0.2s, box-shadow 0.2s',
                                         borderRadius: '4px',
                                         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -325,8 +323,7 @@ export default async function HomePage() {
                                         </div>
                                     )}
 
-                                    <div style={{ padding: '10px 4px 8px', background: 'transparent', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                        <div>
+                                    <div style={{ padding: '10px 4px 8px', background: 'transparent' }}>
                                         <p style={{
                                             fontSize: '14px',
                                             color: '#0A0A0F',
@@ -356,7 +353,6 @@ export default async function HomePage() {
                                         <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                                             {priceStr}
                                         </p>
-                                        </div>
                                         <div className="book-now-btn" style={{
                                             width: '100%',
                                             background: '#E63950',
@@ -368,7 +364,7 @@ export default async function HomePage() {
                                             textAlign: 'center',
                                             textTransform: 'uppercase',
                                             letterSpacing: '1px',
-                                            marginTop: 'auto',
+                                            marginTop: '8px',
                                             transition: 'background 0.2s',
                                             cursor: 'pointer',
                                         }}>
