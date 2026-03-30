@@ -63,6 +63,46 @@ Check-in uses QR codes embedded in booking reference. See `/organiser/events/[id
 
 ---
 
+## Features
+
+### Public / User
+- Homepage with city browsing, category rows, marquee strip, organiser CTA
+- Event browsing by city and category (`/events`)
+- Event detail pages with ticket purchasing
+- Checkout flow with Stripe (integration in progress)
+- QR code ticketing — booking ref embedded in QR for door check-in
+- Booking references auto-generated: `HXL-XXXXXX`
+- User account and settings
+- Booking history and ticket management (`/bookings/[ref]`)
+- Organiser public profile pages (`/organisers/[slug]`)
+- Promo code support at checkout
+
+### Organiser
+- Application and approval workflow (`/organiser/apply`, `/organiser/pending`)
+- Event creation/editing with rich text editor (`/organiser/events`)
+- Attendee management per event
+- Door-staff check-in via QR scan (`/organiser/events/[id]/checkin`)
+- Payout management and Stripe Connect (`/organiser/payouts`)
+- Analytics dashboard (`/organiser/analytics`)
+- Refund handling (`/organiser/refunds`)
+- Organiser settings (profile, bank details)
+- Announcement system (`/api/announcements`)
+
+### Admin Portal
+- Dashboard KPIs (`/admin`)
+- User management: view all, change role, suspend/unsuspend, resend verification
+- Organiser management: approve, reject, suspend, reinstate applications
+- Event moderation: feature, delist, cancel
+- Booking and refund management (full/partial refunds)
+- Payout processing and transfer
+- Financial overview (`/admin/financials`)
+- Audit log of all admin actions (`/admin/audit-log`)
+- Platform settings (`/admin/settings`)
+- Data export by type
+- User impersonation
+
+---
+
 ## Recent Critical Fixes
 
 ### ✅ Admin Portal RLS Bug (LATEST)
