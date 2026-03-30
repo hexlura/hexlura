@@ -101,6 +101,18 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                 </div>
 
                 <div className="px-5 pb-10">
+                    {/* Account — shown at top when logged out */}
+                    {!isLoggedIn && (
+                        <>
+                            {heading('ACCOUNT')}
+                            {divider}
+                            <div className="pt-2 space-y-0.5">
+                                <Link href="/auth/login" onClick={close} className={linkClass('/auth/login')}>Log In</Link>
+                                <Link href="/auth/register" onClick={close} className={linkClass('/auth/register')}>Get Started</Link>
+                            </div>
+                        </>
+                    )}
+
                     {/* Search */}
                     <form onSubmit={handleSearch} className="mt-1">
                         <input
@@ -142,17 +154,8 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                         <Link href="/pricing" onClick={close} className={linkClass('/pricing')}>Pricing &amp; Fees</Link>
                     </div>
 
-                    {/* Account */}
-                    {!isLoggedIn ? (
-                        <>
-                            {heading('ACCOUNT')}
-                            {divider}
-                            <div className="pt-2 space-y-0.5">
-                                <Link href="/auth/login" onClick={close} className={linkClass('/auth/login')}>Log In</Link>
-                                <Link href="/auth/register" onClick={close} className={linkClass('/auth/register')}>Get Started</Link>
-                            </div>
-                        </>
-                    ) : (
+                    {/* Account — shown at bottom when logged in */}
+                    {isLoggedIn && (
                         <>
                             {heading('MY ACCOUNT')}
                             {divider}
