@@ -145,7 +145,7 @@ export default function EventCard({ event }: EventCardProps) {
             {/* Footer row */}
             <div
                 className="flex items-center justify-between"
-                style={{ padding: '6px 10px 14px' }}
+                style={{ padding: '6px 10px 8px' }}
             >
                 <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                     {priceDisplay}
@@ -161,6 +161,28 @@ export default function EventCard({ event }: EventCardProps) {
                         On sale
                     </span>
                 )}
+            </div>
+
+            {/* Book Now button */}
+            <div
+                className="group/btn"
+                style={{
+                    margin: '0 10px 14px',
+                    background: '#E63950',
+                    color: '#FFFFFF',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    padding: '8px 0',
+                    textAlign: 'center',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    transition: 'background 0.2s',
+                    cursor: 'pointer',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#C0392B' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '#E63950' }}
+            >
+                {minPrice === 0 || minPrice === Infinity ? 'Reserve Now' : 'Book Now'}
             </div>
         </Link>
     );

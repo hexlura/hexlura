@@ -135,11 +135,11 @@ export default async function HomePage() {
                     className="city-scroll"
                     style={{
                         display: 'flex',
+                        gap: '24px',
                         overflowX: 'auto',
-                        gap: '12px',
-                        padding: '0 0 8px',
                         scrollbarWidth: 'none',
                         WebkitOverflowScrolling: 'touch',
+                        padding: '16px 4px 20px',
                     }}
                 >
                     {CITIES.map(({ name, photo }) => (
@@ -148,68 +148,47 @@ export default async function HomePage() {
                             href={`/events?city=${encodeURIComponent(name)}`}
                             className="city-card"
                             style={{
-                                flex: '0 0 calc((100% - 48px) / 5)',
-                                minWidth: '130px',
-                                maxWidth: '260px',
-                                aspectRatio: '2 / 3',
-                                position: 'relative',
-                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
                                 cursor: 'pointer',
-                                display: 'block',
+                                width: '160px',
+                                flexShrink: 0,
                                 textDecoration: 'none',
-                                borderRadius: '4px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-                                border: '1px solid rgba(0,0,0,0.06)',
-                                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                             }}
                         >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={photo}
-                                alt={name}
-                                className="city-card-img"
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    objectPosition: 'center',
-                                    transition: 'transform 0.4s ease',
-                                }}
-                            />
-                            <div style={{
-                                position: 'absolute',
-                                inset: 0,
-                                background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.82) 100%)',
-                                pointerEvents: 'none',
-                            }} />
-                            {/* Red top border — shown on hover via JS */}
                             <div
-                                className="city-card-border"
+                                className="city-circle"
                                 style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    height: '3px',
-                                    background: '#E63950',
-                                    opacity: 0,
-                                    transition: 'opacity 0.2s',
-                                    pointerEvents: 'none',
+                                    width: '160px',
+                                    height: '160px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    border: '3px solid #FFFFFF',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                                    transition: 'all 0.3s ease',
                                 }}
-                            />
+                            >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={photo}
+                                    alt={name}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        objectPosition: 'center',
+                                    }}
+                                />
+                            </div>
                             <span style={{
-                                position: 'absolute',
-                                bottom: '14px',
-                                left: '12px',
-                                right: '12px',
-                                fontSize: '22px',
-                                fontFamily: '"Bebas Neue", sans-serif',
-                                color: '#FFFFFF',
+                                textAlign: 'center',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: '#0A0A0F',
+                                marginTop: '10px',
+                                textTransform: 'uppercase',
                                 letterSpacing: '1px',
-                                lineHeight: 1,
-                                textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                             }}>
                                 {name}
                             </span>
@@ -355,6 +334,23 @@ export default async function HomePage() {
                                         <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                                             {priceStr}
                                         </p>
+                                        <div className="book-now-btn" style={{
+                                            width: '100%',
+                                            background: '#E63950',
+                                            color: '#FFFFFF',
+                                            fontSize: '12px',
+                                            fontWeight: 700,
+                                            padding: '8px 0',
+                                            border: 'none',
+                                            textAlign: 'center',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '1px',
+                                            marginTop: '8px',
+                                            transition: 'background 0.2s',
+                                            cursor: 'pointer',
+                                        }}>
+                                            {priceStr === 'Free' ? 'Reserve Now' : 'Book Now'}
+                                        </div>
                                     </div>
                                 </Link>
                             );
@@ -422,22 +418,27 @@ export default async function HomePage() {
                     el.style.msOverflowStyle = 'none';
                 });
 
-                // City card hover — lift + shadow + image scale + red top border
+                // City card hover — scale circle + deepen shadow
                 document.querySelectorAll('.city-card').forEach(function(card) {
-                    var img = card.querySelector('.city-card-img');
-                    var border = card.querySelector('.city-card-border');
+                    var circle = card.querySelector('.city-circle');
                     card.addEventListener('mouseenter', function() {
-                        card.style.transform = 'translateY(-6px)';
-                        card.style.boxShadow = '0 12px 32px rgba(0,0,0,0.20)';
-                        if (img) img.style.transform = 'scale(1.07)';
-                        if (border) border.style.opacity = '1';
+                        if (circle) {
+                            circle.style.boxShadow = '0 8px 28px rgba(0,0,0,0.25)';
+                            circle.style.transform = 'scale(1.05)';
+                        }
                     });
                     card.addEventListener('mouseleave', function() {
-                        card.style.transform = '';
-                        card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
-                        if (img) img.style.transform = 'scale(1)';
-                        if (border) border.style.opacity = '0';
+                        if (circle) {
+                            circle.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+                            circle.style.transform = 'scale(1)';
+                        }
                     });
+                });
+
+                // Book now button hover
+                document.querySelectorAll('.book-now-btn').forEach(function(btn) {
+                    btn.addEventListener('mouseenter', function() { btn.style.background = '#C0392B'; });
+                    btn.addEventListener('mouseleave', function() { btn.style.background = '#E63950'; });
                 });
 
                 // Event card hover — lift + shadow (no border change)
