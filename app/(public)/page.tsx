@@ -244,6 +244,7 @@ export default async function HomePage() {
                         className="drag-scroll"
                         style={{
                             display: 'flex',
+                            alignItems: 'stretch',
                             overflowX: 'auto',
                             gap: '16px',
                             padding: '0 0 8px',
@@ -272,14 +273,16 @@ export default async function HomePage() {
                                         background: 'transparent',
                                         cursor: 'pointer',
                                         textDecoration: 'none',
-                                        display: 'block',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: '100%',
                                         transition: 'transform 0.2s, box-shadow 0.2s',
                                         borderRadius: '4px',
                                         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                     }}
                                 >
                                     {ev.banner_url?.startsWith('http') ? (
-                                        <div style={{ width: '100%', aspectRatio: '2 / 3', position: 'relative', overflow: 'hidden', borderRadius: '4px 4px 0 0' }}>
+                                        <div style={{ width: '100%', aspectRatio: '3 / 4', position: 'relative', overflow: 'hidden', borderRadius: '4px 4px 0 0', flexShrink: 0 }}>
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={ev.banner_url}
@@ -310,18 +313,20 @@ export default async function HomePage() {
                                     ) : (
                                         <div style={{
                                             width: '100%',
-                                            aspectRatio: '2 / 3',
+                                            aspectRatio: '3 / 4',
                                             background: '#F0F0F0',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             borderRadius: '4px 4px 0 0',
+                                            flexShrink: 0,
                                         }}>
                                             <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
                                         </div>
                                     )}
 
-                                    <div style={{ padding: '10px 4px 8px', background: 'transparent' }}>
+                                    <div style={{ padding: '10px 4px 8px', background: 'transparent', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                        <div>
                                         <p style={{
                                             fontSize: '14px',
                                             color: '#0A0A0F',
@@ -351,6 +356,7 @@ export default async function HomePage() {
                                         <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                                             {priceStr}
                                         </p>
+                                        </div>
                                         <div className="book-now-btn" style={{
                                             width: '100%',
                                             background: '#E63950',
@@ -362,7 +368,7 @@ export default async function HomePage() {
                                             textAlign: 'center',
                                             textTransform: 'uppercase',
                                             letterSpacing: '1px',
-                                            marginTop: '8px',
+                                            marginTop: 'auto',
                                             transition: 'background 0.2s',
                                             cursor: 'pointer',
                                         }}>
