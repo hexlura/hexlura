@@ -31,6 +31,7 @@ const NAV_SECTIONS = [
     {
         title: 'PLATFORM',
         links: [
+            { href: '/admin/cities', label: 'Cities', exact: false, badge: false },
             { href: '/admin/settings', label: 'Settings', exact: false, badge: false },
             { href: '/admin/audit-log', label: 'Audit Log', exact: false, badge: false },
         ],

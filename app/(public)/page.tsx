@@ -4,14 +4,6 @@ import Script from 'next/script';
 import { createClient } from '@/lib/supabase/server';
 import { Event } from '@/types';
 
-const CITIES = [
-    { name: 'London',     photo: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=600&fit=crop&q=80' },
-    { name: 'Manchester', photo: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=400&h=600&fit=crop&q=80' },
-    { name: 'Birmingham', photo: 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=400&h=600&fit=crop&q=80' },
-    { name: 'Edinburgh',  photo: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&h=600&fit=crop&q=80' },
-    { name: 'Liverpool',  photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=600&fit=crop&q=80' },
-    { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=400&h=600&fit=crop&q=80' },
-];
 
 function formatOverlayDate(isoDate: string): string {
     const d = new Date(isoDate);
@@ -42,6 +34,14 @@ export default async function HomePage() {
         .limit(10);
 
     const events = (eventsRaw || []) as Event[];
+
+    const { data: citiesRaw } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+    const cities = (citiesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
 
     return (
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className="page-wrapper">
@@ -142,10 +142,10 @@ export default async function HomePage() {
                         padding: '16px 4px 20px',
                     }}
                 >
-                    {CITIES.map(({ name, photo }) => (
+                    {cities.map((city) => (
                         <Link
-                            key={name}
-                            href={`/events?city=${encodeURIComponent(name)}`}
+                            key={city.id}
+                            href={`/events?city=${encodeURIComponent(city.slug)}`}
                             className="city-card"
                             style={{
                                 display: 'flex',
@@ -169,17 +169,34 @@ export default async function HomePage() {
                                     transition: 'all 0.3s ease',
                                 }}
                             >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={photo}
-                                    alt={name}
-                                    style={{
+                                {city.image_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={city.image_url}
+                                        alt={city.name}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            objectPosition: 'center',
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{
                                         width: '100%',
                                         height: '100%',
-                                        objectFit: 'cover',
-                                        objectPosition: 'center',
-                                    }}
-                                />
+                                        background: '#E0E0E8',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '48px',
+                                        fontWeight: 700,
+                                        color: '#8888AA',
+                                        fontFamily: '"Bebas Neue", sans-serif',
+                                    }}>
+                                        {city.name.charAt(0)}
+                                    </div>
+                                )}
                             </div>
                             <span style={{
                                 textAlign: 'center',
@@ -190,7 +207,7 @@ export default async function HomePage() {
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px',
                             }}>
-                                {name}
+                                {city.name}
                             </span>
                         </Link>
                     ))}
