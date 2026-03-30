@@ -119,26 +119,9 @@ export function Navbar() {
                     </div>
                 </form>
 
-                {/* Right: auth buttons + hamburger */}
+                {/* Right: user menu + hamburger */}
                 <div className="flex items-center gap-3">
-                    {user ? (
-                        <UserMenu initials={initials} fullName={fullName} role={role} />
-                    ) : (
-                        <>
-                            <Link
-                                href="/auth/login"
-                                className="hidden md:inline-flex items-center justify-center text-sm font-medium text-[#0A0A0F] border border-[#0A0A0F] bg-transparent px-5 py-2 rounded-sm hover:bg-[#0A0A0F] hover:text-white transition"
-                            >
-                                Log In
-                            </Link>
-                            <Link
-                                href="/auth/register"
-                                className="inline-flex items-center justify-center text-sm font-semibold text-white bg-[#0A0A0F] border-0 px-5 py-2 rounded-sm hover:opacity-90 transition"
-                            >
-                                Get Started
-                            </Link>
-                        </>
-                    )}
+                    {user && <UserMenu initials={initials} fullName={fullName} role={role} />}
                     <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                 </div>
             </div>
@@ -202,16 +185,7 @@ export function Navbar() {
                                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                                 </svg>
                             </button>
-                            {user ? (
-                                <UserMenu initials={initials} fullName={fullName} role={role} />
-                            ) : (
-                                <Link
-                                    href="/auth/register"
-                                    className="inline-flex items-center justify-center text-sm font-semibold text-white bg-[#0A0A0F] border-0 px-5 py-2 rounded-sm hover:opacity-90 transition"
-                                >
-                                    Get Started
-                                </Link>
-                            )}
+                            {user && <UserMenu initials={initials} fullName={fullName} role={role} />}
                             <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                         </div>
                     </>

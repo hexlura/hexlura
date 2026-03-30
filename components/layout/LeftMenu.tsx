@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { signOut } from '@/app/auth/actions'
 import { CATEGORIES } from '@/lib/config/categories'
@@ -14,23 +14,13 @@ interface LeftMenuProps {
 
 export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const [search, setSearch] = useState('')
     const pathname = usePathname()
-    const router = useRouter()
 
     useEffect(() => {
         setIsOpen(false)
     }, [pathname])
 
     const close = () => setIsOpen(false)
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault()
-        if (search.trim()) {
-            router.push(`/events?search=${encodeURIComponent(search.trim())}`)
-            close()
-        }
-    }
 
     const sellTicketsHref = !isLoggedIn
         ? '/auth/register?next=/organiser/apply'
@@ -80,7 +70,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
 
             {/* Slide panel */}
             <div
-                className={`fixed top-0 left-0 z-50 h-screen bg-[#FFFFFF] border-r border-[#C0C0C8] overflow-y-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`fixed top-0 right-0 z-50 h-screen bg-[#FFFFFF] border-l border-[#C0C0C8] overflow-y-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 style={{ width: 'min(300px, 85vw)' }}
             >
                 {/* Panel header */}
@@ -112,17 +102,6 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                             </div>
                         </>
                     )}
-
-                    {/* Search */}
-                    <form onSubmit={handleSearch} className="mt-1">
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            placeholder="Search events, venues..."
-                            className="w-full bg-[#FFFFFF] border border-[#C0C0C8] rounded-lg px-4 py-2.5 text-sm text-[#0A0A0F] placeholder-[#666677] outline-none focus:border-[#E63950] transition-colors"
-                        />
-                    </form>
 
                     {/* Find Events */}
                     {heading('FIND EVENTS')}
