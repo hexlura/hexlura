@@ -94,6 +94,24 @@ export default async function HomePage() {
                 <HeroSlider slides={slides} />
             </div>
 
+            {/* ── STRIPE TRUST BAR ── */}
+            <div className="full-bleed" style={{
+                background: '#F8F8F8',
+                borderBottom: '1px solid #EEEEEE',
+                padding: '10px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '24px',
+                flexWrap: 'wrap',
+            }}>
+                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🔒 Payments secured by Stripe</span>
+                <span style={{ color: '#8888AA' }}>·</span>
+                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🎫 Instant e-tickets</span>
+                <span style={{ color: '#8888AA' }}>·</span>
+                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>✓ UK registered company</span>
+            </div>
+
             {/* ── CITY CARDS ── */}
             <section style={{ marginTop: '0' }}>
                 <div style={{

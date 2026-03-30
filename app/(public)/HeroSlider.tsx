@@ -47,16 +47,22 @@ function BrandSlide() {
                 backgroundSize: '24px 24px',
                 pointerEvents: 'none',
             }} />
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', margin: '0 auto', padding: '0 48px', width: '100%' }}>
-                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px', margin: '0 0 16px 0' }}>
-                    UK&apos;S PREMIER EVENT PLATFORM
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', padding: '0 48px', width: '100%' }}>
+                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', margin: '0 0 20px 0' }}>
+                    THE UK&apos;S HOME FOR LIVE EVENTS
                 </p>
-                <h1 className="hero-h1" style={{ color: '#FFFFFF' }}>DISCOVER</h1>
-                <h1 className="hero-h1" style={{ color: '#FFFFFF' }}>LIVE EVENTS</h1>
-                <h1 className="hero-h1" style={{ color: '#E63950' }}>NEAR YOU</h1>
-                <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', marginTop: '20px' }}>
-                    Concerts &middot; Festivals &middot; Club Nights &middot; Comedy
+                <h1 className="hero-h1-brand" style={{ color: '#FFFFFF' }}>FIND. BOOK.</h1>
+                <h1 className="hero-h1-brand" style={{ color: '#E63950' }}>EXPERIENCE.</h1>
+                <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', maxWidth: '480px', marginTop: '20px', lineHeight: 1.6 }}>
+                    Concerts, club nights, festivals, comedy and more — discover the best live events happening across the UK, all in one place.
                 </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '16px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>🔒 Payments by Stripe</span>
+                    <span style={{ color: '#E63950' }}>·</span>
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>⚡ Instant e-tickets</span>
+                    <span style={{ color: '#E63950' }}>·</span>
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>✓ Free to browse</span>
+                </div>
                 <Link
                     href="/events"
                     className="hero-cta-btn"
@@ -64,7 +70,7 @@ function BrandSlide() {
                         display: 'inline-block',
                         background: '#E63950', color: '#FFFFFF',
                         padding: '14px 36px', fontSize: '15px', fontWeight: 700,
-                        borderRadius: 0, textDecoration: 'none', marginTop: '32px',
+                        borderRadius: 0, textDecoration: 'none', marginTop: '28px',
                     }}
                 >
                     Explore Events &rarr;
@@ -177,12 +183,15 @@ function OrganiserSlide() {
                 backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 40px)',
                 pointerEvents: 'none',
             }} />
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', margin: '0 auto', padding: '0 48px', width: '100%' }}>
-                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px', margin: '0 0 16px 0' }}>
-                    FOR ORGANISERS
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', padding: '0 48px', width: '100%' }}>
+                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', margin: '0 0 16px 0' }}>
+                    FOR EVENT ORGANISERS
                 </p>
-                <h1 className="hero-h1" style={{ color: '#FFFFFF' }}>GROW YOUR</h1>
-                <h1 className="hero-h1" style={{ color: '#FFFFFF' }}>EVENT BUSINESS</h1>
+                <h1 className="hero-h1" style={{ color: '#FFFFFF' }}>SELL TICKETS.</h1>
+                <h1 className="hero-h1" style={{ color: '#E63950' }}>KEEP 100%.</h1>
+                <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', maxWidth: '440px', marginTop: '16px', lineHeight: 1.6 }}>
+                    No monthly fees. No contracts. You keep every penny of face value. Instant setup, fast payouts.
+                </p>
                 <div style={{ display: 'flex', gap: '32px', marginTop: '24px', flexWrap: 'wrap' }}>
                     {[
                         { num: '\u00A30', label: 'Monthly Fees' },
@@ -316,6 +325,12 @@ export function HeroSlider({ slides }: { slides: SlideData[] }) {
                     font-size: 88px; line-height: 0.85; margin: 0;
                 }
                 @media (max-width: 768px) { .hero-h1 { font-size: 52px !important; } }
+
+                .hero-h1-brand {
+                    font-family: "Bebas Neue", "Arial Black", sans-serif;
+                    font-size: 96px; line-height: 0.85; margin: 0;
+                }
+                @media (max-width: 768px) { .hero-h1-brand { font-size: 56px !important; } }
 
                 .hero-h1-fomo {
                     font-family: "Bebas Neue", "Arial Black", sans-serif;
