@@ -117,8 +117,6 @@ export default async function HomePage() {
                     className="category-scroll"
                     style={{
                         display: 'flex',
-                        overflowX: 'auto',
-                        justifyContent: 'flex-start',
                         gap: '20px',
                         padding: '12px 0 16px',
                         scrollbarWidth: 'none',
