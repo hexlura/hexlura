@@ -73,13 +73,21 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
     async function handleFeatureToggle(event: EventRow) {
         setLoading(event.id)
         await fetch(`/api/admin/events/${event.id}/feature`, {
-            method: 'POST',
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ is_featured: !event.is_featured }),
+            body: JSON.stringify({ is_featured: !event.is_featured, featured_order: event.featured_order }),
         })
         setLoading(null)
         showToast(event.is_featured ? 'Event unfeatured' : 'Event featured')
         router.refresh()
+    }
+
+    async function handleFeaturedOrderBlur(eventId: string, order: number) {
+        await fetch(`/api/admin/events/${eventId}/feature`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_featured: true, featured_order: order }),
+        })
     }
 
     async function handleDelist(eventId: string) {
@@ -175,14 +183,14 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Title', 'Organiser', 'Category', 'Date', 'Status', 'Tickets', 'Actions'].map(h => (
+                            {['Title', 'Organiser', 'Category', 'Date', 'Status', 'Tickets', 'Featured', 'Actions'].map(h => (
                                 <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {events.length === 0 && (
-                            <tr><td colSpan={7} className="text-center text-muted text-xs py-12">No events found</td></tr>
+                            <tr><td colSpan={8} className="text-center text-muted text-xs py-12">No events found</td></tr>
                         )}
                         {events.map(e => (
                             <tr key={e.id} className="border-b border-border/50 hover:bg-surface transition-colors">
@@ -202,16 +210,40 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                 </td>
                                 <td className="py-3 px-4 text-text text-xs">{e.tickets_sold}</td>
                                 <td className="py-3 px-4">
-                                    <div className="flex items-center gap-2 flex-wrap text-xs">
-                                        <Link href={`/events/${e.slug}`} target="_blank" className="text-muted hover:text-text">View</Link>
-                                        <span className="text-border">·</span>
+                                    <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleFeatureToggle(e)}
                                             disabled={loading === e.id}
-                                            className={`hover:underline ${e.is_featured ? 'text-gold' : 'text-muted hover:text-gold'}`}
+                                            style={{
+                                                fontSize: '18px',
+                                                color: e.is_featured ? '#F5A623' : '#C0C0C8',
+                                                background: 'none', border: 'none',
+                                                cursor: loading === e.id ? 'not-allowed' : 'pointer',
+                                                padding: 0, lineHeight: 1,
+                                            }}
+                                            title={e.is_featured ? 'Unfeature' : 'Feature'}
                                         >
-                                            {e.is_featured ? 'Unfeature' : 'Feature'}
+                                            {e.is_featured ? '★' : '☆'}
                                         </button>
+                                        {e.is_featured && (
+                                            <input
+                                                type="number"
+                                                defaultValue={e.featured_order}
+                                                onBlur={ev => handleFeaturedOrderBlur(e.id, Number(ev.target.value))}
+                                                style={{
+                                                    width: '50px', border: '1px solid #E0E0E0',
+                                                    padding: '2px 4px', fontSize: '12px',
+                                                    textAlign: 'center', color: '#0A0A0F', outline: 'none',
+                                                }}
+                                                min={0}
+                                                title="Featured order"
+                                            />
+                                        )}
+                                    </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                                        <Link href={`/events/${e.slug}`} target="_blank" className="text-muted hover:text-text">View</Link>
                                         {e.status !== 'archived' && e.status !== 'cancelled' && (
                                             <>
                                                 <span className="text-border">·</span>

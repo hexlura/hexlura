@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { createClient } from '@/lib/supabase/server';
 import { Event } from '@/types';
+import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
 
 
 function formatOverlayDate(isoDate: string): string {
@@ -43,6 +44,36 @@ export default async function HomePage() {
 
     const cities = (citiesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
 
+    const { data: featuredRaw } = await supabase
+        .from('events')
+        .select('id, title, slug, banner_url, start_at, venue_name, venue_address, category, ticket_types(price_pence)')
+        .eq('status', 'published')
+        .eq('is_featured', true)
+        .order('featured_order', { ascending: true });
+
+    type FeaturedRaw = FeaturedEvent & { ticket_types: { price_pence: number }[] };
+    const featuredEvents: FeaturedEvent[] = ((featuredRaw || []) as unknown as FeaturedRaw[]).map(e => ({
+        id: e.id,
+        title: e.title,
+        slug: e.slug,
+        banner_url: e.banner_url,
+        start_at: e.start_at,
+        venue_name: e.venue_name,
+        venue_address: e.venue_address,
+        category: e.category,
+        min_price_pence: e.ticket_types?.length > 0
+            ? Math.min(...e.ticket_types.map((t: { price_pence: number }) => t.price_pence))
+            : null,
+    }));
+
+    const slides: SlideData[] = [
+        { type: 'brand' },
+        ...featuredEvents.slice(0, 2).map(e => ({ type: 'event' as const, event: e })),
+        { type: 'organiser' },
+        ...featuredEvents.slice(2).map(e => ({ type: 'event' as const, event: e })),
+        { type: 'fomo' },
+    ];
+
     return (
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className="page-wrapper">
 
@@ -58,64 +89,10 @@ export default async function HomePage() {
                 .drag-scroll::-webkit-scrollbar { display: none; }
             `}</style>
 
-            {/* ── SECTION 1: BOLD HEADLINE ── */}
-            <section style={{ paddingTop: '48px', paddingBottom: '40px', background: '#FFFFFF' }}>
-                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', margin: '0 0 12px 0' }}>
-                    UK&apos;S PREMIER EVENT PLATFORM
-                </p>
-                <div style={{ borderLeft: '4px solid #E63950', paddingLeft: '24px' }}>
-                    <h1 className="headline-xl" style={{ color: '#0A0A0F' }}>
-                        DISCOVER
-                    </h1>
-                    <h1 className="headline-xl" style={{ color: '#0A0A0F' }}>
-                        LIVE EVENTS
-                    </h1>
-                    <h1 className="headline-xl" style={{ color: '#E63950' }}>
-                        NEAR YOU
-                    </h1>
-                </div>
-                <p style={{ fontSize: '16px', color: '#666677', marginTop: '20px', maxWidth: '480px', lineHeight: 1.5 }}>
-                    Book tickets to concerts, club nights, festivals, comedy and more across the UK.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '32px' }}>
-                    <Link
-                        href="/events"
-                        style={{
-                            background: '#0A0A0F',
-                            color: '#FFFFFF',
-                            padding: '14px 32px',
-                            fontSize: '15px',
-                            fontWeight: 700,
-                            borderRadius: 0,
-                            border: 'none',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            letterSpacing: '0.3px',
-                        }}
-                    >
-                        Find Events
-                    </Link>
-                    <Link
-                        href="/sell-tickets"
-                        style={{
-                            background: 'transparent',
-                            color: '#0A0A0F',
-                            padding: '14px 32px',
-                            fontSize: '15px',
-                            fontWeight: 700,
-                            borderRadius: 0,
-                            border: '2px solid #0A0A0F',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            letterSpacing: '0.3px',
-                        }}
-                    >
-                        Sell Tickets
-                    </Link>
-                </div>
-            </section>
+            {/* ── HERO SLIDER ── */}
+            <div className="full-bleed">
+                <HeroSlider slides={slides} />
+            </div>
 
             {/* ── CITY CARDS ── */}
             <section style={{ marginTop: '0' }}>
