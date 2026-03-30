@@ -47,7 +47,7 @@ function BrandSlide() {
                 backgroundSize: '24px 24px',
                 pointerEvents: 'none',
             }} />
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', padding: '0 48px', width: '100%' }}>
+            <div className="slide-content" style={{ position: 'relative', zIndex: 1, maxWidth: '700px' }}>
                 <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', margin: '0 0 20px 0' }}>
                     THE UK&apos;S HOME FOR LIVE EVENTS
                 </p>
@@ -116,7 +116,7 @@ function EventSlide({ event }: { event: FeaturedEvent }) {
                     )}
                 </div>
                 {/* Details */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="slide-text" style={{ flex: 1, minWidth: 0 }}>
                     {event.category && (
                         <span style={{
                             display: 'inline-block', background: '#E63950', color: '#FFFFFF',
@@ -176,7 +176,7 @@ function OrganiserSlide() {
                 backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 40px)',
                 pointerEvents: 'none',
             }} />
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', padding: '0 48px', width: '100%' }}>
+            <div className="slide-content" style={{ position: 'relative', zIndex: 1, maxWidth: '700px' }}>
                 <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', margin: '0 0 16px 0' }}>
                     FOR EVENT ORGANISERS
                 </p>
@@ -227,8 +227,8 @@ function FomoSlide() {
             {/* Gradient overlay */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%)' }} />
             {/* Content */}
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 48px' }}>
-                <div style={{ maxWidth: '600px' }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+                <div className="slide-content" style={{ maxWidth: '600px' }}>
                     <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px', margin: '0 0 16px 0' }}>
                         LIVE EVENTS UK
                     </p>
@@ -345,6 +345,17 @@ export function HeroSlider({ slides }: { slides: SlideData[] }) {
 
                 .hero-cta-btn:hover { background: #C0392B !important; }
                 .hero-org-btn:hover { background: #E63950 !important; color: #FFFFFF !important; }
+
+                .slide-content {
+                    display: flex; flex-direction: column;
+                    align-items: flex-start; text-align: left;
+                    padding: 0 0 0 60px; width: 100%;
+                }
+                @media (max-width: 768px) {
+                    .slide-content { align-items: center; text-align: center; padding: 0 24px; }
+                }
+                .slide-text { text-align: left; }
+                @media (max-width: 768px) { .slide-text { text-align: center; } }
             `}</style>
 
             {/* Slide with fade */}
