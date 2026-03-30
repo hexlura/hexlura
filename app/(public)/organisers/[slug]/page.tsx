@@ -8,8 +8,10 @@ import EventCard from '@/components/events/EventCard';
 import ShareButton from '@/components/events/ShareButton';
 import FollowButton from '@/components/organisers/FollowButton';
 import ReviewsSection from '@/components/organisers/ReviewsSection';
-import PortfolioSection from '@/components/organisers/PortfolioSection';
+import dynamic from 'next/dynamic';
 import { Event, Review } from '@/types';
+
+const PortfolioSection = dynamic(() => import('@/components/organisers/PortfolioSection'), { ssr: false });
 
 export const revalidate = 60;
 
