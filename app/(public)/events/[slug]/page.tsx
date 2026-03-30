@@ -9,6 +9,7 @@ import BookingWidget from '@/components/events/BookingWidget';
 import ShareButton from '@/components/events/ShareButton';
 import { Review } from '@/types';
 import LikeButton from '@/components/events/LikeButton';
+import BannerCarousel from '@/components/events/BannerCarousel';
 
 export const revalidate = 60;
 
@@ -114,14 +115,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
                 {/* Banner — LEFT COL, ROW 1 | mobile: 3:4, desktop: 2:3 */}
                 <div className="md:col-start-1 relative w-full overflow-hidden aspect-[3/4] md:aspect-[2/3]">
-                    {event.banner_url?.startsWith('http') ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover object-top" />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-r from-neutral-800 to-neutral-900 flex items-center justify-center">
-                            <span className="text-white text-xl">No image provided</span>
-                        </div>
-                    )}
+                    <BannerCarousel
+                        images={(event.banner_images?.length ? event.banner_images : event.banner_url ? [event.banner_url] : [])}
+                        title={event.title}
+                    />
                 </div>
 
                 {/* RIGHT STICKY PANEL — RIGHT COL, spans all rows */}

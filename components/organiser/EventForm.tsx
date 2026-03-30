@@ -109,7 +109,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [category, setCategory] = useState(event?.category || '')
     const [tags, setTags] = useState((event?.tags || []).join(', '))
     const [description, setDescription] = useState(event?.description || '')
-    const [bannerUrl, setBannerUrl] = useState(event?.banner_url || '')
+    const [bannerImages, setBannerImages] = useState<string[]>(
+        event?.banner_images?.length ? event.banner_images : event?.banner_url ? [event.banner_url] : []
+    )
     const [bannerUploading, setBannerUploading] = useState(false)
     const [bannerError, setBannerError] = useState('')
     const [youtubeUrl, setYoutubeUrl] = useState(event?.youtube_url || '')
@@ -248,7 +250,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 end_at: endAt ? ukTimeToUTC(endAt) : null,
                 checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
                 checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
-                banner_url: bannerUrl || null,
+                banner_url: bannerImages[0] || null,
+                banner_images: bannerImages,
                 youtube_url: youtubeUrl || null,
                 status: 'draft',
                 min_age: minAge,
@@ -281,7 +284,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             end_at: endAt ? ukTimeToUTC(endAt) : null,
             checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
             checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
-            banner_url: bannerUrl || null,
+            banner_url: bannerImages[0] || null,
+            banner_images: bannerImages,
             youtube_url: youtubeUrl || null,
             min_age: minAge,
             max_tickets_per_order: maxTicketsPerOrder,
@@ -387,7 +391,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             end_at: endAt ? ukTimeToUTC(endAt) : null,
             checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
             checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
-            banner_url: bannerUrl || null,
+            banner_url: bannerImages[0] || null,
+            banner_images: bannerImages,
             youtube_url: youtubeUrl || null,
             min_age: minAge,
             max_tickets_per_order: maxTicketsPerOrder,
@@ -440,7 +445,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             setBannerError(error.message)
         } else {
             const { data } = supabase.storage.from('event-banners').getPublicUrl(path)
-            setBannerUrl(data.publicUrl)
+            setBannerImages(prev => [...prev, data.publicUrl])
         }
         setBannerUploading(false)
     }
@@ -637,16 +642,33 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                                 )}
                             </div>
                             <div>
-                                <label className={labelClass}>Banner Image</label>
-                                {bannerUrl && (
-                                    <img src={bannerUrl} alt="Banner" className="w-full h-48 object-cover rounded-lg mb-3 border border-border" />
+                                <label className={labelClass}>Banner Images <span style={{ fontWeight: 400, color: '#666677' }}>(up to 4)</span></label>
+                                {bannerImages.length > 0 && (
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                                        {bannerImages.map((url, i) => (
+                                            <div key={url} style={{ position: 'relative', width: '80px', height: '80px' }}>
+                                                <img src={url} alt={`Banner ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid #E0E0E8' }} />
+                                                {i === 0 && (
+                                                    <span style={{ position: 'absolute', bottom: '3px', left: '3px', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '9px', padding: '1px 4px', borderRadius: '3px' }}>MAIN</span>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setBannerImages(prev => prev.filter((_, idx) => idx !== i))}
+                                                    style={{ position: 'absolute', top: '3px', right: '3px', background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', lineHeight: 1 }}
+                                                    aria-label="Remove image"
+                                                >×</button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
-                                <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
-                                    <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : 'Click to upload banner (JPG, PNG, WEBP, max 5MB)'}</p>
-                                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
-                                </label>
+                                {bannerImages.length < 4 && (
+                                    <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
+                                        <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : `Click to upload image ${bannerImages.length + 1} of 4`}</p>
+                                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
+                                    </label>
+                                )}
                                 {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
-                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Recommended: Portrait format 800×1200px (2:3 ratio). Max 5MB. JPG, PNG or WebP. Portrait images look best on the platform.</p>
+                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Portrait format 800×1200px (2:3 ratio). Max 5MB each. JPG, PNG or WebP. First image is the main banner.</p>
                             </div>
                             <div>
                                 <label className={labelClass}>Promo Video (YouTube URL)</label>
