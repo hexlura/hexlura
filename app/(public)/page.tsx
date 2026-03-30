@@ -145,7 +145,7 @@ export default async function HomePage() {
                                 style={{
                                     borderRadius: '50%',
                                     background: '#FFFFFF',
-                                    border: `3px solid ${cat.bg}`,
+                                    border: 'none',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
