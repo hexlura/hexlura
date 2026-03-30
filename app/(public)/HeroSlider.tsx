@@ -311,31 +311,31 @@ export function HeroSlider({ slides }: { slides: SlideData[] }) {
         >
             <style>{`
                 .hero-slider { touch-action: pan-y; }
-                @media (max-width: 768px) { .hero-slider { height: 400px !important; } }
+                @media (max-width: 768px) { .hero-slider { height: 280px !important; } }
 
                 .hero-h1 {
                     font-family: "Bebas Neue", "Arial Black", sans-serif;
                     font-size: 88px; line-height: 0.85; margin: 0;
                 }
-                @media (max-width: 768px) { .hero-h1 { font-size: 52px !important; } }
+                @media (max-width: 768px) { .hero-h1 { font-size: 40px !important; } }
 
                 .hero-h1-brand {
                     font-family: "Bebas Neue", "Arial Black", sans-serif;
                     font-size: 96px; line-height: 0.85; margin: 0;
                 }
-                @media (max-width: 768px) { .hero-h1-brand { font-size: 56px !important; } }
+                @media (max-width: 768px) { .hero-h1-brand { font-size: 42px !important; } }
 
                 .hero-h1-fomo {
                     font-family: "Bebas Neue", "Arial Black", sans-serif;
                     font-size: 96px; line-height: 0.85; margin: 0;
                 }
-                @media (max-width: 768px) { .hero-h1-fomo { font-size: 56px !important; } }
+                @media (max-width: 768px) { .hero-h1-fomo { font-size: 42px !important; } }
 
                 .hero-event-title { font-size: 52px; }
-                @media (max-width: 768px) { .hero-event-title { font-size: 34px !important; } }
+                @media (max-width: 768px) { .hero-event-title { font-size: 26px !important; } }
 
                 .hero-portrait { width: 200px !important; }
-                @media (max-width: 768px) { .hero-portrait { width: 140px !important; } }
+                @media (max-width: 768px) { .hero-portrait { width: 110px !important; } }
 
                 .hero-content { gap: 40px !important; padding: 0 48px !important; }
                 @media (max-width: 768px) { .hero-content { gap: 20px !important; padding: 0 20px !important; } }
