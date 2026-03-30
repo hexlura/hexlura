@@ -144,11 +144,12 @@ export default async function HomePage() {
                                 className="cat-circle"
                                 style={{
                                     borderRadius: '50%',
-                                    background: cat.bg,
+                                    background: '#FFFFFF',
+                                    border: `3px solid ${cat.bg}`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                                     transition: 'box-shadow 0.2s, transform 0.2s',
                                     flexShrink: 0,
                                 }}
