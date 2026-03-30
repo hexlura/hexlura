@@ -8,7 +8,6 @@ const discoverLinks = [
 
 const organiserLinks = [
     { label: 'Sell Tickets', href: '/sell-tickets' },
-    { label: 'Help Centre', href: '/help' },
 ]
 
 const legalLinks = [
