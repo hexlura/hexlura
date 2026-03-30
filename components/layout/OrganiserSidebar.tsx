@@ -63,6 +63,16 @@ const navLinks = [
         ),
     },
     {
+        href: '/organiser/portfolio',
+        label: 'Portfolio',
+        exact: false,
+        icon: (
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                <path d="M3 3h6v6H3V3zm0 8h6v6H3v-6zm8-8h6v6h-6V3zm0 8h6v6h-6v-6z" />
+            </svg>
+        ),
+    },
+    {
         href: '/organiser/analytics',
         label: 'Analytics',
         exact: false,

@@ -8,9 +8,22 @@ import EventCard from '@/components/events/EventCard';
 import ShareButton from '@/components/events/ShareButton';
 import FollowButton from '@/components/organisers/FollowButton';
 import ReviewsSection from '@/components/organisers/ReviewsSection';
+import PortfolioSection from '@/components/organisers/PortfolioSection';
 import { Event, Review } from '@/types';
 
 export const revalidate = 60;
+
+const PLATFORMS: Record<string, { label: string; icon: string; color: string }> = {
+    instagram: { label: 'Instagram', icon: '📷', color: '#E1306C' },
+    facebook: { label: 'Facebook', icon: '👥', color: '#1877F2' },
+    tiktok: { label: 'TikTok', icon: '🎵', color: '#000000' },
+    youtube: { label: 'YouTube', icon: '▶️', color: '#FF0000' },
+    twitter: { label: 'X (Twitter)', icon: '𝕏', color: '#000000' },
+    linkedin: { label: 'LinkedIn', icon: '💼', color: '#0A66C2' },
+    spotify: { label: 'Spotify', icon: '🎧', color: '#1DB954' },
+    soundcloud: { label: 'SoundCloud', icon: '☁️', color: '#FF5500' },
+    website: { label: 'Website', icon: '🌐', color: '#0A0A0F' },
+};
 
 type OrganiserRow = {
     id: string;
@@ -25,6 +38,7 @@ type OrganiserRow = {
     social_instagram: string | null;
     social_facebook: string | null;
     social_website: string | null;
+    social_links: Record<string, string> | null;
     location: string | null;
     is_approved: boolean;
     is_suspended: boolean;
@@ -146,6 +160,17 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
             averageRating = sum / reviewCount;
         }
     }
+
+    // Portfolio items
+    const { data: portfolioData } = await supabase
+        .from('organiser_portfolio')
+        .select('*')
+        .eq('organiser_id', organiser.id)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+        .limit(20);
+
+    const portfolio = portfolioData || [];
 
     // Can user review?
     let canReview = false;
@@ -301,75 +326,48 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                             )}
                         </div>
 
-                        {/* Social links */}
-                        {(organiser.social_instagram || organiser.social_facebook || organiser.social_website || organiser.website) && (
-                            <div className="flex justify-center md:justify-start flex-wrap gap-[10px] mt-3">
-                                {organiser.social_instagram && (
-                                    <a
-                                        href={organiser.social_instagram}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        title="Instagram"
-                                        style={{
-                                            width: 32, height: 32,
-                                            border: '1px solid #E0E0E0',
-                                            borderRadius: '50%',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: '#666677', textDecoration: 'none',
-                                            flexShrink: 0,
-                                        }}
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                                            <circle cx="12" cy="12" r="4" />
-                                            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
-                                        </svg>
-                                    </a>
-                                )}
-                                {organiser.social_facebook && (
-                                    <a
-                                        href={organiser.social_facebook}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        title="Facebook"
-                                        style={{
-                                            width: 32, height: 32,
-                                            border: '1px solid #E0E0E0',
-                                            borderRadius: '50%',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: '#666677', textDecoration: 'none',
-                                            flexShrink: 0,
-                                        }}
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                                        </svg>
-                                    </a>
-                                )}
-                                {(organiser.social_website || organiser.website) && (
-                                    <a
-                                        href={(organiser.social_website || organiser.website)!}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        title="Website"
-                                        style={{
-                                            width: 32, height: 32,
-                                            border: '1px solid #E0E0E0',
-                                            borderRadius: '50%',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: '#666677', textDecoration: 'none',
-                                            flexShrink: 0,
-                                        }}
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                                            <circle cx="12" cy="12" r="10" />
-                                            <line x1="2" y1="12" x2="22" y2="12" />
-                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                                        </svg>
-                                    </a>
-                                )}
-                            </div>
-                        )}
+                        {/* Social links — from JSONB social_links, fallback to legacy columns */}
+                        {(() => {
+                            const links: { key: string; url: string }[] = [];
+                            if (organiser.social_links && Object.keys(organiser.social_links).length > 0) {
+                                for (const [key, url] of Object.entries(organiser.social_links)) {
+                                    if (url) links.push({ key, url });
+                                }
+                            } else {
+                                if (organiser.social_instagram) links.push({ key: 'instagram', url: organiser.social_instagram });
+                                if (organiser.social_facebook) links.push({ key: 'facebook', url: organiser.social_facebook });
+                                if (organiser.social_website || organiser.website) links.push({ key: 'website', url: (organiser.social_website || organiser.website)! });
+                            }
+                            if (links.length === 0) return null;
+                            return (
+                                <div className="flex justify-center md:justify-start flex-wrap gap-[10px] mt-3">
+                                    {links.map(({ key, url }) => {
+                                        const p = PLATFORMS[key];
+                                        return (
+                                            <a
+                                                key={key}
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={p?.label || key}
+                                                style={{
+                                                    width: 36, height: 36,
+                                                    border: '1px solid #E0E0E0',
+                                                    borderRadius: '50%',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    textDecoration: 'none',
+                                                    flexShrink: 0,
+                                                    fontSize: 18,
+                                                    transition: 'border-color 0.2s, transform 0.2s',
+                                                }}
+                                            >
+                                                {p?.icon || '🔗'}
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* Follow + Share buttons — right side */}
@@ -513,7 +511,24 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                 </div>
             )}
 
-            {/* ─── SECTION 5: REVIEWS ─── */}
+            {/* ─── SECTION 5: PORTFOLIO ─── */}
+            {portfolio.length > 0 && (
+                <div style={{ maxWidth: 1200, margin: '40px auto 0', padding: '0 24px' }}>
+                    <h2 style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 26,
+                        color: '#0A0A0F',
+                        letterSpacing: '1px',
+                        margin: '0 0 16px',
+                        lineHeight: 1,
+                    }}>
+                        PORTFOLIO
+                    </h2>
+                    <PortfolioSection items={portfolio} />
+                </div>
+            )}
+
+            {/* ─── SECTION 6: REVIEWS ─── */}
             <div style={{
                 maxWidth: 1200,
                 margin: '40px auto 60px',

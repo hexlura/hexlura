@@ -1,9 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import type { OrganiserProfile } from '@/types'
+
+const PLATFORMS = [
+    { key: 'instagram', label: 'Instagram', icon: '📷', placeholder: 'https://instagram.com/yourpage', color: '#E1306C' },
+    { key: 'facebook', label: 'Facebook', icon: '👥', placeholder: 'https://facebook.com/yourpage', color: '#1877F2' },
+    { key: 'tiktok', label: 'TikTok', icon: '🎵', placeholder: 'https://tiktok.com/@yourpage', color: '#000000' },
+    { key: 'youtube', label: 'YouTube', icon: '▶️', placeholder: 'https://youtube.com/@yourchannel', color: '#FF0000' },
+    { key: 'twitter', label: 'X (Twitter)', icon: '𝕏', placeholder: 'https://x.com/yourhandle', color: '#000000' },
+    { key: 'linkedin', label: 'LinkedIn', icon: '💼', placeholder: 'https://linkedin.com/in/yourprofile', color: '#0A66C2' },
+    { key: 'spotify', label: 'Spotify', icon: '🎧', placeholder: 'https://open.spotify.com/artist/...', color: '#1DB954' },
+    { key: 'soundcloud', label: 'SoundCloud', icon: '☁️', placeholder: 'https://soundcloud.com/yourpage', color: '#FF5500' },
+    { key: 'website', label: 'Website', icon: '🌐', placeholder: 'https://yourwebsite.com', color: '#0A0A0F' },
+]
 
 type OrganiserWithExtras = OrganiserProfile & {
     cover_url?: string | null
@@ -11,6 +23,7 @@ type OrganiserWithExtras = OrganiserProfile & {
     social_facebook?: string | null
     social_website?: string | null
     location?: string | null
+    social_links?: Record<string, string> | null
 }
 
 interface DoorStaffMember {
@@ -55,6 +68,14 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
     const [socialSaving, setSocialSaving] = useState(false)
     const [socialSaved, setSocialSaved] = useState(false)
 
+    // Dynamic social links (JSONB)
+    const [socialLinksData, setSocialLinksData] = useState<Record<string, string>>({})
+    const [activeLinksKeys, setActiveLinksKeys] = useState<string[]>([])
+    const [showPlatformDropdown, setShowPlatformDropdown] = useState(false)
+    const [newSocialSaving, setNewSocialSaving] = useState(false)
+    const [newSocialSaved, setNewSocialSaved] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+
     // Door staff
     const [doorStaff, setDoorStaff] = useState<DoorStaffMember[]>([])
     const [doorStaffEmail, setDoorStaffEmail] = useState('')
@@ -62,6 +83,35 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
     const [doorStaffError, setDoorStaffError] = useState('')
     const [doorStaffSuccess, setDoorStaffSuccess] = useState('')
     const [removingId, setRemovingId] = useState<string | null>(null)
+
+    useEffect(() => {
+        const existing = organiser.social_links || {}
+        setSocialLinksData(existing)
+        setActiveLinksKeys(Object.keys(existing).filter(k => existing[k]))
+    }, [organiser.social_links])
+
+    useEffect(() => {
+        function handleClick(e: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setShowPlatformDropdown(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [])
+
+    async function saveNewSocialLinks() {
+        setNewSocialSaving(true)
+        const supabase = createClient()
+        const linksToSave: Record<string, string> = {}
+        for (const key of activeLinksKeys) {
+            if (socialLinksData[key]) linksToSave[key] = socialLinksData[key]
+        }
+        await supabase.from('organiser_profiles').update({ social_links: linksToSave }).eq('id', organiser.id)
+        setNewSocialSaved(true)
+        setTimeout(() => setNewSocialSaved(false), 2000)
+        setNewSocialSaving(false)
+    }
 
     useEffect(() => {
         fetch('/api/organiser/door-staff')
@@ -550,6 +600,126 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
                         {socialSaved ? 'Saved ✓' : socialSaving ? 'Saving...' : 'Save Social Links'}
                     </Button>
                 </form>
+            </div>
+
+            {/* Social Links */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24, marginBottom: 24 }}>
+                <p style={{ fontSize: 16, fontWeight: 600, color: '#0A0A0F', marginBottom: 8 }}>Social Links</p>
+                <p style={{ fontSize: 13, color: '#8888AA', marginBottom: 20 }}>
+                    Add your social media profiles. Only platforms you add will be shown on your public profile.
+                </p>
+
+                {activeLinksKeys.map(key => {
+                    const platform = PLATFORMS.find(p => p.key === key)
+                    if (!platform) return null
+                    return (
+                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                            <div style={{ width: 140, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                                <span style={{ fontSize: 20 }}>{platform.icon}</span>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0F' }}>{platform.label}</span>
+                            </div>
+                            <input
+                                type="url"
+                                value={socialLinksData[key] || ''}
+                                onChange={e => setSocialLinksData(prev => ({ ...prev, [key]: e.target.value }))}
+                                placeholder={platform.placeholder}
+                                style={{
+                                    flex: 1,
+                                    border: '1px solid #C0C0C8',
+                                    padding: '8px 12px',
+                                    fontSize: 13,
+                                    outline: 'none',
+                                }}
+                            />
+                            <button
+                                onClick={() => {
+                                    setActiveLinksKeys(prev => prev.filter(k => k !== key))
+                                    setSocialLinksData(prev => { const next = { ...prev }; delete next[key]; return next })
+                                }}
+                                style={{ background: 'none', border: 'none', color: '#E63950', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
+                                title="Remove"
+                            >×</button>
+                        </div>
+                    )
+                })}
+
+                {/* Add platform */}
+                {PLATFORMS.filter(p => !activeLinksKeys.includes(p.key)).length > 0 && (
+                    <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block', marginBottom: 16 }}>
+                        <button
+                            onClick={() => setShowPlatformDropdown(v => !v)}
+                            style={{
+                                padding: '8px 16px',
+                                fontSize: 13,
+                                fontWeight: 600,
+                                background: 'transparent',
+                                border: '1px solid #C0C0C8',
+                                cursor: 'pointer',
+                                color: '#0A0A0F',
+                            }}
+                        >
+                            + Add Social Link
+                        </button>
+                        {showPlatformDropdown && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                background: '#FFFFFF',
+                                border: '1px solid #E0E0E0',
+                                zIndex: 10,
+                                minWidth: 200,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                            }}>
+                                {PLATFORMS.filter(p => !activeLinksKeys.includes(p.key)).map(platform => (
+                                    <button
+                                        key={platform.key}
+                                        onClick={() => {
+                                            setActiveLinksKeys(prev => [...prev, platform.key])
+                                            setShowPlatformDropdown(false)
+                                        }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 10,
+                                            width: '100%',
+                                            padding: '10px 14px',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            fontSize: 13,
+                                            textAlign: 'left',
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = '#F5F5F7')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                                    >
+                                        <span style={{ fontSize: 18 }}>{platform.icon}</span>
+                                        <span style={{ fontWeight: 600, color: '#0A0A0F' }}>{platform.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                <div>
+                    <button
+                        onClick={saveNewSocialLinks}
+                        disabled={newSocialSaving}
+                        style={{
+                            background: '#0A0A0F',
+                            color: '#FFFFFF',
+                            padding: '10px 24px',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            border: 'none',
+                            cursor: newSocialSaving ? 'not-allowed' : 'pointer',
+                            opacity: newSocialSaving ? 0.7 : 1,
+                        }}
+                    >
+                        {newSocialSaved ? 'Saved ✓' : newSocialSaving ? 'Saving...' : 'Save Social Links'}
+                    </button>
+                </div>
             </div>
 
             {/* Danger Zone */}
