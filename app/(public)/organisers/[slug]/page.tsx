@@ -161,16 +161,22 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         }
     }
 
-    // Portfolio items
-    const { data: portfolioData } = await supabase
-        .from('organiser_portfolio')
-        .select('*')
-        .eq('organiser_id', organiser.id)
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
-        .limit(20);
-
-    const portfolio = portfolioData || [];
+    // Portfolio items — table may not exist yet, guard against missing table errors
+    let portfolio: { id: string; type: 'photo' | 'video'; url: string; thumbnail_url: string | null; caption: string | null; display_order: number }[] = [];
+    try {
+        const { data: portfolioData, error: portfolioError } = await supabase
+            .from('organiser_portfolio')
+            .select('id, type, url, thumbnail_url, caption, display_order')
+            .eq('organiser_id', organiser.id)
+            .eq('is_active', true)
+            .order('display_order', { ascending: true })
+            .limit(20);
+        if (!portfolioError && portfolioData) {
+            portfolio = portfolioData as typeof portfolio;
+        }
+    } catch {
+        // Table may not exist yet — safe to ignore
+    }
 
     // Can user review?
     let canReview = false;
