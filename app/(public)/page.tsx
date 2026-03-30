@@ -13,8 +13,6 @@ const CITIES = [
     { name: 'Bristol',    photo: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=400&h=600&fit=crop&q=80' },
 ];
 
-const MARQUEE_TEXT = 'GIGS \u00B7 CLUB NIGHTS \u00B7 FESTIVALS \u00B7 COMEDY \u00B7 THEATRE & ARTS \u00B7 SPORTS \u00B7 FOOD & DRINK \u00B7 NETWORKING \u00B7 ';
-
 function formatOverlayDate(isoDate: string): string {
     const d = new Date(isoDate);
     const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(d);
@@ -30,42 +28,20 @@ function getMinPrice(ticketTypes: Array<{ price_pence: number }>): string {
     return `From \u00A3${(min / 100).toFixed(2)}`;
 }
 
-// Render marquee text with red bullets
-function MarqueeSegment({ text }: { text: string }) {
-    const parts = text.split('\u00B7');
-    return (
-        <span style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '20px', color: '#FFFFFF', letterSpacing: '2px', whiteSpace: 'nowrap' }}>
-            {parts.map((part, i) => (
-                <React.Fragment key={i}>
-                    {part}
-                    {i < parts.length - 1 && (
-                        <span style={{ color: '#E63950', margin: '0 16px' }}>&middot;</span>
-                    )}
-                </React.Fragment>
-            ))}
-        </span>
-    );
-}
-
 export default async function HomePage() {
     const supabase = createClient();
+
+    const now = new Date().toISOString();
 
     const { data: eventsRaw } = await supabase
         .from('events')
         .select('*, ticket_types(*)')
         .eq('status', 'published')
-        .order('start_at', { ascending: true });
+        .gt('start_at', now)
+        .order('start_at', { ascending: true })
+        .limit(10);
 
     const events = (eventsRaw || []) as Event[];
-
-    const categoryMap = new Map<string, Event[]>();
-    for (const event of events) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const cat = (event as any).category || 'Other';
-        if (!categoryMap.has(cat)) categoryMap.set(cat, []);
-        categoryMap.get(cat)!.push(event);
-    }
-    const categories = Array.from(categoryMap.entries());
 
     return (
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className="page-wrapper">
@@ -242,179 +218,150 @@ export default async function HomePage() {
                 </div>
             </section>
 
-            {/* ── SECTION 2: MARQUEE — full bleed ── */}
-            <div
-                className="full-bleed"
-                style={{
-                    background: '#0A0A0F',
-                    padding: '16px 0',
-                    marginTop: '48px',
-                    marginBottom: '48px',
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    className="marquee-inner"
-                    style={{
-                        display: 'flex',
-                        whiteSpace: 'nowrap',
-                        animation: 'marquee 20s linear infinite',
-                    }}
-                >
-                    {/* Two copies for seamless loop */}
-                    <MarqueeSegment text={MARQUEE_TEXT} />
-                    <MarqueeSegment text={MARQUEE_TEXT} />
+            {/* ── UPCOMING EVENTS ── */}
+            <section style={{ marginTop: '48px', paddingBottom: '48px' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    borderBottom: '2px solid #F0F0F0',
+                    paddingBottom: '12px',
+                }}>
+                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
+                        UPCOMING EVENTS
+                    </h2>
+                    <Link
+                        href="/events"
+                        style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                        See All &rarr;
+                    </Link>
                 </div>
-            </div>
 
-            {/* ── CATEGORY ROWS ── */}
-            <div style={{ paddingBottom: '48px' }}>
-                {categories.length === 0 ? (
-                    <div style={{ padding: '60px 0', textAlign: 'center', color: '#666677' }}>
-                        <p>No events yet. Check back soon!</p>
+                {events.length === 0 ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center', color: '#8888AA' }}>
+                        No upcoming events yet. Check back soon!
                     </div>
                 ) : (
-                    categories.map(([category, catEvents], index) => (
-                        <section key={category} style={{ marginTop: index === 0 ? '0' : '40px' }}>
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                marginBottom: '16px',
-                                borderBottom: '2px solid #F0F0F0',
-                                paddingBottom: '12px',
-                            }}>
-                                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                                    {category.toUpperCase()}
-                                </h2>
+                    <div
+                        className="drag-scroll"
+                        style={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            gap: '16px',
+                            padding: '0 0 8px',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            cursor: 'grab',
+                        }}
+                    >
+                        {events.map((event) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const ev = event as any;
+                            const ticketTypes: Array<{ price_pence: number }> = ev.ticket_types || [];
+                            const priceStr = getMinPrice(ticketTypes);
+                            const location = ev.venue_city || ev.venue_name || '';
+                            const overlayDate = formatOverlayDate(ev.start_at);
+
+                            return (
                                 <Link
-                                    href={`/events?category=${encodeURIComponent(category)}`}
-                                    style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                                    key={ev.id}
+                                    href={`/events/${ev.slug}`}
+                                    className="event-portrait-card"
+                                    style={{
+                                        flex: '0 0 calc((100% - 64px) / 5)',
+                                        minWidth: '150px',
+                                        maxWidth: '200px',
+                                        background: 'transparent',
+                                        cursor: 'pointer',
+                                        textDecoration: 'none',
+                                        display: 'block',
+                                        transition: 'transform 0.2s, box-shadow 0.2s',
+                                        borderRadius: '4px',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                    }}
                                 >
-                                    See All
-                                </Link>
-                            </div>
-
-                            <div
-                                className="drag-scroll"
-                                style={{
-                                    display: 'flex',
-                                    overflowX: 'auto',
-                                    gap: '16px',
-                                    padding: '0 0 8px',
-                                    scrollbarWidth: 'none',
-                                    WebkitOverflowScrolling: 'touch',
-                                    cursor: 'grab',
-                                }}
-                            >
-                                {catEvents.map((event) => {
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const ev = event as any;
-                                    const ticketTypes: Array<{ price_pence: number }> = ev.ticket_types || [];
-                                    const priceStr = getMinPrice(ticketTypes);
-                                    const location = ev.venue_city || ev.venue_name || '';
-                                    const overlayDate = formatOverlayDate(ev.start_at);
-
-                                    return (
-                                        <Link
-                                            key={ev.id}
-                                            href={`/events/${ev.slug}`}
-                                            className="event-portrait-card"
-                                            style={{
-                                                flex: '0 0 calc((100% - 64px) / 5)',
-                                                minWidth: '150px',
-                                                maxWidth: '200px',
-                                                background: 'transparent',
-                                                cursor: 'pointer',
-                                                textDecoration: 'none',
-                                                display: 'block',
-                                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                                borderRadius: '4px',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                            }}
-                                        >
-                                            {ev.banner_url?.startsWith('http') ? (
-                                                <div style={{ width: '100%', aspectRatio: '2 / 3', position: 'relative', overflow: 'hidden', borderRadius: '4px 4px 0 0' }}>
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img
-                                                        src={ev.banner_url}
-                                                        alt={ev.title}
-                                                        className="portrait-img"
-                                                        style={{
-                                                            position: 'absolute',
-                                                            inset: 0,
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            objectFit: 'cover',
-                                                            transition: 'transform 0.3s',
-                                                        }}
-                                                    />
-                                                    <div style={{
-                                                        position: 'absolute',
-                                                        bottom: 0,
-                                                        left: 0,
-                                                        right: 0,
-                                                        background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                                                        padding: '24px 10px 8px',
-                                                    }}>
-                                                        <span style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: 700 }}>
-                                                            {overlayDate}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div style={{
+                                    {ev.banner_url?.startsWith('http') ? (
+                                        <div style={{ width: '100%', aspectRatio: '2 / 3', position: 'relative', overflow: 'hidden', borderRadius: '4px 4px 0 0' }}>
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={ev.banner_url}
+                                                alt={ev.title}
+                                                className="portrait-img"
+                                                style={{
+                                                    position: 'absolute',
+                                                    inset: 0,
                                                     width: '100%',
-                                                    aspectRatio: '2 / 3',
-                                                    background: '#F0F0F0',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    borderRadius: '4px 4px 0 0',
-                                                }}>
-                                                    <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
-                                                </div>
-                                            )}
-
-                                            <div style={{ padding: '10px 4px 8px', background: 'transparent' }}>
-                                                <p style={{
-                                                    fontSize: '14px',
-                                                    color: '#0A0A0F',
-                                                    fontWeight: 700,
-                                                    lineHeight: 1.3,
-                                                    marginBottom: '4px',
-                                                    display: '-webkit-box',
-                                                    WebkitLineClamp: 2,
-                                                    WebkitBoxOrient: 'vertical',
-                                                    overflow: 'hidden',
-                                                } as React.CSSProperties}>
-                                                    {ev.title}
-                                                </p>
-                                                {location ? (
-                                                    <p style={{
-                                                        fontSize: '12px',
-                                                        color: '#666677',
-                                                        marginBottom: '2px',
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 1,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        overflow: 'hidden',
-                                                    } as React.CSSProperties}>
-                                                        {location}
-                                                    </p>
-                                                ) : null}
-                                                <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
-                                                    {priceStr}
-                                                </p>
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    transition: 'transform 0.3s',
+                                                }}
+                                            />
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                                                padding: '24px 10px 8px',
+                                            }}>
+                                                <span style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: 700 }}>
+                                                    {overlayDate}
+                                                </span>
                                             </div>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    ))
+                                        </div>
+                                    ) : (
+                                        <div style={{
+                                            width: '100%',
+                                            aspectRatio: '2 / 3',
+                                            background: '#F0F0F0',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            borderRadius: '4px 4px 0 0',
+                                        }}>
+                                            <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
+                                        </div>
+                                    )}
+
+                                    <div style={{ padding: '10px 4px 8px', background: 'transparent' }}>
+                                        <p style={{
+                                            fontSize: '14px',
+                                            color: '#0A0A0F',
+                                            fontWeight: 700,
+                                            lineHeight: 1.3,
+                                            marginBottom: '4px',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                        } as React.CSSProperties}>
+                                            {ev.title}
+                                        </p>
+                                        {location ? (
+                                            <p style={{
+                                                fontSize: '12px',
+                                                color: '#666677',
+                                                marginBottom: '2px',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 1,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden',
+                                            } as React.CSSProperties}>
+                                                {location}
+                                            </p>
+                                        ) : null}
+                                        <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
+                                            {priceStr}
+                                        </p>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
                 )}
-            </div>
+            </section>
 
             {/* ── SECTION 3: ORGANISER CTA — full bleed ── */}
             <section
@@ -469,13 +416,7 @@ export default async function HomePage() {
                 </Link>
             </section>
 
-            {/* Marquee keyframes + client-side interactions */}
-            <Script id="homepage-styles" strategy="afterInteractive">{`
-                var style = document.createElement('style');
-                style.textContent = '@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }';
-                document.head.appendChild(style);
-            `}</Script>
-
+            {/* Client-side interactions */}
             <Script id="homepage-interactions" strategy="afterInteractive">{`
                 document.querySelectorAll('.drag-scroll, .city-scroll').forEach(function(el) {
                     el.style.msOverflowStyle = 'none';
