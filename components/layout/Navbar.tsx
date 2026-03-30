@@ -83,9 +83,8 @@ export function Navbar() {
         <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
             {/* ── DESKTOP layout (≥768px) ── */}
             <div className="hidden md:flex container mx-auto h-16 items-center justify-between px-4">
-                {/* Left: hamburger + logo */}
+                {/* Left: logo */}
                 <div className="flex items-center">
-                    <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                     <Link href="/" className="flex items-center gap-2">
                         <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
                     </Link>
@@ -120,7 +119,7 @@ export function Navbar() {
                     </div>
                 </form>
 
-                {/* Right: auth buttons */}
+                {/* Right: auth buttons + hamburger */}
                 <div className="flex items-center gap-3">
                     {user ? (
                         <UserMenu initials={initials} fullName={fullName} role={role} />
@@ -140,6 +139,7 @@ export function Navbar() {
                             </Link>
                         </>
                     )}
+                    <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                 </div>
             </div>
 
@@ -187,7 +187,6 @@ export function Navbar() {
                     /* Normal mobile navbar */
                     <>
                         <div className="flex items-center">
-                            <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                             <Link href="/" className="flex items-center gap-2">
                                 <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
                             </Link>
@@ -213,6 +212,7 @@ export function Navbar() {
                                     Get Started
                                 </Link>
                             )}
+                            <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                         </div>
                     </>
                 )}
