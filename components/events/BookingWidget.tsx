@@ -70,7 +70,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
     };
 
     const effectiveQty = (ticket: GroupTicketType) =>
-        ticket.is_group ? 1 : (selectedTickets[ticket.id] || 0);
+        selectedTickets[ticket.id] || 0;
 
     const subtotal = ticketTypes.reduce((sum, ticket) => {
         const qty = effectiveQty(ticket);
@@ -183,7 +183,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                                 <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#666677' : '#0A0A0F', flex: 1, marginRight: 12, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
                                     {ticket.name}
                                     {isGroup && (
-                                        <span style={{ fontSize: 11, background: '#C0C0C8', color: '#F5A623', padding: '2px 8px', borderRadius: 2, marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, display: 'inline-block' }}>
+                                        <span style={{ fontSize: 11, background: '#F0F0F2', color: '#666677', padding: '2px 8px', borderRadius: 2, marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, display: 'inline-block' }}>
                                             Group of {groupSize}
                                         </span>
                                     )}
@@ -202,10 +202,6 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                                 {/* Qty or sold out */}
                                 {isSoldOut ? (
                                     <span style={{ fontSize: 12, color: '#E63950', fontWeight: 600 }}>SOLD OUT</span>
-                                ) : isGroup ? (
-                                    <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', padding: '6px 12px', color: '#0A0A0F', textAlign: 'center', fontSize: 14, minWidth: 48 }}>
-                                        1
-                                    </div>
                                 ) : (
                                     <select
                                         value={quantity}
