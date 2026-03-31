@@ -65,7 +65,65 @@ export default async function AccountPage() {
 
     return (
         <section className="max-w-4xl mx-auto space-y-8">
-            {/* Organiser Portal banner */}
+
+            {/* ── Profile Card (top priority) ── */}
+            <div className="bg-surface border border-border rounded-none p-6">
+                <div className="flex items-center gap-5">
+                    {/* Avatar — initial letter circle */}
+                    <div
+                        style={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: '50%',
+                            background: '#E63950',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                        }}
+                    >
+                        <span style={{ fontSize: 26, fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                            {fullName.charAt(0).toUpperCase()}
+                        </span>
+                    </div>
+
+                    {/* Name / email / member since */}
+                    <div className="flex-1 min-w-0">
+                        <p className="font-heading text-2xl text-text truncate">{fullName.toUpperCase()}</p>
+                        <p className="text-sm text-muted truncate">{email}</p>
+                        {profile?.created_at && (
+                            <p className="text-xs text-muted mt-0.5">
+                                Member since{' '}
+                                {new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(
+                                    new Date(profile.created_at)
+                                )}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Edit Profile button */}
+                    <Link
+                        href="/account/settings"
+                        className="hidden sm:inline-flex h-9 px-4 items-center border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition whitespace-nowrap"
+                        style={{ borderRadius: 0, flexShrink: 0 }}
+                    >
+                        Edit Profile
+                    </Link>
+                </div>
+
+                {/* Edit Profile link — mobile only (below the row) */}
+                <div className="mt-4 sm:hidden">
+                    <Link
+                        href="/account/settings"
+                        className="inline-flex h-9 px-4 items-center border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition"
+                        style={{ borderRadius: 0 }}
+                    >
+                        Edit Profile
+                    </Link>
+                </div>
+            </div>
+
+            {/* ── Organiser Portal banner ── */}
             {profile?.role === 'organiser' && organiserProfile?.is_approved && (
                 <Link
                     href="/organiser"
@@ -79,35 +137,29 @@ export default async function AccountPage() {
                 </Link>
             )}
 
-            {/* Welcome */}
-            <div>
-                <h1 className="font-heading text-4xl text-text">WELCOME BACK, {fullName.toUpperCase()}</h1>
-                <p className="text-muted mt-1">Here&apos;s an overview of your account.</p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* ── Stats ── */}
+            <div className="grid grid-cols-3 gap-4">
                 <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
                     <p className="text-3xl font-bold text-accent">{confirmedBookings.length}</p>
-                    <p className="text-sm text-muted">Total Bookings</p>
+                    <p className="text-sm text-muted">Bookings</p>
                 </div>
                 <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
                     <p className="text-3xl font-bold text-accent">{upcomingBookings.length}</p>
-                    <p className="text-sm text-muted">Upcoming Events</p>
+                    <p className="text-sm text-muted">Upcoming</p>
                 </div>
                 <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
                     <p className="text-3xl font-bold text-accent">{formatPence(totalSpent)}</p>
-                    <p className="text-sm text-muted">Total Spent</p>
+                    <p className="text-sm text-muted">Spent</p>
                 </div>
             </div>
 
-            {/* Upcoming Bookings */}
+            {/* ── Upcoming Bookings ── */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="font-heading text-2xl text-text">UPCOMING BOOKINGS</h2>
                     {upcomingBookings.length > 3 && (
                         <Link href="/bookings" className="text-accent hover:underline text-sm font-medium">
-                            View All Bookings &rarr;
+                            View All &rarr;
                         </Link>
                     )}
                 </div>
@@ -160,7 +212,7 @@ export default async function AccountPage() {
                 )}
             </div>
 
-            {/* Quick Links */}
+            {/* ── Quick Links ── */}
             <div className="space-y-4">
                 <h2 className="font-heading text-2xl text-text">QUICK LINKS</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -177,7 +229,7 @@ export default async function AccountPage() {
                 </div>
             </div>
 
-            {/* Team Access */}
+            {/* ── Team Access ── */}
             {teamMemberships && teamMemberships.length > 0 && (
                 <div className="space-y-4">
                     <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 20, color: '#0A0A0F', marginBottom: 16 }}>TEAM ACCESS</h2>
@@ -220,27 +272,6 @@ export default async function AccountPage() {
                     </div>
                 </div>
             )}
-
-            {/* Account Info */}
-            <div className="bg-surface border border-border rounded-none p-6 space-y-4">
-                <h2 className="font-heading text-2xl text-text">ACCOUNT INFO</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p className="text-muted">Name</p>
-                        <p className="text-text font-medium">{fullName}</p>
-                    </div>
-                    <div>
-                        <p className="text-muted">Email</p>
-                        <p className="text-text font-medium">{email}</p>
-                    </div>
-                </div>
-                <Link
-                    href="/account/settings"
-                    className="inline-flex h-10 px-5 rounded-sm border border-border bg-card text-text text-sm font-medium hover:bg-card/80 transition items-center"
-                >
-                    Edit Profile
-                </Link>
-            </div>
         </section>
     )
 }
