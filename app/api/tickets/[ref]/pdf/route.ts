@@ -174,10 +174,15 @@ export async function GET(
   .stub-label { font-size: 10px; color: #8888AA; text-transform: uppercase; letter-spacing: 1px; }
   .stub-value { font-size: 13px; color: #0A0A0F; font-weight: 700; }
   .valid-badge { display: inline-block; background: #E8FFF5; color: #00A86B; font-size: 10px; font-weight: 700; padding: 3px 10px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid #00C48A; }
+  .cancelled-badge { display: inline-block; background: #FFF0F0; color: #E63950; font-size: 10px; font-weight: 700; padding: 3px 10px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid #E63950; }
+  .cancelled-watermark { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+  .cancelled-watermark-text { font-size: 72px; font-weight: 900; color: #E63950; opacity: 0.18; letter-spacing: 8px; text-transform: uppercase; transform: rotate(-35deg); white-space: nowrap; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
   .footer { padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F0F0F0; }
   .footer-text { font-size: 9px; color: #C0C0C8; letter-spacing: 1px; text-transform: uppercase; }
   .footer-logo { font-size: 11px; font-weight: 900; color: #E63950; letter-spacing: 3px; }
   .page-break { page-break-after: always; }`
+
+    const isCancelled = booking.status === 'refunded' || booking.status === 'cancelled'
 
     const sections: string[] = []
 
@@ -202,6 +207,7 @@ export async function GET(
 
         sections.push(`<div style="position: relative; width: 375px; min-height: 667px; background: #FFFFFF; overflow: hidden;${isLast ? '' : ' page-break-after: always;'}">
   <div class="bg-pattern"></div>
+  ${isCancelled ? '<div class="cancelled-watermark"><div class="cancelled-watermark-text">CANCELLED</div></div>' : ''}
   <div class="content">
 
     <div class="top-bar"></div>
@@ -260,7 +266,7 @@ export async function GET(
           <div class="stub-label">Ticket Type</div>
           <div class="stub-value">${ticketTypeName}</div>
         </div>
-        <div class="valid-badge">&#10003; Valid</div>
+        ${isCancelled ? '<div class="cancelled-badge">&#10007; Cancelled</div>' : '<div class="valid-badge">&#10003; Valid</div>'}
       </div>
       <div class="stub-row">
         <div>

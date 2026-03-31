@@ -443,7 +443,7 @@ export default async function HomePage() {
                                             transition: 'background 0.2s',
                                             cursor: 'pointer',
                                         }}>
-                                            {priceStr === 'Free' ? 'Reserve Now' : 'Book Now'}
+                                            {'Book Now'}
                                         </div>
                                     </div>
                                 </Link>
