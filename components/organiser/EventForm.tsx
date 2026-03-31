@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { calculateBookingFeePerTicket, formatPence } from '@/lib/fees'
-import type { Event, TicketType, PromoCode } from '@/types'
+import type { Event, TicketType } from '@/types'
 import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
 import { DateTimePicker } from '@/components/organiser/DateTimePicker'
@@ -39,23 +39,10 @@ interface TicketTypeRow {
     qtyStr: string
 }
 
-interface PromoCodeRow {
-    id?: string
-    code: string
-    discount_type: 'percent' | 'fixed'
-    discount_value: number
-    min_order_pence: number
-    max_uses: number | null
-    valid_from: string
-    valid_to: string
-    uses_count: number
-}
-
 interface EventFormProps {
     organiserId: string
     event?: Event
     ticketTypes?: TicketType[]
-    promoCodes?: PromoCode[]
 }
 
 // Convert UTC ISO string → "YYYY-MM-DDTHH:mm" in Europe/London time for datetime-local inputs
@@ -100,7 +87,7 @@ function priceToPence(str: string) {
     return isNaN(n) ? 0 : Math.round(n * 100)
 }
 
-export function EventForm({ organiserId, event, ticketTypes: initTickets, promoCodes: initPromos }: EventFormProps) {
+export function EventForm({ organiserId, event, ticketTypes: initTickets }: EventFormProps) {
     const router = useRouter()
     const isEdit = !!event
 
@@ -165,22 +152,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const [refundPolicy, setRefundPolicy] = useState(event?.refund_policy || REFUND_POLICIES[2])
     const [status, setStatus] = useState<'draft' | 'published'>(event?.status === 'published' ? 'published' : 'draft')
 
-    // Section 05 — Promo codes
-    const [promos, setPromos] = useState<PromoCodeRow[]>(
-        initPromos?.map(p => ({
-            id: p.id, code: p.code, discount_type: p.discount_type, discount_value: p.discount_value,
-            min_order_pence: p.min_order_pence, max_uses: p.max_uses, valid_from: p.valid_from || '',
-            valid_to: p.valid_to || '', uses_count: p.uses_count,
-        })) || []
-    )
-    const [showPromoModal, setShowPromoModal] = useState(false)
     const [showTicketPresetModal, setShowTicketPresetModal] = useState(false)
-    const [promoError, setPromoError] = useState('')
-    const [promoToast, setPromoToast] = useState(false)
-    const [newPromo, setNewPromo] = useState<Omit<PromoCodeRow, 'id' | 'uses_count'>>({
-        code: '', discount_type: 'percent', discount_value: 10, min_order_pence: 0,
-        max_uses: null, valid_from: '', valid_to: '',
-    })
 
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
@@ -359,7 +331,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
     const goToNext = async () => {
         if (!validateStep(currentStep)) return
         await saveDraft()
-        setCurrentStep(prev => Math.min(prev + 1, 5))
+        setCurrentStep(prev => Math.min(prev + 1, 4))
         window.scrollTo(0, 0)
     }
 
@@ -486,47 +458,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         })
     }
 
-    function generatePromoCode() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-        return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-    }
-
-    async function addPromo() {
-        const supabase = createClient()
-        const eventId = event?.id
-        if (!eventId) { setPromoError('Save the event first before adding promo codes'); return }
-        setPromoError('')
-
-        const { data, error: insertError } = await supabase.from('promo_codes').insert({
-            event_id: eventId,
-            organiser_id: organiserId,
-            code: newPromo.code.toUpperCase(),
-            discount_type: newPromo.discount_type,
-            discount_value: newPromo.discount_value,
-            min_order_pence: newPromo.min_order_pence,
-            max_uses: newPromo.max_uses,
-            valid_from: newPromo.valid_from || null,
-            valid_to: newPromo.valid_to || null,
-        }).select('id').single()
-
-        if (insertError) {
-            setPromoError(insertError.message)
-            return
-        }
-        if (data) {
-            setPromos(prev => [...prev, { ...newPromo, id: data.id, uses_count: 0 }])
-        }
-        setShowPromoModal(false)
-        setNewPromo({ code: '', discount_type: 'percent', discount_value: 10, min_order_pence: 0, max_uses: null, valid_from: '', valid_to: '' })
-        setPromoToast(true)
-        setTimeout(() => setPromoToast(false), 3000)
-    }
-
-    async function deletePromo(promoId: string) {
-        const supabase = createClient()
-        await supabase.from('promo_codes').delete().eq('id', promoId)
-        setPromos(prev => prev.filter(p => p.id !== promoId))
-    }
 
     async function lookupPostcode() {
         const pc = venuePostcode.trim()
@@ -573,14 +504,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
             <div className="fixed top-4 right-4 z-40 flex flex-col gap-2 items-end">
                 {saved && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Saved ✓</span>}
                 {saving && <span className="text-muted text-xs">Saving...</span>}
-                {promoToast && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Promo code created</span>}
             </div>
 
             {/* Step indicator */}
             <div style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', borderRadius: 2, padding: 24, marginBottom: 32 }}>
                 {/* Mobile */}
                 <div className="sm:hidden text-center">
-                    <p style={{ color: '#666677', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 5</p>
+                    <p style={{ color: '#666677', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 4</p>
                     <p className="font-heading text-text text-lg">{STEP_LABELS[currentStep - 1]}</p>
                 </div>
                 {/* Desktop */}
@@ -918,36 +848,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                     </div>
                 )}
 
-                {/* Step 5 — Promo Codes + Publish */}
-                {currentStep === 5 && (
+                {/* Step 4 — Publish */}
+                {currentStep === 4 && (
                     <div>
-                        <SectionHeader num="05" title="Promo Codes" />
-                        {promos.length > 0 && (
-                            <table className="w-full text-sm mb-4">
-                                <thead>
-                                    <tr className="border-b border-border">
-                                        {['Code', 'Type', 'Value', 'Uses', 'Valid Until', ''].map(h => (
-                                            <th key={h} className="text-left text-xs text-muted pb-2 font-normal pr-4">{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {promos.map(p => (
-                                        <tr key={p.id || p.code} className="border-b border-border/50">
-                                            <td className="py-2 pr-4 font-mono text-xs text-accent">{p.code}</td>
-                                            <td className="py-2 pr-4 text-text text-xs">{p.discount_type}</td>
-                                            <td className="py-2 pr-4 text-text text-xs">{p.discount_type === 'percent' ? `${p.discount_value}%` : formatPence(p.discount_value)}</td>
-                                            <td className="py-2 pr-4 text-muted text-xs">{p.uses_count}{p.max_uses ? `/${p.max_uses}` : ''}</td>
-                                            <td className="py-2 pr-4 text-muted text-xs">{p.valid_to ? new Date(p.valid_to).toLocaleDateString('en-GB') : '—'}</td>
-                                            <td className="py-2">{p.id && <button type="button" onClick={() => deletePromo(p.id!)} className="text-xs text-accent hover:underline">Delete</button>}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                        <Button type="button" variant="outline" size="sm" onClick={() => setShowPromoModal(true)}>Create Promo Code</Button>
                         {event?.slug && (
-                            <div className="mt-4">
+                            <div className="mb-4">
                                 <a href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-text transition-colors">
                                     Preview event →
                                 </a>
@@ -994,7 +899,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
                         >{saving ? 'Saving...' : 'Save Draft'}</button>
-                        {currentStep < 5 ? (
+                        {currentStep < 4 ? (
                             <button
                                 type="button"
                                 onClick={goToNext}
@@ -1068,57 +973,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                 </div>
             )}
 
-            {/* Promo code modal */}
-            {showPromoModal && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
-                        <h3 className="font-heading text-xl text-text mb-4">CREATE PROMO CODE</h3>
-                        <div className="space-y-3">
-                            <div>
-                                <label className={labelClass}>Code</label>
-                                <div className="flex gap-2">
-                                    <input type="text" value={newPromo.code} onChange={e => setNewPromo(p => ({ ...p, code: e.target.value.toUpperCase() }))} className={`${inputClass} flex-1`} placeholder="SUMMER20" />
-                                    <button type="button" onClick={() => setNewPromo(p => ({ ...p, code: generatePromoCode() }))} className="px-3 py-2 bg-surface border border-border rounded-lg text-xs text-muted hover:text-text">Auto</button>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className={labelClass}>Discount Type</label>
-                                    <select value={newPromo.discount_type} onChange={e => setNewPromo(p => ({ ...p, discount_type: e.target.value as 'percent' | 'fixed' }))} className={inputClass}>
-                                        <option value="percent">Percentage (%)</option>
-                                        <option value="fixed">Fixed (£)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Value</label>
-                                    <input type="number" min="1" value={newPromo.discount_value} onChange={e => setNewPromo(p => ({ ...p, discount_value: parseFloat(e.target.value) || 0 }))} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Max Uses (blank = unlimited)</label>
-                                    <input type="number" min="1" value={newPromo.max_uses || ''} onChange={e => setNewPromo(p => ({ ...p, max_uses: e.target.value ? parseInt(e.target.value) : null }))} className={inputClass} placeholder="Unlimited" />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Min Order (£)</label>
-                                    <input type="number" min="0" step="0.01" value={(newPromo.min_order_pence / 100).toFixed(2)} onChange={e => setNewPromo(p => ({ ...p, min_order_pence: priceToPence(e.target.value) }))} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Valid From</label>
-                                    <input type="datetime-local" value={newPromo.valid_from} onChange={e => setNewPromo(p => ({ ...p, valid_from: e.target.value }))} className={inputClass} />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Valid To</label>
-                                    <input type="datetime-local" value={newPromo.valid_to} onChange={e => setNewPromo(p => ({ ...p, valid_to: e.target.value }))} className={inputClass} />
-                                </div>
-                            </div>
-                        </div>
-                        {promoError && <p className="text-accent text-xs mt-3">{promoError}</p>}
-                        <div className="flex gap-3 mt-4">
-                            <Button type="button" variant="primary" size="md" onClick={addPromo} disabled={!newPromo.code}>Add Code</Button>
-                            <Button type="button" variant="secondary" size="md" onClick={() => setShowPromoModal(false)}>Cancel</Button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

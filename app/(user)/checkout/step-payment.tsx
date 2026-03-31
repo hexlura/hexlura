@@ -88,7 +88,7 @@ function PaymentForm() {
 }
 
 export default function StepPayment() {
-    const { state, setPaymentInfo, setStep, totalPence } = useCheckout()
+    const { state, setPaymentInfo, totalPence } = useCheckout()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
@@ -147,9 +147,7 @@ export default function StepPayment() {
         return (
             <div className="text-center py-12 space-y-4">
                 <p className="text-accent">{error}</p>
-                <button onClick={() => setStep(1)} className="text-sm text-accent hover:underline">
-                    ← Back to details
-                </button>
+                <a href="/events" className="text-sm text-accent hover:underline">Browse events</a>
             </div>
         )
     }
@@ -157,12 +155,7 @@ export default function StepPayment() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="font-heading text-3xl text-text">PAYMENT</h2>
-                    <button onClick={() => setStep(1)} className="text-sm text-accent hover:underline">
-                        ← Back to details
-                    </button>
-                </div>
+                <h2 className="font-heading text-3xl text-text">PAYMENT</h2>
 
                 {/* Locked summary */}
                 <div className="bg-surface border border-border rounded-none p-4 text-sm space-y-2">
@@ -170,12 +163,6 @@ export default function StepPayment() {
                         <span className="text-muted">Ticket subtotal</span>
                         <span className="text-text">{formatPence(state.items.reduce((s, i) => s + i.price_pence * i.quantity, 0))}</span>
                     </div>
-                    {state.promo && (
-                        <div className="flex justify-between text-success">
-                            <span>Promo discount ({state.promo.code})</span>
-                            <span>-{formatPence(state.promo.discount_pence)}</span>
-                        </div>
-                    )}
                     <div className="flex justify-between">
                         <span className="text-muted">Hexlura booking fee</span>
                         <span className="text-text">{formatPence(state.items.reduce((s, i) => s + (i.price_pence === 0 ? 0 : Math.max(50, Math.min(500, Math.round(i.price_pence * 0.07)))) * i.quantity, 0))}</span>

@@ -264,7 +264,7 @@ export async function GET(
       </div>
       <div class="stub-row">
         <div>
-          <div class="stub-label">Holder</div>
+          <div class="stub-label">Ticket Holder</div>
           <div class="stub-value">${holder}</div>
         </div>
       </div>

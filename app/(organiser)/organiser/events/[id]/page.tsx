@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { EventForm } from '@/components/organiser/EventForm'
-import type { Event, TicketType, PromoCode } from '@/types'
+import type { Event, TicketType } from '@/types'
 
 interface EditEventPageProps {
     params: { id: string }
@@ -35,12 +35,6 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
         .eq('event_id', params.id)
         .order('sort_order')
 
-    const { data: promoCodes } = await supabase
-        .from('promo_codes')
-        .select('*')
-        .eq('event_id', params.id)
-        .order('created_at')
-
     return (
         <div className="max-w-4xl">
             <div className="mb-8">
@@ -51,7 +45,6 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
                 organiserId={organiser.id}
                 event={event as Event}
                 ticketTypes={(ticketTypes || []) as TicketType[]}
-                promoCodes={(promoCodes || []) as PromoCode[]}
             />
         </div>
     )

@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCheckout } from '@/lib/checkout-context'
 import { createClient } from '@/lib/supabase/client'
-import StepDetails from './step-details'
 import StepPayment from './step-payment'
 
-const STEP_LABELS = ['Details', 'Payment', 'Confirmation']
+const STEP_LABELS = ['Payment', 'Confirmation']
 
 export default function CheckoutFlow() {
     const searchParams = useSearchParams()
-    const { state, setItems, setEventInfo, setStep } = useCheckout()
+    const { state, setItems, setEventInfo, setAttendeeDetails, setStep } = useCheckout()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
@@ -89,6 +88,22 @@ export default function CheckoutFlow() {
                 venueName: event.venue_name || 'TBC',
             })
             setItems(items)
+
+            // Auto-populate attendee details from logged-in user profile
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('full_name, phone')
+                    .eq('id', user.id)
+                    .single()
+                setAttendeeDetails({
+                    full_name: (profile as { full_name?: string; phone?: string } | null)?.full_name || '',
+                    email: user.email || '',
+                    phone: (profile as { full_name?: string; phone?: string } | null)?.phone || '',
+                })
+            }
+
             setStep(1)
             setLoading(false)
         }
@@ -144,8 +159,7 @@ export default function CheckoutFlow() {
                 })}
             </div>
 
-            {state.step === 1 && <StepDetails />}
-            {state.step === 2 && <StepPayment />}
+            {state.step === 1 && <StepPayment />}
         </div>
     )
 }

@@ -4,7 +4,7 @@ import { useCheckout } from '@/lib/checkout-context'
 import { formatPence, calculateBookingFeePerTicket } from '@/lib/fees'
 
 export default function OrderSummary() {
-    const { state, ticketSubtotalPence, discountPence, bookingFeePence, totalPence } = useCheckout()
+    const { state, ticketSubtotalPence, bookingFeePence, totalPence } = useCheckout()
 
     return (
         <div className="bg-surface border border-border rounded-none p-6 space-y-4 sticky top-24">
@@ -23,13 +23,6 @@ export default function OrderSummary() {
                         <span className="text-text">{formatPence(item.price_pence * item.quantity)}</span>
                     </div>
                 ))}
-
-                {discountPence > 0 && (
-                    <div className="flex justify-between text-success">
-                        <span>Promo discount ({state.promo?.code})</span>
-                        <span>-{formatPence(discountPence)}</span>
-                    </div>
-                )}
 
                 <div className="flex justify-between">
                     <span className="text-muted">Hexlura booking fee</span>
