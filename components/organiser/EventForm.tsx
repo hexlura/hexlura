@@ -998,10 +998,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
                             <button
                                 type="button"
                                 onClick={goToNext}
-                                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: 'pointer', fontSize: 14, border: 'none' }}
-                                onMouseEnter={e => { e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { e.currentTarget.style.background = '#0A0A0F' }}
-                            >Next →</button>
+                                disabled={saving}
+                                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: saving ? 0.7 : 1 }}
+                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
+                            >{saving ? 'Saving...' : 'Next →'}</button>
                         ) : (
                             <button
                                 type="button"
