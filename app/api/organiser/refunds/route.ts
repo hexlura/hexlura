@@ -69,6 +69,19 @@ export async function POST(request: NextRequest) {
             .update({ status: 'organiser_approved' })
             .eq('id', refund_request_id)
 
+        const bookingId = bookingData?.id
+        if (bookingId) {
+            await adminClient
+                .from('bookings')
+                .update({ status: 'refunded' })
+                .eq('id', bookingId)
+
+            await adminClient
+                .from('booking_items')
+                .update({ status: 'cancelled' })
+                .eq('booking_id', bookingId)
+        }
+
         // Notify admin of refund awaiting review
         void (async () => {
             try {

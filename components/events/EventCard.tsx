@@ -184,7 +184,7 @@ export default function EventCard({ event }: EventCardProps) {
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#C0392B' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '#E63950' }}
             >
-                {minPrice === 0 || minPrice === Infinity ? 'Reserve Now' : 'Book Now'}
+                {'Book Now'}
             </div>
         </Link>
     );
