@@ -45,9 +45,8 @@ export default async function AccountPage() {
     const bookings = (bookingsRaw || []) as Booking[]
 
     const now = new Date().toISOString()
-    const confirmedBookings = bookings.filter((b) => b.status === 'confirmed')
-    const upcomingBookings = confirmedBookings.filter((b) => b.event && b.event.start_at > now)
-    const totalSpent = confirmedBookings.reduce((sum, b) => sum + (b.total_pence || 0), 0)
+    const upcomingBookings = bookings
+        .filter((b) => b.status === 'confirmed' && b.event && b.event.start_at > now)
 
     // Next 3 upcoming
     const nextUpcoming = upcomingBookings.slice(0, 3)
@@ -136,22 +135,6 @@ export default async function AccountPage() {
                     <span className="text-accent text-xl group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </Link>
             )}
-
-            {/* ── Stats ── */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
-                    <p className="text-3xl font-bold text-accent">{confirmedBookings.length}</p>
-                    <p className="text-sm text-muted">Bookings</p>
-                </div>
-                <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
-                    <p className="text-3xl font-bold text-accent">{upcomingBookings.length}</p>
-                    <p className="text-sm text-muted">Upcoming</p>
-                </div>
-                <div className="bg-surface border border-border rounded-none p-5 text-center space-y-1">
-                    <p className="text-3xl font-bold text-accent">{formatPence(totalSpent)}</p>
-                    <p className="text-sm text-muted">Spent</p>
-                </div>
-            </div>
 
             {/* ── Upcoming Bookings ── */}
             <div className="space-y-4">

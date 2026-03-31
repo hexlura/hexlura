@@ -48,8 +48,20 @@ function HeartIcon() {
   )
 }
 
+function GridIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  )
+}
+
 export default function MobileBottomNav() {
   const pathname = usePathname()
+  const [role, setRole] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -62,8 +74,15 @@ export default function MobileBottomNav() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setIsLoggedIn(true)
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      setIsLoggedIn(true)
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (data?.role) setRole(data.role)
     })
   }, [])
 
@@ -82,15 +101,21 @@ export default function MobileBottomNav() {
     return href
   }
 
-  type NavItem = { label: string; href: string; icon: React.ReactNode; protected: boolean }
+  type NavItem = { label: string; href: string; icon: React.ReactNode; protected: boolean; alwaysHref?: boolean }
 
-  const navItems: NavItem[] = [
-    { label: 'Home',       href: '/',            icon: <HomeIcon />,   protected: false },
-    { label: 'Explore',    href: '/events',      icon: <SearchIcon />, protected: false },
-    { label: 'Tickets',    href: '/bookings',    icon: <TicketIcon />, protected: true  },
-    { label: 'Favourites', href: '/favourites',  icon: <HeartIcon />,  protected: true  },
-    { label: 'Profile',    href: '/account',     icon: <PersonIcon />, protected: true  },
+  const baseItems: NavItem[] = [
+    { label: 'Home',       href: '/',           icon: <HomeIcon />,   protected: false },
+    { label: 'Explore',    href: '/events',     icon: <SearchIcon />, protected: false },
+    { label: 'Tickets',    href: '/bookings',   icon: <TicketIcon />, protected: true  },
+    { label: 'Favourites', href: '/favourites', icon: <HeartIcon />,  protected: true  },
+    // Profile always goes to /account regardless of role
+    { label: 'Profile',    href: '/account',    icon: <PersonIcon />, protected: true, alwaysHref: true },
   ]
+
+  // Organiser/admin get a 6th Dashboard tab
+  const navItems: NavItem[] = (role === 'organiser' || role === 'admin')
+    ? [...baseItems, { label: 'Dashboard', href: '/organiser', icon: <GridIcon />, protected: false }]
+    : baseItems
 
   return (
     <nav
@@ -115,7 +140,8 @@ export default function MobileBottomNav() {
     >
       {navItems.map((item) => {
         const active = isActive(item.href)
-        const href = resolveHref(item.href, item.protected)
+        // alwaysHref: skip auth redirect (Profile always goes to its own page)
+        const href = item.alwaysHref ? item.href : resolveHref(item.href, item.protected)
         return (
           <Link
             key={item.href}

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import UserMenu from './UserMenu'
 import LeftMenu from './LeftMenu'
 import type { User } from '@supabase/supabase-js'
 
@@ -65,9 +64,6 @@ export function Navbar() {
         return () => subscription.unsubscribe()
     }, [])
 
-    const initials = fullName
-        ? fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-        : user?.email?.[0]?.toUpperCase() || '?'
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
@@ -119,9 +115,8 @@ export function Navbar() {
                     </div>
                 </form>
 
-                {/* Right: user menu + hamburger */}
+                {/* Right: hamburger */}
                 <div className="flex items-center gap-3">
-                    {user && <UserMenu initials={initials} fullName={fullName} role={role} />}
                     <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                 </div>
             </div>
@@ -185,7 +180,6 @@ export function Navbar() {
                                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                                 </svg>
                             </button>
-                            {user && <UserMenu initials={initials} fullName={fullName} role={role} />}
                             <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                         </div>
                     </>
