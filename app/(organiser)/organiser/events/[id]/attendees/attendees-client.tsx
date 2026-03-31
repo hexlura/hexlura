@@ -79,18 +79,18 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
         <>
             <div className="bg-card border border-border rounded-none p-6">
                 {/* Search + Filters */}
-                <div className="flex gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
                     <input
                         type="text"
                         placeholder="Search name or email..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="flex-1 bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                        className="w-full sm:flex-1 bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
                     />
                     <select
                         value={filterType}
                         onChange={e => setFilterType(e.target.value)}
-                        className="bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        className="w-full sm:w-auto bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
                     >
                         <option value="">All ticket types</option>
                         {ticketTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -98,19 +98,19 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                     <select
                         value={filterCheckedIn}
                         onChange={e => setFilterCheckedIn(e.target.value)}
-                        className="bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        className="w-full sm:w-auto bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
                     >
                         <option value="">All attendees</option>
                         <option value="yes">Checked in</option>
                         <option value="no">Not checked in</option>
                     </select>
-                    <Button variant="secondary" size="md" onClick={exportCSV}>Export CSV</Button>
-                    <Button variant="primary" size="md" onClick={() => setShowAnnouncement(true)}>Send Announcement</Button>
+                    <Button variant="secondary" size="md" onClick={exportCSV} className="w-full sm:w-auto">Export CSV</Button>
+                    <Button variant="primary" size="md" onClick={() => setShowAnnouncement(true)} className="w-full sm:w-auto">Send Announcement</Button>
                 </div>
 
                 {/* Table */}
                 <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="hidden sm:table w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             <th className="text-left text-xs text-muted pb-2 font-normal pr-4">Name</th>
@@ -167,6 +167,25 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                         ))}
                     </tbody>
                 </table>
+                </div>
+
+                {/* Mobile card list */}
+                <div className="block sm:hidden divide-y divide-border mt-2">
+                    {filtered.length === 0 && (
+                        <p className="text-center text-muted text-xs py-8">No attendees found</p>
+                    )}
+                    {filtered.map(a => (
+                        <div key={a.id} className="py-4 space-y-1">
+                            <p className="text-text text-sm font-semibold">{a.name}</p>
+                            <p className="text-muted text-xs">{a.ticketTypeName}</p>
+                            <p className="font-mono text-xs text-accent">{a.bookingRef}</p>
+                            <p className="text-xs text-muted">
+                                {a.checkedIn
+                                    ? `✓ Checked in ${a.checkedInAt ? new Date(a.checkedInAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}`
+                                    : '—'}
+                            </p>
+                        </div>
+                    ))}
                 </div>
             </div>
 

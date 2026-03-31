@@ -225,7 +225,7 @@ export function OrganiserSidebar({ userName, orgName, teamPrivilege }: Organiser
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+                <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto pb-24">
                     {visibleLinks.map((link) => {
                         const active = isActive(link.href, link.exact)
                         const loading = loadingPath === link.href

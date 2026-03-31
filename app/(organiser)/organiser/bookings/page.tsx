@@ -50,7 +50,7 @@ export default async function OrganiserBookingsPage() {
 
             <div className="bg-card border border-border rounded-none p-6">
                 <div className="overflow-x-auto">
-                <table className="w-full min-w-[600px] text-sm">
+                <table className="hidden sm:table w-full min-w-[600px] text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Booking Ref</th>
@@ -89,6 +89,28 @@ export default async function OrganiserBookingsPage() {
                         ))}
                     </tbody>
                 </table>
+                </div>
+
+                {/* Mobile card list */}
+                <div className="block sm:hidden divide-y divide-border">
+                    {rows.length === 0 && (
+                        <p className="text-center text-muted text-xs py-12">No bookings yet</p>
+                    )}
+                    {rows.map(b => (
+                        <div key={b.id} className="py-4 space-y-2">
+                            <Link href={`/organiser/bookings/${b.booking_ref}`} className="font-mono text-sm text-accent hover:underline block">
+                                {b.booking_ref}
+                            </Link>
+                            <p className="text-text text-sm font-medium truncate">{b.event?.title || '—'}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColors[b.status] || 'text-muted border-border'}`}>
+                                {b.status}
+                            </span>
+                            <div className="flex items-center gap-4 text-xs text-muted pt-1">
+                                <span>{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                <span className="text-text font-medium">{formatPence(b.total_pence || 0)}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

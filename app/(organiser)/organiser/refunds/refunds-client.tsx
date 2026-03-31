@@ -142,7 +142,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
     return (
         <div>
             {/* Stats Bar */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }} className="sm:grid-cols-4" >
                 {[
                     { label: 'Pending', value: String(pending), color: '#F5A623' },
                     { label: 'Approved by You', value: String(approved), color: '#00E5A0' },
@@ -175,8 +175,8 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                 </select>
             </div>
 
-            {/* Table */}
-            <div style={{ overflowX: 'auto' }}>
+            {/* Desktop table */}
+            <div className="hidden sm:block" style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: '#FFFFFF', border: '1px solid #C0C0C8' }}>
                     <thead>
                         <tr>
@@ -294,6 +294,85 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                         })}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="block sm:hidden space-y-4">
+                {filtered.length === 0 && (
+                    <p className="text-center text-sm" style={{ color: '#666677', padding: '48px 16px' }}>No refund requests found</p>
+                )}
+                {filtered.map(r => {
+                    const badge = STATUS_BADGE[r.status]
+                    const isLoading = loadingId === r.id
+                    const isRejecting = rejectingId === r.id
+                    const err = errors[r.id]
+                    return (
+                        <div key={r.id} style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', padding: '16px' }}>
+                            <div style={{ fontWeight: 600, fontSize: '14px', color: '#0A0A0F' }}>{r.buyer?.full_name || 'Guest'}</div>
+                            <div style={{ fontSize: '12px', color: '#666677', marginBottom: '8px' }}>{r.buyer?.email || '—'}</div>
+                            <div style={{ fontSize: '13px', color: '#0A0A0F', marginBottom: '4px' }}>{truncate(r.booking?.event?.title || '—', 40)}</div>
+                            <div style={{ fontFamily: '"JetBrains Mono", monospace', color: '#E63950', fontSize: '12px', marginBottom: '8px' }}>
+                                {r.booking?.booking_ref || '—'}
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#0A0A0F', marginBottom: '8px' }}>
+                                <span>Tickets: {fmt(r.booking?.ticket_subtotal_pence ?? null)}</span>
+                                <span>Refund: {fmt(r.refund_amount_pence)}</span>
+                            </div>
+                            <span style={{
+                                background: badge.bg, color: badge.color, border: badge.border,
+                                padding: '3px 8px', fontSize: '11px', borderRadius: '2px', display: 'inline-block', marginBottom: '12px',
+                            }}>
+                                {badge.label}
+                            </span>
+                            {r.status === 'pending' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {!isRejecting ? (
+                                        <>
+                                            <button
+                                                onClick={() => handleApprove(r.id)}
+                                                disabled={isLoading}
+                                                style={{ width: '100%', background: 'transparent', border: '1px solid #0A0A0F', color: '#0A0A0F', padding: '10px', borderRadius: '2px', fontSize: '13px', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
+                                            >
+                                                {isLoading ? 'Processing...' : 'Approve'}
+                                            </button>
+                                            <button
+                                                onClick={() => { setRejectingId(r.id); setRejectNote('') }}
+                                                disabled={isLoading}
+                                                style={{ width: '100%', background: 'transparent', border: '1px solid #E63950', color: '#E63950', padding: '10px', borderRadius: '2px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                                            >
+                                                Reject
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <textarea
+                                                value={rejectNote}
+                                                onChange={e => setRejectNote(e.target.value)}
+                                                rows={2}
+                                                placeholder="Reason for rejection (optional)..."
+                                                style={{ width: '100%', background: '#FFFFFF', border: '1px solid #C0C0C8', color: '#0A0A0F', padding: '8px 12px', fontSize: '13px', borderRadius: '2px', resize: 'vertical', boxSizing: 'border-box' }}
+                                            />
+                                            <button
+                                                onClick={() => handleReject(r.id)}
+                                                disabled={isLoading}
+                                                style={{ width: '100%', background: '#E63950', border: '1px solid #E63950', color: '#fff', padding: '10px', borderRadius: '2px', fontSize: '13px', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
+                                            >
+                                                {isLoading ? 'Processing...' : 'Confirm Reject'}
+                                            </button>
+                                            <button
+                                                onClick={() => setRejectingId(null)}
+                                                style={{ width: '100%', background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '10px', borderRadius: '2px', fontSize: '13px', cursor: 'pointer' }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </>
+                                    )}
+                                    {err && <p style={{ fontSize: '12px', color: '#E63950' }}>{err}</p>}
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
             </div>
         </div>
     )

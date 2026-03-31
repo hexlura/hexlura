@@ -118,7 +118,7 @@ export function EventsClient({ events }: EventsClientProps) {
             ) : (
                 <div className="bg-card border border-border rounded-none overflow-hidden">
                     <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="hidden sm:table w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
                                 {['Title', 'Date', 'Status', 'Tickets Sold', 'Revenue', 'Actions'].map(h => (
@@ -179,7 +179,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                                     •••
                                                 </button>
                                                 {openMenuId === e.id && (
-                                                    <div className="absolute right-0 top-8 z-50 bg-card border border-border rounded-none shadow-lg py-1 min-w-[140px]">
+                                                    <div className="absolute right-0 bottom-full mb-1 z-50 bg-card border border-border rounded-none shadow-lg py-1 min-w-[140px]">
                                                         <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
                                                         <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
                                                         <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
@@ -200,6 +200,52 @@ export function EventsClient({ events }: EventsClientProps) {
                             })}
                         </tbody>
                     </table>
+                    </div>
+
+                    {/* Mobile card list */}
+                    <div className="block sm:hidden divide-y divide-border">
+                        {filtered.map(e => {
+                            const effStatus = getEffectiveStatus(e)
+                            return (
+                                <div key={e.id} className="p-4 space-y-2">
+                                    <p className="text-text font-semibold text-sm">{e.title}</p>
+                                    <p className="text-muted text-xs">
+                                        {new Date(e.start_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </p>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[effStatus] || STATUS_COLORS.draft}`}>
+                                        {effStatus}
+                                    </span>
+                                    <div className="flex items-center gap-4 text-xs text-muted pt-1">
+                                        <span>{e.ticketsSold} tickets</span>
+                                        <span>{formatPence(e.revenue)}</span>
+                                    </div>
+                                    <div className="relative pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={(ev) => { ev.stopPropagation(); setOpenMenuId(openMenuId === e.id ? null : e.id) }}
+                                            className="w-full text-center py-2 border border-border text-xs text-text bg-surface hover:bg-card transition-colors"
+                                        >
+                                            Actions ▾
+                                        </button>
+                                        {openMenuId === e.id && (
+                                            <div className="absolute left-0 right-0 bottom-full mb-1 z-50 bg-card border border-border rounded-none shadow-lg py-1">
+                                                <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
+                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
+                                                <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
+                                                <Link href={`/organiser/events/${e.id}/checkin`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Check-in</Link>
+                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="block w-full text-left px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Duplicate</button>
+                                                {e.status !== 'cancelled' && (
+                                                    <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Cancel</button>
+                                                )}
+                                                {e.ticketsSold === 0 && (
+                                                    <button type="button" onClick={() => setShowDeleteModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Delete</button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             )}
