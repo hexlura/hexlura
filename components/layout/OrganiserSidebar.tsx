@@ -169,10 +169,11 @@ export function OrganiserSidebar({ userName, orgName, teamPrivilege }: Organiser
     return (
         <>
             {/* Mobile header bar — hidden on desktop */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center px-4 gap-3">
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center justify-between px-4">
+                <span className="font-heading text-accent tracking-widest text-lg">HEXLURA</span>
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="text-[#0A0A0F] p-2 -ml-2"
+                    className="text-[#0A0A0F] p-2 -mr-2"
                     type="button"
                     aria-label="Open menu"
                 >
@@ -182,7 +183,6 @@ export function OrganiserSidebar({ userName, orgName, teamPrivilege }: Organiser
                         <line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
-                <span className="font-heading text-accent tracking-widest text-lg">HEXLURA</span>
             </div>
 
             {/* Mobile overlay */}
@@ -194,13 +194,14 @@ export function OrganiserSidebar({ userName, orgName, teamPrivilege }: Organiser
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar — slides in from RIGHT on mobile, fixed left on desktop */}
             <aside
                 className={[
-                    'fixed inset-y-0 left-0 z-50 flex flex-col bg-surface border-r border-border',
+                    'fixed inset-y-0 z-50 flex flex-col bg-surface border-l border-border',
                     'transform transition-transform duration-300 ease-in-out',
-                    'lg:translate-x-0',
-                    isOpen ? 'translate-x-0' : '-translate-x-full',
+                    'lg:left-0 lg:border-r lg:border-l-0 lg:translate-x-0',
+                    'right-0',
+                    isOpen ? 'translate-x-0' : 'translate-x-full',
                 ].join(' ')}
                 style={{ width: '220px' }}
             >
