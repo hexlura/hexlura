@@ -35,16 +35,18 @@ export default function RootLayout({
       <body
         className={`${fontBody.variable} ${fontHeading.variable} ${fontMono.variable} font-sans antialiased pb-16 md:pb-0`}
       >
-        <NextTopLoader
-          color="#E63950"
-          height={3}
-          showSpinner={false}
-          easing="ease"
-          speed={200}
-          shadow="0 0 10px #E63950, 0 0 5px #E63950"
-        />
-        {children}
-        <MobileBottomNav />
+        <div className="overflow-x-hidden">
+          <NextTopLoader
+            color="#E63950"
+            height={3}
+            showSpinner={false}
+            easing="ease"
+            speed={200}
+            shadow="0 0 10px #E63950, 0 0 5px #E63950"
+          />
+          {children}
+          <MobileBottomNav />
+        </div>
       </body>
     </html>
   );
