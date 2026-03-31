@@ -467,7 +467,12 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, promoC
         setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, ...updates } : t))
     }
 
-    function removeTicket(i: number) {
+    async function removeTicket(i: number) {
+        const tt = tickets[i]
+        if (tt.id) {
+            const supabase = createClient()
+            await supabase.from('ticket_types').delete().eq('id', tt.id)
+        }
         setTickets(prev => prev.filter((_, idx) => idx !== i))
     }
 

@@ -37,7 +37,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     }
 
     const event = eventData;
-    const ticketTypes = event.ticket_types || [];
+    const ticketTypes = (event.ticket_types || []).filter((t: { is_visible: boolean }) => t.is_visible !== false);
     const reviews = event.reviews || [];
     const isAllFree = ticketTypes.length > 0 && ticketTypes.every((t: { price_pence: number }) => t.price_pence === 0);
 
