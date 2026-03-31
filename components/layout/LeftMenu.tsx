@@ -70,11 +70,11 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
 
             {/* Slide panel */}
             <div
-                className={`fixed top-0 right-0 z-50 h-screen bg-[#FFFFFF] border-l border-[#C0C0C8] overflow-y-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed top-0 right-0 z-50 h-screen bg-[#FFFFFF] border-l border-[#C0C0C8] flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 style={{ width: 'min(300px, 85vw)' }}
             >
-                {/* Panel header */}
-                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                {/* Panel header — stays fixed at top, does not scroll */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0 border-b border-[#E8E8EE]">
                     <div>
                         <p className="font-heading text-2xl text-[#E63950] tracking-wider">HEXLURA</p>
                         <p className="text-xs text-[#666677] mt-0.5">UK Event Tickets</p>
@@ -90,7 +90,8 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                     </button>
                 </div>
 
-                <div className="px-5 pb-10">
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-y-auto px-5 pb-28">
                     {/* Account — shown at top when logged out */}
                     {!isLoggedIn && (
                         <>
