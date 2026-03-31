@@ -91,7 +91,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                 </div>
 
                 {/* Scrollable content */}
-                <div className="flex-1 overflow-y-auto px-5 pb-28">
+                <div className="flex-1 overflow-y-auto px-5 pb-28 sm:pb-0">
                     {/* Account — shown at top when logged out */}
                     {!isLoggedIn && (
                         <>

@@ -225,7 +225,7 @@ export function OrganiserSidebar({ userName, orgName, teamPrivilege }: Organiser
                 </div>
 
                 {/* Navigation — scrolls independently, pb-28 clears the mobile bottom nav */}
-                <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto pb-28">
+                <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto pb-28 sm:pb-0">
                     {visibleLinks.map((link) => {
                         const active = isActive(link.href, link.exact)
                         const loading = loadingPath === link.href
