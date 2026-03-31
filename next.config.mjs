@@ -3,6 +3,12 @@ const nextConfig = {
     async headers() {
         return [
             {
+                source: '/.well-known/apple-developer-merchantid-domain-association',
+                headers: [
+                    { key: 'Content-Type', value: 'application/json' },
+                ],
+            },
+            {
                 source: '/(.*)',
                 headers: [
                     { key: 'X-Frame-Options', value: 'DENY' },
