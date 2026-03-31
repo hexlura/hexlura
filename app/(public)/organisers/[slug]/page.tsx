@@ -8,7 +8,6 @@ import EventCard from '@/components/events/EventCard';
 import ShareButton from '@/components/events/ShareButton';
 import FollowButton from '@/components/organisers/FollowButton';
 import ReviewsSection from '@/components/organisers/ReviewsSection';
-import PortfolioSection from '@/components/organisers/PortfolioSection';
 import { Event, Review } from '@/types';
 
 export const revalidate = 60;
@@ -147,23 +146,6 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
             const sum = reviews.reduce((acc, r) => acc + (r.rating ?? 0), 0);
             averageRating = sum / reviewCount;
         }
-    }
-
-    // Portfolio items — table may not exist yet, guard against missing table errors
-    let portfolio: { id: string; type: 'photo' | 'video'; url: string; thumbnail_url: string | null; caption: string | null; display_order: number }[] = [];
-    try {
-        const { data: portfolioData, error: portfolioError } = await supabase
-            .from('organiser_portfolio')
-            .select('id, type, url, thumbnail_url, caption, display_order')
-            .eq('organiser_id', organiser.id)
-            .eq('is_active', true)
-            .order('display_order', { ascending: true })
-            .limit(20);
-        if (!portfolioError && portfolioData) {
-            portfolio = portfolioData as typeof portfolio;
-        }
-    } catch {
-        // Table may not exist yet — safe to ignore
     }
 
     // Can user review?
@@ -532,24 +514,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                 </div>
             )}
 
-            {/* ─── SECTION 5: PORTFOLIO ─── */}
-            {portfolio.length > 0 && (
-                <div style={{ maxWidth: 1200, margin: '40px auto 0', padding: '0 24px' }}>
-                    <h2 style={{
-                        fontFamily: "'Bebas Neue', sans-serif",
-                        fontSize: 26,
-                        color: '#0A0A0F',
-                        letterSpacing: '1px',
-                        margin: '0 0 16px',
-                        lineHeight: 1,
-                    }}>
-                        PORTFOLIO
-                    </h2>
-                    <PortfolioSection items={portfolio} />
-                </div>
-            )}
-
-            {/* ─── SECTION 6: REVIEWS ─── */}
+            {/* ─── SECTION 5: REVIEWS ─── */}
             <div style={{
                 maxWidth: 1200,
                 margin: '40px auto 60px',
