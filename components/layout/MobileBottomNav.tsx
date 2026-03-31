@@ -50,7 +50,6 @@ function HeartIcon() {
 
 export default function MobileBottomNav() {
   const pathname = usePathname()
-  const [role, setRole] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -63,15 +62,8 @@ export default function MobileBottomNav() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
-      setIsLoggedIn(true)
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      if (data?.role) setRole(data.role)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setIsLoggedIn(true)
     })
   }, [])
 
