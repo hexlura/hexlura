@@ -147,7 +147,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     )
 
     // Section 04
-    const [maxTicketsPerOrder, setMaxTicketsPerOrder] = useState(event?.max_tickets_per_order || 10)
+    const [maxTicketsPerOrder] = useState(event?.max_tickets_per_order || 10)
     const [minAge, setMinAge] = useState(event?.min_age || 0)
     const [refundPolicy, setRefundPolicy] = useState(event?.refund_policy || REFUND_POLICIES[2])
     const [status, setStatus] = useState<'draft' | 'published'>(event?.status === 'published' ? 'published' : 'draft')
@@ -819,10 +819,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                     <div>
                         <SectionHeader num="04" title="Settings" />
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelClass}>Max tickets per order</label>
-                                <input type="number" min="1" max="100" value={maxTicketsPerOrder} onChange={e => setMaxTicketsPerOrder(parseInt(e.target.value) || 10)} className={inputClass} />
-                            </div>
                             <div>
                                 <label className={labelClass}>Minimum Age</label>
                                 <select value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
