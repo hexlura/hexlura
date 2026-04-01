@@ -9,6 +9,7 @@ import type { Event, TicketType } from '@/types'
 import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
 import { DateTimePicker } from '@/components/organiser/DateTimePicker'
+import { GuestListSection } from '@/components/organiser/GuestListSection'
 
 const RichTextEditor = dynamic(
     () => import('@/components/organiser/RichTextEditor').then(m => m.RichTextEditor),
@@ -810,6 +811,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 </div>
                             ))}
                             <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
+
+                            {/* Guest List / Comp Tickets — only shown when editing an existing event */}
+                            {event?.id && (
+                                <GuestListSection
+                                    eventId={event.id}
+                                    ticketTypes={tickets.filter(t => t.id).map(t => ({ id: t.id!, name: t.name }))}
+                                />
+                            )}
                         </div>
                     </div>
                 )}

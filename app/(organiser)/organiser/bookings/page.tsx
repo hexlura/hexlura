@@ -21,14 +21,14 @@ export default async function OrganiserBookingsPage() {
     const { data: bookings } = eventIds.length
         ? await supabase
             .from('bookings')
-            .select('id, booking_ref, status, ticket_subtotal_pence, booking_fee_pence, total_pence, created_at, confirmed_at, event:events(id, title)')
+            .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, booking_fee_pence, total_pence, created_at, confirmed_at, event:events(id, title)')
             .in('event_id', eventIds)
             .order('created_at', { ascending: false })
             .limit(100)
         : { data: [] }
 
     const rows = (bookings || []) as unknown as {
-        id: string; booking_ref: string; status: string;
+        id: string; booking_ref: string; status: string; is_complimentary: boolean | null;
         ticket_subtotal_pence: number | null; booking_fee_pence: number | null;
         total_pence: number | null; created_at: string; confirmed_at: string | null;
         event: { id: string; title: string } | null
@@ -79,9 +79,14 @@ export default async function OrganiserBookingsPage() {
                                         {b.status}
                                     </span>
                                 </td>
-                                <td className="hidden md:table-cell py-3 pr-4 text-text text-xs">{formatPence(b.ticket_subtotal_pence || 0)}</td>
-                                <td className="hidden md:table-cell py-3 pr-4 text-muted text-xs">{formatPence(b.booking_fee_pence || 0)}</td>
-                                <td className="py-3 pr-4 text-text text-xs font-medium">{formatPence(b.total_pence || 0)}</td>
+                                <td className="hidden md:table-cell py-3 pr-4 text-text text-xs">{b.is_complimentary ? '—' : formatPence(b.ticket_subtotal_pence || 0)}</td>
+                                <td className="hidden md:table-cell py-3 pr-4 text-muted text-xs">{b.is_complimentary ? '—' : formatPence(b.booking_fee_pence || 0)}</td>
+                                <td className="py-3 pr-4 text-xs font-medium">
+                                    {b.is_complimentary
+                                        ? <span className="text-xs px-2 py-0.5 rounded-full border text-success bg-success/10 border-success/20">Complimentary</span>
+                                        : <span className="text-text">{formatPence(b.total_pence || 0)}</span>
+                                    }
+                                </td>
                                 <td className="py-3 text-muted text-xs">
                                     {new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </td>
@@ -107,7 +112,10 @@ export default async function OrganiserBookingsPage() {
                             </span>
                             <div className="flex items-center gap-4 text-xs text-muted pt-1">
                                 <span>{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                <span className="text-text font-medium">{formatPence(b.total_pence || 0)}</span>
+                                {b.is_complimentary
+                                    ? <span className="text-xs px-2 py-0.5 rounded-full border text-success bg-success/10 border-success/20">Complimentary</span>
+                                    : <span className="text-text font-medium">{formatPence(b.total_pence || 0)}</span>
+                                }
                             </div>
                         </div>
                     ))}
