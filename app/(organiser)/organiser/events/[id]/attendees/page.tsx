@@ -24,7 +24,7 @@ export default async function AttendeesPage({ params }: PageProps) {
         .single()
     if (!event) notFound()
 
-    // Get all confirmed bookings for this event with items
+    // Get all confirmed bookings for this event
     const { data: bookings } = await supabase
         .from('bookings')
         .select('id, booking_ref, ticket_subtotal_pence, created_at')
@@ -51,32 +51,36 @@ export default async function AttendeesPage({ params }: PageProps) {
 
     const checkinMap = new Map((checkins || []).map(c => [c.booking_item_id, c.checked_in_at]))
 
-    // Get ticket types for filter
+    // Get ticket types for filter dropdown
     const { data: ticketTypes } = await supabase
         .from('ticket_types').select('id, name').eq('event_id', params.id)
 
-    // Build attendee rows
+    // Build attendee rows — one row per PHYSICAL TICKET by expanding booking_items by quantity.
+    // A booking_item with quantity=3 produces 3 separate rows (not one row with qty=3).
+    // Group tickets (is_group on ticket_types) are a separate feature and unaffected here.
     const bookingMap = new Map((bookings || []).map(b => [b.id, b]))
 
-    const attendees = (items || []).map(item => {
+    const attendees = (items || []).flatMap(item => {
         const booking = bookingMap.get(item.booking_id)
         const checkedInAt = checkinMap.get(item.id) || null
-        return {
-            id: item.id,
+        const qty = item.quantity || 1
+
+        return Array.from({ length: qty }, (_, idx) => ({
+            id: `${item.id}-${idx}`,
             bookingRef: booking?.booking_ref || '',
             name: item.attendee_name || 'Guest',
             email: item.attendee_email || '',
             ticketTypeId: item.ticket_type_id || '',
             ticketTypeName: (item.ticket_type as { name?: string } | null)?.name || '—',
-            quantity: item.quantity,
+            quantity: 1,
             bookedAt: booking?.created_at || '',
             checkedIn: !!checkedInAt,
             checkedInAt: checkedInAt,
-        }
+        }))
     })
 
-    // Summary stats
-    const totalTickets = attendees.reduce((s, a) => s + a.quantity, 0)
+    // Summary stats — after expansion each element is exactly 1 physical ticket
+    const totalTickets = attendees.length
     const checkedIn = attendees.filter(a => a.checkedIn).length
     const totalRevenue = (bookings || []).reduce((s, b) => s + (b.ticket_subtotal_pence || 0), 0)
 
@@ -94,7 +98,7 @@ export default async function AttendeesPage({ params }: PageProps) {
             <div className="grid grid-cols-3 gap-4 mb-8">
                 {[
                     { label: 'Total Tickets', value: String(totalTickets) },
-                    { label: 'Checked In', value: `${checkedIn} / ${attendees.length}` },
+                    { label: 'Checked In', value: `${checkedIn} / ${totalTickets}` },
                     { label: 'Revenue', value: formatPence(totalRevenue) },
                 ].map(s => (
                     <div key={s.label} className="bg-card border border-border rounded-none p-5">
