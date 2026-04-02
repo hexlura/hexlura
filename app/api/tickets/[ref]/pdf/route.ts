@@ -153,11 +153,8 @@ export async function GET(
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     width: 375px;
-    min-height: 667px;
     background: #FFFFFF;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    position: relative;
-    overflow: hidden;
   }
   .bg-pattern {
     position: absolute;
@@ -234,7 +231,7 @@ export async function GET(
         const bookingRef = esc(booking.booking_ref)
         const token = esc(descriptor.token)
 
-        sections.push(`<div style="position: relative; width: 375px; min-height: 667px; background: #FFFFFF; overflow: hidden;${isLast ? '' : ' page-break-after: always;'}">
+        sections.push(`<div style="position: relative; display: block; width: 375px; min-height: 667px; background: #FFFFFF; overflow: hidden; page-break-after: ${isLast ? 'auto' : 'always'}; break-after: ${isLast ? 'auto' : 'page'}">
   <div class="bg-pattern"></div>
   ${isCancelled ? '<div class="cancelled-watermark"><div class="cancelled-watermark-text">CANCELLED</div></div>' : ''}
   <div class="content">
@@ -330,7 +327,7 @@ export async function GET(
 </style>
 </head>
 <body>
-${sections.join('\n')}
+${sections.join('\n<div style="height:24px;background:#F0F0F0;"></div>\n')}
 </body>
 </html>`
 
