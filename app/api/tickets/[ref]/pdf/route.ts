@@ -1,6 +1,5 @@
-import { NextResponse, NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import QRCode from 'qrcode'
 
 function esc(s: string): string {
@@ -12,7 +11,7 @@ function esc(s: string): string {
 }
 
 export async function GET(
-    request: NextRequest,
+    request: Request,
     { params }: { params: { ref: string } }
 ) {
     const ref = params.ref
@@ -20,109 +19,48 @@ export async function GET(
     const indexParam = searchParams.get('index')
     const requestedIndex = indexParam ? parseInt(indexParam, 10) : null
 
-    // Build cookie-aware auth client directly from request cookies
-    // so getUser() works correctly when the page is opened in a new tab
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) {
-                    return request.cookies.get(name)?.value
-                },
-            },
-        }
-    )
+    const supabase = createClient()
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const adminClient = createAdminClient()
-
-    // Extended event select — banner images, organiser join
-    const eventSelect = 'title, start_at, end_at, venue_name, venue_address, category, organiser_id, banner_images, banner_url, image_url, organiser:organiser_profiles(org_name)'
-
-    // Fetch booking without RLS restriction — auth is enforced below in code
-    const { data: bookingRaw } = await adminClient
+    const { data: booking } = await supabase
         .from('bookings')
-        .select(`*, event:events(${eventSelect}), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))`)
+        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
         .eq('booking_ref', ref)
+        .eq('user_id', user.id)
         .single()
-
-    let booking: typeof bookingRaw = null
-
-    if (bookingRaw) {
-        // Check 1: buyer
-        if ((bookingRaw as { user_id?: string | null }).user_id === user.id) {
-            booking = bookingRaw
-        } else {
-            // Check 2: organiser owns the event
-            const { data: organiser } = await adminClient
-                .from('organiser_profiles')
-                .select('id')
-                .eq('user_id', user.id)
-                .single()
-
-            if (organiser && (bookingRaw.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
-                booking = bookingRaw
-            }
-        }
-    }
 
     if (!booking) {
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    const buyerUserId = (booking as { user_id?: string | null }).user_id || ''
-    const { data: buyerProfile } = await adminClient
+    // Get buyer name
+    const { data: profile } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('id', buyerUserId)
+        .eq('id', user.id)
         .single()
-    const holderName = (buyerProfile as { full_name?: string } | null)?.full_name || 'Ticket Holder'
+    const holderName = (profile as { full_name?: string } | null)?.full_name || user.email || 'Ticket Holder'
 
-    // PART 2 — Organiser name
-    type OrgProfile = { org_name?: string | null } | null
-    const orgProfile = (booking.event as { organiser?: OrgProfile } | null)?.organiser as OrgProfile
-    const organiserName = orgProfile?.org_name || ''
-
-    // PART 3 — Banner image (priority: banner_images[0] > banner_url > image_url > null)
-    type EventRow = {
-        title?: string
-        start_at?: string
-        end_at?: string | null
-        venue_name?: string | null
-        venue_address?: string | null
-        category?: string | null
-        banner_images?: string[] | null
-        banner_url?: string | null
-        image_url?: string | null
-    }
-    const ev = booking.event as EventRow | null
-    const bannerImages = ev?.banner_images
-    const bannerUrl: string | null =
-        (Array.isArray(bannerImages) && bannerImages.length > 0 ? bannerImages[0] : null) ||
-        ev?.banner_url ||
-        ev?.image_url ||
-        null
-
-    const eventDate = ev?.start_at
+    const eventDate = booking.event
         ? new Intl.DateTimeFormat('en-GB', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-        }).format(new Date(ev.start_at))
+        }).format(new Date(booking.event.start_at))
         : 'TBC'
 
-    const eventStartTime = ev?.start_at
+    const eventStartTime = booking.event
         ? new Intl.DateTimeFormat('en-GB', {
             hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
-        }).format(new Date(ev.start_at))
+        }).format(new Date(booking.event.start_at))
         : 'TBC'
 
-    const eventEndTime = ev?.end_at
+    const eventEndTime = booking.event?.end_at
         ? new Intl.DateTimeFormat('en-GB', {
             hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
-        }).format(new Date(ev.end_at))
+        }).format(new Date(booking.event.end_at))
         : null
 
     const timeDisplay = eventEndTime
@@ -140,8 +78,11 @@ export async function GET(
     const allItems: BookingItem[] = booking.items || []
 
     // Build one descriptor per physical ticket.
+    // After the migration, each booking_item row has quantity=1 and its own unique qr_code.
+    // We use the row's actual qr_code as the QR token — this is what the scanner validates.
+    // Group tickets still use the existing ref-G{n} token scheme (already stored per-row).
     interface TicketDescriptor {
-        token: string
+        token: string        // qr_code value — used as QR data and shown on ticket
         ticketName: string
         isGroup: boolean
     }
@@ -152,12 +93,15 @@ export async function GET(
         const ticketName = item.ticket_type?.name ?? 'Ticket'
 
         if (isGroup) {
+            // Group tickets already had one-row-per-member inserted by webhook
             descriptors.push({
                 token: item.qr_code || booking.booking_ref,
                 ticketName,
                 isGroup: true,
             })
         } else {
+            // Standard tickets: each row is one physical ticket with its own qr_code
+            // quantity should already be 1 after migration, but loop defensively
             const qty = item.quantity || 1
             for (let t = 0; t < qty; t++) {
                 descriptors.push({
@@ -180,114 +124,176 @@ export async function GET(
             ? [{ descriptor: descriptors[requestedIndex - 1], globalIndex: requestedIndex }]
             : descriptors.map((d, i) => ({ descriptor: d, globalIndex: i + 1 }))
 
-    const isCancelled = booking.status === 'refunded' || booking.status === 'cancelled'
-
-    // --- PART 4 — Portrait HTML template ---
+    // --- HTML generation ---
     const css = `
+  @page { size: 375px 667px; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    margin: 0; padding: 0;
+    width: 375px;
+    min-height: 667px;
     background: #FFFFFF;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
   }
-  @page { size: 400px auto; margin: 0; }
-  @media print {
-    .ticket-wrapper { page-break-after: always; break-after: page; }
-    .ticket-wrapper:last-child { page-break-after: auto; break-after: auto; }
-  }`
+  .bg-pattern {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle, #E0E0E0 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.4;
+    z-index: 0;
+  }
+  .content { position: relative; z-index: 1; }
+  .top-bar { height: 6px; background: #E63950; width: 100%; }
+  .header {
+    padding: 16px 24px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .logo { font-size: 22px; font-weight: 900; color: #E63950; letter-spacing: 4px; }
+  .ticket-label { font-size: 10px; color: #8888AA; letter-spacing: 2px; text-transform: uppercase; text-align: right; }
+  .event-section {
+    padding: 20px 24px 16px;
+    background: #FAFAFA;
+    border-bottom: 1px solid #EEEEEE;
+  }
+  .event-category { font-size: 10px; color: #E63950; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .event-name { font-size: 26px; font-weight: 900; color: #0A0A0F; line-height: 1.1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .event-detail { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .event-detail-icon { font-size: 13px; width: 16px; flex-shrink: 0; margin-top: 1px; }
+  .event-detail-text { font-size: 13px; color: #333333; line-height: 1.4; }
+  .event-detail-label { font-size: 10px; color: #8888AA; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .qr-section { padding: 20px 24px; text-align: center; background: #FFFFFF; }
+  .qr-wrapper { display: inline-block; padding: 12px; border: 2px solid #F0F0F0; background: #FFFFFF; margin-bottom: 10px; }
+  .qr-wrapper img { display: block; }
+  .qr-ref { font-size: 13px; font-family: 'Courier New', monospace; color: #0A0A0F; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+  .qr-hint { font-size: 10px; color: #8888AA; letter-spacing: 0.5px; }
+  .tear-line { position: relative; margin: 0 -2px; display: flex; align-items: center; }
+  .tear-circle-left { width: 20px; height: 20px; background: #FFFFFF; border-radius: 50%; flex-shrink: 0; border: 1px solid #E0E0E0; margin-left: -10px; }
+  .tear-circle-right { width: 20px; height: 20px; background: #FFFFFF; border-radius: 50%; flex-shrink: 0; border: 1px solid #E0E0E0; margin-right: -10px; }
+  .tear-dashes { flex: 1; border-top: 2px dashed #E0E0E0; margin: 0 4px; }
+  .stub { padding: 14px 24px 16px; background: #FAFAFA; }
+  .stub-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .stub-label { font-size: 10px; color: #8888AA; text-transform: uppercase; letter-spacing: 1px; }
+  .stub-value { font-size: 13px; color: #0A0A0F; font-weight: 700; }
+  .valid-badge { display: inline-block; background: #E8FFF5; color: #00A86B; font-size: 10px; font-weight: 700; padding: 3px 10px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid #00C48A; }
+  .cancelled-badge { display: inline-block; background: #FFF0F0; color: #E63950; font-size: 10px; font-weight: 700; padding: 3px 10px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid #E63950; }
+  .cancelled-watermark { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+  .cancelled-watermark-text { font-size: 72px; font-weight: 900; color: #E63950; opacity: 0.18; letter-spacing: 8px; text-transform: uppercase; transform: rotate(-35deg); white-space: nowrap; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .footer { padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F0F0F0; }
+  .footer-text { font-size: 9px; color: #C0C0C8; letter-spacing: 1px; text-transform: uppercase; }
+  .footer-logo { font-size: 11px; font-weight: 900; color: #E63950; letter-spacing: 3px; }
+  .page-break { page-break-after: always; }`
+
+    const isCancelled = booking.status === 'refunded' || booking.status === 'cancelled'
 
     const sections: string[] = []
 
     for (let i = 0; i < toRender.length; i++) {
         const { descriptor, globalIndex } = toRender[i]
         const isLast = i === toRender.length - 1
-        const isFirst = i === 0
 
-        const qrDataUrl = await QRCode.toDataURL(descriptor.token, { width: 180, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } })
+        const ticketLabelLine = total > 1
+            ? `<br>Ticket ${globalIndex} of ${total}${descriptor.isGroup ? ' (Group)' : ''}`
+            : ''
 
-        const eventTitle = esc(ev?.title || 'Event')
-        const venueName = esc(ev?.venue_name || 'TBC')
-        const venueAddress = esc(ev?.venue_address || '')
+        const qrDataUrl = await QRCode.toDataURL(descriptor.token, { width: 180, margin: 1 })
+
+        const eventTitle = esc(booking.event?.title || 'Event')
+        const category = esc((booking.event as { category?: string } | null)?.category || '')
+        const venueName = esc(booking.event?.venue_name || 'TBC')
+        const venueAddress = esc(booking.event?.venue_address || '')
         const ticketTypeName = esc(descriptor.ticketName)
         const holder = esc(holderName)
         const bookingRef = esc(booking.booking_ref)
-        const tokenDisplay = descriptor.token.length > 20 ? esc(descriptor.token.slice(0, 20)) + '...' : esc(descriptor.token)
-        const organiserDisplay = organiserName ? `ORGANISED BY ${esc(organiserName)}` : ''
-        const xOfY = `${globalIndex} OF ${total}`
-        const validBadge = isCancelled
-            ? `<span style="background:#E63950;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">✕ CANCELLED</span>`
-            : `<span style="background:#00E5A0;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">✓ VALID</span>`
+        const token = esc(descriptor.token)
 
-        const bannerSection = bannerUrl
-            ? `<div style="width:100%;height:220px;overflow:hidden;margin:0;padding:0;background:#E63950;">
-    <img src="${esc(bannerUrl)}" width="100%" style="width:100%;height:220px;object-fit:cover;object-position:center top;display:block;" alt="Event Banner" onerror="this.style.display='none'">
-  </div>`
-            : `<div style="width:100%;height:220px;background:#E63950;"></div>`
+        sections.push(`<div style="position: relative; width: 375px; min-height: 667px; background: #FFFFFF; overflow: hidden;${isLast ? '' : ' page-break-after: always;'}">
+  <div class="bg-pattern"></div>
+  ${isCancelled ? '<div class="cancelled-watermark"><div class="cancelled-watermark-text">CANCELLED</div></div>' : ''}
+  <div class="content">
 
-        sections.push(`<div class="ticket-wrapper" style="
-  position: relative;
-  display: block;
-  width: 400px;
-  background: #FFFFFF;
-  ${isFirst ? '' : 'border-top: 3px solid #E63950;'}
-  page-break-after: ${isLast ? 'auto' : 'always'};
-  break-after: ${isLast ? 'auto' : 'page'};
-">
+    <div class="top-bar"></div>
 
-  ${bannerSection}
+    <div class="header">
+      <div class="logo">HEXLURA</div>
+      <div class="ticket-label">E-TICKET${ticketLabelLine}</div>
+    </div>
 
-  <!-- SECTION 2: HEADER BAR -->
-  <div style="background:#FFFFFF;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E63950;">
-    <span style="font-size:16px;font-weight:700;color:#E63950;letter-spacing:2px;">HEXLURA</span>
-    ${validBadge}
-  </div>
+    <div class="event-section">
+      ${category ? `<div class="event-category">${category}</div>` : ''}
+      <div class="event-name">${eventTitle}</div>
 
-  <!-- SECTION 3: EVENT DETAILS -->
-  <div style="background:#FFFFFF;padding:16px;border-bottom:1px solid #EEEEEE;">
-    <div style="font-size:22px;font-weight:900;color:#0A0A0F;margin-bottom:4px;line-height:1.2;">${eventTitle}</div>
-    ${organiserDisplay ? `<div style="font-size:11px;color:#8888AA;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">${organiserDisplay}</div>` : '<div style="margin-bottom:12px;"></div>'}
-    <div style="font-size:13px;color:#0A0A0F;margin-bottom:6px;">📅 ${esc(eventDate)}</div>
-    <div style="font-size:13px;color:#0A0A0F;margin-bottom:6px;">🕐 ${esc(timeDisplay)}</div>
-    <div style="font-size:13px;font-weight:700;color:#0A0A0F;margin-bottom:2px;">📍 ${venueName}</div>
-    ${venueAddress ? `<div style="font-size:12px;color:#8888AA;padding-left:22px;">${venueAddress}</div>` : ''}
-  </div>
-
-  <!-- SECTION 4: TICKET INFO -->
-  <div style="background:#F8F8FC;padding:16px;border-bottom:1px solid #EEEEEE;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div>
-        <div style="font-size:10px;color:#8888AA;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Ticket Type</div>
-        <div style="font-size:14px;font-weight:700;color:#0A0A0F;">${ticketTypeName}</div>
+      <div class="event-detail">
+        <span class="event-detail-icon">📅</span>
+        <div>
+          <div class="event-detail-label">Date</div>
+          <div class="event-detail-text">${esc(eventDate)}</div>
+        </div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:10px;color:#8888AA;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Ticket</div>
-        <div style="font-size:14px;font-weight:700;color:#E63950;">${xOfY}</div>
+
+      <div class="event-detail">
+        <span class="event-detail-icon">🕐</span>
+        <div>
+          <div class="event-detail-label">Time</div>
+          <div class="event-detail-text">${esc(timeDisplay)}</div>
+        </div>
+      </div>
+
+      <div class="event-detail">
+        <span class="event-detail-icon">📍</span>
+        <div>
+          <div class="event-detail-label">Venue</div>
+          <div class="event-detail-text">${venueName}<br>${venueAddress}</div>
+        </div>
       </div>
     </div>
-    <div style="margin-top:12px;">
-      <div style="font-size:10px;color:#8888AA;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Ticket Holder</div>
-      <div style="font-size:14px;font-weight:700;color:#0A0A0F;">${holder}</div>
+
+    <div class="qr-section">
+      <div class="qr-wrapper">
+        <img src="${qrDataUrl}" width="180" height="180" alt="QR Code">
+      </div>
+      <div class="qr-ref">${token}</div>
+      <div class="qr-hint">Scan at entry · One scan per ticket</div>
     </div>
-  </div>
 
-  <!-- SECTION 5: BOOKING REF -->
-  <div style="background:#FFFFFF;padding:12px 16px;border-bottom:1px solid #EEEEEE;">
-    <div style="font-size:10px;color:#8888AA;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Booking Ref</div>
-    <div style="font-size:15px;font-weight:700;color:#E63950;font-family:monospace;">${bookingRef}</div>
-  </div>
+    <div class="tear-line">
+      <div class="tear-circle-left"></div>
+      <div class="tear-dashes"></div>
+      <div class="tear-circle-right"></div>
+    </div>
 
-  <!-- SECTION 6: QR CODE -->
-  <div style="background:#0A0A0F;padding:32px 16px;text-align:center;">
-    <img src="${qrDataUrl}" width="180" height="180" style="display:block;margin:0 auto;background:#FFFFFF;padding:12px;border-radius:8px;" alt="QR Code">
-    <div style="font-size:11px;color:#8888AA;text-align:center;font-family:monospace;margin-top:12px;">${tokenDisplay}</div>
-    <div style="font-size:11px;color:#666688;text-align:center;margin-top:6px;">Scan at entry · One scan per ticket</div>
-  </div>
+    <div class="stub">
+      <div class="stub-row">
+        <div>
+          <div class="stub-label">Ticket Type</div>
+          <div class="stub-value">${ticketTypeName}</div>
+        </div>
+        ${isCancelled ? '<div class="cancelled-badge">&#10007; Cancelled</div>' : '<div class="valid-badge">&#10003; Valid</div>'}
+      </div>
+      <div class="stub-row">
+        <div>
+          <div class="stub-label">Ticket Holder</div>
+          <div class="stub-value">${holder}</div>
+        </div>
+      </div>
+      <div class="stub-row">
+        <div>
+          <div class="stub-label">Booking Ref</div>
+          <div class="stub-value" style="font-family: monospace; color: #E63950;">${bookingRef}</div>
+        </div>
+      </div>
+    </div>
 
-  <!-- SECTION 7: FOOTER -->
-  <div style="background:#0A0A0F;border-top:1px solid #2A2A3A;padding:12px 16px;text-align:center;">
-    <span style="font-size:11px;color:#8888AA;">Powered by Hexlura · hexlura.com</span>
-  </div>
+    <div class="footer">
+      <div class="footer-text">Valid for 1 person · Non-transferable</div>
+      <div class="footer-logo">HEXLURA</div>
+    </div>
 
+  </div>
 </div>`)
     }
 
@@ -297,7 +303,8 @@ export async function GET(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hexlura Ticket - ${esc(booking.booking_ref)}</title>
-<style>${css}</style>
+<style>${css}
+</style>
 </head>
 <body>
 ${sections.join('\n')}
