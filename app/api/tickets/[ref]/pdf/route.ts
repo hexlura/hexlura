@@ -68,6 +68,7 @@ export async function GET(
         : `${eventStartTime} (UK Time)`
 
     type BookingItem = {
+        id: string
         qr_code: string | null
         quantity: number
         unit_price_pence: number
@@ -76,34 +77,39 @@ export async function GET(
 
     const allItems: BookingItem[] = booking.items || []
 
-    // Build one descriptor per individual person/ticket
+    // Build one descriptor per physical ticket.
+    // After the migration, each booking_item row has quantity=1 and its own unique qr_code.
+    // We use the row's actual qr_code as the QR token — this is what the scanner validates.
+    // Group tickets still use the existing ref-G{n} token scheme (already stored per-row).
     interface TicketDescriptor {
-        token: string
+        token: string        // qr_code value — used as QR data and shown on ticket
         ticketName: string
         isGroup: boolean
     }
     const descriptors: TicketDescriptor[] = []
-    let groupCounter = 0
-    let ticketCounter = 0
 
     for (const item of allItems) {
         const isGroup = item.ticket_type?.is_group === true
-        const groupSize = item.ticket_type?.group_size ?? 1
-        const qty = item.quantity
         const ticketName = item.ticket_type?.name ?? 'Ticket'
 
         if (isGroup) {
-            for (let i = 0; i < groupSize; i++) {
-                groupCounter++
-                descriptors.push({ token: `${booking.booking_ref}-G${groupCounter}`, ticketName, isGroup: true })
-            }
-        } else if (qty > 1) {
-            for (let i = 0; i < qty; i++) {
-                ticketCounter++
-                descriptors.push({ token: `${booking.booking_ref}-T${ticketCounter}`, ticketName, isGroup: false })
-            }
+            // Group tickets already had one-row-per-member inserted by webhook
+            descriptors.push({
+                token: item.qr_code || booking.booking_ref,
+                ticketName,
+                isGroup: true,
+            })
         } else {
-            descriptors.push({ token: booking.booking_ref, ticketName, isGroup: false })
+            // Standard tickets: each row is one physical ticket with its own qr_code
+            // quantity should already be 1 after migration, but loop defensively
+            const qty = item.quantity || 1
+            for (let t = 0; t < qty; t++) {
+                descriptors.push({
+                    token: item.qr_code || booking.booking_ref,
+                    ticketName,
+                    isGroup: false,
+                })
+            }
         }
     }
 

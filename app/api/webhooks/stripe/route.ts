@@ -349,15 +349,18 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                 })
             }
         } else {
-            await supabase.from('booking_items').insert({
-                booking_id: booking.id,
-                ticket_type_id: item.ticket_type_id,
-                quantity: item.quantity,
-                unit_price_pence: tt?.price_pence || 0,
-                attendee_name: attendeeName,
-                attendee_email: attendeeEmail,
-                qr_code: randomUUID(),
-            })
+            // Insert one row per individual ticket so each has its own unique QR code
+            for (let t = 0; t < item.quantity; t++) {
+                await supabase.from('booking_items').insert({
+                    booking_id: booking.id,
+                    ticket_type_id: item.ticket_type_id,
+                    quantity: 1,
+                    unit_price_pence: tt?.price_pence || 0,
+                    attendee_name: attendeeName,
+                    attendee_email: attendeeEmail,
+                    qr_code: randomUUID(),
+                })
+            }
         }
 
         // Update quantity_sold
@@ -652,15 +655,18 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 })
             }
         } else {
-            await supabase.from('booking_items').insert({
-                booking_id: booking.id,
-                ticket_type_id: item.ticket_type_id,
-                quantity: item.quantity,
-                unit_price_pence: tt?.price_pence || 0,
-                attendee_name: attendeeName,
-                attendee_email: attendeeEmail,
-                qr_code: randomUUID(),
-            })
+            // Insert one row per individual ticket so each has its own unique QR code
+            for (let t = 0; t < item.quantity; t++) {
+                await supabase.from('booking_items').insert({
+                    booking_id: booking.id,
+                    ticket_type_id: item.ticket_type_id,
+                    quantity: 1,
+                    unit_price_pence: tt?.price_pence || 0,
+                    attendee_name: attendeeName,
+                    attendee_email: attendeeEmail,
+                    qr_code: randomUUID(),
+                })
+            }
         }
 
         // Update quantity_sold
