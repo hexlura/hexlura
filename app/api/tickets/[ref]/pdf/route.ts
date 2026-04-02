@@ -20,41 +20,41 @@ export async function GET(
     const indexParam = searchParams.get('index')
     const requestedIndex = indexParam ? parseInt(indexParam, 10) : null
 
+    // Use the user client only for auth — all DB queries use adminClient to bypass RLS
     const supabase = createClient()
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    const adminClient = createAdminClient()
+
     // Extended event select — banner images, organiser join
     const eventSelect = 'title, start_at, end_at, venue_name, venue_address, category, organiser_id, banner_images, banner_url, image_url, organiser:organiser_profiles(display_name, org_name)'
 
-    let { data: booking } = await supabase
+    // Fetch booking without RLS restriction — auth is enforced below in code
+    const { data: bookingRaw } = await adminClient
         .from('bookings')
         .select(`*, event:events(${eventSelect}), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))`)
         .eq('booking_ref', ref)
-        .eq('user_id', user.id)
         .single()
 
-    // Secondary check: allow organisers to download tickets for their own events
-    if (!booking) {
-        const adminClient = createAdminClient()
-        const { data: organiser } = await adminClient
-            .from('organiser_profiles')
-            .select('id')
-            .eq('user_id', user.id)
-            .single()
+    let booking: typeof bookingRaw = null
 
-        if (organiser) {
-            const { data: orgBooking } = await adminClient
-                .from('bookings')
-                .select(`*, event:events(${eventSelect}), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))`)
-                .eq('booking_ref', ref)
+    if (bookingRaw) {
+        // Check 1: buyer
+        if ((bookingRaw as { user_id?: string | null }).user_id === user.id) {
+            booking = bookingRaw
+        } else {
+            // Check 2: organiser owns the event
+            const { data: organiser } = await adminClient
+                .from('organiser_profiles')
+                .select('id')
+                .eq('user_id', user.id)
                 .single()
 
-            if (orgBooking && (orgBooking.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
-                booking = orgBooking
+            if (organiser && (bookingRaw.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
+                booking = bookingRaw
             }
         }
     }
@@ -63,10 +63,7 @@ export async function GET(
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    // PART 1 — Buyer name: fetch from profiles using booking.user_id (not user.id,
-    // which may be the organiser when they use the Download Tickets button)
-    const adminClient = createAdminClient()
-    const buyerUserId = (booking as { user_id?: string | null }).user_id || user.id
+    const buyerUserId = (booking as { user_id?: string | null }).user_id || ''
     const { data: buyerProfile } = await adminClient
         .from('profiles')
         .select('full_name')
