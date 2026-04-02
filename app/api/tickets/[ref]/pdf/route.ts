@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import QRCode from 'qrcode'
 
 function esc(s: string): string {
@@ -26,12 +27,34 @@ export async function GET(
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const { data: booking } = await supabase
+    let { data: booking } = await supabase
         .from('bookings')
         .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
         .eq('booking_ref', ref)
         .eq('user_id', user.id)
         .single()
+
+    // Secondary check: allow organisers to download tickets for their own events
+    if (!booking) {
+        const adminClient = createAdminClient()
+        const { data: organiser } = await adminClient
+            .from('organiser_profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .single()
+
+        if (organiser) {
+            const { data: orgBooking } = await adminClient
+                .from('bookings')
+                .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
+                .eq('booking_ref', ref)
+                .single()
+
+            if (orgBooking && (orgBooking.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
+                booking = orgBooking
+            }
+        }
+    }
 
     if (!booking) {
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
