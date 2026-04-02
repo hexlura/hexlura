@@ -22,6 +22,7 @@ type OrganiserRow = {
     description: string | null;
     website: string | null;
     logo_url: string | null;
+    avatar_url: string | null;
     organiser_type: string | null;
     cover_url: string | null;
     social_instagram: string | null;
@@ -61,7 +62,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
 
     const { data: organiserData, error: organiserErr } = await serviceClient
         .from('organiser_profiles')
-        .select('*')
+        .select('*, profile:profiles!organiser_profiles_user_id_fkey(avatar_url)')
         .eq('slug', slug)
         .single();
 
@@ -69,7 +70,12 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         notFound();
     }
 
-    const organiser = organiserData as unknown as OrganiserRow;
+    const rawOrganiser = organiserData as unknown as OrganiserRow & { profile: { avatar_url: string | null } | null };
+    const organiser: OrganiserRow = {
+        ...rawOrganiser,
+        // Prefer profiles.avatar_url; fall back to organiser_profiles.logo_url
+        avatar_url: rawOrganiser.profile?.avatar_url || rawOrganiser.logo_url || null,
+    };
     const now = new Date().toISOString();
 
     // Fetch upcoming events (published, future)
@@ -229,9 +235,9 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                             justifyContent: 'center',
                             position: 'relative',
                         }}>
-                            {organiser.logo_url ? (
+                            {(organiser.avatar_url || organiser.logo_url) ? (
                                 <Image
-                                    src={organiser.logo_url}
+                                    src={(organiser.avatar_url || organiser.logo_url)!}
                                     alt={organiser.org_name}
                                     fill
                                     className="object-cover"

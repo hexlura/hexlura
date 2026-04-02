@@ -143,6 +143,20 @@ export default function AccountSettingsPage() {
 
             if (updateError) throw updateError
 
+            // Sync to organiser_profiles.logo_url if the user is an organiser
+            const { data: organiserProfile } = await supabase
+                .from('organiser_profiles')
+                .select('id')
+                .eq('user_id', userId)
+                .single()
+
+            if (organiserProfile) {
+                await supabase
+                    .from('organiser_profiles')
+                    .update({ logo_url: publicUrl })
+                    .eq('id', organiserProfile.id)
+            }
+
             setAvatarUrl(publicUrl)
         } catch (err: unknown) {
             setAvatarError(err instanceof Error ? err.message : 'Upload failed.')

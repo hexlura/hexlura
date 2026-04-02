@@ -223,6 +223,11 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
             const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
             const url = urlData.publicUrl
             await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
+            // Sync to profiles.avatar_url so user profile photo stays in sync
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
+            }
             setLogoUrl(url)
         }
         setLogoUploading(false)
