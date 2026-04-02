@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import QRCode from 'qrcode'
 
 function esc(s: string): string {
@@ -26,12 +27,34 @@ export async function GET(
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const { data: booking } = await supabase
+    let { data: booking } = await supabase
         .from('bookings')
         .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
         .eq('booking_ref', ref)
         .eq('user_id', user.id)
         .single()
+
+    // Secondary check: allow organisers to download tickets for their own events
+    if (!booking) {
+        const adminClient = createAdminClient()
+        const { data: organiser } = await adminClient
+            .from('organiser_profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .single()
+
+        if (organiser) {
+            const { data: orgBooking } = await adminClient
+                .from('bookings')
+                .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
+                .eq('booking_ref', ref)
+                .single()
+
+            if (orgBooking && (orgBooking.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
+                booking = orgBooking
+            }
+        }
+    }
 
     if (!booking) {
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
@@ -130,11 +153,8 @@ export async function GET(
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     width: 375px;
-    min-height: 667px;
     background: #FFFFFF;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    position: relative;
-    overflow: hidden;
   }
   .bg-pattern {
     position: absolute;
@@ -211,7 +231,7 @@ export async function GET(
         const bookingRef = esc(booking.booking_ref)
         const token = esc(descriptor.token)
 
-        sections.push(`<div style="position: relative; width: 375px; min-height: 667px; background: #FFFFFF; overflow: hidden;${isLast ? '' : ' page-break-after: always;'}">
+        sections.push(`<div style="position: relative; display: block; width: 375px; min-height: 667px; background: #FFFFFF; overflow: hidden; page-break-after: ${isLast ? 'auto' : 'always'}; break-after: ${isLast ? 'auto' : 'page'}">
   <div class="bg-pattern"></div>
   ${isCancelled ? '<div class="cancelled-watermark"><div class="cancelled-watermark-text">CANCELLED</div></div>' : ''}
   <div class="content">
@@ -307,7 +327,7 @@ export async function GET(
 </style>
 </head>
 <body>
-${sections.join('\n')}
+${sections.join('\n<div style="height:24px;background:#F0F0F0;"></div>\n')}
 </body>
 </html>`
 
