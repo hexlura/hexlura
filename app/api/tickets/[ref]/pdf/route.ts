@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 import { createAdminClient } from '@/lib/supabase/admin'
 import QRCode from 'qrcode'
 
@@ -12,7 +12,7 @@ function esc(s: string): string {
 }
 
 export async function GET(
-    request: Request,
+    request: NextRequest,
     { params }: { params: { ref: string } }
 ) {
     const ref = params.ref
@@ -20,8 +20,19 @@ export async function GET(
     const indexParam = searchParams.get('index')
     const requestedIndex = indexParam ? parseInt(indexParam, 10) : null
 
-    // Use the user client only for auth — all DB queries use adminClient to bypass RLS
-    const supabase = createClient()
+    // Build cookie-aware auth client directly from request cookies
+    // so getUser() works correctly when the page is opened in a new tab
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return request.cookies.get(name)?.value
+                },
+            },
+        }
+    )
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
