@@ -30,7 +30,7 @@ export async function GET(
     const adminClient = createAdminClient()
 
     // Extended event select — banner images, organiser join
-    const eventSelect = 'title, start_at, end_at, venue_name, venue_address, category, organiser_id, banner_images, banner_url, image_url, organiser:organiser_profiles(display_name, org_name)'
+    const eventSelect = 'title, start_at, end_at, venue_name, venue_address, category, organiser_id, banner_images, banner_url, image_url, organiser:organiser_profiles(org_name)'
 
     // Fetch booking without RLS restriction — auth is enforced below in code
     const { data: bookingRaw } = await adminClient
@@ -72,9 +72,9 @@ export async function GET(
     const holderName = (buyerProfile as { full_name?: string } | null)?.full_name || 'Ticket Holder'
 
     // PART 2 — Organiser name
-    type OrgProfile = { display_name?: string | null; org_name?: string | null } | null
+    type OrgProfile = { org_name?: string | null } | null
     const orgProfile = (booking.event as { organiser?: OrgProfile } | null)?.organiser as OrgProfile
-    const organiserName = orgProfile?.display_name || orgProfile?.org_name || ''
+    const organiserName = orgProfile?.org_name || ''
 
     // PART 3 — Banner image (priority: banner_images[0] > banner_url > image_url > null)
     type EventRow = {
