@@ -123,14 +123,32 @@ export default async function BookingDetailPage({ params }: PageProps) {
 
     return (
         <div className="max-w-3xl">
-            {/* Back */}
-            <div style={{ marginBottom: 24 }}>
+            {/* Back + Download */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                 <Link
                     href="/organiser/bookings"
                     style={{ fontSize: 13, color: '#8888AA', textDecoration: 'none' }}
                 >
                     ← Back to Bookings
                 </Link>
+                <a
+                    href={`/api/tickets/${booking.booking_ref}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        display: 'inline-block',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: '#FFFFFF',
+                        background: '#0A0A0F',
+                        padding: '8px 18px',
+                        textDecoration: 'none',
+                        border: '1px solid #0A0A0F',
+                        letterSpacing: '0.3px',
+                    }}
+                >
+                    ↓ Download Tickets
+                </a>
             </div>
 
             {/* Header */}
