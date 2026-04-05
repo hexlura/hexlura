@@ -140,7 +140,6 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                             {heading('MY ACCOUNT')}
                             {divider}
                             <div className="pt-2 space-y-0.5">
-                                <Link href="/account/bookings" onClick={close} className={linkClass('/account/bookings')}>My Bookings</Link>
                                 <Link href="/account/settings" onClick={close} className={linkClass('/account/settings')}>Account Settings</Link>
                                 {role === 'organiser' && (
                                     <Link href="/organiser" onClick={close} className={linkClass('/organiser')}>Organiser Portal</Link>
