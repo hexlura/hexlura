@@ -60,11 +60,12 @@ export async function GET(
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    // Get buyer name
-    const { data: profile } = await supabase
+    // Get buyer name — use booking.user_id (not user.id) so organisers see the correct holder
+    const profileAdminClient = createAdminClient()
+    const { data: profile } = await profileAdminClient
         .from('profiles')
         .select('full_name')
-        .eq('id', user.id)
+        .eq('id', booking.user_id)
         .single()
     const holderName = (profile as { full_name?: string } | null)?.full_name || user.email || 'Ticket Holder'
 
