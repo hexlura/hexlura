@@ -23,15 +23,17 @@ function extractCity(venueAddress: string | null | undefined): string {
 export default function EventCard({ event }: EventCardProps) {
     const ticketTypes = event.ticket_types || [];
 
+    const visibleTypes = ticketTypes.filter(t => t.is_visible === true);
+
     let totalTickets = 0;
     let soldTickets = 0;
 
-    ticketTypes.forEach(t => {
+    visibleTypes.forEach(t => {
         totalTickets += t.quantity_total;
         soldTickets += t.quantity_sold;
     });
 
-    const isSoldOut = totalTickets > 0 && totalTickets - soldTickets === 0;
+    const visibleSoldOut = visibleTypes.length > 0 && totalTickets - soldTickets === 0;
 
     const dateStr = new Intl.DateTimeFormat('en-GB', {
         weekday: 'short',
@@ -46,10 +48,10 @@ export default function EventCard({ event }: EventCardProps) {
     const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
 
     // Price range display
-    function getPriceRange(types: typeof ticketTypes): string {
-        const visible = (types || []).filter(t => t.is_visible === true);
-        if (visible.length === 0) return '';
-        const prices = visible.map(t => t.price_pence);
+    function getPriceRange(types: typeof visibleTypes): string {
+        if (types.length === 0) return 'Tickets TBA';
+        if (visibleSoldOut) return 'Sold Out';
+        const prices = types.map(t => t.price_pence);
         const lo = Math.min(...prices);
         const hi = Math.max(...prices);
         if (hi === 0) return 'Free';
@@ -59,12 +61,12 @@ export default function EventCard({ event }: EventCardProps) {
         return `${fmt(lo)} – ${fmt(hi)}`;
     }
 
-    const priceDisplay = getPriceRange(ticketTypes);
+    const priceDisplay = getPriceRange(visibleTypes);
 
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="group block bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950]"
+            className="group flex flex-col h-full bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950]"
             style={{
                 width: '100%',
                 border: '1px solid #E0E0E0',
@@ -117,8 +119,8 @@ export default function EventCard({ event }: EventCardProps) {
                 </div>
             </div>
 
-            {/* Card body */}
-            <div style={{ padding: '10px 10px 0' }}>
+            {/* Card body — flex-1 pushes footer to bottom */}
+            <div className="flex flex-col flex-1" style={{ padding: '10px 10px 0' }}>
                 {/* Title */}
                 <p
                     style={{
@@ -154,6 +156,9 @@ export default function EventCard({ event }: EventCardProps) {
                 )}
             </div>
 
+            {/* Spacer pushes footer to bottom */}
+            <div className="flex-1" />
+
             {/* Footer row */}
             <div
                 className="flex items-center justify-between"
@@ -162,7 +167,7 @@ export default function EventCard({ event }: EventCardProps) {
                 <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                     {priceDisplay}
                 </span>
-                {isSoldOut ? (
+                {visibleSoldOut ? (
                     <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#E63950' }}>
                         <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E63950' }} />
                         Sold out
