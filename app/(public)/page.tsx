@@ -31,7 +31,7 @@ function formatOverlayDate(isoDate: string): string {
 
 function getPriceRange(ticketTypes: Array<{ price_pence: number; is_visible?: boolean }>): string {
     const visible = (ticketTypes || []).filter((t) => t.is_visible !== false);
-    if (visible.length === 0) return '';
+    if (visible.length === 0) return 'Tickets TBA';
     const prices = visible.map((t) => t.price_pence);
     const lo = Math.min(...prices);
     const hi = Math.max(...prices);
