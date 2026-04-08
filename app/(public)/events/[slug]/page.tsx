@@ -10,6 +10,7 @@ import ShareButton from '@/components/events/ShareButton';
 import { Review } from '@/types';
 import LikeButton from '@/components/events/LikeButton';
 import BannerCarousel from '@/components/events/BannerCarousel';
+import FollowButton from '@/components/organisers/FollowButton';
 
 export const revalidate = 60;
 
@@ -77,6 +78,26 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         organiserEventCount = count ?? 0;
     }
 
+    // Fetch follow state for this organiser
+    let userFollowing = false;
+    let followCount = 0;
+    if (organiser?.id) {
+        const { count: fc } = await supabase
+            .from('follows')
+            .select('*', { count: 'exact', head: true })
+            .eq('organiser_id', organiser.id);
+        followCount = fc ?? 0;
+        if (user) {
+            const { data: followRow } = await supabase
+                .from('follows')
+                .select('id')
+                .eq('organiser_id', organiser.id)
+                .eq('user_id', user.id)
+                .single();
+            userFollowing = !!followRow;
+        }
+    }
+
     const formattedDate = new Intl.DateTimeFormat('en-GB', {
         weekday: 'long',
         day: 'numeric',
@@ -137,6 +158,44 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                 <Badge key={tag} variant="muted">{tag}</Badge>
                             ))}
                         </div>
+
+                        {/* Organiser badge — compact strip */}
+                        {organiser && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#F5F5F7', border: '1px solid #E0E0E8' }}>
+                                {/* Avatar */}
+                                <div className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center" style={{ width: '36px', height: '36px', background: '#C0C0C8' }}>
+                                    {organiser.logo_url ? (
+                                        <Image src={organiser.logo_url} alt="" fill className="object-cover" />
+                                    ) : (
+                                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#0A0A0F' }}>{organiser.org_name.charAt(0).toUpperCase()}</span>
+                                    )}
+                                </div>
+                                {/* Name + type */}
+                                <div className="flex-1 min-w-0">
+                                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A0A0F', lineHeight: 1.2 }}>{organiser.org_name}</p>
+                                    <p style={{ fontSize: '11px', color: '#666677', marginTop: '1px' }}>
+                                        {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
+                                        {' · '}{organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
+                                    </p>
+                                </div>
+                                {/* Buttons */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                                    <FollowButton
+                                        organiserId={organiser.id}
+                                        initialFollowing={userFollowing}
+                                        initialCount={followCount}
+                                        isLoggedIn={!!user}
+                                    />
+                                    <Link
+                                        href={`/organisers/${organiser.slug}`}
+                                        className="shrink-0 transition-colors hover:border-[#E63950]"
+                                        style={{ fontSize: '13px', padding: '6px 12px', border: '1px solid #C0C0C8', borderRadius: '2px', color: '#0A0A0F', background: 'transparent', whiteSpace: 'nowrap', textDecoration: 'none' }}
+                                    >
+                                        Profile
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Date and venue */}
                         <div className="grid grid-cols-1 gap-4 p-4 bg-muted/10 border border-border/50">
@@ -270,46 +329,6 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         <p className="text-muted-foreground">No description provided.</p>
                     )}
                 </section>
-
-                {/* Organiser Card — LEFT COL */}
-                {organiser && (
-                    <section className="md:col-start-1">
-                        <p style={{ fontSize: '11px', color: '#666677', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-                            ORGANISED BY
-                        </p>
-                        <div style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div
-                                className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center"
-                                style={{ width: '56px', height: '56px', background: '#C0C0C8' }}
-                            >
-                                {organiser.logo_url ? (
-                                    <Image src={organiser.logo_url} alt="" fill className="object-cover" />
-                                ) : (
-                                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#0A0A0F' }}>
-                                        {organiser.org_name.charAt(0).toUpperCase()}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p style={{ fontSize: '16px', color: '#0A0A0F', fontWeight: 600, lineHeight: 1.3 }}>
-                                    {organiser.org_name}
-                                </p>
-                                <p style={{ fontSize: '13px', color: '#666677', marginTop: '2px' }}>
-                                    {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
-                                    {' · '}
-                                    {organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
-                                </p>
-                            </div>
-                            <Link
-                                href={`/organisers/${organiser.slug}`}
-                                className="shrink-0 transition-colors hover:border-[#E63950]"
-                                style={{ fontSize: '13px', padding: '6px 16px', border: '1px solid #C0C0C8', borderRadius: '2px', color: '#0A0A0F', background: 'transparent', whiteSpace: 'nowrap' }}
-                            >
-                                View Profile
-                            </Link>
-                        </div>
-                    </section>
-                )}
 
                 {/* Location — LEFT COL */}
                 <section className="md:col-start-1 space-y-4">
