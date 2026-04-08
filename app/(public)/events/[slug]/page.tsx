@@ -161,24 +161,27 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
                         {/* Organiser badge — compact strip */}
                         {organiser && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#F5F5F7', border: '1px solid #E0E0E8' }}>
-                                {/* Avatar */}
-                                <div className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center" style={{ width: '36px', height: '36px', background: '#C0C0C8' }}>
-                                    {organiser.logo_url ? (
-                                        <Image src={organiser.logo_url} alt="" fill className="object-cover" />
-                                    ) : (
-                                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#0A0A0F' }}>{organiser.org_name.charAt(0).toUpperCase()}</span>
-                                    )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#F5F5F7', border: '1px solid #E0E0E8', flexWrap: 'wrap' }}>
+                                {/* Left: avatar + name — flex-1 so it takes available space */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 140px', minWidth: 0 }}>
+                                    {/* Avatar */}
+                                    <div className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center" style={{ width: '36px', height: '36px', background: '#C0C0C8' }}>
+                                        {organiser.logo_url ? (
+                                            <Image src={organiser.logo_url} alt="" fill className="object-cover" />
+                                        ) : (
+                                            <span style={{ fontSize: '14px', fontWeight: 700, color: '#0A0A0F' }}>{organiser.org_name.charAt(0).toUpperCase()}</span>
+                                        )}
+                                    </div>
+                                    {/* Name + type — truncated so they never wrap */}
+                                    <div style={{ minWidth: 0 }}>
+                                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A0A0F', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{organiser.org_name}</p>
+                                        <p style={{ fontSize: '11px', color: '#666677', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
+                                            {' · '}{organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
+                                        </p>
+                                    </div>
                                 </div>
-                                {/* Name + type */}
-                                <div className="flex-1 min-w-0">
-                                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A0A0F', lineHeight: 1.2 }}>{organiser.org_name}</p>
-                                    <p style={{ fontSize: '11px', color: '#666677', marginTop: '1px' }}>
-                                        {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
-                                        {' · '}{organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
-                                    </p>
-                                </div>
-                                {/* Buttons */}
+                                {/* Right: buttons — wraps to next line on mobile if needed */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                                     <FollowButton
                                         organiserId={organiser.id}
