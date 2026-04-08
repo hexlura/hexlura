@@ -29,11 +29,16 @@ function formatOverlayDate(isoDate: string): string {
     return `${weekday}, ${day} ${month}`;
 }
 
-function getMinPrice(ticketTypes: Array<{ price_pence: number }>): string {
-    if (!ticketTypes || ticketTypes.length === 0) return 'Free';
-    const min = Math.min(...ticketTypes.map((t) => t.price_pence));
-    if (min === 0) return 'Free';
-    return `From \u00A3${(min / 100).toFixed(2)}`;
+function getPriceRange(ticketTypes: Array<{ price_pence: number }>): string {
+    if (!ticketTypes || ticketTypes.length === 0) return '';
+    const prices = ticketTypes.map((t) => t.price_pence);
+    const lo = Math.min(...prices);
+    const hi = Math.max(...prices);
+    if (hi === 0) return 'Free';
+    const fmt = (p: number) => `\u00A3${(p / 100).toFixed(2)}`;
+    if (lo === hi) return fmt(lo);
+    if (lo === 0) return `Free \u2013 ${fmt(hi)}`;
+    return `${fmt(lo)} \u2013 ${fmt(hi)}`;
 }
 
 export default async function HomePage() {
@@ -332,7 +337,7 @@ export default async function HomePage() {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const ev = event as any;
                             const ticketTypes: Array<{ price_pence: number }> = ev.ticket_types || [];
-                            const priceStr = getMinPrice(ticketTypes);
+                            const priceStr = getPriceRange(ticketTypes);
                             const location = ev.venue_city || ev.venue_name || '';
                             const overlayDate = formatOverlayDate(ev.start_at);
 

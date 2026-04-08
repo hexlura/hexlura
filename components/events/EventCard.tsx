@@ -25,12 +25,10 @@ export default function EventCard({ event }: EventCardProps) {
 
     let totalTickets = 0;
     let soldTickets = 0;
-    let minPrice = Infinity;
 
     ticketTypes.forEach(t => {
         totalTickets += t.quantity_total;
         soldTickets += t.quantity_sold;
-        if (t.price_pence < minPrice) minPrice = t.price_pence;
     });
 
     const isSoldOut = totalTickets > 0 && totalTickets - soldTickets === 0;
@@ -47,9 +45,20 @@ export default function EventCard({ event }: EventCardProps) {
 
     const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
 
-    const priceDisplay = minPrice !== Infinity
-        ? `From £${(minPrice / 100).toFixed(2)}`
-        : 'Free';
+    // Price range display
+    function getPriceRange(types: typeof ticketTypes): string {
+        if (!types || types.length === 0) return '';
+        const prices = types.map(t => t.price_pence);
+        const lo = Math.min(...prices);
+        const hi = Math.max(...prices);
+        if (hi === 0) return 'Free';
+        const fmt = (p: number) => `£${(p / 100).toFixed(2)}`;
+        if (lo === hi) return fmt(lo);
+        if (lo === 0) return `Free – ${fmt(hi)}`;
+        return `${fmt(lo)} – ${fmt(hi)}`;
+    }
+
+    const priceDisplay = getPriceRange(ticketTypes);
 
     return (
         <Link
