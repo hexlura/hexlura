@@ -29,9 +29,10 @@ function formatOverlayDate(isoDate: string): string {
     return `${weekday}, ${day} ${month}`;
 }
 
-function getPriceRange(ticketTypes: Array<{ price_pence: number }>): string {
-    if (!ticketTypes || ticketTypes.length === 0) return '';
-    const prices = ticketTypes.map((t) => t.price_pence);
+function getPriceRange(ticketTypes: Array<{ price_pence: number; is_visible?: boolean }>): string {
+    const visible = (ticketTypes || []).filter((t) => t.is_visible !== false);
+    if (visible.length === 0) return '';
+    const prices = visible.map((t) => t.price_pence);
     const lo = Math.min(...prices);
     const hi = Math.max(...prices);
     if (hi === 0) return 'Free';

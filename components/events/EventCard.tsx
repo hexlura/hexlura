@@ -47,8 +47,9 @@ export default function EventCard({ event }: EventCardProps) {
 
     // Price range display
     function getPriceRange(types: typeof ticketTypes): string {
-        if (!types || types.length === 0) return '';
-        const prices = types.map(t => t.price_pence);
+        const visible = (types || []).filter(t => t.is_visible === true);
+        if (visible.length === 0) return '';
+        const prices = visible.map(t => t.price_pence);
         const lo = Math.min(...prices);
         const hi = Math.max(...prices);
         if (hi === 0) return 'Free';
