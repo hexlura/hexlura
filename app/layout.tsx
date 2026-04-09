@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NextTopLoader from 'nextjs-toploader'
 import MobileBottomNav from '@/components/layout/MobileBottomNav'
+import { Analytics } from '@vercel/analytics/next';
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
           {children}
           <MobileBottomNav />
         </div>
+        <Analytics />
       </body>
     </html>
   );
