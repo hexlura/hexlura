@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { Booking } from '@/types'
-import BookingQR from './booking-qr'
 import RefundButton from './refund-button'
 
 export default async function BookingDetailPage({ params }: { params: { ref: string } }) {
@@ -75,8 +74,6 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
         (refundPolicy !== '7_days' || hoursUntilEvent > 168) &&
         !activeRefund
 
-    const qrCode = booking.items?.[0]?.qr_code || booking.booking_ref
-
     type ExtendedItem = { quantity: number; ticket_type?: { is_group?: boolean; group_size?: number } | null }
     const totalTickets = ((bookingRaw?.items ?? []) as unknown as ExtendedItem[]).reduce((sum, item) => {
         if (item.ticket_type?.is_group) return sum + (item.ticket_type.group_size ?? 1)
@@ -90,13 +87,6 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                 <h1 className="font-heading text-4xl text-text">{event?.title || 'Booking'}</h1>
                 <p className="text-muted">{eventDate} · {eventTime}</p>
                 <p className="text-muted">{event?.venue_name}, {event?.venue_address}</p>
-            </div>
-
-            {/* QR Code */}
-            <div className="bg-surface border border-border rounded-none p-8 text-center space-y-4">
-                <BookingQR value={qrCode} />
-                <p className="text-sm text-muted">Show this at the door</p>
-                <p className="font-mono text-2xl font-bold text-accent">{booking.booking_ref}</p>
             </div>
 
             {/* Ticket breakdown */}
