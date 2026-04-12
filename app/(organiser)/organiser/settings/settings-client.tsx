@@ -155,7 +155,6 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
     }
 
     // Notification toggles
-    const [notifyNewBooking, setNotifyNewBooking] = useState(true)
     const [notifyDailySummary, setNotifyDailySummary] = useState(false)
     const [notifyPayout, setNotifyPayout] = useState(true)
 
@@ -389,7 +388,6 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
             {/* Notifications */}
             <Section title="Notifications">
                 <div className="divide-y divide-border">
-                    <Toggle checked={notifyNewBooking} onChange={setNotifyNewBooking} label="Email on new booking" />
                     <Toggle checked={notifyDailySummary} onChange={setNotifyDailySummary} label="Daily booking summary" />
                     <Toggle checked={notifyPayout} onChange={setNotifyPayout} label="Payout notifications" />
                 </div>

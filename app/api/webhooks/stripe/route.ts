@@ -4,7 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { render } from '@react-email/components'
 import BookingConfirmation from '@/emails/booking-confirmation'
-import NewBookingOrganiser from '@/emails/new-booking-organiser'
 import PayoutFailedAdmin from '@/emails/payout-failed-admin'
 import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
@@ -481,44 +480,6 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
             }
         })()
 
-        // Organiser new booking notification
-        if (eventData.organiser_id) {
-            void (async () => {
-                try {
-                    const { data: orgProfile } = await supabase
-                        .from('organiser_profiles')
-                        .select('user_id, org_name')
-                        .eq('id', eventData.organiser_id)
-                        .single()
-
-                    if (!orgProfile?.user_id) return
-
-                    const { data: { user: orgUser } } = await supabase.auth.admin.getUserById(orgProfile.user_id)
-                    if (!orgUser?.email) return
-
-                    const html = await render(NewBookingOrganiser({
-                        organiserName: orgProfile.org_name || 'Organiser',
-                        eventName: eventData.title,
-                        eventDate,
-                        buyerName: attendeeName || 'Customer',
-                        buyerEmail: attendeeEmail,
-                        ticketItems,
-                        totalRevenue: `£${((ticketSubtotalPence - discountPence) / 100).toFixed(2)}`,
-                        bookingRef: booking.booking_ref,
-                        dashboardUrl: 'https://www.hexlura.com/organiser/events',
-                    }))
-
-                    await getResend().emails.send({
-                        from: 'Hexlura <noreply@hexlura.com>',
-                        to: orgUser.email,
-                        subject: `New booking for ${eventData.title} 💰`,
-                        html,
-                    })
-                } catch (err) {
-                    console.error('Failed to send organiser booking notification:', err)
-                }
-            })()
-        }
     }
 }
 
@@ -788,43 +749,5 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             }
         })()
 
-        // Organiser new booking notification
-        if (eventData.organiser_id) {
-            void (async () => {
-                try {
-                    const { data: orgProfile } = await supabase
-                        .from('organiser_profiles')
-                        .select('user_id, org_name')
-                        .eq('id', eventData.organiser_id)
-                        .single()
-
-                    if (!orgProfile?.user_id) return
-
-                    const { data: { user: orgUser } } = await supabase.auth.admin.getUserById(orgProfile.user_id)
-                    if (!orgUser?.email) return
-
-                    const html = await render(NewBookingOrganiser({
-                        organiserName: orgProfile.org_name || 'Organiser',
-                        eventName: eventData.title,
-                        eventDate,
-                        buyerName: attendeeName || 'Customer',
-                        buyerEmail: attendeeEmail,
-                        ticketItems,
-                        totalRevenue: `£${((ticketSubtotalPence - discountPence) / 100).toFixed(2)}`,
-                        bookingRef: booking.booking_ref,
-                        dashboardUrl: 'https://www.hexlura.com/organiser/events',
-                    }))
-
-                    await getResend().emails.send({
-                        from: 'Hexlura <noreply@hexlura.com>',
-                        to: orgUser.email,
-                        subject: `New booking for ${eventData.title} 💰`,
-                        html,
-                    })
-                } catch (err) {
-                    console.error('Failed to send organiser booking notification:', err)
-                }
-            })()
-        }
     }
 }
