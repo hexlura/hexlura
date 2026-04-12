@@ -15,7 +15,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
 
     const { data: bookingRaw } = await supabase
         .from('bookings')
-        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
+        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url, refund_policy), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
         .eq('booking_ref', params.ref)
         .eq('user_id', user.id)
         .single()
@@ -64,6 +64,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
     const canRefund =
         booking.status === 'confirmed' &&
         event &&
+        event.refund_policy !== 'no_refunds' &&
         new Date(event.start_at).getTime() > Date.now() + 48 * 60 * 60 * 1000 &&
         !activeRefund
 
