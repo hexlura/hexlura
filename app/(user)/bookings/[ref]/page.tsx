@@ -60,12 +60,19 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
     // Only block refund if there's an active (pending/approved) request — rejected ones allow re-request
     const activeRefund = existingRefund &&
         (existingRefund.status === 'pending' || existingRefund.status === 'organiser_approved')
-    // Can request refund if confirmed, event > 48h away, no active refund
+
+    const hoursUntilEvent = event
+        ? (new Date(event.start_at).getTime() - Date.now()) / (1000 * 60 * 60)
+        : 0
+    const refundPolicy = event?.refund_policy
+
     const canRefund =
         booking.status === 'confirmed' &&
         event &&
-        event.refund_policy !== 'no_refunds' &&
-        new Date(event.start_at).getTime() > Date.now() + 48 * 60 * 60 * 1000 &&
+        refundPolicy !== 'no_refunds' &&
+        hoursUntilEvent > 0 &&
+        (refundPolicy !== '48_hours' || hoursUntilEvent > 48) &&
+        (refundPolicy !== '7_days' || hoursUntilEvent > 168) &&
         !activeRefund
 
     const qrCode = booking.items?.[0]?.qr_code || booking.booking_ref
