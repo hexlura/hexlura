@@ -18,11 +18,12 @@ function AcceptContent() {
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
 
-    type State = 'loading' | 'invalid' | 'already_accepted' | 'ready' | 'accepting' | 'success' | 'error'
+    type State = 'loading' | 'invalid' | 'already_accepted' | 'wrong_account' | 'ready' | 'accepting' | 'success' | 'error'
     const [state, setState] = useState<State>('loading')
     const [orgName, setOrgName] = useState('')
     const [privilege, setPrivilege] = useState('')
     const [memberId, setMemberId] = useState('')
+    const [invitedEmail, setInvitedEmail] = useState('')
 
     useEffect(() => {
         if (!token) { setState('invalid'); return }
@@ -60,6 +61,12 @@ function AcceptContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ member_id: memberId }),
         })
+        if (res.status === 403) {
+            const json = await res.json()
+            setInvitedEmail(json.invited_email || '')
+            setState('wrong_account')
+            return
+        }
         if (!res.ok) { setState('error'); return }
         setState('success')
     }
@@ -82,6 +89,26 @@ function AcceptContent() {
                 <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Invalid Invitation</h1>
                 <p style={{ color: '#8888AA', fontSize: 15, marginBottom: 24 }}>This invitation link is invalid or has expired.</p>
                 <Link href="/" style={{ color: '#0A0A0F', fontSize: 14, textDecoration: 'underline' }}>Return to homepage</Link>
+            </div>
+        )
+    }
+
+    if (state === 'wrong_account') {
+        return (
+            <div style={containerStyle}>
+                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Wrong Account</h1>
+                <p style={{ color: '#555', fontSize: 15, marginBottom: 8 }}>
+                    This invitation was sent to <strong>{invitedEmail}</strong>.
+                </p>
+                <p style={{ color: '#8888AA', fontSize: 13, marginBottom: 24 }}>
+                    Please sign in with the correct account to accept it.
+                </p>
+                <button
+                    onClick={() => router.replace(`/auth/login?next=${encodeURIComponent(`/team/accept?token=${token}`)}`)}
+                    style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                >
+                    Sign In with Correct Account
+                </button>
             </div>
         )
     }
