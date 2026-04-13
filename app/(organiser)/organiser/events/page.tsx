@@ -1,24 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { EventsClient } from './events-client'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export default async function OrganiserEventsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const serviceClient = createServiceClient()
-    const { data: organiser } = await serviceClient
-        .from('organiser_profiles').select('id').eq('user_id', user.id).single()
-    if (!organiser) redirect('/organiser/pending')
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
 
     const { data: eventsData } = await supabase
         .from('events')
         .select('id, title, slug, start_at, status')
-        .eq('organiser_id', organiser.id)
+        .eq('organiser_id', organiserId)
         .order('start_at', { ascending: false })
 
     const eventIds = (eventsData || []).map((e: { id: string }) => e.id)

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { AttendeesClient } from './attendees-client'
 import { formatPence } from '@/lib/fees'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 interface PageProps {
     params: { id: string }
@@ -12,15 +13,14 @@ export default async function AttendeesPage({ params }: PageProps) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const { data: organiser } = await supabase
-        .from('organiser_profiles').select('id').eq('user_id', user.id).single()
-    if (!organiser) redirect('/organiser/pending')
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
 
     const { data: event } = await supabase
         .from('events')
         .select('id, title, start_at')
         .eq('id', params.id)
-        .eq('organiser_id', organiser.id)
+        .eq('organiser_id', organiserId)
         .single()
     if (!event) notFound()
 

@@ -1,19 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventForm } from '@/components/organiser/EventForm'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export default async function NewEventPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const { data: organiser } = await supabase
-        .from('organiser_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-
-    if (!organiser) redirect('/organiser/pending')
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
 
     return (
         <div className="max-w-4xl">
@@ -21,7 +17,7 @@ export default async function NewEventPage() {
                 <h1 className="font-heading text-4xl text-text tracking-wide">CREATE EVENT</h1>
                 <p className="text-muted text-sm mt-1">Fill in the details to create your event</p>
             </div>
-            <EventForm organiserId={organiser.id} />
+            <EventForm organiserId={organiserId} />
         </div>
     )
 }

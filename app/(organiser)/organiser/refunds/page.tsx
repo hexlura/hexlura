@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { OrganiserRefundsClient } from './refunds-client'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,13 +11,8 @@ export default async function OrganiserRefundsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const serviceClient = createServiceClient()
-    const { data: organiser } = await serviceClient
-        .from('organiser_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-    if (!organiser) redirect('/organiser/pending')
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
 
     const adminClient = createAdminClient()
 
@@ -25,7 +20,7 @@ export default async function OrganiserRefundsPage() {
     const { data: events } = await adminClient
         .from('events')
         .select('id')
-        .eq('organiser_id', organiser.id)
+        .eq('organiser_id', organiserId)
 
     const eventIds = (events || []).map((e: { id: string }) => e.id)
 

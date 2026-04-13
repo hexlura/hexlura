@@ -1,21 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export default async function OrganiserBookingsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    const serviceClient = createServiceClient()
-    const { data: organiser } = await serviceClient
-        .from('organiser_profiles').select('id').eq('user_id', user.id).single()
-    if (!organiser) redirect('/organiser/pending')
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
 
     const { data: events } = await supabase
-        .from('events').select('id').eq('organiser_id', organiser.id)
+        .from('events').select('id').eq('organiser_id', organiserId)
     const eventIds = (events || []).map(e => e.id)
 
     const { data: bookings } = eventIds.length

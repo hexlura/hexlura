@@ -2,24 +2,28 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export default async function OrganiserPayoutsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
+
     const serviceClient = createServiceClient()
     const { data: organiser } = await serviceClient
         .from('organiser_profiles')
         .select('id, stripe_account_id, payout_method, bank_account_number')
-        .eq('user_id', user.id)
+        .eq('id', organiserId)
         .single()
     if (!organiser) redirect('/organiser/pending')
 
     const { data: payoutsData } = await supabase
         .from('payouts')
         .select('id, gross_pence, fee_pence, net_pence, status, paid_at, created_at, event:events(title)')
-        .eq('organiser_id', organiser.id)
+        .eq('organiser_id', organiserId)
         .order('created_at', { ascending: false })
 
     const payouts = (payoutsData || []) as {
