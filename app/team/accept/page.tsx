@@ -18,7 +18,7 @@ function AcceptContent() {
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
 
-    type State = 'loading' | 'invalid' | 'already_accepted' | 'needs_login' | 'ready' | 'accepting' | 'success' | 'error'
+    type State = 'loading' | 'invalid' | 'already_accepted' | 'ready' | 'accepting' | 'success' | 'error'
     const [state, setState] = useState<State>('loading')
     const [orgName, setOrgName] = useState('')
     const [privilege, setPrivilege] = useState('')
@@ -28,29 +28,22 @@ function AcceptContent() {
         if (!token) { setState('invalid'); return }
 
         async function check() {
-            const supabase = createClient()
+            // Use API route to check token — anon client can't read organiser_team due to RLS
+            const res = await fetch(`/api/team/check?token=${encodeURIComponent(token!)}`)
 
-            // Look up invite
-            const { data: invite } = await supabase
-                .from('organiser_team')
-                .select('id, privilege, status, organiser:organiser_profiles!organiser_id(org_name)')
-                .eq('invite_token', token!)
-                .maybeSingle()
+            if (res.status === 409) { setState('already_accepted'); return }
+            if (!res.ok) { setState('invalid'); return }
 
-            if (!invite) { setState('invalid'); return }
-            if (invite.status === 'active') { setState('already_accepted'); return }
-            if (invite.status === 'removed') { setState('invalid'); return }
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const org = invite.organiser as any
-            setOrgName(org?.org_name || 'this organiser')
+            const invite = await res.json()
+            setOrgName(invite.org_name)
             setPrivilege(invite.privilege)
             setMemberId(invite.id)
 
-            // Check auth
+            // Check auth — auto-redirect to login if not signed in
+            const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) {
-                setState('needs_login')
+                router.replace(`/auth/login?next=${encodeURIComponent(`/team/accept?token=${token}`)}`)
                 return
             }
 
@@ -58,7 +51,7 @@ function AcceptContent() {
         }
 
         check()
-    }, [token])
+    }, [token, router])
 
     async function handleAccept() {
         setState('accepting')
@@ -105,25 +98,6 @@ function AcceptContent() {
         )
     }
 
-    if (state === 'needs_login') {
-        return (
-            <div style={containerStyle}>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Sign In Required</h1>
-                <p style={{ color: '#555', fontSize: 15, marginBottom: 8 }}>
-                    You&apos;ve been invited to join <strong>{orgName}</strong> as <strong>{PRIVILEGE_LABELS[privilege] || privilege}</strong>.
-                </p>
-                <p style={{ color: '#8888AA', fontSize: 13, marginBottom: 24 }}>
-                    Please sign in (or create an account) to accept this invitation.
-                </p>
-                <button
-                    onClick={() => router.push(`/auth/login?next=${encodeURIComponent(`/team/accept?token=${token}`)}`)}
-                    style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                >
-                    Sign In to Accept
-                </button>
-            </div>
-        )
-    }
 
     if (state === 'success') {
         const isScanner = privilege === 'door_staff'
