@@ -454,32 +454,29 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         }
 
         // Buyer confirmation email
-        void (async () => {
-            try {
-                const html = await render(BookingConfirmation({
-                    buyerName: attendeeName || 'Valued Customer',
-                    eventName: eventData.title,
-                    eventDate,
-                    eventTime,
-                    venueName: eventData.venue_name || 'TBC',
-                    venueAddress: eventData.venue_address || '',
-                    bookingRef: booking.booking_ref,
-                    ticketItems,
-                    totalPaid: `£${(totalPence / 100).toFixed(2)}`,
-                    downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
-                }))
+        try {
+            const html = await render(BookingConfirmation({
+                buyerName: attendeeName || 'Valued Customer',
+                eventName: eventData.title,
+                eventDate,
+                eventTime,
+                venueName: eventData.venue_name || 'TBC',
+                venueAddress: eventData.venue_address || '',
+                bookingRef: booking.booking_ref,
+                ticketItems,
+                totalPaid: `£${(totalPence / 100).toFixed(2)}`,
+                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+            }))
 
-                await getResend().emails.send({
-                    from: 'Hexlura <noreply@hexlura.com>',
-                    to: attendeeEmail,
-                    subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
-                    html,
-                })
-            } catch (err) {
-                console.error('Failed to send booking confirmation email:', err)
-            }
-        })()
-
+            await getResend().emails.send({
+                from: 'Hexlura <noreply@hexlura.com>',
+                to: attendeeEmail,
+                subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
+                html,
+            })
+        } catch (err) {
+            console.error('Failed to send booking confirmation email:', err)
+        }
     }
 }
 
@@ -723,31 +720,28 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
 
         // Buyer confirmation email
-        void (async () => {
-            try {
-                const html = await render(BookingConfirmation({
-                    buyerName: attendeeName || 'Valued Customer',
-                    eventName: eventData.title,
-                    eventDate,
-                    eventTime,
-                    venueName: eventData.venue_name || 'TBC',
-                    venueAddress: eventData.venue_address || '',
-                    bookingRef: booking.booking_ref,
-                    ticketItems,
-                    totalPaid: `£${(totalPence / 100).toFixed(2)}`,
-                    downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
-                }))
+        try {
+            const html = await render(BookingConfirmation({
+                buyerName: attendeeName || 'Valued Customer',
+                eventName: eventData.title,
+                eventDate,
+                eventTime,
+                venueName: eventData.venue_name || 'TBC',
+                venueAddress: eventData.venue_address || '',
+                bookingRef: booking.booking_ref,
+                ticketItems,
+                totalPaid: `£${(totalPence / 100).toFixed(2)}`,
+                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+            }))
 
-                await getResend().emails.send({
-                    from: 'Hexlura <noreply@hexlura.com>',
-                    to: attendeeEmail,
-                    subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
-                    html,
-                })
-            } catch (err) {
-                console.error('Failed to send booking confirmation email:', err)
-            }
-        })()
-
+            await getResend().emails.send({
+                from: 'Hexlura <noreply@hexlura.com>',
+                to: attendeeEmail,
+                subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
+                html,
+            })
+        } catch (err) {
+            console.error('Failed to send booking confirmation email:', err)
+        }
     }
 }
