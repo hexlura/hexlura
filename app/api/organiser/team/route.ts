@@ -90,7 +90,25 @@ export async function POST(req: Request) {
     const { email, privilege } = await req.json()
     if (!email || !privilege) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
+    // Prevent organiser from inviting themselves
+    if (email.toLowerCase() === user.email?.toLowerCase()) {
+        return NextResponse.json({ error: 'You cannot invite yourself.' }, { status: 400 })
+    }
+
     const adminClient = createAdminClient()
+
+    // Prevent inviting someone who is already an active member of another organiser's team
+    const { data: activeElsewhere } = await adminClient
+        .from('organiser_team')
+        .select('id')
+        .eq('invited_email', email)
+        .eq('status', 'active')
+        .neq('organiser_id', organiser.id)
+        .maybeSingle()
+
+    if (activeElsewhere) {
+        return NextResponse.json({ error: 'This person is already an active team member of another organiser.' }, { status: 409 })
+    }
 
     // Check if already in team
     const { data: existing } = await adminClient
