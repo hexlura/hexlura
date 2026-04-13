@@ -126,10 +126,15 @@ export async function POST(req: Request) {
     let invitedUserId: string | null = null
     const { data: profileMatch } = await adminClient
         .from('profiles')
-        .select('id')
+        .select('id, role')
         .eq('email', email)
         .maybeSingle()
-    if (profileMatch) invitedUserId = profileMatch.id
+    if (profileMatch) {
+        if (profileMatch.role === 'organiser') {
+            return NextResponse.json({ error: 'Organisers cannot be added as team members.' }, { status: 400 })
+        }
+        invitedUserId = profileMatch.id
+    }
 
     let inviteToken: string
 
