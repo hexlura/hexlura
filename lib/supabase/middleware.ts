@@ -86,24 +86,27 @@ export async function updateSession(request: NextRequest) {
 
     const role = profile?.role || 'user'
 
-    // For 'user' role on checkin-related or auth routes, check team door_staff privilege
-    let isTeamDoorStaff = false
-    if (role === 'user' && (isAuthRoute || isCheckinRoute || isOrganiserCheckinPath)) {
+    // For 'user' role, check organiser_team privilege once for all relevant route types
+    let teamPrivilege: string | null = null
+    if (role === 'user' && (isAuthRoute || isCheckinRoute || isOrganiserCheckinPath || isOrganiserRoute)) {
         const { data: teamAccess } = await serviceClient
             .from('organiser_team')
-            .select('id')
+            .select('privilege')
             .eq('user_id', user.id)
-            .eq('privilege', 'door_staff')
             .eq('status', 'active')
             .maybeSingle()
-        isTeamDoorStaff = !!teamAccess
+        teamPrivilege = teamAccess?.privilege || null
     }
+
+    const isTeamDoorStaff = teamPrivilege === 'door_staff'
+    const isTeamMember = teamPrivilege !== null
 
     // Authenticated user on auth pages → redirect to their dashboard
     if (isAuthRoute) {
         if (role === 'admin') return redirectTo('/admin')
         if (role === 'organiser') return redirectTo('/organiser')
         if (role === 'door_staff' || isTeamDoorStaff) return redirectTo('/checkin')
+        if (isTeamMember) return redirectTo('/organiser')
         return redirectTo('/account')
     }
 
@@ -131,11 +134,12 @@ export async function updateSession(request: NextRequest) {
 
         if (!isExempt) {
             if (isOrganiserCheckinPath) {
-                // Checkin scanner: organiser, admin, or door_staff
-                if (role !== 'organiser' && role !== 'admin' && role !== 'door_staff') {
+                // Checkin scanner: organiser, admin, door_staff, or team door_staff
+                if (role !== 'organiser' && role !== 'admin' && role !== 'door_staff' && !isTeamDoorStaff) {
                     return redirectTo('/')
                 }
-            } else if (role !== 'organiser' && role !== 'admin') {
+            } else if (role !== 'organiser' && role !== 'admin' && !isTeamMember) {
+                // co_organiser and event_manager team members allowed through
                 return redirectTo('/')
             }
         }
