@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect, notFound } from 'next/navigation'
 import { EventForm } from '@/components/organiser/EventForm'
 import type { Event, TicketType } from '@/types'
@@ -16,7 +17,9 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
     const organiserId = await resolveOrganiserId(user.id)
     if (!organiserId) redirect('/organiser/pending')
 
-    const { data: event } = await supabase
+    const serviceClient = createServiceClient()
+
+    const { data: event } = await serviceClient
         .from('events')
         .select('*')
         .eq('id', params.id)
@@ -25,7 +28,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
 
     if (!event) notFound()
 
-    const { data: ticketTypes } = await supabase
+    const { data: ticketTypes } = await serviceClient
         .from('ticket_types')
         .select('*')
         .eq('event_id', params.id)

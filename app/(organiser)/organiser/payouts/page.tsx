@@ -20,7 +20,7 @@ export default async function OrganiserPayoutsPage() {
         .single()
     if (!organiser) redirect('/organiser/pending')
 
-    const { data: payoutsData } = await supabase
+    const { data: payoutsData } = await serviceClient
         .from('payouts')
         .select('id, gross_pence, fee_pence, net_pence, status, paid_at, created_at, event:events(title)')
         .eq('organiser_id', organiserId)

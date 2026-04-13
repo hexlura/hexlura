@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
@@ -13,7 +14,9 @@ export default async function OrganiserEventsPage() {
     const organiserId = await resolveOrganiserId(user.id)
     if (!organiserId) redirect('/organiser/pending')
 
-    const { data: eventsData } = await supabase
+    const serviceClient = createServiceClient()
+
+    const { data: eventsData } = await serviceClient
         .from('events')
         .select('id, title, slug, start_at, status')
         .eq('organiser_id', organiserId)
@@ -23,7 +26,7 @@ export default async function OrganiserEventsPage() {
 
     // Get ticket sales per event
     const { data: bookings } = eventIds.length
-        ? await supabase
+        ? await serviceClient
             .from('bookings')
             .select('event_id, ticket_subtotal_pence')
             .in('event_id', eventIds)
@@ -31,12 +34,12 @@ export default async function OrganiserEventsPage() {
         : { data: [] }
 
     const { data: allBookingsWithId } = eventIds.length
-        ? await supabase.from('bookings').select('id, event_id').in('event_id', eventIds).eq('status', 'confirmed')
+        ? await serviceClient.from('bookings').select('id, event_id').in('event_id', eventIds).eq('status', 'confirmed')
         : { data: [] }
 
     const bookingIdList = (allBookingsWithId || []).map((b: { id: string }) => b.id)
     const { data: items } = bookingIdList.length
-        ? await supabase.from('booking_items').select('booking_id, quantity').in('booking_id', bookingIdList)
+        ? await serviceClient.from('booking_items').select('booking_id, quantity').in('booking_id', bookingIdList)
         : { data: [] }
 
     const bookingMap = new Map((allBookingsWithId || []).map((b: { id: string; event_id: string }) => [b.id, b.event_id]))

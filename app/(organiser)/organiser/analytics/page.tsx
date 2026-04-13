@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { AnalyticsClient } from './analytics-client'
 import { resolveOrganiserId } from '@/lib/organiser-access'
@@ -11,7 +12,9 @@ export default async function AnalyticsPage() {
     const organiserId = await resolveOrganiserId(user.id)
     if (!organiserId) redirect('/organiser/pending')
 
-    const { data: events } = await supabase
+    const serviceClient = createServiceClient()
+
+    const { data: events } = await serviceClient
         .from('events')
         .select('id, title, category, start_at, status')
         .eq('organiser_id', organiserId)
@@ -20,7 +23,7 @@ export default async function AnalyticsPage() {
     const eventIds = (events || []).map(e => e.id)
 
     const { data: bookings } = eventIds.length
-        ? await supabase
+        ? await serviceClient
             .from('bookings')
             .select('id, event_id, ticket_subtotal_pence, created_at')
             .in('event_id', eventIds)
@@ -30,7 +33,7 @@ export default async function AnalyticsPage() {
     const bookingIds = (bookings || []).map(b => b.id)
 
     const { data: items } = bookingIds.length
-        ? await supabase
+        ? await serviceClient
             .from('booking_items')
             .select('booking_id, quantity, ticket_type_id, ticket_type:ticket_types(name, event_id)')
             .in('booking_id', bookingIds)

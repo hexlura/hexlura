@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect, notFound } from 'next/navigation'
 import { AttendeesClient } from './attendees-client'
 import { formatPence } from '@/lib/fees'
@@ -16,7 +17,9 @@ export default async function AttendeesPage({ params }: PageProps) {
     const organiserId = await resolveOrganiserId(user.id)
     if (!organiserId) redirect('/organiser/pending')
 
-    const { data: event } = await supabase
+    const serviceClient = createServiceClient()
+
+    const { data: event } = await serviceClient
         .from('events')
         .select('id, title, start_at')
         .eq('id', params.id)
@@ -25,7 +28,7 @@ export default async function AttendeesPage({ params }: PageProps) {
     if (!event) notFound()
 
     // Get all confirmed bookings for this event
-    const { data: bookings } = await supabase
+    const { data: bookings } = await serviceClient
         .from('bookings')
         .select('id, booking_ref, ticket_subtotal_pence, created_at')
         .eq('event_id', params.id)
@@ -34,7 +37,7 @@ export default async function AttendeesPage({ params }: PageProps) {
     const bookingIds = (bookings || []).map(b => b.id)
 
     const { data: items } = bookingIds.length
-        ? await supabase
+        ? await serviceClient
             .from('booking_items')
             .select('id, booking_id, quantity, attendee_name, attendee_email, ticket_type_id, ticket_type:ticket_types(name), qr_code')
             .in('booking_id', bookingIds)
@@ -43,7 +46,7 @@ export default async function AttendeesPage({ params }: PageProps) {
     // Get checkins
     const itemIds = (items || []).map(i => i.id)
     const { data: checkins } = itemIds.length
-        ? await supabase
+        ? await serviceClient
             .from('checkins')
             .select('booking_item_id, checked_in_at')
             .in('booking_item_id', itemIds)
@@ -52,7 +55,7 @@ export default async function AttendeesPage({ params }: PageProps) {
     const checkinMap = new Map((checkins || []).map(c => [c.booking_item_id, c.checked_in_at]))
 
     // Get ticket types for filter dropdown
-    const { data: ticketTypes } = await supabase
+    const { data: ticketTypes } = await serviceClient
         .from('ticket_types').select('id, name').eq('event_id', params.id)
 
     // Build attendee rows — one row per PHYSICAL TICKET by expanding booking_items by quantity.

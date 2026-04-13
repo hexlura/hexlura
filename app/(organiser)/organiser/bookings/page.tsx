@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
@@ -12,12 +13,14 @@ export default async function OrganiserBookingsPage() {
     const organiserId = await resolveOrganiserId(user.id)
     if (!organiserId) redirect('/organiser/pending')
 
-    const { data: events } = await supabase
+    const serviceClient = createServiceClient()
+
+    const { data: events } = await serviceClient
         .from('events').select('id').eq('organiser_id', organiserId)
     const eventIds = (events || []).map(e => e.id)
 
     const { data: bookings } = eventIds.length
-        ? await supabase
+        ? await serviceClient
             .from('bookings')
             .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, booking_fee_pence, total_pence, created_at, confirmed_at, event:events(id, title)')
             .in('event_id', eventIds)
