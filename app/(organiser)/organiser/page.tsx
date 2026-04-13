@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
 import { RevenueChart } from '@/components/organiser/RevenueChart'
+import { resolveOrganiserId } from '@/lib/organiser-access'
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -17,27 +18,23 @@ export default async function OrganiserDashboardPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
 
-    // Use service client to bypass RLS for reliable profile lookup
     const serviceClient = createServiceClient()
 
-    let organiser: { id: string; org_name: string } | null = null
+    const organiserId = await resolveOrganiserId(user.id)
+    if (!organiserId) redirect('/organiser/pending')
+
+    // Fetch org_name for display
+    let orgName = 'Your Organisation'
     try {
         const { data } = await serviceClient
             .from('organiser_profiles')
-            .select('id, org_name')
-            .eq('user_id', user.id)
+            .select('org_name')
+            .eq('id', organiserId)
             .single()
-        organiser = data
+        if (data) orgName = data.org_name
     } catch (e) {
         console.error('[OrganiserDashboard] organiser_profiles fetch failed:', e)
     }
-
-    if (!organiser) {
-        // No organiser profile found — safe fallback instead of crashing
-        organiser = { id: '', org_name: 'Your Organisation' }
-    }
-
-    const organiserId = organiser.id
 
     let events: {
         id: string; title: string; start_at: string; venue_name: string | null; status: string;
@@ -45,7 +42,7 @@ export default async function OrganiserDashboardPage() {
     }[] = []
     try {
         if (organiserId) {
-            const { data } = await supabase
+            const { data } = await serviceClient
                 .from('events')
                 .select('id, title, start_at, venue_name, status, ticket_types(quantity_total, quantity_sold)')
                 .eq('organiser_id', organiserId)
@@ -63,7 +60,7 @@ export default async function OrganiserDashboardPage() {
     }[] = []
     try {
         if (eventIds.length > 0) {
-            const { data } = await supabase
+            const { data } = await serviceClient
                 .from('bookings')
                 .select('id, booking_ref, ticket_subtotal_pence, created_at, event:events(title)')
                 .in('event_id', eventIds)
@@ -80,7 +77,7 @@ export default async function OrganiserDashboardPage() {
     let items: { booking_id: string; quantity: number; attendee_name: string | null }[] = []
     try {
         if (bookingIds.length > 0) {
-            const { data } = await supabase
+            const { data } = await serviceClient
                 .from('booking_items')
                 .select('booking_id, quantity, attendee_name')
                 .in('booking_id', bookingIds)
@@ -93,7 +90,7 @@ export default async function OrganiserDashboardPage() {
     let pendingPayouts: { net_pence: number | null }[] = []
     try {
         if (organiserId) {
-            const { data } = await supabase
+            const { data } = await serviceClient
                 .from('payouts')
                 .select('net_pence')
                 .eq('organiser_id', organiserId)
@@ -142,7 +139,7 @@ export default async function OrganiserDashboardPage() {
         <div className="max-w-7xl">
             <div className="mb-8">
                 <h1 className="font-heading text-4xl text-text tracking-wide">DASHBOARD</h1>
-                <p className="text-muted text-sm mt-1">{organiser.org_name}</p>
+                <p className="text-muted text-sm mt-1">{orgName}</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {kpis.map(kpi => (
