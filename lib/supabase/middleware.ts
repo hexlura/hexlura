@@ -86,11 +86,24 @@ export async function updateSession(request: NextRequest) {
 
     const role = profile?.role || 'user'
 
+    // For 'user' role on checkin-related or auth routes, check team door_staff privilege
+    let isTeamDoorStaff = false
+    if (role === 'user' && (isAuthRoute || isCheckinRoute || isOrganiserCheckinPath)) {
+        const { data: teamAccess } = await serviceClient
+            .from('organiser_team')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('privilege', 'door_staff')
+            .eq('status', 'active')
+            .maybeSingle()
+        isTeamDoorStaff = !!teamAccess
+    }
+
     // Authenticated user on auth pages → redirect to their dashboard
     if (isAuthRoute) {
         if (role === 'admin') return redirectTo('/admin')
         if (role === 'organiser') return redirectTo('/organiser')
-        if (role === 'door_staff') return redirectTo('/checkin')
+        if (role === 'door_staff' || isTeamDoorStaff) return redirectTo('/checkin')
         return redirectTo('/account')
     }
 
@@ -99,9 +112,9 @@ export async function updateSession(request: NextRequest) {
         return redirectTo('/checkin')
     }
 
-    // /checkin routes: require door_staff, organiser, or admin
+    // /checkin routes: require door_staff, organiser, admin, or team door_staff
     if (isCheckinRoute) {
-        if (role !== 'door_staff' && role !== 'organiser' && role !== 'admin') {
+        if (role !== 'door_staff' && role !== 'organiser' && role !== 'admin' && !isTeamDoorStaff) {
             return redirectTo('/')
         }
         return supabaseResponse

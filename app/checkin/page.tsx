@@ -40,17 +40,31 @@ export default async function CheckinLandingPage() {
         .eq('id', user.id)
         .single()
 
-    if (!profile || profile.role !== 'door_staff') {
-        redirect('/checkin/login')
+    const role = profile?.role || 'user'
+
+    // Support both legacy door_staff profile role and new organiser_team system
+    let organiserIds: string[] = []
+
+    if (role === 'door_staff') {
+        // Legacy: fetch from old door_staff assignments table
+        const { data: assignments } = await serviceClient
+            .from('door_staff')
+            .select('organiser_id')
+            .eq('user_id', user.id)
+        organiserIds = assignments?.map((a: { organiser_id: string }) => a.organiser_id) ?? []
+    } else {
+        // New system: fetch organiser_ids from organiser_team
+        const { data: teamRows } = await serviceClient
+            .from('organiser_team')
+            .select('organiser_id')
+            .eq('user_id', user.id)
+            .eq('privilege', 'door_staff')
+            .eq('status', 'active')
+        organiserIds = teamRows?.map((r: { organiser_id: string }) => r.organiser_id) ?? []
+
+        // Not a door_staff in either system
+        if (organiserIds.length === 0) redirect('/checkin/login')
     }
-
-    // Fetch door_staff assignments for this user
-    const { data: assignments } = await serviceClient
-        .from('door_staff')
-        .select('organiser_id')
-        .eq('user_id', user.id)
-
-    const organiserIds: string[] = assignments?.map((a: { organiser_id: string }) => a.organiser_id) ?? []
 
     type EventRow = {
         id: string
