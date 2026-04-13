@@ -26,13 +26,6 @@ type OrganiserWithExtras = OrganiserProfile & {
     social_links?: Record<string, string> | null
 }
 
-interface DoorStaffMember {
-    id: string
-    user_id: string
-    full_name: string | null
-    email: string | null
-}
-
 interface SettingsClientProps {
     organiser: OrganiserProfile
 }
@@ -76,14 +69,6 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
     const [newSocialSaved, setNewSocialSaved] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    // Door staff
-    const [doorStaff, setDoorStaff] = useState<DoorStaffMember[]>([])
-    const [doorStaffEmail, setDoorStaffEmail] = useState('')
-    const [addingStaff, setAddingStaff] = useState(false)
-    const [doorStaffError, setDoorStaffError] = useState('')
-    const [doorStaffSuccess, setDoorStaffSuccess] = useState('')
-    const [removingId, setRemovingId] = useState<string | null>(null)
-
     useEffect(() => {
         const existing = organiser.social_links || {}
         setSocialLinksData(existing)
@@ -111,47 +96,6 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
         setNewSocialSaved(true)
         setTimeout(() => setNewSocialSaved(false), 2000)
         setNewSocialSaving(false)
-    }
-
-    useEffect(() => {
-        fetch('/api/organiser/door-staff')
-            .then(r => r.json())
-            .then(data => { if (data.staff) setDoorStaff(data.staff) })
-            .catch(() => {})
-    }, [])
-
-    async function addDoorStaff(e: React.FormEvent) {
-        e.preventDefault()
-        setAddingStaff(true)
-        setDoorStaffError('')
-        setDoorStaffSuccess('')
-        const res = await fetch('/api/organiser/door-staff', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: doorStaffEmail }),
-        })
-        const data = await res.json()
-        if (!res.ok) {
-            setDoorStaffError(data.error || 'Failed to add door staff')
-        } else {
-            setDoorStaffSuccess('Door staff added successfully')
-            setDoorStaffEmail('')
-            setDoorStaff(prev => [...prev, data.member])
-        }
-        setAddingStaff(false)
-    }
-
-    async function removeDoorStaff(userId: string, id: string) {
-        setRemovingId(id)
-        const res = await fetch('/api/organiser/door-staff', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId }),
-        })
-        if (res.ok) {
-            setDoorStaff(prev => prev.filter(s => s.id !== id))
-        }
-        setRemovingId(null)
     }
 
     // Notification toggles
@@ -495,65 +439,6 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
                     </Button>
                 </form>
             </Section>
-
-            {/* Door Staff */}
-            <div className="bg-card border border-border rounded-none p-6 mb-6">
-                <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '24px', color: '#0A0A0F', marginBottom: '8px', letterSpacing: '1px' }}>
-                    DOOR STAFF
-                </h2>
-                <p style={{ fontSize: '13px', color: '#666677', marginBottom: '20px' }}>
-                    Add staff who can scan tickets at your events. They will only have access to the check-in scanner.
-                </p>
-
-                <form onSubmit={addDoorStaff} className="flex gap-2 mb-4">
-                    <input
-                        type="email"
-                        value={doorStaffEmail}
-                        onChange={e => setDoorStaffEmail(e.target.value)}
-                        placeholder="Staff Email Address"
-                        required
-                        className="flex-1 bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                    />
-                    <button
-                        type="submit"
-                        disabled={addingStaff || !doorStaffEmail}
-                        className="px-4 py-2 bg-[#0A0A0F] text-white text-sm rounded-sm disabled:opacity-50 hover:bg-[#333333] transition-colors whitespace-nowrap"
-                    >
-                        {addingStaff ? 'Adding...' : 'Add Door Staff'}
-                    </button>
-                </form>
-
-                {doorStaffError && (
-                    <p className="text-sm text-accent mb-3">{doorStaffError}</p>
-                )}
-                {doorStaffSuccess && (
-                    <p className="text-sm text-success mb-3">{doorStaffSuccess}</p>
-                )}
-
-                {doorStaff.length > 0 && (
-                    <div className="divide-y divide-border border border-border rounded-sm">
-                        {doorStaff.map(member => (
-                            <div key={member.id} className="flex items-center justify-between px-3 py-2.5">
-                                <div>
-                                    <p className="text-sm text-text">{member.full_name || 'Unknown'}</p>
-                                    <p className="text-xs text-muted">{member.email}</p>
-                                </div>
-                                <button
-                                    onClick={() => removeDoorStaff(member.user_id, member.id)}
-                                    disabled={removingId === member.id}
-                                    className="text-xs text-[#666677] border border-[#C0C0C8] px-3 py-1 rounded-sm hover:text-[#0A0A0F] hover:border-[#0A0A0F] disabled:opacity-50 transition-colors"
-                                >
-                                    {removingId === member.id ? '...' : 'Remove'}
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {doorStaff.length === 0 && (
-                    <p className="text-xs text-muted">No door staff added yet.</p>
-                )}
-            </div>
 
             {/* Social Links */}
             <div className="bg-card border border-border rounded-none p-6 mb-6">
