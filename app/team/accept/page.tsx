@@ -62,16 +62,12 @@ function AcceptContent() {
 
     async function handleAccept() {
         setState('accepting')
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setState('needs_login'); return }
-
-        const { error } = await supabase
-            .from('organiser_team')
-            .update({ status: 'active', user_id: user.id, accepted_at: new Date().toISOString() })
-            .eq('id', memberId)
-
-        if (error) { setState('error'); return }
+        const res = await fetch('/api/team/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ member_id: memberId }),
+        })
+        if (!res.ok) { setState('error'); return }
         setState('success')
     }
 

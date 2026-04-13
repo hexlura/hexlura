@@ -95,7 +95,7 @@ export async function POST(req: Request) {
     // Check if already in team
     const { data: existing } = await adminClient
         .from('organiser_team')
-        .select('id, status')
+        .select('id, status, invite_token')
         .eq('organiser_id', organiser.id)
         .eq('invited_email', email)
         .maybeSingle()
@@ -104,32 +104,54 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'This person is already in your team.' }, { status: 409 })
     }
 
-    // Look up user by email via auth admin
+    // Look up user by email in profiles table (avoids listUsers pagination limits)
     let invitedUserId: string | null = null
-    try {
-        const { data: usersData } = await adminClient.auth.admin.listUsers()
-        const match = usersData?.users?.find(u => u.email === email)
-        if (match) invitedUserId = match.id
-    } catch {
-        // ignore — user may not exist yet
+    const { data: profileMatch } = await adminClient
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+    if (profileMatch) invitedUserId = profileMatch.id
+
+    let inviteToken: string
+
+    if (existing && existing.status === 'removed') {
+        // Re-invite: reset the existing removed row instead of inserting a duplicate
+        const { data: updated, error } = await adminClient
+            .from('organiser_team')
+            .update({
+                user_id: invitedUserId,
+                privilege,
+                status: 'pending',
+                invited_by: user.id,
+                accepted_at: null,
+                invite_token: crypto.randomUUID(),
+            })
+            .eq('id', existing.id)
+            .select('invite_token')
+            .single()
+
+        if (error || !updated) return NextResponse.json({ error: 'Failed to add member.' }, { status: 500 })
+        inviteToken = updated.invite_token
+    } else {
+        const { data: inserted, error } = await adminClient
+            .from('organiser_team')
+            .insert({
+                organiser_id: organiser.id,
+                user_id: invitedUserId,
+                privilege,
+                status: 'pending',
+                invited_by: user.id,
+                invited_email: email,
+            })
+            .select('invite_token')
+            .single()
+
+        if (error || !inserted) return NextResponse.json({ error: 'Failed to add member.' }, { status: 500 })
+        inviteToken = inserted.invite_token
     }
 
-    const { data: inserted, error } = await adminClient
-        .from('organiser_team')
-        .insert({
-            organiser_id: organiser.id,
-            user_id: invitedUserId,
-            privilege,
-            status: 'pending',
-            invited_by: user.id,
-            invited_email: email,
-        })
-        .select('invite_token')
-        .single()
-
-    if (error) return NextResponse.json({ error: 'Failed to add member.' }, { status: 500 })
-
-    await sendInviteEmail(email, organiser.org_name, privilege, inserted.invite_token)
+    await sendInviteEmail(email, organiser.org_name, privilege, inviteToken)
 
     return NextResponse.json({ success: true })
 }
