@@ -104,7 +104,7 @@ export default async function CheckinLandingPage() {
 
                 {events.length === 0 ? (
                     <p style={{ color: '#8888AA', fontSize: '14px', textAlign: 'center', marginTop: '48px' }}>
-                        No events assigned. Ask your organiser to add you as door staff.
+                        No upcoming events yet. Your organiser hasn&apos;t published any events.
                     </p>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
