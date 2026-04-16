@@ -126,6 +126,9 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                             {heading('MY ACCOUNT', 'account')}
                             {open['account'] && (
                                 <div className="pt-2 space-y-0.5">
+                                    <Link href="/account" onClick={close} className={linkClass('/account')}>Profile</Link>
+                                    <Link href="/bookings" onClick={close} className={linkClass('/bookings')}>My Tickets</Link>
+                                    <Link href="/favourites" onClick={close} className={linkClass('/favourites')}>Favourites</Link>
                                     <Link href="/account/settings" onClick={close} className={linkClass('/account/settings')}>Account Settings</Link>
                                     {role === 'organiser' && (
                                         <Link href="/organiser" onClick={close} className={linkClass('/organiser')}>Organiser Portal</Link>
