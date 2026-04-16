@@ -77,15 +77,16 @@ export default function BrowseEventsPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase
       .from('events')
-      .select('*, organiser:organiser_profiles(*), ticket_types!inner(*)')
+      .select('*, organiser:organiser_profiles(*), ticket_types(*)')
       .eq('status', 'published')
+      .gte('start_at', new Date().toISOString())
 
     if (query) q = q.ilike('title', `%${query}%`)
     if (category && category !== 'All') q = q.eq('category', category)
     if (location && location !== 'Any') q = q.ilike('venue_address', `%${location}%`)
 
-    q = q.gte('ticket_types.price_pence', minPrice * 100)
-    q = q.lte('ticket_types.price_pence', maxPrice * 100)
+    if (minPrice > 0) q = q.gte('ticket_types.price_pence', minPrice * 100)
+    if (maxPrice < 500) q = q.lte('ticket_types.price_pence', maxPrice * 100)
 
     if (sort === 'popular') {
       q = q.order('created_at', { ascending: false })
