@@ -18,12 +18,12 @@ export async function resolveOrganiserId(userId: string): Promise<string | null>
     if (organiser) return organiser.id
 
     // Fall back to organiser_team membership
-    const { data: team } = await serviceClient
+    const { data: teams } = await serviceClient
         .from('organiser_team')
         .select('organiser_id')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .maybeSingle()
+        .limit(1)
 
-    return team?.organiser_id || null
+    return teams?.[0]?.organiser_id || null
 }

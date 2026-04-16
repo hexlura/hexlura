@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
-type Privilege = 'co_organiser' | 'event_manager' | 'door_staff'
+type Privilege = 'door_staff'
 
 interface TeamMember {
     id: string
@@ -18,21 +18,15 @@ interface TeamMember {
 }
 
 const PRIVILEGE_LABELS: Record<Privilege, string> = {
-    co_organiser: 'Co-organiser',
-    event_manager: 'Event Manager',
     door_staff: 'Door Staff',
 }
 
 const PRIVILEGE_BADGE: Record<Privilege, React.CSSProperties> = {
-    co_organiser: { background: 'rgba(230,57,80,0.1)', color: '#E63950' },
-    event_manager: { background: 'rgba(245,166,35,0.1)', color: '#F5A623' },
     door_staff: { background: 'rgba(0,196,138,0.1)', color: '#00C48A' },
 }
 
 const PRIVILEGE_DESC: Record<Privilege, string> = {
     door_staff: 'Can only access the ticket scanner for check-in',
-    event_manager: 'Can create events, view bookings and manage attendees',
-    co_organiser: 'Full access to organiser portal including payouts and settings',
 }
 
 function PrivilegeBadge({ privilege }: { privilege: Privilege }) {
@@ -73,7 +67,7 @@ export default function OrganiserTeamPage() {
     const [members, setMembers] = useState<TeamMember[]>([])
     const [loading, setLoading] = useState(true)
     const [email, setEmail] = useState('')
-    const [privilege, setPrivilege] = useState<Privilege>('door_staff')
+    const privilege: Privilege = 'door_staff'
     const [addLoading, setAddLoading] = useState(false)
     const [addMsg, setAddMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -107,17 +101,6 @@ export default function OrganiserTeamPage() {
             fetchMembers()
         }
         setAddLoading(false)
-    }
-
-    async function handleChangeRole(memberId: string, newPrivilege: Privilege) {
-        setActionLoading(memberId + '-role')
-        await fetch('/api/organiser/team', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ member_id: memberId, privilege: newPrivilege }),
-        })
-        await fetchMembers()
-        setActionLoading(null)
     }
 
     async function handleRemove(memberId: string) {
@@ -166,20 +149,9 @@ export default function OrganiserTeamPage() {
                         />
                     </div>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: 200 }}>
-                            <select
-                                value={privilege}
-                                onChange={e => setPrivilege(e.target.value as Privilege)}
-                                style={{ ...selectStyle, width: '100%' }}
-                            >
-                                <option value="door_staff">Door Staff — Scan tickets at the door</option>
-                                <option value="event_manager">Event Manager — Manage events and bookings</option>
-                                <option value="co_organiser">Co-organiser — Full portal access</option>
-                            </select>
-                            <p style={{ fontSize: 12, color: '#8888AA', marginTop: 6 }}>
-                                {PRIVILEGE_DESC[privilege]}
-                            </p>
-                        </div>
+                        <p style={{ fontSize: 12, color: '#8888AA', margin: '6px 0', flex: 1 }}>
+                            {PRIVILEGE_DESC[privilege]}
+                        </p>
                         <button
                             type="submit"
                             disabled={addLoading}
@@ -244,27 +216,15 @@ export default function OrganiserTeamPage() {
                                                 {m.accepted_at ? new Date(m.accepted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                                             </td>
                                             <td style={{ padding: '12px' }}>
-                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                                    <select
-                                                        value={m.privilege}
-                                                        onChange={e => handleChangeRole(m.id, e.target.value as Privilege)}
-                                                        disabled={actionLoading === m.id + '-role'}
-                                                        style={{ ...selectStyle, fontSize: 12, padding: '4px 8px' }}
-                                                    >
-                                                        <option value="door_staff">Door Staff</option>
-                                                        <option value="event_manager">Event Manager</option>
-                                                        <option value="co_organiser">Co-organiser</option>
-                                                    </select>
-                                                    <button
-                                                        onClick={() => handleRemove(m.id)}
-                                                        disabled={actionLoading === m.id + '-remove'}
-                                                        style={{ fontSize: 12, padding: '4px 10px', border: '1px solid #E63950', color: '#E63950', background: 'transparent', cursor: 'pointer' }}
-                                                        onMouseEnter={e => { e.currentTarget.style.background = '#E63950'; e.currentTarget.style.color = '#fff' }}
-                                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#E63950' }}
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    onClick={() => handleRemove(m.id)}
+                                                    disabled={actionLoading === m.id + '-remove'}
+                                                    style={{ fontSize: 12, padding: '4px 10px', border: '1px solid #E63950', color: '#E63950', background: 'transparent', cursor: 'pointer' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = '#E63950'; e.currentTarget.style.color = '#fff' }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#E63950' }}
+                                                >
+                                                    Remove
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}

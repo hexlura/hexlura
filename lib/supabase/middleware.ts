@@ -89,24 +89,23 @@ export async function updateSession(request: NextRequest) {
     // For 'user' role, check organiser_team privilege once for all relevant route types
     let teamPrivilege: string | null = null
     if (role === 'user' && (isAuthRoute || isCheckinRoute || isOrganiserCheckinPath || isOrganiserRoute)) {
-        const { data: teamAccess } = await serviceClient
+        const { data: teamRows } = await serviceClient
             .from('organiser_team')
             .select('privilege')
             .eq('user_id', user.id)
             .eq('status', 'active')
-            .maybeSingle()
-        teamPrivilege = teamAccess?.privilege || null
+            .limit(1)
+        teamPrivilege = Array.isArray(teamRows) && teamRows[0] ? teamRows[0].privilege : null
     }
 
     const isTeamDoorStaff = teamPrivilege === 'door_staff'
-    const isTeamMember = teamPrivilege !== null
 
     // Authenticated user on auth pages → redirect to their dashboard
     if (isAuthRoute) {
         if (role === 'admin') return redirectTo('/admin')
         if (role === 'organiser') return redirectTo('/organiser')
         if (role === 'door_staff' || isTeamDoorStaff) return redirectTo('/checkin')
-        if (isTeamMember) return redirectTo('/organiser')
+        // no special redirect for non-door-staff team members
         return redirectTo('/account')
     }
 
@@ -138,8 +137,7 @@ export async function updateSession(request: NextRequest) {
                 if (role !== 'organiser' && role !== 'admin' && role !== 'door_staff' && !isTeamDoorStaff) {
                     return redirectTo('/')
                 }
-            } else if (role !== 'organiser' && role !== 'admin' && !isTeamMember) {
-                // co_organiser and event_manager team members allowed through
+            } else if (role !== 'organiser' && role !== 'admin') {
                 return redirectTo('/')
             }
         }

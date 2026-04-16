@@ -8,8 +8,6 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 const PRIVILEGE_LABELS: Record<string, string> = {
-    co_organiser: 'Co-organiser',
-    event_manager: 'Event Manager',
     door_staff: 'Door Staff',
 }
 
@@ -127,19 +125,18 @@ function AcceptContent() {
 
 
     if (state === 'success') {
-        const isScanner = privilege === 'door_staff'
         return (
             <div style={containerStyle}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
                 <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Welcome to the team!</h1>
                 <p style={{ color: '#555', fontSize: 15, marginBottom: 32 }}>
-                    You have joined <strong>{orgName}</strong> as <strong>{PRIVILEGE_LABELS[privilege] || privilege}</strong>.
+                    You have joined <strong>{orgName}</strong> as <strong>Door Staff</strong>.
                 </p>
                 <Link
-                    href={isScanner ? '/checkin' : '/organiser'}
+                    href="/checkin"
                     style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
                 >
-                    {isScanner ? 'Go to Check-in Scanner' : 'Go to Organiser Portal'}
+                    Go to Check-in Scanner
                 </Link>
             </div>
         )
@@ -165,9 +162,7 @@ function AcceptContent() {
                 You&apos;ve been invited to join <strong>{orgName}</strong> as <strong>{PRIVILEGE_LABELS[privilege] || privilege}</strong>.
             </p>
             <p style={{ color: '#8888AA', fontSize: 13, marginBottom: 32 }}>
-                {privilege === 'door_staff' && 'You will have access to the ticket scanner for check-in.'}
-                {privilege === 'event_manager' && 'You will be able to manage events, bookings and attendees.'}
-                {privilege === 'co_organiser' && 'You will have full access to the organiser portal.'}
+                You will have access to the ticket scanner for check-in.
             </p>
             <button
                 onClick={handleAccept}

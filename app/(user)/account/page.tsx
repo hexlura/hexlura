@@ -220,34 +220,19 @@ export default async function AccountPage() {
                         {teamMemberships.map((tm) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const org = tm.organiser as any
-                            const privilege = tm.privilege as string
-                            const badgeStyle =
-                                privilege === 'co_organiser' ? { background: 'rgba(230,57,80,0.1)', color: '#E63950' } :
-                                privilege === 'event_manager' ? { background: 'rgba(245,166,35,0.1)', color: '#F5A623' } :
-                                { background: 'rgba(0,196,138,0.1)', color: '#00C48A' }
-                            const badgeLabel =
-                                privilege === 'co_organiser' ? 'Co-organiser' :
-                                privilege === 'event_manager' ? 'Event Manager' : 'Door Staff'
-                            const isDoorStaff = privilege === 'door_staff'
                             return (
                                 <div key={tm.id} style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                                     <div>
                                         <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0F', margin: '0 0 4px' }}>{org?.org_name || 'Organiser'}</p>
-                                        <span style={{ ...badgeStyle, fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>
-                                            {badgeLabel}
+                                        <span style={{ background: 'rgba(0,196,138,0.1)', color: '#00C48A', fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>
+                                            Door Staff
                                         </span>
                                     </div>
                                     <Link
-                                        href={isDoorStaff ? '/checkin' : '/organiser'}
-                                        style={{
-                                            display: 'inline-block', padding: '8px 20px', fontSize: 13, fontWeight: 600,
-                                            textDecoration: 'none',
-                                            ...(isDoorStaff
-                                                ? { border: '1px solid #0A0A0F', color: '#0A0A0F', background: 'transparent' }
-                                                : { background: '#0A0A0F', color: '#fff' }),
-                                        }}
+                                        href="/checkin"
+                                        style={{ display: 'inline-block', padding: '8px 20px', fontSize: 13, fontWeight: 600, textDecoration: 'none', border: '1px solid #0A0A0F', color: '#0A0A0F', background: 'transparent' }}
                                     >
-                                        {isDoorStaff ? 'Open Scanner' : 'Go to Dashboard'}
+                                        Open Scanner
                                     </Link>
                                 </div>
                             )

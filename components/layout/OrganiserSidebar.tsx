@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/client'
 interface OrganiserSidebarProps {
     userName: string
     orgName: string
-    teamPrivilege?: string | null
 }
 
 const navLinks = [
@@ -116,10 +115,7 @@ const navLinks = [
     },
 ]
 
-// Routes accessible to event_manager team members
-const EVENT_MANAGER_ALLOWED = ['/organiser/events', '/organiser/bookings', '/organiser/attendees']
-
-export function OrganiserSidebar({ userName, orgName, teamPrivilege }: OrganiserSidebarProps) {
+export function OrganiserSidebar({ userName, orgName }: OrganiserSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const [loadingPath, setLoadingPath] = useState('')
@@ -130,20 +126,7 @@ export function OrganiserSidebar({ userName, orgName, teamPrivilege }: Organiser
         setIsOpen(false)
     }, [pathname])
 
-    // Redirect event_manager away from restricted routes
-    useEffect(() => {
-        if (teamPrivilege === 'event_manager') {
-            const allowed = EVENT_MANAGER_ALLOWED.some(r => pathname.startsWith(r))
-            if (!allowed && pathname !== '/organiser') {
-                router.replace('/organiser/events')
-            }
-        }
-    }, [pathname, teamPrivilege, router])
-
-    // For event_manager, hide restricted nav items
-    const visibleLinks = teamPrivilege === 'event_manager'
-        ? navLinks.filter(l => l.href === '/organiser' || EVENT_MANAGER_ALLOWED.some(r => l.href.startsWith(r)))
-        : navLinks
+    const visibleLinks = navLinks
 
     const isActive = (href: string, exact: boolean) => {
         if (exact) return pathname === href

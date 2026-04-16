@@ -17,11 +17,9 @@ async function getOrganiserProfile(userId: string) {
     return data
 }
 
-async function sendInviteEmail(to: string, orgName: string, privilege: string, inviteToken: string) {
+async function sendInviteEmail(to: string, orgName: string, inviteToken: string) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.hexlura.com'
-    const privilegeLabel =
-        privilege === 'co_organiser' ? 'Co-organiser' :
-        privilege === 'event_manager' ? 'Event Manager' : 'Door Staff'
+    const privilegeLabel = 'Door Staff'
     const acceptUrl = `${appUrl}/team/accept?token=${inviteToken}`
 
     const html = `
@@ -89,6 +87,7 @@ export async function POST(req: Request) {
 
     const { email, privilege } = await req.json()
     if (!email || !privilege) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    if (privilege !== 'door_staff') return NextResponse.json({ error: 'Invalid privilege.' }, { status: 400 })
 
     // Prevent organiser from inviting themselves
     if (email.toLowerCase() === user.email?.toLowerCase()) {
@@ -174,7 +173,7 @@ export async function POST(req: Request) {
         inviteToken = inserted.invite_token
     }
 
-    await sendInviteEmail(email, organiser.org_name, privilege, inviteToken)
+    await sendInviteEmail(email, organiser.org_name, inviteToken)
 
     return NextResponse.json({ success: true })
 }
@@ -205,7 +204,7 @@ export async function PATCH(req: Request) {
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 })
 
     if (resend) {
-        await sendInviteEmail(member.invited_email, organiser.org_name, member.privilege, member.invite_token)
+        await sendInviteEmail(member.invited_email, organiser.org_name, member.invite_token)
         return NextResponse.json({ success: true })
     }
 
