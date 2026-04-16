@@ -76,6 +76,8 @@ export default async function AttendeesPage({ params }: PageProps) {
             ticketTypeId: item.ticket_type_id || '',
             ticketTypeName: (item.ticket_type as { name?: string } | null)?.name || '—',
             quantity: 1,
+            ticketIndex: idx + 1,
+            totalInGroup: qty,
             bookedAt: booking?.created_at || '',
             checkedIn: !!checkedInAt,
             checkedInAt: checkedInAt,

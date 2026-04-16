@@ -11,6 +11,8 @@ interface Attendee {
     ticketTypeId: string
     ticketTypeName: string
     quantity: number
+    ticketIndex: number
+    totalInGroup: number
     bookedAt: string
     checkedIn: boolean
     checkedInAt: string | null
@@ -44,7 +46,7 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
     function exportCSV() {
         const headers = ['Name', 'Email', 'Ticket Type', 'Booking Ref', 'Booked Date', 'Checked In', 'Checked In Time']
         const rows = filtered.map(a => [
-            a.name,
+            a.totalInGroup > 1 ? `${a.name} (${a.ticketIndex}/${a.totalInGroup})` : a.name,
             a.email,
             a.ticketTypeName,
             a.bookingRef,
@@ -132,7 +134,12 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                                     className="border-b border-border/50 hover:bg-surface cursor-pointer transition-colors"
                                     onClick={() => setExpanded(expanded === a.id ? null : a.id)}
                                 >
-                                    <td className="py-3 pr-4 text-text text-sm">{a.name}</td>
+                                    <td className="py-3 pr-4 text-text text-sm">
+                                        {a.name}
+                                        {a.totalInGroup > 1 && (
+                                            <span className="text-muted text-xs ml-1">({a.ticketIndex}/{a.totalInGroup})</span>
+                                        )}
+                                    </td>
                                     <td className="hidden md:table-cell py-3 pr-4 text-muted text-xs">{a.email}</td>
                                     <td className="py-3 pr-4 text-text text-xs">{a.ticketTypeName}</td>
                                     <td className="py-3 pr-4 font-mono text-xs text-accent">{a.bookingRef}</td>
@@ -176,7 +183,12 @@ export function AttendeesClient({ eventId, eventTitle, attendees, ticketTypes }:
                     )}
                     {filtered.map(a => (
                         <div key={a.id} className="py-4 space-y-1">
-                            <p className="text-text text-sm font-semibold">{a.name}</p>
+                            <p className="text-text text-sm font-semibold">
+                                {a.name}
+                                {a.totalInGroup > 1 && (
+                                    <span className="text-muted text-xs font-normal ml-1">({a.ticketIndex}/{a.totalInGroup})</span>
+                                )}
+                            </p>
                             <p className="text-muted text-xs">{a.ticketTypeName}</p>
                             <p className="font-mono text-xs text-accent">{a.bookingRef}</p>
                             <p className="text-xs text-muted">

@@ -115,15 +115,15 @@ export default async function CheckinLandingPage() {
                                 padding: '20px',
                                 borderRadius: '0',
                             }}>
-                                <p style={{ fontSize: '18px', color: '#F0F0F8', fontWeight: '600', margin: '0 0 4px 0' }}>
+                                <p style={{ fontSize: '18px', color: '#F0F0F8', fontWeight: '600', margin: '0 0 4px 0', wordBreak: 'break-word' }}>
                                     {event.title}
                                 </p>
-                                <p style={{ fontSize: '13px', color: '#8888AA', margin: '0 0 8px 0' }}>
+                                <p style={{ fontSize: '13px', color: '#8888AA', margin: '0 0 8px 0', wordBreak: 'break-word' }}>
                                     {formatEventDate(event.start_at)}
                                     {event.venue_name ? ` · ${event.venue_name}` : ''}
                                 </p>
                                 {(event.checkin_start_at || event.checkin_end_at) && (
-                                    <p style={{ fontSize: '12px', color: '#00E5A0', margin: '0 0 16px 0' }}>
+                                    <p style={{ fontSize: '12px', color: '#00E5A0', margin: '0 0 16px 0', flexShrink: 0 }}>
                                         Doors:{' '}
                                         {event.checkin_start_at ? formatTime(event.checkin_start_at) : '—'}
                                         {' — '}
@@ -133,14 +133,16 @@ export default async function CheckinLandingPage() {
                                 <Link
                                     href={`/organiser/events/${event.id}/checkin`}
                                     style={{
-                                        display: 'inline-block',
+                                        display: 'block',
                                         background: '#E63950',
                                         color: 'white',
-                                        padding: '8px 20px',
+                                        padding: '12px 20px',
                                         borderRadius: '2px',
-                                        fontSize: '13px',
+                                        fontSize: '14px',
                                         fontWeight: '600',
                                         textDecoration: 'none',
+                                        textAlign: 'center',
+                                        marginTop: '16px',
                                     }}
                                 >
                                     Start Scanning
