@@ -116,7 +116,7 @@ export function EventsClient({ events }: EventsClientProps) {
                     </Link>
                 </div>
             ) : (
-                <div className="bg-card border border-border rounded-none overflow-hidden">
+                <div className="bg-card border border-border rounded-none">
                     <div className="overflow-x-auto">
                     <table className="hidden sm:table w-full text-sm">
                         <thead>
@@ -179,7 +179,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                                     •••
                                                 </button>
                                                 {openMenuId === e.id && (
-                                                    <div className="absolute right-0 bottom-full mb-1 z-50 bg-card border border-border rounded-none shadow-lg py-1 min-w-[140px]">
+                                                    <div className="absolute right-0 top-full mt-1 z-50 bg-card border border-border rounded-none shadow-lg py-1 min-w-[140px]">
                                                         <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
                                                         <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
                                                         <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
@@ -228,7 +228,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                             Actions ▾
                                         </button>
                                         {openMenuId === e.id && (
-                                            <div className="absolute left-0 right-0 bottom-full mb-1 z-50 bg-card border border-border rounded-none shadow-lg py-1">
+                                            <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-card border border-border rounded-none shadow-lg py-1">
                                                 <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
                                                 <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
                                                 <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
