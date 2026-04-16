@@ -14,6 +14,7 @@ interface LeftMenuProps {
 
 export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const [open, setOpen] = useState<Record<string, boolean>>({})
     const pathname = usePathname()
 
     useEffect(() => {
@@ -21,6 +22,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
     }, [pathname])
 
     const close = () => setIsOpen(false)
+    const toggle = (key: string) => setOpen(prev => ({ ...prev, [key]: !prev[key] }))
 
     const sellTicketsHref = !isLoggedIn
         ? '/auth/register?next=/organiser/apply'
@@ -33,16 +35,41 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
     const linkClass = (href: string) =>
         `block text-[15px] py-2.5 transition-colors ${isActive(href) ? 'text-[#E63950]' : 'text-[#0A0A0F] hover:text-[#E63950]'}`
 
-    const heading = (label: string) => (
-        <p
-            className="text-[11px] uppercase text-[#666677] mb-3 mt-6 tracking-[2px]"
-            style={{ fontFamily: '"JetBrains Mono", monospace' }}
-        >
-            {label}
-        </p>
+    const heading = (label: string, key: string) => (
+        <>
+            <button
+                onClick={() => toggle(key)}
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '14px 0 6px 0',
+                    marginTop: '8px',
+                }}
+            >
+                <p
+                    style={{
+                        fontFamily: '"JetBrains Mono", monospace',
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                        color: '#666677',
+                        letterSpacing: '2px',
+                        margin: 0,
+                    }}
+                >
+                    {label}
+                </p>
+                <span style={{ fontSize: 20, color: '#666677', lineHeight: 1, fontWeight: 300 }}>
+                    {open[key] ? '−' : '+'}
+                </span>
+            </button>
+            <div className="border-t border-[#C0C0C8]" />
+        </>
     )
-
-    const divider = <div className="border-t border-[#C0C0C8]" />
 
     return (
         <>
@@ -73,7 +100,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                 className={`fixed top-0 right-0 z-50 h-screen bg-[#FFFFFF] border-l border-[#C0C0C8] flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 style={{ width: 'min(300px, 85vw)' }}
             >
-                {/* Panel header — stays fixed at top, does not scroll */}
+                {/* Panel header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0 border-b border-[#E8E8EE]">
                     <div>
                         <p className="font-heading text-2xl text-[#E63950] tracking-wider">HEXLURA</p>
@@ -92,73 +119,79 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
 
                 {/* Scrollable content */}
                 <div className="flex-1 overflow-y-auto px-5 [padding-bottom:max(7rem,env(safe-area-inset-bottom,7rem))]">
-                    {/* Account — shown at top when logged out */}
-                    {!isLoggedIn && (
+
+                    {/* MY ACCOUNT — top, logged in */}
+                    {isLoggedIn && (
                         <>
-                            {heading('ACCOUNT')}
-                            {divider}
-                            <div className="pt-2 space-y-0.5">
-                                <Link href="/auth/login" onClick={close} className={linkClass('/auth/login')}>Log In</Link>
-                                <Link href="/auth/register" onClick={close} className={linkClass('/auth/register')}>Get Started</Link>
-                            </div>
+                            {heading('MY ACCOUNT', 'account')}
+                            {open['account'] && (
+                                <div className="pt-2 space-y-0.5">
+                                    <Link href="/account/settings" onClick={close} className={linkClass('/account/settings')}>Account Settings</Link>
+                                    {role === 'organiser' && (
+                                        <Link href="/organiser" onClick={close} className={linkClass('/organiser')}>Organiser Portal</Link>
+                                    )}
+                                    {role === 'admin' && (
+                                        <Link href="/admin" onClick={close} className={linkClass('/admin')}>Admin Panel</Link>
+                                    )}
+                                    <div className="pt-2">
+                                        <form action={signOut}>
+                                            <button
+                                                type="submit"
+                                                className="text-[15px] text-[#E63950] hover:opacity-80 transition-opacity"
+                                            >
+                                                Sign Out
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
 
-                    {/* Find Events */}
-                    {heading('FIND EVENTS')}
-                    {divider}
-                    <div className="pt-2 space-y-0.5">
-                        <Link href="/events" onClick={close} className={linkClass('/events')}>All Events</Link>
-                        <Link href="/events?date=today" onClick={close} className={linkClass('/events?date=today')}>Events Today</Link>
-                        <Link href="/events?date=weekend" onClick={close} className={linkClass('/events?date=weekend')}>This Weekend</Link>
-                        <Link href="/events" onClick={close} className="block text-[15px] py-2.5 text-[#0A0A0F] hover:text-[#E63950] transition-colors">Near Me</Link>
-                    </div>
-
-                    {/* Categories */}
-                    {heading('CATEGORIES')}
-                    {divider}
-                    <div className="pt-2 space-y-0.5">
-                        {CATEGORIES.map(cat => (
-                            <Link key={cat} href={`/events?category=${cat}`} onClick={close} className={linkClass(`/events?category=${cat}`)}>
-                                {cat}
-                            </Link>
-                        ))}
-                    </div>
-
-                    {/* For Organisers */}
-                    {heading('FOR ORGANISERS')}
-                    {divider}
-                    <div className="pt-2 space-y-0.5">
-                        <Link href={sellTicketsHref} onClick={close} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
-                        <Link href="/how-it-works" onClick={close} className={linkClass('/how-it-works')}>How It Works</Link>
-                        <Link href="/pricing" onClick={close} className={linkClass('/pricing')}>Pricing &amp; Fees</Link>
-                    </div>
-
-                    {/* Account — shown at bottom when logged in */}
-                    {isLoggedIn && (
+                    {/* ACCOUNT — logged out */}
+                    {!isLoggedIn && (
                         <>
-                            {heading('MY ACCOUNT')}
-                            {divider}
-                            <div className="pt-2 space-y-0.5">
-                                <Link href="/account/settings" onClick={close} className={linkClass('/account/settings')}>Account Settings</Link>
-                                {role === 'organiser' && (
-                                    <Link href="/organiser" onClick={close} className={linkClass('/organiser')}>Organiser Portal</Link>
-                                )}
-                                {role === 'admin' && (
-                                    <Link href="/admin" onClick={close} className={linkClass('/admin')}>Admin Panel</Link>
-                                )}
-                                <div className="pt-2">
-                                    <form action={signOut}>
-                                        <button
-                                            type="submit"
-                                            className="text-[15px] text-[#E63950] hover:opacity-80 transition-opacity"
-                                        >
-                                            Sign Out
-                                        </button>
-                                    </form>
+                            {heading('ACCOUNT', 'account')}
+                            {open['account'] && (
+                                <div className="pt-2 space-y-0.5">
+                                    <Link href="/auth/login" onClick={close} className={linkClass('/auth/login')}>Log In</Link>
+                                    <Link href="/auth/register" onClick={close} className={linkClass('/auth/register')}>Get Started</Link>
                                 </div>
-                            </div>
+                            )}
                         </>
+                    )}
+
+                    {/* FIND EVENTS */}
+                    {heading('FIND EVENTS', 'find')}
+                    {open['find'] && (
+                        <div className="pt-2 space-y-0.5">
+                            <Link href="/events" onClick={close} className={linkClass('/events')}>All Events</Link>
+                            <Link href="/events?date=today" onClick={close} className={linkClass('/events?date=today')}>Events Today</Link>
+                            <Link href="/events?date=weekend" onClick={close} className={linkClass('/events?date=weekend')}>This Weekend</Link>
+                            <Link href="/events" onClick={close} className="block text-[15px] py-2.5 text-[#0A0A0F] hover:text-[#E63950] transition-colors">Near Me</Link>
+                        </div>
+                    )}
+
+                    {/* CATEGORIES */}
+                    {heading('CATEGORIES', 'categories')}
+                    {open['categories'] && (
+                        <div className="pt-2 space-y-0.5">
+                            {CATEGORIES.map(cat => (
+                                <Link key={cat} href={`/events?category=${cat}`} onClick={close} className={linkClass(`/events?category=${cat}`)}>
+                                    {cat}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* FOR BUSINESS */}
+                    {heading('FOR BUSINESS', 'business')}
+                    {open['business'] && (
+                        <div className="pt-2 space-y-0.5">
+                            <Link href={sellTicketsHref} onClick={close} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
+                            <Link href="/how-it-works" onClick={close} className={linkClass('/how-it-works')}>How It Works</Link>
+                            <Link href="/pricing" onClick={close} className={linkClass('/pricing')}>Pricing &amp; Fees</Link>
+                        </div>
                     )}
                 </div>
             </div>
