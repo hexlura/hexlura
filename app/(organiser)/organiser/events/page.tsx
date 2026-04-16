@@ -67,7 +67,7 @@ export default async function OrganiserEventsPage() {
 
     return (
         <div className="max-w-7xl">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
                 <div>
                     <h1 className="font-heading text-4xl text-text tracking-wide">MY EVENTS</h1>
                     <p className="text-muted text-sm mt-1">{rows.length} events total</p>

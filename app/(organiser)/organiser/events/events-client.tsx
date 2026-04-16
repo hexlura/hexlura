@@ -219,26 +219,26 @@ export function EventsClient({ events }: EventsClientProps) {
                                         <span>{e.ticketsSold} tickets</span>
                                         <span>{formatPence(e.revenue)}</span>
                                     </div>
-                                    <div className="relative pt-1">
+                                    <div className="pt-1">
                                         <button
                                             type="button"
-                                            onClick={(ev) => { ev.stopPropagation(); setOpenMenuId(openMenuId === e.id ? null : e.id) }}
+                                            onClick={() => setOpenMenuId(openMenuId === e.id ? null : e.id)}
                                             className="w-full text-center py-2 border border-border text-xs text-text bg-surface hover:bg-card transition-colors"
                                         >
-                                            Actions ▾
+                                            Actions {openMenuId === e.id ? '▴' : '▾'}
                                         </button>
                                         {openMenuId === e.id && (
-                                            <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-card border border-border rounded-none shadow-lg py-1">
-                                                <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
-                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
-                                                <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
-                                                <Link href={`/organiser/events/${e.id}/checkin`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Check-in</Link>
-                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="block w-full text-left px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Duplicate</button>
+                                            <div className="border border-t-0 border-border bg-card divide-y divide-border/50">
+                                                <Link href={`/organiser/events/${e.id}`} className="block px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
+                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View Public Page</a>
+                                                <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
+                                                <Link href={`/organiser/events/${e.id}/checkin`} className="block px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Check-in Scanner</Link>
+                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="block w-full text-left px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Duplicate</button>
                                                 {e.status !== 'cancelled' && (
-                                                    <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Cancel</button>
+                                                    <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Cancel Event</button>
                                                 )}
                                                 {e.ticketsSold === 0 && (
-                                                    <button type="button" onClick={() => setShowDeleteModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Delete</button>
+                                                    <button type="button" onClick={() => setShowDeleteModal(e.id)} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Delete Event</button>
                                                 )}
                                             </div>
                                         )}
