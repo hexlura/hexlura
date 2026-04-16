@@ -51,7 +51,7 @@ export default async function OrganiserLayout({
     return (
         <div className="flex min-h-screen bg-background">
             <OrganiserSidebar userName={userName} orgName={orgName} />
-            <main className="flex-1 min-h-screen px-8 pb-8 pt-14 lg:pt-8 lg:ml-[220px]">
+            <main className="flex-1 min-h-screen px-4 sm:px-8 pb-8 pt-14 lg:pt-8 lg:ml-[220px]">
                 {children}
             </main>
         </div>

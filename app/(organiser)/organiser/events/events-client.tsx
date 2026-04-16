@@ -143,24 +143,24 @@ export function EventsClient({ events }: EventsClientProps) {
                                             {/* Table actions — inline links, visible at sm+ */}
                                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                                 <Link href={`/organiser/events/${e.id}`} className="text-xs text-muted hover:text-text transition-colors">Edit</Link>
-                                                <span className="text-border hidden md:inline">·</span>
-                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-text transition-colors hidden md:inline">View</a>
-                                                <span className="text-border hidden md:inline">·</span>
+                                                <span className="text-border">·</span>
+                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-text transition-colors">View</a>
+                                                <span className="text-border">·</span>
                                                 <Link href={`/organiser/events/${e.id}/attendees`} className="text-xs text-muted hover:text-text transition-colors">Attendees</Link>
-                                                <span className="text-border hidden md:inline">·</span>
-                                                <Link href={`/organiser/events/${e.id}/checkin`} className="text-xs text-muted hover:text-text transition-colors hidden md:inline">Check-in</Link>
-                                                <span className="text-border hidden md:inline">·</span>
-                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors hidden md:inline">Duplicate</button>
+                                                <span className="text-border">·</span>
+                                                <Link href={`/organiser/events/${e.id}/checkin`} className="text-xs text-muted hover:text-text transition-colors">Check-in</Link>
+                                                <span className="text-border">·</span>
+                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors">Duplicate</button>
                                                 {e.status !== 'cancelled' && (
                                                     <>
-                                                        <span className="text-border hidden md:inline">·</span>
-                                                        <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline hidden md:inline">Cancel</button>
+                                                        <span className="text-border">·</span>
+                                                        <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline">Cancel</button>
                                                     </>
                                                 )}
                                                 {e.ticketsSold === 0 && (
                                                     <>
-                                                        <span className="text-border hidden md:inline">·</span>
-                                                        <button type="button" onClick={() => setShowDeleteModal(e.id)} className="text-xs text-accent hover:underline hidden md:inline">Delete</button>
+                                                        <span className="text-border">·</span>
+                                                        <button type="button" onClick={() => setShowDeleteModal(e.id)} className="text-xs text-accent hover:underline">Delete</button>
                                                     </>
                                                 )}
                                             </div>
