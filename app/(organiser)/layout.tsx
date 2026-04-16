@@ -34,7 +34,7 @@ export default async function OrganiserLayout({
     const role = profileRes.data?.role || 'user'
 
     const userName = profileRes.data?.full_name || 'Organiser'
-    let orgName = organiserRes.data?.org_name || ''
+    const orgName = organiserRes.data?.org_name || ''
 
     if (role === 'organiser' || role === 'admin') {
         // Redirect unapproved organisers to pending (admins bypass this)
