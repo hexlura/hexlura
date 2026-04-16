@@ -60,7 +60,6 @@ function Avatar({ member }: { member: TeamMember }) {
 
 const cardStyle: React.CSSProperties = { background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24, marginBottom: 24 }
 const inputStyle: React.CSSProperties = { border: '1px solid #C0C0C8', padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none', boxSizing: 'border-box' }
-const selectStyle: React.CSSProperties = { border: '1px solid #C0C0C8', padding: '10px 14px', fontSize: 14, background: '#fff', cursor: 'pointer' }
 
 export default function OrganiserTeamPage() {
     const router = useRouter()
