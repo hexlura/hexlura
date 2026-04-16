@@ -90,7 +90,7 @@ export function EventsClient({ events }: EventsClientProps) {
     return (
         <>
             {/* Status filter tabs */}
-            <div className="flex gap-1 mb-6 border-b border-border">
+            <div className="flex gap-1 mb-6 border-b border-border overflow-x-auto">
                 {tabs.map(t => (
                     <button
                         key={t.value}
