@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { formatPence } from '@/lib/fees'
@@ -40,11 +40,6 @@ export function EventsClient({ events }: EventsClientProps) {
     const [deleting, setDeleting] = useState(false)
     const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
-    useEffect(() => {
-        const handler = () => setOpenMenuId(null)
-        document.addEventListener('click', handler)
-        return () => document.removeEventListener('click', handler)
-    }, [])
 
     const now = new Date()
 
@@ -145,53 +140,28 @@ export function EventsClient({ events }: EventsClientProps) {
                                         <td className="py-3 px-4 text-text text-xs">{e.ticketsSold}</td>
                                         <td className="py-3 px-4 text-text text-xs">{formatPence(e.revenue)}</td>
                                         <td className="py-3 px-4">
-                                            {/* Desktop actions */}
-                                            <div className="hidden md:flex items-center gap-2">
+                                            {/* Table actions — inline links, visible at sm+ */}
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                                 <Link href={`/organiser/events/${e.id}`} className="text-xs text-muted hover:text-text transition-colors">Edit</Link>
-                                                <span className="text-border">·</span>
-                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-text transition-colors">View</a>
-                                                <span className="text-border">·</span>
+                                                <span className="text-border hidden md:inline">·</span>
+                                                <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-text transition-colors hidden md:inline">View</a>
+                                                <span className="text-border hidden md:inline">·</span>
                                                 <Link href={`/organiser/events/${e.id}/attendees`} className="text-xs text-muted hover:text-text transition-colors">Attendees</Link>
-                                                <span className="text-border">·</span>
-                                                <Link href={`/organiser/events/${e.id}/checkin`} className="text-xs text-muted hover:text-text transition-colors">Check-in</Link>
-                                                <span className="text-border">·</span>
-                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors">Duplicate</button>
+                                                <span className="text-border hidden md:inline">·</span>
+                                                <Link href={`/organiser/events/${e.id}/checkin`} className="text-xs text-muted hover:text-text transition-colors hidden md:inline">Check-in</Link>
+                                                <span className="text-border hidden md:inline">·</span>
+                                                <button type="button" onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors hidden md:inline">Duplicate</button>
                                                 {e.status !== 'cancelled' && (
                                                     <>
-                                                        <span className="text-border">·</span>
-                                                        <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline">Cancel</button>
+                                                        <span className="text-border hidden md:inline">·</span>
+                                                        <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline hidden md:inline">Cancel</button>
                                                     </>
                                                 )}
                                                 {e.ticketsSold === 0 && (
                                                     <>
-                                                        <span className="text-border">·</span>
-                                                        <button type="button" onClick={() => setShowDeleteModal(e.id)} className="text-xs text-accent hover:underline">Delete</button>
+                                                        <span className="text-border hidden md:inline">·</span>
+                                                        <button type="button" onClick={() => setShowDeleteModal(e.id)} className="text-xs text-accent hover:underline hidden md:inline">Delete</button>
                                                     </>
-                                                )}
-                                            </div>
-                                            {/* Mobile dropdown */}
-                                            <div className="relative md:hidden">
-                                                <button
-                                                    type="button"
-                                                    onClick={(ev) => { ev.stopPropagation(); setOpenMenuId(openMenuId === e.id ? null : e.id) }}
-                                                    className="px-2 py-1 text-muted hover:text-text transition-colors text-sm"
-                                                >
-                                                    •••
-                                                </button>
-                                                {openMenuId === e.id && (
-                                                    <div className="absolute right-0 top-full mt-1 z-50 bg-card border border-border rounded-none shadow-lg py-1 min-w-[140px]">
-                                                        <Link href={`/organiser/events/${e.id}`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Edit</Link>
-                                                        <a href={`/events/${e.slug}`} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">View</a>
-                                                        <Link href={`/organiser/events/${e.id}/attendees`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Attendees</Link>
-                                                        <Link href={`/organiser/events/${e.id}/checkin`} className="block px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Check-in</Link>
-                                                        <button type="button" onClick={() => handleDuplicate(e.id)} className="block w-full text-left px-4 py-2 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Duplicate</button>
-                                                        {e.status !== 'cancelled' && (
-                                                            <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Cancel</button>
-                                                        )}
-                                                        {e.ticketsSold === 0 && (
-                                                            <button type="button" onClick={() => setShowDeleteModal(e.id)} className="block w-full text-left px-4 py-2 text-xs text-accent hover:bg-surface transition-colors">Delete</button>
-                                                        )}
-                                                    </div>
                                                 )}
                                             </div>
                                         </td>
@@ -222,7 +192,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                     <div className="pt-1">
                                         <button
                                             type="button"
-                                            onClick={() => setOpenMenuId(openMenuId === e.id ? null : e.id)}
+                                            onClick={(ev) => { ev.stopPropagation(); setOpenMenuId(openMenuId === e.id ? null : e.id) }}
                                             className="w-full text-center py-2 border border-border text-xs text-text bg-surface hover:bg-card transition-colors"
                                         >
                                             Actions {openMenuId === e.id ? '▴' : '▾'}
