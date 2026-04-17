@@ -9,3 +9,4 @@ ADD COLUMN IF NOT EXISTS group_index integer DEFAULT 1;
 
 ALTER TABLE public.checkins
 ADD COLUMN IF NOT EXISTS group_total integer DEFAULT 1;
+

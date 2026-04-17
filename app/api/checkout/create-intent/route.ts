@@ -173,15 +173,18 @@ export async function POST(request: NextRequest) {
         }
 
         for (const item of items) {
-            await adminClient.from('booking_items').insert({
-                booking_id: booking.id,
-                ticket_type_id: item.ticket_type_id,
-                quantity: item.quantity,
-                unit_price_pence: 0,
-                attendee_name: attendee_details.full_name,
-                attendee_email: attendee_details.email,
-                qr_code: randomUUID(),
-            })
+            // One row per physical ticket — each person gets their own QR code
+            for (let t = 0; t < item.quantity; t++) {
+                await adminClient.from('booking_items').insert({
+                    booking_id: booking.id,
+                    ticket_type_id: item.ticket_type_id,
+                    quantity: 1,
+                    unit_price_pence: 0,
+                    attendee_name: attendee_details.full_name,
+                    attendee_email: attendee_details.email,
+                    qr_code: randomUUID(),
+                })
+            }
 
             const { error: rpcError } = await adminClient.rpc('increment_quantity_sold', {
                 p_ticket_type_id: item.ticket_type_id,

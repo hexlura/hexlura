@@ -88,7 +88,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ received: true })
         }
 
-        // Insert booking items
+        // Insert booking items — one row per physical ticket so each person
+        // gets their own unique QR code and can check in individually.
         for (const item of items) {
             const { data: ticketType } = await supabase
                 .from('ticket_types')
@@ -96,15 +97,17 @@ export async function POST(request: Request) {
                 .eq('id', item.ticket_type_id)
                 .single()
 
-            await supabase.from('booking_items').insert({
-                booking_id: booking.id,
-                ticket_type_id: item.ticket_type_id,
-                quantity: item.quantity,
-                unit_price_pence: ticketType?.price_pence || 0,
-                attendee_name: attendeeName,
-                attendee_email: attendeeEmail,
-                qr_code: randomUUID(),
-            })
+            for (let t = 0; t < item.quantity; t++) {
+                await supabase.from('booking_items').insert({
+                    booking_id: booking.id,
+                    ticket_type_id: item.ticket_type_id,
+                    quantity: 1,
+                    unit_price_pence: ticketType?.price_pence || 0,
+                    attendee_name: attendeeName,
+                    attendee_email: attendeeEmail,
+                    qr_code: randomUUID(),
+                })
+            }
 
             // Update quantity_sold
             const { error: rpcError } = await supabase.rpc('increment_quantity_sold', {
