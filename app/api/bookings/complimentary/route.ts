@@ -40,6 +40,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'This comp code has reached its usage limit' }, { status: 400 })
     }
 
+    // Stop comp bookings after event ends
+    const { data: eventCheck } = await adminClient
+        .from('events')
+        .select('end_at')
+        .eq('id', event_id)
+        .single()
+
+    if (eventCheck?.end_at && new Date() > new Date(eventCheck.end_at)) {
+        return NextResponse.json({ error: 'This event has ended. Tickets are no longer available.' }, { status: 400 })
+    }
+
     // Availability check
     for (const item of items) {
         const { data: tt } = await adminClient

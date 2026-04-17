@@ -60,6 +60,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Event not found or not available' }, { status: 404 })
     }
 
+    // Stop sales after event ends
+    if (event.end_at && new Date() > new Date(event.end_at)) {
+        return NextResponse.json({ error: 'This event has ended. Tickets are no longer available.' }, { status: 400 })
+    }
+
     // Verify ticket types and calculate prices server-side
     let ticketSubtotalPence = 0
     let totalBookingFeePence = 0
