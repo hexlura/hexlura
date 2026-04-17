@@ -22,8 +22,18 @@ interface BookingItemRow {
     id: string
     ticket_type: string
     attendee_name: string | null
+    quantity: number
     checked_in: boolean
     checked_in_at?: string
+}
+
+interface ScanLogEntry {
+    id: string
+    name: string
+    ticketType: string
+    time: string
+    success: boolean
+    message: string
 }
 
 interface CheckinClientProps {
@@ -35,14 +45,18 @@ interface CheckinClientProps {
 }
 
 const RESULT_STYLES: Record<string, { bg: string; border: string; color: string; icon: string; title: string }> = {
-    SUCCESS:          { bg: 'rgba(0,229,160,0.1)',  border: '#00E5A0', color: '#00E5A0', icon: '✓', title: 'CHECK IN SUCCESSFUL' },
-    ALREADY_SCANNED:  { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'ALREADY CHECKED IN' },
-    WRONG_EVENT:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'WRONG EVENT' },
-    TOO_EARLY:        { bg: 'rgba(245,166,35,0.1)', border: '#F5A623', color: '#F5A623', icon: '⚠', title: 'TOO EARLY' },
-    EVENT_ENDED:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'EVENT ENDED' },
-    CANCELLED:        { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'EVENT CANCELLED' },
-    CANCELLED_TICKET: { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'TICKET CANCELLED' },
-    INVALID:          { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '✗', title: 'INVALID TICKET' },
+    SUCCESS:          { bg: 'rgba(0,229,160,0.1)',  border: '#00E5A0', color: '#00E5A0', icon: '\u2713', title: 'CHECK IN SUCCESSFUL' },
+    ALREADY_SCANNED:  { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'ALREADY CHECKED IN' },
+    WRONG_EVENT:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'WRONG EVENT' },
+    TOO_EARLY:        { bg: 'rgba(245,166,35,0.1)', border: '#F5A623', color: '#F5A623', icon: '\u26A0', title: 'TOO EARLY' },
+    EVENT_ENDED:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'EVENT ENDED' },
+    CANCELLED:        { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'EVENT CANCELLED' },
+    CANCELLED_TICKET: { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'TICKET CANCELLED' },
+    INVALID:          { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'INVALID TICKET' },
+}
+
+function formatTime(date: Date) {
+    return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, initialCheckedIn }: CheckinClientProps) {
@@ -53,6 +67,7 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
     const [bookingItems, setBookingItems] = useState<BookingItemRow[] | null>(null)
     const [lookupRef, setLookupRef] = useState('')
     const [checkingItemId, setCheckingItemId] = useState<string | null>(null)
+    const [scanLog, setScanLog] = useState<ScanLogEntry[]>([])
     const processing = useRef(false)
 
     async function processCheckin(payload: { qr_token?: string; booking_ref?: string; booking_item_id?: string }) {
@@ -67,6 +82,17 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
             const data: CheckinResult = await res.json()
             setResult(data)
             if (data.success) setCheckedIn(c => c + 1)
+
+            // Add to scan log
+            setScanLog(prev => [{
+                id: Date.now().toString(),
+                name: data.data?.attendee_name || '',
+                ticketType: data.data?.ticket_type || '',
+                time: formatTime(new Date()),
+                success: data.success,
+                message: data.message,
+            }, ...prev].slice(0, 50))
+
             setTimeout(() => {
                 setResult(null)
                 processing.current = false
@@ -93,23 +119,16 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
         setLookingUp(false)
 
         if (!res.ok || !data.items) {
-            // Show error via the result overlay
             setResult({ success: false, message: data.error || 'Booking not found', code: data.code || 'INVALID' })
             setTimeout(() => { setResult(null); processing.current = false }, 3000)
             setManualRef('')
             return
         }
 
-        if (data.items.length === 1) {
-            // Single ticket — check in immediately
-            setManualRef('')
-            await processCheckin({ booking_item_id: data.items[0].id })
-        } else {
-            // Multiple tickets — show list
-            setLookupRef(ref)
-            setBookingItems(data.items)
-            setManualRef('')
-        }
+        // Always show the list so door staff has explicit control
+        setLookupRef(ref)
+        setBookingItems(data.items)
+        setManualRef('')
     }
 
     async function handleItemCheckin(item: BookingItemRow) {
@@ -188,14 +207,19 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                                 onClick={() => { setBookingItems(null); setLookupRef('') }}
                                 className="text-xs text-muted hover:text-text transition-colors"
                             >
-                                ✕ Close
+                                Close
                             </button>
                         </div>
                         <div className="divide-y divide-border">
                             {bookingItems.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-3">
                                     <div className="min-w-0">
-                                        <p className="text-sm text-text font-medium truncate">{item.ticket_type}</p>
+                                        <p className="text-sm text-text font-medium truncate">
+                                            {item.ticket_type}
+                                            {item.quantity > 1 && (
+                                                <span className="ml-1.5 text-xs font-normal text-muted">x{item.quantity}</span>
+                                            )}
+                                        </p>
                                         {item.attendee_name && (
                                             <p className="text-xs text-muted truncate">{item.attendee_name}</p>
                                         )}
@@ -203,7 +227,7 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                                     <div className="flex items-center gap-2 shrink-0">
                                         {item.checked_in ? (
                                             <span className="text-xs font-semibold px-2 py-1 rounded-sm" style={{ background: 'rgba(0,229,160,0.1)', color: '#00E5A0' }}>
-                                                ✓ In {item.checked_in_at ? `· ${item.checked_in_at}` : ''}
+                                                In {item.checked_in_at ? `· ${item.checked_in_at}` : ''}
                                             </span>
                                         ) : (
                                             <button
@@ -222,8 +246,41 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                     </div>
                 )}
 
+                {/* Scan history log */}
+                {scanLog.length > 0 && (
+                    <div className="w-full mt-4 bg-card border border-border rounded-none">
+                        <div className="px-4 py-2.5 border-b border-border">
+                            <p className="text-xs font-semibold text-muted uppercase tracking-wider">
+                                Recent Scans ({scanLog.length})
+                            </p>
+                        </div>
+                        <div className="max-h-[200px] overflow-y-auto divide-y divide-border">
+                            {scanLog.map((entry) => (
+                                <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
+                                    <div
+                                        className="w-2 h-2 rounded-full shrink-0"
+                                        style={{ background: entry.success ? '#00E5A0' : '#E63950' }}
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                        {entry.success ? (
+                                            <p className="text-sm text-text truncate">
+                                                {entry.name}{entry.ticketType ? ` — ${entry.ticketType}` : ''}
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm truncate" style={{ color: '#E63950' }}>
+                                                {entry.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-muted shrink-0">{entry.time}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <Link href={`/organiser/events/${eventId}/attendees`} className="mt-4 text-xs text-muted hover:text-accent transition-colors">
-                    ← View all attendees
+                    View all attendees
                 </Link>
             </div>
 

@@ -47,7 +47,7 @@ export async function updateSession(request: NextRequest) {
     // /checkin routes (excludes /checkin/login which is public)
     const isCheckinRoute = pathname.startsWith('/checkin') && !pathname.startsWith('/checkin/login')
     // /organiser/events/[id]/checkin — door_staff allowed here too
-    const isOrganiserCheckinPath = /^\/organiser\/events\/[^/]+\/checkin/.test(pathname)
+    const isOrganiserCheckinPath = /^\/organiser\/events\/[^/]+\/(checkin|attendees)/.test(pathname)
     const isProtectedRoute = isAdminRoute || isOrganiserRoute || isAccountRoute || isCheckinRoute
 
     // Helper: redirect while preserving session cookies
