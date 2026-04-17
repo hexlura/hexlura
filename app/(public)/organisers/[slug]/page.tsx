@@ -84,7 +84,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .select('*, ticket_types(*)')
         .eq('organiser_id', organiser.id)
         .eq('status', 'published')
-        .gt('start_at', now)
+        .or(`end_at.gte.${now},end_at.is.null`)
         .order('start_at', { ascending: true })
         .limit(10);
 
@@ -93,7 +93,8 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .from('events')
         .select('*, ticket_types(*)')
         .eq('organiser_id', organiser.id)
-        .lt('start_at', now)
+        .not('end_at', 'is', null)
+        .lt('end_at', now)
         .order('start_at', { ascending: false })
         .limit(6);
 

@@ -79,7 +79,7 @@ export default function BrowseEventsPage() {
       .from('events')
       .select('*, organiser:organiser_profiles(*), ticket_types(*)')
       .eq('status', 'published')
-      .gte('start_at', new Date().toISOString())
+      .or(`end_at.gte.${new Date().toISOString()},end_at.is.null`)
 
     if (query) q = q.ilike('title', `%${query}%`)
     if (category && category !== 'All') q = q.eq('category', category)

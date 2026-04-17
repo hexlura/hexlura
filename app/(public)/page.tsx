@@ -51,7 +51,7 @@ export default async function HomePage() {
         .from('events')
         .select('*, ticket_types(*)')
         .eq('status', 'published')
-        .gt('start_at', now)
+        .or(`end_at.gte.${now},end_at.is.null`)
         .order('start_at', { ascending: true })
         .limit(10);
 
