@@ -18,6 +18,14 @@ interface CheckinResult {
     }
 }
 
+interface BookingItemRow {
+    id: string
+    ticket_type: string
+    attendee_name: string | null
+    checked_in: boolean
+    checked_in_at?: string
+}
+
 interface CheckinClientProps {
     eventId: string
     eventTitle: string
@@ -42,9 +50,12 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
     const [result, setResult] = useState<CheckinResult | null>(null)
     const [manualRef, setManualRef] = useState('')
     const [lookingUp, setLookingUp] = useState(false)
+    const [bookingItems, setBookingItems] = useState<BookingItemRow[] | null>(null)
+    const [lookupRef, setLookupRef] = useState('')
+    const [checkingItemId, setCheckingItemId] = useState<string | null>(null)
     const processing = useRef(false)
 
-    async function processCheckin(payload: { qr_token?: string; booking_ref?: string }) {
+    async function processCheckin(payload: { qr_token?: string; booking_ref?: string; booking_item_id?: string }) {
         if (processing.current) return
         processing.current = true
         try {
@@ -60,8 +71,10 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                 setResult(null)
                 processing.current = false
             }, 3000)
+            return data
         } catch {
             processing.current = false
+            return null
         }
     }
 
@@ -70,11 +83,45 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
     }, [eventId]) // eslint-disable-line react-hooks/exhaustive-deps
 
     async function handleManualLookup() {
-        if (!manualRef.trim()) return
+        const ref = manualRef.trim().toUpperCase()
+        if (!ref) return
         setLookingUp(true)
-        await processCheckin({ booking_ref: manualRef.trim().toUpperCase() })
+        setBookingItems(null)
+
+        const res = await fetch(`/api/checkin/lookup?booking_ref=${encodeURIComponent(ref)}&event_id=${encodeURIComponent(eventId)}`)
+        const data = await res.json()
         setLookingUp(false)
-        setManualRef('')
+
+        if (!res.ok || !data.items) {
+            // Show error via the result overlay
+            setResult({ success: false, message: data.error || 'Booking not found', code: data.code || 'INVALID' })
+            setTimeout(() => { setResult(null); processing.current = false }, 3000)
+            setManualRef('')
+            return
+        }
+
+        if (data.items.length === 1) {
+            // Single ticket — check in immediately
+            setManualRef('')
+            await processCheckin({ booking_item_id: data.items[0].id })
+        } else {
+            // Multiple tickets — show list
+            setLookupRef(ref)
+            setBookingItems(data.items)
+            setManualRef('')
+        }
+    }
+
+    async function handleItemCheckin(item: BookingItemRow) {
+        setCheckingItemId(item.id)
+        const res = await processCheckin({ booking_item_id: item.id })
+        setCheckingItemId(null)
+        if (res?.success) {
+            setBookingItems(prev => prev
+                ? prev.map(i => i.id === item.id ? { ...i, checked_in: true } : i)
+                : prev
+            )
+        }
     }
 
     const cardStyle = result ? (RESULT_STYLES[result.code] ?? RESULT_STYLES.INVALID) : null
@@ -129,6 +176,51 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                         </button>
                     </div>
                 </div>
+
+                {/* Multi-ticket booking panel */}
+                {bookingItems && (
+                    <div className="w-full mt-4 bg-card border border-border rounded-none">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                            <p className="text-sm font-semibold text-text">
+                                {lookupRef} — {bookingItems.length} ticket{bookingItems.length !== 1 ? 's' : ''}
+                            </p>
+                            <button
+                                onClick={() => { setBookingItems(null); setLookupRef('') }}
+                                className="text-xs text-muted hover:text-text transition-colors"
+                            >
+                                ✕ Close
+                            </button>
+                        </div>
+                        <div className="divide-y divide-border">
+                            {bookingItems.map((item) => (
+                                <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                                    <div className="min-w-0">
+                                        <p className="text-sm text-text font-medium truncate">{item.ticket_type}</p>
+                                        {item.attendee_name && (
+                                            <p className="text-xs text-muted truncate">{item.attendee_name}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        {item.checked_in ? (
+                                            <span className="text-xs font-semibold px-2 py-1 rounded-sm" style={{ background: 'rgba(0,229,160,0.1)', color: '#00E5A0' }}>
+                                                ✓ In {item.checked_in_at ? `· ${item.checked_in_at}` : ''}
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleItemCheckin(item)}
+                                                disabled={checkingItemId === item.id}
+                                                className="text-xs font-semibold px-3 py-1.5 bg-accent text-white rounded-sm disabled:opacity-50 transition-opacity"
+                                                style={{ background: '#E63950' }}
+                                            >
+                                                {checkingItemId === item.id ? '...' : 'Check In'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <Link href={`/organiser/events/${eventId}/attendees`} className="mt-4 text-xs text-muted hover:text-accent transition-colors">
                     ← View all attendees

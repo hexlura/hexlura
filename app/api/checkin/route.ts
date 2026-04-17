@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json()
-        const { qr_token, booking_ref, event_id } = body
+        const { qr_token, booking_ref, booking_item_id, event_id } = body
 
-        if (!qr_token && !booking_ref) {
+        if (!qr_token && !booking_ref && !booking_item_id) {
             return NextResponse.json({ success: false, message: 'Invalid ticket — not found in system', code: 'INVALID' })
         }
 
@@ -53,7 +53,20 @@ export async function POST(req: NextRequest) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let bookingItem: any = null
 
-        if (qr_token) {
+        if (booking_item_id) {
+            const { data } = await adminClient
+                .from('booking_items')
+                .select(`
+                    id, qr_code, attendee_name, status,
+                    ticket_type:ticket_types(name),
+                    booking:bookings(id, status, event_id,
+                        event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)
+                    )
+                `)
+                .eq('id', booking_item_id)
+                .maybeSingle()
+            bookingItem = data
+        } else if (qr_token) {
             const { data } = await adminClient
                 .from('booking_items')
                 .select(`
