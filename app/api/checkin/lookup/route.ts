@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
         // Fetch all booking items
         const { data: items } = await adminClient
             .from('booking_items')
-            .select('id, attendee_name, status, ticket_type:ticket_types(name)')
+            .select('id, attendee_name, ticket_type:ticket_types(name)')
             .eq('booking_id', booking.id)
 
         if (!items || items.length === 0) {

@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
             const { data, error: biErr } = await adminClient
                 .from('booking_items')
                 .select(`
-                    id, qr_code, attendee_name, status,
+                    id, qr_code, attendee_name,
                     ticket_type:ticket_types(name),
                     booking:bookings(id, status, event_id,
                         event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
             const { data: byQr, error: qrErr } = await adminClient
                 .from('booking_items')
                 .select(`
-                    id, qr_code, attendee_name, status,
+                    id, qr_code, attendee_name,
                     ticket_type:ticket_types(name),
                     booking:bookings(id, status, event_id,
                         event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
                 if (booking) {
                     const { data: items } = await adminClient
                         .from('booking_items')
-                        .select('id, qr_code, attendee_name, status, ticket_type:ticket_types(name)')
+                        .select('id, qr_code, attendee_name, ticket_type:ticket_types(name)')
                         .eq('booking_id', (booking as { id: string }).id)
                         .limit(1)
                     if (items && items[0]) {
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
             if (booking) {
                 const { data: items, error: itemsErr } = await adminClient
                     .from('booking_items')
-                    .select('id, qr_code, attendee_name, status, ticket_type:ticket_types(name)')
+                    .select('id, qr_code, attendee_name, ticket_type:ticket_types(name)')
                     .eq('booking_id', (booking as { id: string }).id)
                     .limit(1)
                 if (itemsErr) console.error('Checkin items lookup failed:', itemsErr.message)
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Step 5 — Check booking status
-        if (bk.status === 'refunded' || bookingItem.status === 'cancelled') {
+        if (bk.status === 'refunded') {
             return NextResponse.json({ success: false, message: 'Ticket cancelled — refund was issued', code: 'CANCELLED_TICKET' })
         }
         if (bk.status === 'cancelled') {
