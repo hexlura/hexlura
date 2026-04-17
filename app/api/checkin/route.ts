@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         let bookingItem: any = null
 
         if (booking_item_id) {
-            const { data } = await adminClient
+            const { data, error: biErr } = await adminClient
                 .from('booking_items')
                 .select(`
                     id, qr_code, attendee_name, status,
@@ -65,10 +65,11 @@ export async function POST(req: NextRequest) {
                 `)
                 .eq('id', booking_item_id)
                 .maybeSingle()
+            if (biErr) console.error('Checkin lookup by item_id failed:', biErr.message, biErr.code)
             bookingItem = data
         } else if (qr_token) {
             // Try by qr_code UUID first
-            const { data: byQr } = await adminClient
+            const { data: byQr, error: qrErr } = await adminClient
                 .from('booking_items')
                 .select(`
                     id, qr_code, attendee_name, status,
@@ -79,15 +80,18 @@ export async function POST(req: NextRequest) {
                 `)
                 .eq('qr_code', qr_token)
                 .maybeSingle()
+            if (qrErr) console.error('Checkin lookup by qr_code failed:', qrErr.message, qrErr.code, 'token:', qr_token)
             bookingItem = byQr
 
             // Fallback: qr_token might be a booking_ref (old tickets encoded ref instead of UUID)
             if (!bookingItem) {
-                const { data: booking } = await adminClient
+                console.log('QR lookup miss, trying as booking_ref:', qr_token)
+                const { data: booking, error: bkErr } = await adminClient
                     .from('bookings')
                     .select('id, status, event_id, event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)')
                     .eq('booking_ref', qr_token)
                     .maybeSingle()
+                if (bkErr) console.error('Checkin booking_ref fallback failed:', bkErr.message)
                 if (booking) {
                     const { data: items } = await adminClient
                         .from('booking_items')
@@ -100,18 +104,20 @@ export async function POST(req: NextRequest) {
                 }
             }
         } else if (booking_ref) {
-            const { data: booking } = await adminClient
+            const { data: booking, error: refErr } = await adminClient
                 .from('bookings')
                 .select('id, status, event_id, event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)')
                 .eq('booking_ref', booking_ref)
                 .maybeSingle()
+            if (refErr) console.error('Checkin booking_ref lookup failed:', refErr.message)
 
             if (booking) {
-                const { data: items } = await adminClient
+                const { data: items, error: itemsErr } = await adminClient
                     .from('booking_items')
                     .select('id, qr_code, attendee_name, status, ticket_type:ticket_types(name)')
                     .eq('booking_id', (booking as { id: string }).id)
                     .limit(1)
+                if (itemsErr) console.error('Checkin items lookup failed:', itemsErr.message)
                 if (items && items[0]) {
                     bookingItem = { ...items[0], booking }
                 }

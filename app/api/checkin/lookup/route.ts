@@ -39,13 +39,15 @@ export async function GET(req: NextRequest) {
         }
 
         // Fetch booking
-        const { data: booking } = await adminClient
+        const { data: booking, error: bkErr } = await adminClient
             .from('bookings')
             .select('id, status, event_id')
             .eq('booking_ref', booking_ref)
             .maybeSingle()
 
+        if (bkErr) console.error('Lookup: booking query error:', bkErr.message, bkErr.code, 'ref:', booking_ref)
         if (!booking) {
+            console.error('Lookup: no booking found for ref:', booking_ref)
             return NextResponse.json({ error: 'Booking not found', code: 'INVALID' }, { status: 404 })
         }
 
