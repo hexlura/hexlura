@@ -161,9 +161,38 @@ export async function POST(request: Request) {
         // Send confirmation email asynchronously
         const { data: eventData } = await supabase
             .from('events')
-            .select('title, start_at, end_at, venue_name, venue_address')
+            .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
             .eq('id', eventId)
             .single()
+
+        // Notify buyer: booking confirmed
+        if (userId) {
+            void supabase.from('notifications').insert({
+                user_id: userId,
+                type: 'booking_confirmed',
+                title: 'Booking confirmed!',
+                body: `Your booking for ${eventData?.title ?? 'the event'} is confirmed. Ref: ${booking.booking_ref}`,
+                link: `/bookings/${booking.booking_ref}`,
+            })
+        }
+
+        // Notify organiser: new booking received
+        if (eventData?.organiser_id) {
+            const { data: orgProfile } = await supabase
+                .from('organiser_profiles')
+                .select('user_id')
+                .eq('id', eventData.organiser_id)
+                .single()
+            if (orgProfile?.user_id) {
+                void supabase.from('notifications').insert({
+                    user_id: orgProfile.user_id,
+                    type: 'new_booking',
+                    title: 'New booking received',
+                    body: `A new booking was made for ${eventData.title}. Ref: ${booking.booking_ref}`,
+                    link: `/organiser/events/${eventId}/attendees`,
+                })
+            }
+        }
 
         if (eventData && attendeeEmail) {
             const eventDate = new Intl.DateTimeFormat('en-GB', {

@@ -34,5 +34,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         metadata: { reason },
     })
 
+    // Notify the applicant
+    if (org?.user_id) {
+        void adminClient.from('notifications').insert({
+            user_id: org.user_id,
+            type: 'application_rejected',
+            title: 'Your organiser application was not approved',
+            body: reason || 'Unfortunately your application could not be approved at this time. Contact support for more information.',
+            link: '/organiser/apply',
+        })
+    }
+
     return NextResponse.json({ success: true })
 }

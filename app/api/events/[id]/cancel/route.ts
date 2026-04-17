@@ -28,11 +28,22 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     try {
         const { data: bookings } = await supabase
             .from('bookings')
-            .select('id')
+            .select('id, user_id')
             .eq('event_id', params.id)
             .eq('status', 'confirmed')
 
         const bookingIds = (bookings || []).map(b => b.id)
+
+        // Notify each attendee
+        for (const b of (bookings || []) as { id: string; user_id: string }[]) {
+            void supabase.from('notifications').insert({
+                user_id: b.user_id,
+                type: 'event_cancelled',
+                title: 'Event cancelled',
+                body: `${event.title} has been cancelled. If you paid for tickets, you will receive a full refund.`,
+                link: '/bookings',
+            })
+        }
         if (bookingIds.length) {
             const { data: items } = await supabase
                 .from('booking_items')

@@ -34,5 +34,16 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         entityId: params.id,
     })
 
+    // Notify the applicant
+    if (orgProfile?.user_id) {
+        void adminClient.from('notifications').insert({
+            user_id: orgProfile.user_id,
+            type: 'application_approved',
+            title: 'Your organiser application was approved!',
+            body: 'Congratulations! You can now create and publish events on Hexlura.',
+            link: '/organiser',
+        })
+    }
+
     return NextResponse.json({ success: true })
 }

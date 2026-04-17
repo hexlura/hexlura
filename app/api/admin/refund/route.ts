@@ -62,6 +62,15 @@ export async function POST(request: NextRequest) {
         // Notify buyer refund was denied
         const buyerUserId = refundReq.user_id as string | null
         if (buyerUserId) {
+            void adminClient.from('notifications').insert({
+                user_id: buyerUserId,
+                type: 'refund_denied',
+                title: 'Refund request not approved',
+                body: 'Unfortunately your refund request could not be approved. Contact support if you have questions.',
+                link: '/bookings',
+            })
+        }
+        if (buyerUserId) {
             void (async () => {
                 try {
                     const { data: { user: buyerUser } } = await adminClient.auth.admin.getUserById(buyerUserId)
@@ -131,6 +140,16 @@ export async function POST(request: NextRequest) {
 
     // Notify buyer refund was processed
     const buyerUserId = refundReq.user_id as string | null
+    if (buyerUserId) {
+        const refundFormatted2 = `£${(refundAmount / 100).toFixed(2)}`
+        void adminClient.from('notifications').insert({
+            user_id: buyerUserId,
+            type: 'refund_processed',
+            title: `Refund of ${refundFormatted2} processed`,
+            body: 'Your refund has been processed. Please allow 5–10 business days for funds to appear.',
+            link: '/bookings',
+        })
+    }
     if (buyerUserId) {
         void (async () => {
             try {

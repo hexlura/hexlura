@@ -15,10 +15,17 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
 
     await adminClient.from('events').update({ status: 'cancelled' }).eq('id', params.id)
 
+    // Get event title for notifications
+    const { data: cancelledEvent } = await adminClient
+        .from('events')
+        .select('title')
+        .eq('id', params.id)
+        .single()
+
     // Get all confirmed bookings for this event and mark as refunded
     const { data: bookings } = await supabase
         .from('bookings')
-        .select('id, total_pence, stripe_payment_intent_id')
+        .select('id, user_id, total_pence, stripe_payment_intent_id')
         .eq('event_id', params.id)
         .eq('status', 'confirmed')
 
@@ -36,6 +43,14 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
             }
         }
         await adminClient.from('bookings').update({ status: 'refunded' }).eq('id', booking.id)
+        // Notify attendee
+        void adminClient.from('notifications').insert({
+            user_id: (booking as { id: string; user_id: string; total_pence: number | null; stripe_payment_intent_id: string | null }).user_id,
+            type: 'event_cancelled',
+            title: 'Event cancelled',
+            body: `${cancelledEvent?.title ?? 'An event'} has been cancelled. If you paid, a full refund is on its way.`,
+            link: '/bookings',
+        })
         refundedCount++
         totalRefundedPence += booking.total_pence || 0
     }
