@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
     // Insert booking items and increment quantity_sold
     for (const item of items) {
-        await adminClient.from('booking_items').insert({
+        const { error: itemError } = await adminClient.from('booking_items').insert({
             booking_id: booking.id,
             ticket_type_id: item.ticket_type_id,
             quantity: item.quantity,
@@ -93,6 +93,13 @@ export async function POST(request: Request) {
             attendee_email: attendee_details?.email || '',
             qr_code: randomUUID(),
         })
+
+        if (itemError) {
+            console.error('Failed to insert booking_item for comp booking:', itemError.message)
+            // Delete the booking so we don't leave an orphan
+            await adminClient.from('bookings').delete().eq('id', booking.id)
+            return NextResponse.json({ error: 'Failed to create booking items' }, { status: 500 })
+        }
 
         const { error: rpcError } = await adminClient.rpc('increment_quantity_sold', {
             p_ticket_type_id: item.ticket_type_id,
