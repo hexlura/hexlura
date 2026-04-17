@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LeftMenu from './LeftMenu'
+import { NotificationBell } from './NotificationBell'
 import type { User } from '@supabase/supabase-js'
 
 export function Navbar() {
@@ -115,8 +116,9 @@ export function Navbar() {
                     </div>
                 </form>
 
-                {/* Right: hamburger */}
+                {/* Right: notification bell + hamburger */}
                 <div className="flex items-center gap-3">
+                    {user && <NotificationBell userId={user.id} />}
                     <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} />
                 </div>
             </div>
@@ -170,6 +172,7 @@ export function Navbar() {
                             </Link>
                         </div>
                         <div className="flex items-center gap-3">
+                            {user && <NotificationBell userId={user.id} />}
                             <button
                                 onClick={() => setMobileSearchOpen(true)}
                                 className="text-[#0A0A0F] p-1 hover:opacity-70 transition-opacity"
