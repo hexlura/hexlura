@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
                 .maybeSingle()
             bookingItem = data
         } else if (qr_token) {
-            const { data } = await adminClient
+            // Try by qr_code UUID first
+            const { data: byQr } = await adminClient
                 .from('booking_items')
                 .select(`
                     id, qr_code, attendee_name, status,
@@ -78,7 +79,26 @@ export async function POST(req: NextRequest) {
                 `)
                 .eq('qr_code', qr_token)
                 .maybeSingle()
-            bookingItem = data
+            bookingItem = byQr
+
+            // Fallback: qr_token might be a booking_ref (old tickets encoded ref instead of UUID)
+            if (!bookingItem) {
+                const { data: booking } = await adminClient
+                    .from('bookings')
+                    .select('id, status, event_id, event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)')
+                    .eq('booking_ref', qr_token)
+                    .maybeSingle()
+                if (booking) {
+                    const { data: items } = await adminClient
+                        .from('booking_items')
+                        .select('id, qr_code, attendee_name, status, ticket_type:ticket_types(name)')
+                        .eq('booking_id', (booking as { id: string }).id)
+                        .limit(1)
+                    if (items && items[0]) {
+                        bookingItem = { ...items[0], booking }
+                    }
+                }
+            }
         } else if (booking_ref) {
             const { data: booking } = await adminClient
                 .from('bookings')
