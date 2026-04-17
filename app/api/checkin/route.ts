@@ -119,33 +119,29 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: 'This event has been cancelled', code: 'CANCELLED' })
         }
 
-        // Step 4 — Check event timing
-        if (event?.start_at) {
+        // Step 4 — Check event timing (only enforced if organiser has set explicit times)
+        if (event?.checkin_start_at || event?.checkin_end_at) {
             const now = new Date()
-            const eventStart = new Date(event.start_at)
-            const eventEnd = event.end_at ? new Date(event.end_at) : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000)
 
-            const checkinOpens: Date = event.checkin_start_at
-                ? new Date(event.checkin_start_at)
-                : new Date(eventStart.getTime() - 2 * 60 * 60 * 1000)
-
-            const checkinCloses: Date = event.checkin_end_at
-                ? new Date(event.checkin_end_at)
-                : new Date(eventEnd.getTime() + 1 * 60 * 60 * 1000)
-
-            if (now < checkinOpens) {
-                const formattedOpen = new Intl.DateTimeFormat('en-GB', {
-                    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
-                }).format(checkinOpens)
-                return NextResponse.json({
-                    success: false,
-                    message: `Check-in opens at ${formattedOpen}`,
-                    code: 'TOO_EARLY',
-                })
+            if (event.checkin_start_at) {
+                const checkinOpens = new Date(event.checkin_start_at)
+                if (now < checkinOpens) {
+                    const formattedOpen = new Intl.DateTimeFormat('en-GB', {
+                        hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
+                    }).format(checkinOpens)
+                    return NextResponse.json({
+                        success: false,
+                        message: `Check-in opens at ${formattedOpen}`,
+                        code: 'TOO_EARLY',
+                    })
+                }
             }
 
-            if (now > checkinCloses) {
-                return NextResponse.json({ success: false, message: 'Check-in has closed for this event', code: 'EVENT_ENDED' })
+            if (event.checkin_end_at) {
+                const checkinCloses = new Date(event.checkin_end_at)
+                if (now > checkinCloses) {
+                    return NextResponse.json({ success: false, message: 'Check-in has closed for this event', code: 'EVENT_ENDED' })
+                }
             }
         }
 
