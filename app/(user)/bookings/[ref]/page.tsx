@@ -152,7 +152,7 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                                 key={i}
                                 href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`}
                                 target="_blank"
-                                style={{ border: '1px solid #2A2A3A', color: '#F0F0F8', padding: '8px 16px', borderRadius: 2, fontSize: 13, textAlign: 'center', display: 'block', textDecoration: 'none' }}
+                                className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
                             >
                                 Download Ticket {i + 1}
                             </a>
