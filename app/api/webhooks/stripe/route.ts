@@ -344,7 +344,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                     unit_price_pence: tt.price_pence || 0,
                     attendee_name: attendeeName,
                     attendee_email: attendeeEmail,
-                    qr_code: `${booking.booking_ref}-G${g}`,
+                    qr_code: randomUUID(),
                 })
             }
         } else {
@@ -609,7 +609,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                     unit_price_pence: tt.price_pence || 0,
                     attendee_name: attendeeName,
                     attendee_email: attendeeEmail,
-                    qr_code: `${booking.booking_ref}-G${g}`,
+                    qr_code: randomUUID(),
                 })
             }
         } else {
