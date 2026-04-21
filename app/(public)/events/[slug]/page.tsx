@@ -1,6 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
@@ -159,13 +158,12 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             initialCount={followCount}
                             isLoggedIn={!!user}
                         />
-                        <Link
-                            href={`/organisers/${organiser.slug}`}
-                            className="shrink-0 transition-colors hover:border-[#E63950]"
-                            style={{ fontSize: '13px', padding: '6px 12px', border: '1px solid #C0C0C8', borderRadius: '2px', color: '#0A0A0F', background: 'transparent', whiteSpace: 'nowrap', textDecoration: 'none' }}
-                        >
-                            Profile
-                        </Link>
+                        <LikeButton
+                            eventId={event.id}
+                            initialLiked={userLiked}
+                            initialCount={likeCount ?? 0}
+                            isLoggedIn={!!user}
+                        />
                     </div>
                 </div>
             )}
@@ -265,14 +263,8 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             )
                         })()}
 
-                        {/* Like + Share buttons */}
+                        {/* Share button */}
                         <div className="flex justify-end gap-2">
-                            <LikeButton
-                                eventId={event.id}
-                                initialLiked={userLiked}
-                                initialCount={likeCount ?? 0}
-                                isLoggedIn={!!user}
-                            />
                             <ShareButton title={event.title} />
                         </div>
 

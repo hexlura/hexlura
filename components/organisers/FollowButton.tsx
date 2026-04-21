@@ -60,15 +60,16 @@ export default function FollowButton({ organiserId, initialFollowing, initialCou
                 style={{
                     padding: '8px 20px',
                     fontSize: '13px',
+                    fontWeight: 600,
                     borderRadius: '2px',
                     cursor: loading ? 'default' : 'pointer',
-                    border: following ? '1px solid #E63950' : '1px solid #C0C0C8',
-                    background: following ? 'rgba(230,57,80,0.1)' : 'transparent',
-                    color: following ? '#E63950' : '#0A0A0F',
+                    border: following ? '1px solid #E63950' : '1px solid #0A0A0F',
+                    background: following ? 'rgba(230,57,80,0.1)' : '#0A0A0F',
+                    color: following ? '#E63950' : '#FFFFFF',
                     transition: 'border-color 0.15s, color 0.15s, background 0.15s',
                 }}
             >
-                {following ? 'Following ✓' : 'Follow'}
+                {following ? 'Following' : 'Follow'}
             </button>
             <span style={{ fontSize: '12px', color: '#666677' }}>
                 {formatCount(count)} Follower{count !== 1 ? 's' : ''}
