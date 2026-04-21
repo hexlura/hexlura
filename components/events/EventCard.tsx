@@ -168,7 +168,12 @@ export default function EventCard({ event }: EventCardProps) {
                 <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
                     {priceDisplay}
                 </span>
-                {visibleSoldOut ? (
+                {isEventEnded ? (
+                    <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#666677' }}>
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#666677' }} />
+                        Ended
+                    </span>
+                ) : visibleSoldOut ? (
                     <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#E63950' }}>
                         <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E63950' }} />
                         Sold out
