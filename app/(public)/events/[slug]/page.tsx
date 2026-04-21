@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
@@ -135,7 +136,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
             {/* Organiser badge — full width, above grid */}
             {organiser && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#F5F5F7', border: '1px solid #E0E0E8', flexWrap: 'wrap', marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 140px', minWidth: 0 }}>
+                    <Link href={`/organisers/${organiser.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 140px', minWidth: 0, textDecoration: 'none', color: 'inherit' }}>
                         <div className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center" style={{ width: '36px', height: '36px', background: '#C0C0C8' }}>
                             {organiser.logo_url ? (
                                 <Image src={organiser.logo_url} alt="" fill className="object-cover" />
@@ -150,7 +151,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                 {' · '}{organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
                             </p>
                         </div>
-                    </div>
+                    </Link>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                         <FollowButton
                             organiserId={organiser.id}
@@ -263,8 +264,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             )
                         })()}
 
-                        {/* Share button */}
+                        {/* Favourite & Share buttons */}
                         <div className="flex justify-end gap-2">
+                            <LikeButton
+                                eventId={event.id}
+                                initialLiked={userLiked}
+                                initialCount={likeCount ?? 0}
+                                isLoggedIn={!!user}
+                            />
                             <ShareButton title={event.title} />
                         </div>
 
