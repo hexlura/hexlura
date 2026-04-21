@@ -62,6 +62,7 @@ export default function EventCard({ event }: EventCardProps) {
     }
 
     const priceDisplay = getPriceRange(visibleTypes);
+    const isEventEnded = event.end_at ? new Date(event.end_at) < new Date() : false;
 
     return (
         <Link
@@ -180,12 +181,12 @@ export default function EventCard({ event }: EventCardProps) {
                 )}
             </div>
 
-            {/* Book Now button */}
+            {/* Book Now / Event Ended button */}
             <div
                 className="group/btn"
                 style={{
                     margin: '0 10px 14px',
-                    background: '#E63950',
+                    background: isEventEnded ? '#C0C0C8' : '#E63950',
                     color: '#FFFFFF',
                     fontSize: '12px',
                     fontWeight: 700,
@@ -194,12 +195,12 @@ export default function EventCard({ event }: EventCardProps) {
                     textTransform: 'uppercase',
                     letterSpacing: '1px',
                     transition: 'background 0.2s',
-                    cursor: 'pointer',
+                    cursor: isEventEnded ? 'default' : 'pointer',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#C0392B' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '#E63950' }}
+                onMouseEnter={e => { if (!isEventEnded) (e.currentTarget as HTMLDivElement).style.background = '#C0392B' }}
+                onMouseLeave={e => { if (!isEventEnded) (e.currentTarget as HTMLDivElement).style.background = '#E63950' }}
             >
-                {'Book Now'}
+                {isEventEnded ? 'Event Ended' : 'Book Now'}
             </div>
         </Link>
     );

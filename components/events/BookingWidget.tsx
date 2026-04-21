@@ -85,6 +85,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
     const total = subtotal + bookingFee;
     const hasSelectedTickets = ticketTypes.some(t => effectiveQty(t) > 0);
     const isAllSoldOut = ticketTypes.every(t => (t.quantity_total - t.quantity_sold) <= 0);
+    const isEventEnded = event.end_at ? new Date(event.end_at) < new Date() : false;
     const isFreeSelection = hasSelectedTickets && subtotal === 0;
 
     async function handleCheckout() {
@@ -139,6 +140,20 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
 
         const ticketsParam = selectedItems.map(({ id, qty }) => `${id}:${qty}`).join(',');
         router.push(`/checkout?event_id=${event.id}&tickets=${ticketsParam}`);
+    }
+
+    if (isEventEnded) {
+        return (
+            <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24">
+                <h3 className="text-xl font-bold mb-4">Tickets</h3>
+                <div style={{ background: 'rgba(102,102,119,0.08)', border: '1px solid rgba(102,102,119,0.2)', color: '#666677', textAlign: 'center', padding: '16px', fontSize: 14, fontWeight: 600, marginBottom: 16 }}>
+                    This event has ended.
+                </div>
+                <Button className="w-full h-12 text-lg font-bold" disabled>
+                    Event Ended
+                </Button>
+            </div>
+        );
     }
 
     if (isAllSoldOut) {
