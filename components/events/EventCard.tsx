@@ -67,7 +67,7 @@ export default function EventCard({ event }: EventCardProps) {
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="group flex flex-col h-full bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950]"
+            className="group flex flex-col h-full bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950] max-w-[280px]"
             style={{
                 width: '100%',
                 border: '1px solid #E0E0E0',
@@ -178,12 +178,7 @@ export default function EventCard({ event }: EventCardProps) {
                         <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E63950' }} />
                         Sold out
                     </span>
-                ) : (
-                    <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#00C48A' }}>
-                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#00C48A' }} />
-                        On sale
-                    </span>
-                )}
+                ) : null}
             </div>
 
             {/* Book Now / Event Ended button */}
