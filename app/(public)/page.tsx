@@ -325,7 +325,7 @@ export default async function HomePage() {
                         className="drag-scroll"
                         style={{
                             display: 'flex',
-                            alignItems: 'flex-end',
+                            alignItems: 'stretch',
                             overflowX: 'auto',
                             gap: '16px',
                             padding: '0 0 8px',
