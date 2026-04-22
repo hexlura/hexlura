@@ -12,7 +12,46 @@ import LikeButton from '@/components/events/LikeButton';
 import BannerCarousel from '@/components/events/BannerCarousel';
 import FollowButton from '@/components/organisers/FollowButton';
 
+import type { Metadata } from 'next';
+
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const supabase = createClient();
+    const { data: event } = await supabase
+        .from('events')
+        .select('title, description, banner_url, venue_name, start_at')
+        .eq('slug', params.slug)
+        .single();
+
+    if (!event) return { title: 'Event Not Found' };
+
+    const dateStr = new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+        timeZone: 'Europe/London',
+    }).format(new Date(event.start_at));
+
+    const description = event.description
+        ? event.description.slice(0, 160)
+        : `${event.title} — ${dateStr}${event.venue_name ? ` at ${event.venue_name}` : ''}`;
+
+    return {
+        title: event.title,
+        description,
+        openGraph: {
+            title: event.title,
+            description,
+            type: 'website',
+            ...(event.banner_url ? { images: [{ url: event.banner_url, width: 1200, height: 630 }] } : {}),
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: event.title,
+            description,
+            ...(event.banner_url ? { images: [event.banner_url] } : {}),
+        },
+    };
+}
 
 const organiserTypeLabels: Record<string, string> = {
     club_venue: 'Club & Venue',
