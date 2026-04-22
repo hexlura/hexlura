@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
-import { calculateBookingFee } from '@/lib/fees'
+import { calculateBookingFee, getFeeConfig } from '@/lib/fees'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { randomUUID } from 'crypto'
 import { checkoutLimiter, getIP } from '@/lib/rate-limit'
@@ -65,6 +65,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'This event has ended. Tickets are no longer available.' }, { status: 400 })
     }
 
+    // Load fee config from platform_settings
+    const feeConfig = await getFeeConfig()
+
     // Verify ticket types and calculate prices server-side
     let ticketSubtotalPence = 0
     let totalBookingFeePence = 0
@@ -113,7 +116,7 @@ export async function POST(request: NextRequest) {
         }
 
         ticketSubtotalPence += ticketType.price_pence * item.quantity
-        totalBookingFeePence += calculateBookingFee(ticketType.price_pence, item.quantity)
+        totalBookingFeePence += calculateBookingFee(ticketType.price_pence, item.quantity, feeConfig)
     }
 
     // Apply promo code if provided

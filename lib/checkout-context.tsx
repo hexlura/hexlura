@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { calculateBookingFeePerTicket, DEFAULT_FEE_CONFIG } from '@/lib/fees'
+import type { FeeConfig } from '@/lib/fees'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -53,11 +55,6 @@ interface CheckoutContextType {
 
 const CheckoutContext = createContext<CheckoutContextType | null>(null)
 
-function calculateBookingFeePerTicket(pricePence: number): number {
-    if (pricePence === 0) return 0
-    return Math.max(50, Math.min(500, Math.round(pricePence * 0.07)))
-}
-
 export function CheckoutProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<CheckoutState>({
         eventId: '',
@@ -73,6 +70,17 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         step: 1,
     })
 
+    const [feeConfig, setFeeConfig] = useState<FeeConfig>(DEFAULT_FEE_CONFIG)
+
+    useEffect(() => {
+        fetch('/api/settings/fees')
+            .then((res) => res.json())
+            .then((data: FeeConfig) => setFeeConfig(data))
+            .catch(() => {
+                // Keep defaults on failure
+            })
+    }, [])
+
     const ticketSubtotalPence = state.items.reduce(
         (sum, item) => sum + item.price_pence * item.quantity,
         0
@@ -81,7 +89,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     const discountPence = state.promo?.discount_pence || 0
 
     const bookingFeePence = state.items.reduce(
-        (sum, item) => sum + calculateBookingFeePerTicket(item.price_pence) * item.quantity,
+        (sum, item) => sum + calculateBookingFeePerTicket(item.price_pence, feeConfig) * item.quantity,
         0
     )
 
