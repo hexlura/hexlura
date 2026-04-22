@@ -625,7 +625,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                 {currentStep === 2 && (
                     <div>
                         <SectionHeader num="02" title="Date & Venue" />
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Start Date & Time *</label>
                                 <DateTimePicker value={startAt} onChange={setStartAt} min={new Date().toISOString().slice(0, 16)} placeholder="Select start date & time" required className={inputClass} />

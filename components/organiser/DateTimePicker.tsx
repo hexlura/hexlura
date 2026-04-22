@@ -134,8 +134,8 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
             {/* Popup */}
             {open && (
                 <div
-                    className="absolute z-50 mt-1 left-0 bg-surface border border-border rounded-sm shadow-xl"
-                    style={{ minWidth: '280px' }}
+                    className="absolute z-50 mt-1 left-0 right-0 sm:right-auto bg-surface border border-border rounded-sm shadow-xl"
+                    style={{ minWidth: 'min(280px, 100%)' }}
                 >
                     <div className="p-4 space-y-4">
                         {/* Date */}
@@ -154,7 +154,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                         {/* Time */}
                         <div>
                             <p className="text-xs text-muted mb-1.5 uppercase tracking-wide">Time</p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 {/* Hour */}
                                 <input
                                     type="number"
@@ -162,7 +162,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                     max={12}
                                     value={draftHour}
                                     onChange={e => setDraftHour(clampHour(parseInt(e.target.value, 10)))}
-                                    className="w-14 bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
+                                    className="w-16 bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
                                 />
                                 <span className="text-text font-mono text-lg">:</span>
                                 {/* Minute */}
@@ -172,7 +172,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                     max={59}
                                     value={String(draftMinute).padStart(2, '0')}
                                     onChange={e => setDraftMinute(clampMinute(parseInt(e.target.value, 10)))}
-                                    className="w-14 bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
+                                    className="w-16 bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
                                 />
                                 {/* AM/PM */}
                                 <div className="flex border border-border rounded-sm overflow-hidden ml-1">
