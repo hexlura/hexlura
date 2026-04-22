@@ -48,9 +48,10 @@ export default async function HomePage() {
 
     const { data: featuredRaw } = await supabase
         .from('events')
-        .select('id, title, slug, banner_url, start_at, venue_name, venue_address, category, ticket_types(price_pence)')
+        .select('id, title, slug, banner_url, start_at, end_at, venue_name, venue_address, category, ticket_types(price_pence)')
         .eq('status', 'published')
         .eq('is_featured', true)
+        .or(`end_at.gte.${now},end_at.is.null`)
         .order('featured_order', { ascending: true });
 
     type FeaturedRaw = FeaturedEvent & { ticket_types: { price_pence: number }[] };
