@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
 import { RevenueChart } from '@/components/organiser/RevenueChart'
 import { resolveOrganiserId } from '@/lib/organiser-access'
+import { generatePayoutsForOrganiser } from '@/lib/generate-payouts'
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -87,12 +88,15 @@ export default async function OrganiserDashboardPage() {
         console.error('[OrganiserDashboard] booking_items fetch failed:', e)
     }
 
-    let pendingPayouts: { net_pence: number | null }[] = []
+    // Auto-generate payout records for completed events
+    await generatePayoutsForOrganiser(organiserId)
+
+    let pendingPayouts: { net_pence: number | null; scheduled_at: string | null }[] = []
     try {
         if (organiserId) {
             const { data } = await serviceClient
                 .from('payouts')
-                .select('net_pence')
+                .select('net_pence, scheduled_at')
                 .eq('organiser_id', organiserId)
                 .eq('status', 'pending')
             pendingPayouts = (data || []) as typeof pendingPayouts
@@ -132,7 +136,7 @@ export default async function OrganiserDashboardPage() {
         { label: 'Total Revenue', value: formatPence(totalRevenuePence), sub: 'All confirmed bookings' },
         { label: 'Tickets Sold', value: totalTicketsSold.toLocaleString(), sub: 'All time' },
         { label: 'Upcoming Events', value: String(upcoming.length), sub: upcoming[0] ? 'Next: ' + fmt(upcoming[0].start_at) : 'None scheduled' },
-        { label: 'Payout Balance', value: formatPence(payoutPence), sub: 'Pending release' },
+        { label: 'Payout Balance', value: formatPence(payoutPence), sub: payoutPence > 0 ? 'Available for withdrawal' : 'Released after event cooldown' },
     ]
 
     return (

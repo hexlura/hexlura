@@ -14,9 +14,17 @@ export default async function AdminPayoutsPage({
 
     const adminClient = createAdminClient()
 
-    // Due payouts: pending AND event ended 2+ days ago
-    const twoDaysAgo = new Date()
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+    // Read configurable cooldown period
+    const { data: cooldownRow } = await adminClient
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'payout_cooldown_days')
+        .single()
+    const cooldownDays = parseInt(cooldownRow?.value ?? '2', 10)
+
+    // Due payouts: pending AND event ended cooldown+ days ago
+    const cooldownCutoff = new Date()
+    cooldownCutoff.setDate(cooldownCutoff.getDate() - cooldownDays)
 
     const { data: dueData } = await adminClient
         .from('payouts')
@@ -41,7 +49,7 @@ export default async function AdminPayoutsPage({
     const allDuePending = ((dueData || []) as unknown as PayoutWithRelated[]).filter(p => {
         const endDate = p.events?.end_at || p.events?.start_at
         if (!endDate) return false
-        return new Date(endDate) < twoDaysAgo
+        return new Date(endDate) < cooldownCutoff
     })
 
     const page = Math.max(1, parseInt(searchParams.page ?? '1'))

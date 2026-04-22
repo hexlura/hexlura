@@ -17,7 +17,8 @@ INSERT INTO platform_settings (key, value) VALUES
     ('from_name', 'Hexlura'),
     ('from_email', 'tickets@hexlura.com'),
     ('support_email', 'support@hexlura.com'),
-    ('featured_cities', 'London,Manchester,Birmingham,Bristol,Edinburgh,Leeds,Liverpool,Glasgow,Newcastle,Cardiff,Sheffield,Nottingham')
+    ('featured_cities', 'London,Manchester,Birmingham,Bristol,Edinburgh,Leeds,Liverpool,Glasgow,Newcastle,Cardiff,Sheffield,Nottingham'),
+    ('payout_cooldown_days', '2')
 ON CONFLICT (key) DO NOTHING;
 
 -- RLS for platform_settings

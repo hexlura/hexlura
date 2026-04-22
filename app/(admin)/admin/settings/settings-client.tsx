@@ -38,6 +38,9 @@ export function SettingsClient({ settings, promoCodes }: Props) {
     // Organiser settings
     const [autoApprove, setAutoApprove] = useState(settings['auto_approve_organisers'] === 'true')
 
+    // Payout settings
+    const [payoutCooldown, setPayoutCooldown] = useState(settings['payout_cooldown_days'] ?? '2')
+
     // Email settings
     const [fromName, setFromName] = useState(settings['from_name'] ?? 'Hexlura')
     const [fromEmail, setFromEmail] = useState(settings['from_email'] ?? 'tickets@hexlura.com')
@@ -97,6 +100,14 @@ export function SettingsClient({ settings, promoCodes }: Props) {
         await saveSetting('auto_approve_organisers', autoApprove ? 'true' : 'false')
         setSaving(null)
         showToast('Onboarding settings saved')
+        router.refresh()
+    }
+
+    async function handleSavePayouts() {
+        setSaving('payouts')
+        await saveSetting('payout_cooldown_days', payoutCooldown)
+        setSaving(null)
+        showToast('Payout settings saved')
         router.refresh()
     }
 
@@ -243,6 +254,27 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                 <p className="text-xs text-muted mb-4">Current mode: <strong className="text-text">{autoApprove ? 'Auto-approve' : 'Manual Review'}</strong></p>
                 <Button variant="primary" size="md" onClick={handleSaveOnboarding} disabled={saving === 'onboarding'}>
                     {saving === 'onboarding' ? 'Saving...' : 'Save Onboarding Settings'}
+                </Button>
+            </div>
+
+            {/* Payout Settings */}
+            <div className={sectionClass}>
+                <h2 className="text-sm font-medium text-text mb-4">Payout Settings</h2>
+                <div className="mb-4">
+                    <label className={labelClass}>Payout Lock-in Period (days)</label>
+                    <input
+                        type="number"
+                        min="0"
+                        max="30"
+                        value={payoutCooldown}
+                        onChange={e => setPayoutCooldown(e.target.value)}
+                        className={inputClass}
+                        style={{ width: '120px' }}
+                    />
+                    <p className="text-xs text-muted mt-2">Days after event ends before payout becomes available for withdrawal. Set to 0 for immediate availability.</p>
+                </div>
+                <Button variant="primary" size="md" onClick={handleSavePayouts} disabled={saving === 'payouts'}>
+                    {saving === 'payouts' ? 'Saving...' : 'Save Payout Settings'}
                 </Button>
             </div>
 

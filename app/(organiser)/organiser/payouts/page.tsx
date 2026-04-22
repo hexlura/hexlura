@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { resolveOrganiserId } from '@/lib/organiser-access'
+import { generatePayoutsForOrganiser } from '@/lib/generate-payouts'
 
 export default async function OrganiserPayoutsPage() {
     const supabase = createClient()
@@ -13,6 +14,10 @@ export default async function OrganiserPayoutsPage() {
     if (!organiserId) redirect('/organiser/pending')
 
     const serviceClient = createServiceClient()
+
+    // Auto-generate payout records for completed events
+    await generatePayoutsForOrganiser(organiserId)
+
     const { data: organiser } = await serviceClient
         .from('organiser_profiles')
         .select('id, stripe_account_id, payout_method, bank_account_number')
