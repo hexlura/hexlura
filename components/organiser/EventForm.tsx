@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { calculateBookingFeePerTicket, formatPence } from '@/lib/fees'
+import { useFeeConfig } from '@/lib/use-fee-config'
 import type { Event, TicketType } from '@/types'
 import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
@@ -90,6 +91,7 @@ function priceToPence(str: string) {
 
 export function EventForm({ organiserId, event, ticketTypes: initTickets }: EventFormProps) {
     const router = useRouter()
+    const feeConfig = useFeeConfig()
     const isEdit = !!event
 
     // Section 01
@@ -748,7 +750,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                                 className={inputClass}
                                             />
                                             <p className="text-xs text-muted mt-1">
-                                                Buyer pays {formatPence(tt.price_pence + calculateBookingFeePerTicket(tt.price_pence))} (incl. {formatPence(calculateBookingFeePerTicket(tt.price_pence))} booking fee)
+                                                Buyer pays {formatPence(tt.price_pence + calculateBookingFeePerTicket(tt.price_pence, feeConfig))} (incl. {formatPence(calculateBookingFeePerTicket(tt.price_pence, feeConfig))} booking fee)
                                             </p>
                                         </div>
                                         <div>

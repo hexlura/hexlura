@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Event, TicketType } from '@/types';
 import { calculateBookingFee, calculateBookingFeePerTicket, formatPence } from '@/lib/fees';
+import { useFeeConfig } from '@/lib/use-fee-config';
 
 type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
 
@@ -24,6 +25,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
     const [reservationExpiry, setReservationExpiry] = useState<Date | null>(null);
     const [countdown, setCountdown] = useState('');
     const [reservationError, setReservationError] = useState('');
+    const feeConfig = useFeeConfig();
     const widgetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -79,7 +81,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
 
     const bookingFee = ticketTypes.reduce((sum, ticket) => {
         const qty = effectiveQty(ticket);
-        return sum + (qty > 0 ? calculateBookingFee(ticket.price_pence, qty) : 0);
+        return sum + (qty > 0 ? calculateBookingFee(ticket.price_pence, qty, feeConfig) : 0);
     }, 0);
 
     const total = subtotal + bookingFee;
@@ -184,7 +186,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                     const isSoldOut = available <= 0;
                     const quantity = selectedTickets[ticket.id] || 0;
                     const maxQty = ticket.max_per_order || 10;
-                    const feePerTicket = calculateBookingFeePerTicket(ticket.price_pence);
+                    const feePerTicket = calculateBookingFeePerTicket(ticket.price_pence, feeConfig);
                     const isExpanded = expanded[ticket.id] || false;
 
                     const isGroup = ticket.is_group === true;
