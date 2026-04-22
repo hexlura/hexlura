@@ -650,11 +650,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 <label className={labelClass}>Event Slug</label>
                                 <input type="text" value={slug} onChange={e => setSlug(e.target.value)} className={inputClass} placeholder="your-event-slug" />
                             </div>
-                            <div className="col-span-2">
+                            <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Venue Name *</label>
                                 <input type="text" value={venueName} onChange={e => setVenueName(e.target.value)} className={inputClass} placeholder="e.g. The O2 Arena" required />
                             </div>
-                            <div className="col-span-2">
+                            <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Address Line 1</label>
                                 <input type="text" value={venueAddress} onChange={e => setVenueAddress(e.target.value)} className={inputClass} placeholder="Street address" />
                             </div>
@@ -836,13 +836,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                     <option value={18}>18+</option>
                                 </select>
                             </div>
-                            <div className="col-span-2">
+                            <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Refund Policy</label>
                                 <select value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
                                     {REFUND_POLICIES.map(p => <option key={p} value={p}>{p}</option>)}
                                 </select>
                             </div>
-                            <div className="col-span-2">
+                            <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Event Visibility</label>
                                 <select value={status} onChange={e => setStatus(e.target.value as 'draft' | 'published')} className={inputClass}>
                                     <option value="draft">Draft — not visible to public</option>

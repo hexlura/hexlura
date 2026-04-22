@@ -106,15 +106,8 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
         setOpen(false)
     }
 
-    function clampHour(n: number) {
-        if (isNaN(n)) return 12
-        return Math.min(12, Math.max(1, n))
-    }
-
-    function clampMinute(n: number) {
-        if (isNaN(n)) return 0
-        return Math.min(59, Math.max(0, n))
-    }
+    const HOURS = Array.from({ length: 12 }, (_, i) => i + 1)
+    const MINUTES = Array.from({ length: 12 }, (_, i) => i * 5)
 
     const displayText = value ? formatDisplay(value) : ''
     const minDate = min ? min.split('T')[0] : undefined
@@ -156,24 +149,26 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                             <p className="text-xs text-muted mb-1.5 uppercase tracking-wide">Time</p>
                             <div className="flex items-center gap-2 flex-wrap">
                                 {/* Hour */}
-                                <input
-                                    type="number"
-                                    min={1}
-                                    max={12}
+                                <select
                                     value={draftHour}
-                                    onChange={e => setDraftHour(clampHour(parseInt(e.target.value, 10)))}
-                                    className="w-16 bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
-                                />
+                                    onChange={e => setDraftHour(parseInt(e.target.value, 10))}
+                                    className="bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
+                                >
+                                    {HOURS.map(h => (
+                                        <option key={h} value={h}>{h}</option>
+                                    ))}
+                                </select>
                                 <span className="text-text font-mono text-lg">:</span>
                                 {/* Minute */}
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={59}
-                                    value={String(draftMinute).padStart(2, '0')}
-                                    onChange={e => setDraftMinute(clampMinute(parseInt(e.target.value, 10)))}
-                                    className="w-16 bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
-                                />
+                                <select
+                                    value={draftMinute}
+                                    onChange={e => setDraftMinute(parseInt(e.target.value, 10))}
+                                    className="bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
+                                >
+                                    {MINUTES.map(m => (
+                                        <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+                                    ))}
+                                </select>
                                 {/* AM/PM */}
                                 <div className="flex border border-border rounded-sm overflow-hidden ml-1">
                                     <button
