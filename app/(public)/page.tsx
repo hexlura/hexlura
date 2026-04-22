@@ -4,6 +4,7 @@ import Script from 'next/script';
 import { createClient } from '@/lib/supabase/server';
 import { Event } from '@/types';
 import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
+import EventCard from '@/components/events/EventCard';
 
 
 const CATEGORIES = [
@@ -21,26 +22,6 @@ const CATEGORIES = [
     { name: 'Culture & Heritage', emoji: '🎨', bg: '#F5576C' },
 ]
 
-function formatOverlayDate(isoDate: string): string {
-    const d = new Date(isoDate);
-    const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(d);
-    const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: 'Europe/London' }).format(d);
-    const month = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'Europe/London' }).format(d);
-    return `${weekday}, ${day} ${month}`;
-}
-
-function getPriceRange(ticketTypes: Array<{ price_pence: number; is_visible?: boolean }>): string {
-    const visible = (ticketTypes || []).filter((t) => t.is_visible !== false);
-    if (visible.length === 0) return 'Tickets TBA';
-    const prices = visible.map((t) => t.price_pence);
-    const lo = Math.min(...prices);
-    const hi = Math.max(...prices);
-    if (hi === 0) return 'Free';
-    const fmt = (p: number) => `\u00A3${(p / 100).toFixed(2)}`;
-    if (lo === hi) return fmt(lo);
-    if (lo === 0) return `Free \u2013 ${fmt(hi)}`;
-    return `${fmt(lo)} \u2013 ${fmt(hi)}`;
-}
 
 export default async function HomePage() {
     const supabase = createClient();
@@ -321,140 +302,10 @@ export default async function HomePage() {
                         No upcoming events yet. Check back soon!
                     </div>
                 ) : (
-                    <div
-                        className="drag-scroll"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'stretch',
-                            overflowX: 'auto',
-                            gap: '16px',
-                            padding: '0 0 8px',
-                            scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch',
-                            cursor: 'grab',
-                        }}
-                    >
-                        {events.map((event) => {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const ev = event as any;
-                            const ticketTypes: Array<{ price_pence: number }> = ev.ticket_types || [];
-                            const priceStr = getPriceRange(ticketTypes);
-                            const location = ev.venue_city || ev.venue_name || '';
-                            const overlayDate = formatOverlayDate(ev.start_at);
-
-                            return (
-                                <Link
-                                    key={ev.id}
-                                    href={`/events/${ev.slug}`}
-                                    className="event-portrait-card"
-                                    style={{
-                                        width: '200px',
-                                        flexShrink: 0,
-                                        background: 'transparent',
-                                        cursor: 'pointer',
-                                        textDecoration: 'none',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        transition: 'transform 0.2s, box-shadow 0.2s',
-                                        borderRadius: '4px',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                    }}
-                                >
-                                    {ev.banner_url?.startsWith('http') ? (
-                                        <div style={{ width: '100%', aspectRatio: '3 / 4', position: 'relative', overflow: 'hidden', borderRadius: '4px 4px 0 0', flexShrink: 0 }}>
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={ev.banner_url}
-                                                alt={ev.title}
-                                                className="portrait-img"
-                                                style={{
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover',
-                                                    transition: 'transform 0.3s',
-                                                }}
-                                            />
-                                            <div style={{
-                                                position: 'absolute',
-                                                bottom: 0,
-                                                left: 0,
-                                                right: 0,
-                                                background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                                                padding: '24px 10px 8px',
-                                            }}>
-                                                <span style={{ fontSize: '13px', color: '#FFFFFF', fontWeight: 700 }}>
-                                                    {overlayDate}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div style={{
-                                            width: '100%',
-                                            aspectRatio: '3 / 4',
-                                            background: '#F0F0F0',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            borderRadius: '4px 4px 0 0',
-                                            flexShrink: 0,
-                                        }}>
-                                            <span style={{ color: '#C0C0C8', fontSize: '12px' }}>No image</span>
-                                        </div>
-                                    )}
-
-                                    <div style={{ padding: '10px 4px 8px', background: 'transparent' }}>
-                                        <p style={{
-                                            fontSize: '14px',
-                                            color: '#0A0A0F',
-                                            fontWeight: 700,
-                                            lineHeight: 1.3,
-                                            marginBottom: '4px',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden',
-                                        } as React.CSSProperties}>
-                                            {ev.title}
-                                        </p>
-                                        {location ? (
-                                            <p style={{
-                                                fontSize: '12px',
-                                                color: '#666677',
-                                                marginBottom: '2px',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 1,
-                                                WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden',
-                                            } as React.CSSProperties}>
-                                                {location}
-                                            </p>
-                                        ) : null}
-                                        <p style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
-                                            {priceStr}
-                                        </p>
-                                        <div className="book-now-btn" style={{
-                                            width: '100%',
-                                            background: '#E63950',
-                                            color: '#FFFFFF',
-                                            fontSize: '12px',
-                                            fontWeight: 700,
-                                            padding: '8px 0',
-                                            border: 'none',
-                                            textAlign: 'center',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '1px',
-                                            marginTop: '8px',
-                                            transition: 'background 0.2s',
-                                            cursor: 'pointer',
-                                        }}>
-                                            {'Book Now'}
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
+                    <div className="grid grid-cols-2 min-[1024px]:grid-cols-3 min-[1280px]:grid-cols-4 gap-5">
+                        {events.map((event) => (
+                            <EventCard key={event.id} event={event} />
+                        ))}
                     </div>
                 )}
             </section>
