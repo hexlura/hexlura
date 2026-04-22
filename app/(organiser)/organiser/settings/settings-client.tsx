@@ -26,6 +26,29 @@ type OrganiserWithExtras = OrganiserProfile & {
     social_links?: Record<string, string> | null
 }
 
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <div className="bg-card border border-border rounded-none p-6 mb-6">
+            <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">{title}</h2>
+            {children}
+        </div>
+    )
+}
+
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+    return (
+        <label className="flex items-center justify-between py-2 cursor-pointer">
+            <span className="text-sm text-text">{label}</span>
+            <div
+                onClick={() => onChange(!checked)}
+                className={`w-10 h-6 rounded-sm relative transition-colors ${checked ? 'bg-accent' : 'bg-border'}`}
+            >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} />
+            </div>
+        </label>
+    )
+}
+
 interface SettingsClientProps {
     organiser: OrganiserProfile
 }
@@ -210,29 +233,6 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
         setSocialSaved(true)
         setTimeout(() => setSocialSaved(false), 2000)
         setSocialSaving(false)
-    }
-
-    function Section({ title, children }: { title: string; children: React.ReactNode }) {
-        return (
-            <div className="bg-card border border-border rounded-none p-6 mb-6">
-                <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">{title}</h2>
-                {children}
-            </div>
-        )
-    }
-
-    function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-        return (
-            <label className="flex items-center justify-between py-2 cursor-pointer">
-                <span className="text-sm text-text">{label}</span>
-                <div
-                    onClick={() => onChange(!checked)}
-                    className={`w-10 h-6 rounded-sm relative transition-colors ${checked ? 'bg-accent' : 'bg-border'}`}
-                >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} />
-                </div>
-            </label>
-        )
     }
 
     return (
