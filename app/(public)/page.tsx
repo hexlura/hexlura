@@ -302,7 +302,7 @@ export default async function HomePage() {
                         No upcoming events yet. Check back soon!
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 min-[1024px]:grid-cols-3 min-[1280px]:grid-cols-4 gap-5">
+                    <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 280px))' }}>
                         {events.map((event) => (
                             <EventCard key={event.id} event={event} />
                         ))}

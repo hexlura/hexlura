@@ -67,7 +67,7 @@ export default function EventCard({ event }: EventCardProps) {
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="group flex flex-col h-full bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950] max-w-[280px]"
+            className="group flex flex-col h-full bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950]"
             style={{
                 width: '100%',
                 border: '1px solid #E0E0E0',
