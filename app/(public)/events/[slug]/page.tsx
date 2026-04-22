@@ -38,7 +38,9 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     }
 
     const event = eventData;
-    const ticketTypes = (event.ticket_types || []).filter((t: { is_visible: boolean }) => t.is_visible !== false);
+    const ticketTypes = (event.ticket_types || [])
+        .filter((t: { is_visible: boolean }) => t.is_visible !== false)
+        .sort((a: { sort_order: number; price_pence: number }, b: { sort_order: number; price_pence: number }) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.price_pence - b.price_pence);
     const reviews = event.reviews || [];
     const isAllFree = ticketTypes.length > 0 && ticketTypes.every((t: { price_pence: number }) => t.price_pence === 0);
 
