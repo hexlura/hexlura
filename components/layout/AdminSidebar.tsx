@@ -101,7 +101,7 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
             {/* Sidebar — slides in from RIGHT on mobile, fixed left on desktop */}
             <aside
                 className={[
-                    'fixed inset-y-0 z-50 flex flex-col',
+                    'fixed inset-y-0 z-50 flex flex-col overflow-y-auto',
                     'transform transition-transform duration-300 ease-in-out',
                     'lg:left-0 lg:translate-x-0',
                     'right-0',
@@ -122,12 +122,12 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
                     </svg>
                 </button>
 
-                <div className="px-6 py-5 border-b border-border">
+                <div className="px-6 py-5 border-b border-border flex-shrink-0">
                     <div className="font-heading text-xl text-accent tracking-widest">HEXLURA</div>
                     <div className="text-xs text-muted mt-0.5">Admin Console</div>
                 </div>
 
-                <nav className="flex-1 px-3 py-4 flex flex-col gap-5 overflow-y-auto">
+                <nav className="flex-1 px-3 py-4 flex flex-col gap-5 overflow-y-auto min-h-0">
                     {NAV_SECTIONS.map((section) => (
                         <div key={section.title}>
                             <p className="text-[10px] text-muted font-medium tracking-widest px-3 mb-2">
@@ -174,7 +174,7 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-border">
+                <div className="p-4 border-t border-border flex-shrink-0">
                     <div className="text-sm text-text font-medium truncate mb-3">{adminName}</div>
                     <button
                         onClick={handleSignOut}
