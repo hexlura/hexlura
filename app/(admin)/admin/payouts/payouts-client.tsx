@@ -18,7 +18,15 @@ interface PayoutRow {
     created_at: string
     organiser_id: string
     event_id: string | null
-    organiser_profiles: { org_name: string; payout_method?: string; profiles?: { full_name: string | null; email: string | null } | null } | null
+    organiser_profiles: {
+        org_name: string
+        payout_method?: string
+        bank_account_name?: string | null
+        bank_sort_code?: string | null
+        bank_account_number?: string | null
+        stripe_account_id?: string | null
+        profiles?: { full_name: string | null; email: string | null } | null
+    } | null
     events: { title: string; end_at?: string | null; start_at?: string } | null
 }
 
@@ -48,6 +56,9 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
     const searchParams = useSearchParams()
 
     const [confirmModal, setConfirmModal] = useState<PayoutRow | null>(null)
+    const [bankModal, setBankModal] = useState<PayoutRow | null>(null)
+    const [statusModal, setStatusModal] = useState<PayoutRow | null>(null)
+    const [selectedStatus, setSelectedStatus] = useState('')
     const [processingAll, setProcessingAll] = useState(false)
     const [processProgress, setProcessProgress] = useState<{ current: number; total: number } | null>(null)
     const [loading, setLoading] = useState<string | null>(null)
@@ -91,6 +102,25 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
         setProcessProgress(null)
         showToast(`${duePayouts.length} payouts processed — ${formatPence(totalNet)} sent`)
         router.refresh()
+    }
+
+    async function handleStatusChange() {
+        if (!statusModal || !selectedStatus) return
+        setLoading(statusModal.id)
+        const res = await fetch(`/api/admin/payouts/${statusModal.id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: selectedStatus }),
+        })
+        setLoading(null)
+        if (res.ok) {
+            showToast(`Status updated to "${selectedStatus}"`)
+            setStatusModal(null)
+            setSelectedStatus('')
+            router.refresh()
+        } else {
+            showToast('Failed to update status')
+        }
     }
 
     const totalPages = Math.ceil(totalRows / pageSize)
@@ -146,14 +176,22 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     <p className="text-xs text-muted">{p.events?.title ?? '—'}</p>
                                     <p className="text-xs text-muted">Amount: {formatPence(p.net_pence || 0)}</p>
                                 </div>
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                    onClick={() => setConfirmModal(p)}
-                                    disabled={loading === p.id}
-                                >
-                                    {loading === p.id ? 'Processing...' : 'Process'}
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setBankModal(p)}
+                                        className="text-xs text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                    >
+                                        Bank Details
+                                    </button>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => setConfirmModal(p)}
+                                        disabled={loading === p.id}
+                                    >
+                                        {loading === p.id ? 'Processing...' : 'Process'}
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -181,21 +219,20 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Organiser', 'Event', 'Gross (£)', 'Net Paid (£)', 'Method', 'Status', 'Scheduled', 'Paid Date'].map(h => (
+                            {['Organiser', 'Event', 'Amount', 'Method', 'Status', 'Date', 'Actions'].map(h => (
                                 <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {allPayouts.length === 0 && (
-                            <tr><td colSpan={8} className="text-center text-muted text-xs py-12">No payouts</td></tr>
+                            <tr><td colSpan={7} className="text-center text-muted text-xs py-12">No payouts</td></tr>
                         )}
                         {allPayouts.map(p => (
                             <tr key={p.id} className="border-b border-border/50 hover:bg-surface transition-colors">
                                 <td className="py-3 px-4 text-text text-sm">{p.organiser_profiles?.org_name ?? '—'}</td>
                                 <td className="py-3 px-4 text-muted text-xs max-w-[150px] truncate">{p.events?.title ?? '—'}</td>
-                                <td className="py-3 px-4 text-text text-xs">{formatPence(p.gross_pence || 0)}</td>
-                                <td className="py-3 px-4 text-text text-xs">{formatPence(p.net_pence || 0)}</td>
+                                <td className="py-3 px-4 text-text text-xs font-medium">{formatPence(p.net_pence || 0)}</td>
                                 <td className="py-3 px-4">
                                     <span className="text-xs px-2 py-0.5 rounded-full border border-border text-muted">
                                         {p.organiser_profiles?.payout_method === 'stripe_connect' ? 'Stripe' : 'Bank'}
@@ -206,8 +243,36 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                         {p.status}
                                     </span>
                                 </td>
-                                <td className="py-3 px-4 text-muted text-xs">{p.scheduled_at ? fmt(p.scheduled_at) : '—'}</td>
-                                <td className="py-3 px-4 text-muted text-xs">{p.paid_at ? fmt(p.paid_at) : '—'}</td>
+                                <td className="py-3 px-4 text-muted text-xs">
+                                    {p.paid_at ? fmt(p.paid_at) : p.requested_at ? fmt(p.requested_at) : p.scheduled_at ? fmt(p.scheduled_at) : '—'}
+                                </td>
+                                <td className="py-3 px-4">
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={() => setBankModal(p)}
+                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                            title="View bank details"
+                                        >
+                                            Bank
+                                        </button>
+                                        <button
+                                            onClick={() => { setStatusModal(p); setSelectedStatus(p.status) }}
+                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                            title="Change status"
+                                        >
+                                            Status
+                                        </button>
+                                        {(p.status === 'pending' || p.status === 'requested') && (
+                                            <button
+                                                onClick={() => setConfirmModal(p)}
+                                                disabled={loading === p.id}
+                                                className="text-[11px] text-white bg-accent hover:bg-accent/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
+                                            >
+                                                {loading === p.id ? '...' : 'Process'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -241,6 +306,86 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 {loading === confirmModal.id ? 'Processing...' : 'Confirm Payout'}
                             </Button>
                             <Button variant="secondary" size="md" onClick={() => setConfirmModal(null)}>Cancel</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bank Details Modal */}
+            {bankModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                        <h3 className="font-heading text-xl text-text mb-4">Bank Details</h3>
+                        <p className="text-sm text-text font-medium mb-3">{bankModal.organiser_profiles?.org_name}</p>
+                        {bankModal.organiser_profiles?.payout_method === 'stripe_connect' ? (
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Method</span>
+                                    <span className="text-text">Stripe Connect</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Account ID</span>
+                                    <span className="text-text font-mono text-xs">{bankModal.organiser_profiles?.stripe_account_id || '—'}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Method</span>
+                                    <span className="text-text">Bank Transfer</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Account Name</span>
+                                    <span className="text-text">{bankModal.organiser_profiles?.bank_account_name || '—'}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Sort Code</span>
+                                    <span className="text-text font-mono">{bankModal.organiser_profiles?.bank_sort_code || '—'}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Account Number</span>
+                                    <span className="text-text font-mono">{bankModal.organiser_profiles?.bank_account_number || '—'}</span>
+                                </div>
+                            </div>
+                        )}
+                        <div className="mt-5">
+                            <Button variant="secondary" size="md" onClick={() => setBankModal(null)} className="w-full">Close</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Change Status Modal */}
+            {statusModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                        <h3 className="font-heading text-xl text-text mb-3">Change Payout Status</h3>
+                        <p className="text-sm text-muted mb-1">{statusModal.organiser_profiles?.org_name}</p>
+                        <p className="text-sm text-muted mb-4">Amount: {formatPence(statusModal.net_pence || 0)}</p>
+                        <div className="mb-4">
+                            <label className="text-xs text-muted block mb-1.5">New Status</label>
+                            <select
+                                value={selectedStatus}
+                                onChange={e => setSelectedStatus(e.target.value)}
+                                className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                            >
+                                <option value="pending">Pending</option>
+                                <option value="requested">Requested</option>
+                                <option value="processing">Processing</option>
+                                <option value="paid">Paid</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                        </div>
+                        <div className="flex gap-3">
+                            <Button
+                                variant="primary"
+                                size="md"
+                                onClick={handleStatusChange}
+                                disabled={loading === statusModal.id || selectedStatus === statusModal.status}
+                            >
+                                {loading === statusModal.id ? 'Updating...' : 'Update Status'}
+                            </Button>
+                            <Button variant="secondary" size="md" onClick={() => { setStatusModal(null); setSelectedStatus('') }}>Cancel</Button>
                         </div>
                     </div>
                 </div>

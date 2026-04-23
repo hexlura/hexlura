@@ -62,7 +62,7 @@ export default async function AdminPayoutsPage({
 
     let query = adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, paid_at, stripe_transfer_id, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method), events(title)', { count: 'exact' })
+        .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, requested_at, paid_at, stripe_transfer_id, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, bank_account_name, bank_sort_code, bank_account_number, stripe_account_id), events(title)', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(offset, offset + pageSize - 1)
 
