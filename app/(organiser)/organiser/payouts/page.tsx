@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { resolveOrganiserId } from '@/lib/organiser-access'
 import { generatePayoutsForOrganiser } from '@/lib/generate-payouts'
+import { WithdrawButton } from './payouts-client'
 
 export default async function OrganiserPayoutsPage() {
     const supabase = createClient()
@@ -27,24 +28,47 @@ export default async function OrganiserPayoutsPage() {
 
     const { data: payoutsData } = await serviceClient
         .from('payouts')
-        .select('id, gross_pence, fee_pence, net_pence, status, paid_at, created_at, event:events(title)')
+        .select('id, net_pence, status, requested_at, paid_at, created_at, event:events(title)')
         .eq('organiser_id', organiserId)
         .order('created_at', { ascending: false })
 
     const payouts = (payoutsData || []) as {
-        id: string; gross_pence: number | null; fee_pence: number | null; net_pence: number | null;
-        status: string; paid_at: string | null; created_at: string; event: { title?: string } | null
+        id: string; net_pence: number | null;
+        status: string; requested_at: string | null; paid_at: string | null; created_at: string;
+        event: { title?: string } | null
     }[]
 
     const pendingBalance = payouts
         .filter(p => p.status === 'pending')
         .reduce((s, p) => s + (p.net_pence || 0), 0)
 
+    const requestedBalance = payouts
+        .filter(p => p.status === 'requested')
+        .reduce((s, p) => s + (p.net_pence || 0), 0)
+
+    const canRequestWithdrawal =
+        (organiser.payout_method === 'stripe_connect' && !!organiser.stripe_account_id) ||
+        (organiser.payout_method === 'bank_transfer' && !!organiser.bank_account_number)
+
     const STATUS_COLORS: Record<string, string> = {
         pending: 'text-gold bg-gold/10 border-gold/20',
+        requested: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
         processing: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
         paid: 'text-success bg-success/10 border-success/20',
         failed: 'text-accent bg-accent/10 border-accent/20',
+    }
+
+    const STATUS_LABELS: Record<string, string> = {
+        pending: 'Available',
+        requested: 'Requested',
+        processing: 'Processing',
+        paid: 'Paid',
+        failed: 'Failed',
+    }
+
+    function getDate(p: typeof payouts[number]) {
+        const d = p.paid_at || p.requested_at || p.created_at
+        return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     }
 
     return (
@@ -69,7 +93,15 @@ export default async function OrganiserPayoutsPage() {
                         <span className="text-xs text-success">✓ Connected</span>
                     )}
                 </div>
+                <WithdrawButton pendingBalance={pendingBalance} canRequestWithdrawal={canRequestWithdrawal} />
             </div>
+
+            {/* Requested balance info */}
+            {requestedBalance > 0 && (
+                <div className="bg-blue-400/10 border border-blue-400/20 rounded-none p-4 mb-6">
+                    <p className="text-blue-400 text-sm">Withdrawal of {formatPence(requestedBalance)} requested — awaiting admin processing</p>
+                </div>
+            )}
 
             {/* Payout method status banner */}
             {organiser.payout_method === 'bank_transfer' ? (
@@ -106,40 +138,33 @@ export default async function OrganiserPayoutsPage() {
                 )
             )}
 
-            {/* Payouts table */}
+            {/* Payouts table — simplified */}
             <div className="bg-card border border-border rounded-none p-6">
                 <h2 className="text-sm font-medium text-text mb-4">Payout History</h2>
-                <p className="text-xs text-muted mb-4">* Hexlura fee is paid by buyers, not deducted from your payout</p>
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Event', 'Gross Revenue', 'Hexlura Fee *', 'Net Payout', 'Status', 'Date'].map(h => (
+                            {['Event', 'Amount', 'Status', 'Date'].map(h => (
                                 <th key={h} className="text-left text-xs text-muted pb-3 font-normal pr-4">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {payouts.length === 0 && (
-                            <tr><td colSpan={6} className="text-center text-muted text-xs py-12">No payouts yet</td></tr>
+                            <tr><td colSpan={4} className="text-center text-muted text-xs py-12">No payouts yet</td></tr>
                         )}
                         {payouts.map(p => (
                             <tr key={p.id} className="border-b border-border/50">
-                                <td className="py-3 pr-4 text-text text-xs max-w-[160px] truncate">
+                                <td className="py-3 pr-4 text-text text-xs max-w-[200px] truncate">
                                     {p.event?.title || '—'}
                                 </td>
-                                <td className="py-3 pr-4 text-text text-xs">{formatPence(p.gross_pence || 0)}</td>
-                                <td className="py-3 pr-4 text-muted text-xs">{formatPence(p.fee_pence || 0)}</td>
                                 <td className="py-3 pr-4 text-text text-xs font-medium">{formatPence(p.net_pence || 0)}</td>
                                 <td className="py-3 pr-4">
                                     <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[p.status] || 'text-muted border-border'}`}>
-                                        {p.status}
+                                        {STATUS_LABELS[p.status] || p.status}
                                     </span>
                                 </td>
-                                <td className="py-3 text-muted text-xs">
-                                    {p.paid_at
-                                        ? new Date(p.paid_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                                        : new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                </td>
+                                <td className="py-3 text-muted text-xs">{getDate(p)}</td>
                             </tr>
                         ))}
                     </tbody>

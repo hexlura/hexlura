@@ -12,6 +12,7 @@ interface PayoutRow {
     fee_pence?: number | null
     status: string
     scheduled_at: string | null
+    requested_at: string | null
     paid_at: string | null
     stripe_transfer_id?: string | null
     created_at: string
@@ -31,6 +32,7 @@ interface Props {
 
 const STATUS_BADGE: Record<string, string> = {
     pending: 'text-gold bg-gold/10 border-gold/20',
+    requested: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
     processing: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
     paid: 'text-success bg-success/10 border-success/20',
     failed: 'text-accent bg-accent/10 border-accent/20',
@@ -133,9 +135,16 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                         {duePayouts.map(p => (
                             <div key={p.id} className="flex items-center justify-between bg-card rounded-none px-4 py-3">
                                 <div>
-                                    <p className="text-sm text-text font-medium">{p.organiser_profiles?.org_name ?? '—'}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm text-text font-medium">{p.organiser_profiles?.org_name ?? '—'}</p>
+                                        {p.status === 'requested' && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-400/20 font-medium">
+                                                Withdrawal Requested
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-muted">{p.events?.title ?? '—'}</p>
-                                    <p className="text-xs text-muted">Gross: {formatPence(p.gross_pence || 0)} · Net: {formatPence(p.net_pence || 0)}</p>
+                                    <p className="text-xs text-muted">Amount: {formatPence(p.net_pence || 0)}</p>
                                 </div>
                                 <Button
                                     variant="primary"
@@ -161,6 +170,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 >
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
+                    <option value="requested">Requested</option>
                     <option value="processing">Processing</option>
                     <option value="paid">Paid</option>
                     <option value="failed">Failed</option>

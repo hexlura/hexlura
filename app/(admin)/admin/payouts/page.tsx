@@ -26,10 +26,11 @@ export default async function AdminPayoutsPage({
     const cooldownCutoff = new Date()
     cooldownCutoff.setDate(cooldownCutoff.getDate() - cooldownDays)
 
+    // Fetch pending payouts (auto-generated, cooldown passed) and requested payouts (organiser-requested)
     const { data: dueData } = await adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, status, scheduled_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, profiles(full_name, email)), events(title, end_at, start_at)')
-        .eq('status', 'pending')
+        .select('id, gross_pence, net_pence, status, scheduled_at, requested_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, profiles(full_name, email)), events(title, end_at, start_at)')
+        .in('status', ['pending', 'requested'])
 
     type PayoutWithRelated = {
         id: string
@@ -37,6 +38,7 @@ export default async function AdminPayoutsPage({
         net_pence: number | null
         status: string
         scheduled_at: string | null
+        requested_at: string | null
         paid_at: string | null
         created_at: string
         organiser_id: string
@@ -46,7 +48,9 @@ export default async function AdminPayoutsPage({
         events: { title: string; end_at: string | null; start_at: string } | null
     }
 
+    // Requested payouts are always due (organiser explicitly asked); pending payouts need cooldown check
     const allDuePending = ((dueData || []) as unknown as PayoutWithRelated[]).filter(p => {
+        if (p.status === 'requested') return true
         const endDate = p.events?.end_at || p.events?.start_at
         if (!endDate) return false
         return new Date(endDate) < cooldownCutoff

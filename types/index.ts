@@ -150,9 +150,10 @@ export interface Payout {
     gross_pence: number | null;
     fee_pence: number | null;
     net_pence: number | null;
-    status: 'pending' | 'processing' | 'paid' | 'failed';
+    status: 'pending' | 'requested' | 'processing' | 'paid' | 'failed';
     stripe_transfer_id: string | null;
     scheduled_at: string | null;
+    requested_at: string | null;
     paid_at: string | null;
     created_at: string;
 }
