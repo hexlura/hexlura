@@ -75,18 +75,38 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
             {/* Mobile header bar — hidden on desktop */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center justify-between px-4">
                 <span className="font-heading text-accent tracking-widest text-lg">HEXLURA</span>
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className="text-[#0A0A0F] p-2 -mr-2"
-                    type="button"
-                    aria-label="Open menu"
-                >
-                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <line x1="3" y1="12" x2="21" y2="12" />
-                        <line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleSignOut}
+                        disabled={signingOut}
+                        className="text-[#666677] hover:text-accent transition-colors p-2 disabled:opacity-50"
+                        type="button"
+                        aria-label="Sign out"
+                    >
+                        {signingOut ? (
+                            <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                        ) : (
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                            </svg>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setIsOpen(true)}
+                        className="text-[#0A0A0F] p-2 -mr-2"
+                        type="button"
+                        aria-label="Open menu"
+                    >
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             {/* Mobile overlay */}
