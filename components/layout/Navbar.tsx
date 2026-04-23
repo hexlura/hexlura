@@ -90,20 +90,15 @@ export function Navbar() {
                 {/* Center: search bar */}
                 <form onSubmit={handleSearch}>
                     <div
-                        className="flex items-center gap-2 transition-colors"
+                        className="flex items-center transition-colors"
                         style={{
                             width: 380,
                             height: 40,
                             background: '#F5F5F7',
                             border: `1.5px solid ${searchFocused ? '#E63950' : '#E0E0E0'}`,
                             borderRadius: 0,
-                            padding: '0 14px',
                         }}
                     >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
                         <input
                             type="text"
                             value={searchQuery}
@@ -111,8 +106,19 @@ export function Navbar() {
                             onFocus={() => setSearchFocused(true)}
                             onBlur={() => setSearchFocused(false)}
                             placeholder="Search events, venues, cities..."
-                            className="flex-1 bg-transparent border-none outline-none text-[14px] text-[#0A0A0F] placeholder-[#8888AA]"
+                            className="flex-1 bg-transparent border-none outline-none text-[14px] text-[#0A0A0F] placeholder-[#8888AA] px-3.5"
                         />
+                        <button
+                            type="submit"
+                            className="flex items-center justify-center flex-shrink-0 h-full cursor-pointer hover:opacity-80 transition-opacity"
+                            style={{ width: 40, background: '#0A0A0F' }}
+                            aria-label="Search"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </button>
                     </div>
                 </form>
 
@@ -140,27 +146,33 @@ export function Navbar() {
                             </svg>
                         </button>
                         <div
-                            className="flex items-center gap-2 flex-1"
+                            className="flex items-center flex-1"
                             style={{
                                 height: 40,
                                 background: '#F5F5F7',
                                 border: '1.5px solid #E63950',
                                 borderRadius: 0,
-                                padding: '0 14px',
                             }}
                         >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
                             <input
                                 ref={mobileInputRef}
                                 type="text"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 placeholder="Search events, venues, cities..."
-                                className="flex-1 bg-transparent border-none outline-none text-[14px] text-[#0A0A0F] placeholder-[#8888AA]"
+                                className="flex-1 bg-transparent border-none outline-none text-[14px] text-[#0A0A0F] placeholder-[#8888AA] px-3.5"
                             />
+                            <button
+                                type="submit"
+                                className="flex items-center justify-center flex-shrink-0 h-full cursor-pointer hover:opacity-80 transition-opacity"
+                                style={{ width: 40, background: '#0A0A0F' }}
+                                aria-label="Search"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </button>
                         </div>
                     </form>
                 ) : (
