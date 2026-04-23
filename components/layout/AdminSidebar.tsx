@@ -101,7 +101,7 @@ export function AdminSidebar({ adminName, pendingOrganisers }: AdminSidebarProps
             {/* Sidebar — slides in from RIGHT on mobile, fixed left on desktop */}
             <aside
                 className={[
-                    'fixed inset-y-0 z-50 flex flex-col overflow-y-auto',
+                    'fixed inset-y-0 z-50 flex flex-col overflow-hidden',
                     'transform transition-transform duration-300 ease-in-out',
                     'lg:left-0 lg:translate-x-0',
                     'right-0',
