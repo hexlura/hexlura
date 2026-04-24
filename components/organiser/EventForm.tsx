@@ -161,7 +161,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const [saved, setSaved] = useState(false)
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
-    const [openSections, setOpenSections] = useState<Set<number>>(new Set([1, 2, 3, 4, 5]))
+    const [openSections, setOpenSections] = useState<Set<number>>(new Set())
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     // Auto-generate slug from title (only if not editing)
