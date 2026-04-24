@@ -152,15 +152,7 @@ export default function TermsPage() {
 
                     <h3 style={sectionStyle}>4. Ticket Purchases</h3>
                     <p style={bodyStyle}>4.1 All ticket purchases are subject to availability at the time of purchase.</p>
-                    <p style={subStyle}>4.2 A booking fee is applied to each ticket purchase as follows:</p>
-                    <ul style={{ paddingLeft: '24px', margin: '0 0 16px' }}>
-                        {[
-                            'Fee structure: 5% of ticket face value + 49p per ticket',
-                            'Minimum booking fee: £0.99 per ticket',
-                            'Maximum booking fee: £5.00 per ticket',
-                            'The booking fee is shown clearly before you complete your purchase',
-                        ].map(item => <li key={item} style={liStyle}>{item}</li>)}
-                    </ul>
+                    <p style={bodyStyle}>4.2 A booking fee is applied to each ticket purchase. The applicable fee is shown clearly before you complete your purchase. Current fee details are available on our website.</p>
                     <p style={bodyStyle}>4.3 Hexlura acts as the agent of the Organiser only. The contract for the supply of the event is between you and the Organiser. Hexlura is not a party to that contract and accepts no liability for the quality, safety, legality or any other aspect of any Event.</p>
                     <p style={bodyStyle}>4.4 Upon successful payment, you will receive a booking confirmation and e-tickets to your registered email address. It is your responsibility to ensure your email address is correct.</p>
                     <p style={bodyStyle}>4.5 Tickets are personal to the named holder and may not be resold or transferred except where the Organiser expressly permits this.</p>

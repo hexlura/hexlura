@@ -32,7 +32,7 @@ export default function AboutPage() {
 
         <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>For Buyers</h2>
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#444455', lineHeight: 1.8, marginBottom: 16 }}>
-          Every ticket purchase on Hexlura comes with a clear breakdown of costs before you pay. Our booking fee is simple: 5% + 49p per ticket, with a minimum of £0.99 and maximum of £5.00.
+          Every ticket purchase on Hexlura comes with a clear breakdown of costs before you pay. Our booking fee is simple and transparent — you&apos;ll always see the exact amount before completing your purchase.
         </p>
 
         <div style={{ borderTop: '1px solid #C0C0C8', margin: '40px 0' }} />
