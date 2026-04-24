@@ -161,8 +161,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const [saved, setSaved] = useState(false)
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
-    const [currentStep, setCurrentStep] = useState(1)
-    const [stepErrors, setStepErrors] = useState<string[]>([])
+    const [openSections, setOpenSections] = useState<Set<number>>(new Set([1, 2, 3, 4]))
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     // Auto-generate slug from title (only if not editing)
@@ -311,37 +310,12 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         return errs
     }
 
-    function validateStep(step: number): boolean {
-        const errs: string[] = []
-        if (step === 1) {
-            if (!title.trim()) errs.push('Event title is required')
-            if (!category) errs.push('Category is required')
-        } else if (step === 2) {
-            if (!startAt) errs.push('Start date is required')
-            if (!venueName.trim()) errs.push('Venue name is required')
-            if (!venuePostcode.trim()) errs.push('Postcode is required')
-        } else if (step === 3) {
-            if (tickets.length === 0) errs.push('At least one ticket type is required')
-            tickets.forEach((tt, i) => {
-                if (!tt.name.trim()) errs.push(`Ticket ${i + 1}: name is required`)
-                if (tt.price_pence < 0) errs.push(`Ticket ${i + 1}: price cannot be negative`)
-            })
-        }
-        setStepErrors(errs)
-        return errs.length === 0
-    }
-
-    const goToNext = async () => {
-        if (!validateStep(currentStep)) return
-        await saveDraft()
-        setCurrentStep(prev => Math.min(prev + 1, 4))
-        window.scrollTo(0, 0)
-    }
-
-    const goToPrev = () => {
-        setStepErrors([])
-        setCurrentStep(prev => Math.max(prev - 1, 1))
-        window.scrollTo(0, 0)
+    function toggleSection(n: number) {
+        setOpenSections(prev => {
+            const next = new Set(prev)
+            if (next.has(n)) { next.delete(n) } else { next.add(n) }
+            return next
+        })
     }
 
     async function handlePublish() {
@@ -491,16 +465,20 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const inputClass = "w-full bg-surface border border-border rounded-lg px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
     const labelClass = "text-xs text-muted block mb-1.5"
 
-    function SectionHeader({ num, title: sTitle }: { num: string; title: string }) {
+    function SectionHeader({ num, title: sTitle, open, onToggle }: { num: string; title: string; open: boolean; onToggle: () => void }) {
         return (
-            <div className="flex items-center gap-3 mb-6">
-                <span className="font-mono text-accent text-sm">{num}</span>
-                <h2 className="font-heading text-xl text-text tracking-wide">{sTitle}</h2>
-            </div>
+            <button type="button" onClick={onToggle} className="w-full flex items-center justify-between py-4">
+                <div className="flex items-center gap-3">
+                    <span className="font-mono text-accent text-sm">{num}</span>
+                    <h2 className="font-heading text-xl text-text tracking-wide">{sTitle}</h2>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`}>
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
         )
     }
-
-    const STEP_LABELS = ['Basic Info', 'Date & Venue', 'Tickets', 'Settings', 'Publish']
 
     return (
         <div>
@@ -510,46 +488,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                 {saving && <span className="text-muted text-xs">Saving...</span>}
             </div>
 
-            {/* Step indicator */}
-            <div style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', borderRadius: 2, padding: 24, marginBottom: 32 }}>
-                {/* Mobile */}
-                <div className="sm:hidden text-center">
-                    <p style={{ color: '#666677', fontSize: 12, marginBottom: 4 }}>Step {currentStep} of 4</p>
-                    <p className="font-heading text-text text-lg">{STEP_LABELS[currentStep - 1]}</p>
-                </div>
-                {/* Desktop */}
-                <div className="hidden sm:flex items-start">
-                    {STEP_LABELS.map((label, idx) => {
-                        const stepNum = idx + 1
-                        const done = currentStep > stepNum
-                        const active = currentStep === stepNum
-                        return (
-                            <div key={stepNum} style={{ display: 'flex', alignItems: 'center', flex: idx < 4 ? 1 : undefined }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{
-                                        width: 32, height: 32, borderRadius: '50%',
-                                        background: done || active ? '#0A0A0F' : '#C0C0C8',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0,
-                                    }}>{done ? '✓' : stepNum}</div>
-                                    <span style={{ fontSize: 11, marginTop: 6, whiteSpace: 'nowrap', color: active ? '#0A0A0F' : '#666677' }}>{label}</span>
-                                </div>
-                                {idx < 4 && (
-                                    <div style={{ flex: 1, height: 2, background: done ? '#0A0A0F' : '#C0C0C8', margin: '0 8px 20px 8px' }} />
-                                )}
-                            </div>
-                        )
-                    })}
-                </div>
-            </div>
-
-            {/* Step content */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 28, minHeight: 400 }}>
-
-                {/* Step 1 — Basic Info */}
-                {currentStep === 1 && (
-                    <div>
-                        <SectionHeader num="01" title="Basic Info" />
+            {/* Section 1 — Basic Info */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
+                <SectionHeader num="01" title="Basic Info" open={openSections.has(1)} onToggle={() => toggleSection(1)} />
+                {openSections.has(1) && (
+                    <div className="pb-6">
                         <div className="space-y-4">
                             <div>
                                 <label className={labelClass}>Event Title *</label>
@@ -623,11 +566,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* Step 2 — Date & Venue */}
-                {currentStep === 2 && (
-                    <div>
-                        <SectionHeader num="02" title="Date & Venue" />
+            {/* Section 2 — Date & Venue */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
+                <SectionHeader num="02" title="Date & Venue" open={openSections.has(2)} onToggle={() => toggleSection(2)} />
+                {openSections.has(2) && (
+                    <div className="pb-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Start Date & Time *</label>
@@ -719,11 +664,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* Step 3 — Ticket Types */}
-                {currentStep === 3 && (
-                    <div>
-                        <SectionHeader num="03" title="Ticket Types" />
+            {/* Section 3 — Ticket Types */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
+                <SectionHeader num="03" title="Ticket Types" open={openSections.has(3)} onToggle={() => toggleSection(3)} />
+                {openSections.has(3) && (
+                    <div className="pb-6">
                         <div className="space-y-4">
                             {tickets.map((tt, i) => (
                                 <div key={i} className="bg-surface border border-border rounded-xl p-4">
@@ -812,11 +759,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* Step 4 — Settings */}
-                {currentStep === 4 && (
-                    <div>
-                        <SectionHeader num="04" title="Settings" />
+            {/* Section 4 — Settings */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
+                <SectionHeader num="04" title="Settings" open={openSections.has(4)} onToggle={() => toggleSection(4)} />
+                {openSections.has(4) && (
+                    <div className="pb-6">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Minimum Age</label>
@@ -842,78 +791,42 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* Step 4 — Publish */}
-                {currentStep === 4 && (
-                    <div>
-                        {event?.slug && (
-                            <div className="mb-4">
-                                <a href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-text transition-colors">
-                                    Preview event →
-                                </a>
-                            </div>
-                        )}
-                        {errors.length > 0 && (
-                            <div className="mt-6 bg-accent/10 border border-accent/30 rounded-xl p-4">
-                                <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
-                                <ul className="list-disc list-inside space-y-1">
-                                    {errors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
-                                </ul>
-                            </div>
-                        )}
+            {/* Action bar */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 28 }}>
+                {event?.slug && (
+                    <div className="mb-4">
+                        <a href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-text transition-colors">
+                            Preview event →
+                        </a>
                     </div>
                 )}
-
-                {/* Per-step validation errors */}
-                {stepErrors.length > 0 && (
-                    <div className="mt-6 bg-accent/10 border border-accent/30 rounded-xl p-4">
+                {errors.length > 0 && (
+                    <div className="mb-6 bg-accent/10 border border-accent/30 rounded-xl p-4">
                         <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
                         <ul className="list-disc list-inside space-y-1">
-                            {stepErrors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
+                            {errors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
                         </ul>
                     </div>
                 )}
-
-                {/* Navigation bar */}
-                <div style={{ borderTop: '1px solid #C0C0C8', paddingTop: 24, marginTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {currentStep > 1 ? (
-                        <button
-                            type="button"
-                            onClick={goToPrev}
-                            style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 2, cursor: 'pointer', fontSize: 14 }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
-                        >← Back</button>
-                    ) : <div />}
-                    <div style={{ display: 'flex', gap: 12 }}>
-                        <button
-                            type="button"
-                            onClick={saveDraft}
-                            disabled={saving}
-                            style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, opacity: saving ? 0.6 : 1 }}
-                            onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
-                        >{saving ? 'Saving...' : 'Save Draft'}</button>
-                        {currentStep < 4 ? (
-                            <button
-                                type="button"
-                                onClick={goToNext}
-                                disabled={saving}
-                                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: saving ? 0.7 : 1 }}
-                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
-                            >{saving ? 'Saving...' : 'Next →'}</button>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handlePublish}
-                                disabled={publishing}
-                                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: publishing ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: publishing ? 0.7 : 1 }}
-                                onMouseEnter={e => { if (!publishing) e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { if (!publishing) e.currentTarget.style.background = '#0A0A0F' }}
-                            >{publishing ? 'Publishing...' : 'Publish Event'}</button>
-                        )}
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                    <button
+                        type="button"
+                        onClick={saveDraft}
+                        disabled={saving}
+                        style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, opacity: saving ? 0.6 : 1 }}
+                        onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                    >{saving ? 'Saving...' : 'Save Draft'}</button>
+                    <button
+                        type="button"
+                        onClick={handlePublish}
+                        disabled={publishing}
+                        style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: publishing ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: publishing ? 0.7 : 1 }}
+                        onMouseEnter={e => { if (!publishing) e.currentTarget.style.background = '#333333' }}
+                        onMouseLeave={e => { if (!publishing) e.currentTarget.style.background = '#0A0A0F' }}
+                    >{publishing ? 'Publishing...' : 'Publish Event'}</button>
                 </div>
             </div>
 
