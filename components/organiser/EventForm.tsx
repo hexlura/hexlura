@@ -425,7 +425,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         setBannerUploading(false)
     }
 
-    function addTicketFromPreset(name: string, description: string) {
+    function addTicketFromPreset(name: string, description: string, is_group?: boolean) {
         setTickets(prev => [...prev, {
             ...defaultTicket,
             name,
@@ -435,6 +435,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             qtyStr: '',
             quantity_total: 0,
             sort_order: prev.length,
+            ...(is_group ? { is_group: true, group_size: 2 } : {}),
         }])
     }
 
@@ -782,34 +783,21 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                             </div>
                                         </div>
                                     </div>
-                                    {/* Group ticket */}
-                                    <div className="border-t border-border mt-2 pt-3 space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="text-sm text-text">Group Ticket</span>
-                                                <p className="text-xs text-muted mt-0.5">Each purchase generates one QR code per person in the group</p>
-                                            </div>
-                                            <div
-                                                onClick={() => updateTicket(i, { is_group: !tt.is_group, group_size: !tt.is_group ? 2 : 1 })}
-                                                className={`w-10 h-6 rounded-full relative transition-colors cursor-pointer flex-shrink-0 ml-4 ${tt.is_group ? 'bg-accent' : 'bg-border'}`}
-                                            >
-                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${tt.is_group ? 'translate-x-5' : 'translate-x-1'}`} />
-                                            </div>
+                                    {/* Group size (shown only for group tickets) */}
+                                    {tt.is_group && (
+                                        <div className="border-t border-border mt-2 pt-3">
+                                            <label className={labelClass}>Group Size</label>
+                                            <p className="text-xs text-muted mb-1.5">Each purchase generates one QR code per person in the group</p>
+                                            <input
+                                                type="number"
+                                                min={2}
+                                                max={50}
+                                                value={tt.group_size}
+                                                onChange={e => updateTicket(i, { group_size: Math.min(50, Math.max(2, parseInt(e.target.value) || 2)) })}
+                                                className={inputClass}
+                                            />
                                         </div>
-                                        {tt.is_group && (
-                                            <div>
-                                                <label className={labelClass}>Group Size</label>
-                                                <input
-                                                    type="number"
-                                                    min={2}
-                                                    max={50}
-                                                    value={tt.group_size}
-                                                    onChange={e => updateTicket(i, { group_size: Math.min(50, Math.max(2, parseInt(e.target.value) || 2)) })}
-                                                    className={inputClass}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
+                                    )}
                                 </div>
                             ))}
                             <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
@@ -956,6 +944,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                         addTicketFromPreset(
                                             preset.name === 'Custom' ? '' : preset.name,
                                             preset.name === 'Custom' ? '' : preset.description,
+                                            preset.name === 'Group Ticket' ? true : undefined,
                                         )
                                     }}
                                     style={{
