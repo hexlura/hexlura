@@ -14,7 +14,7 @@ import { GuestListSection } from '@/components/organiser/GuestListSection'
 
 const RichTextEditor = dynamic(
     () => import('@/components/organiser/RichTextEditor').then(m => m.RichTextEditor),
-    { ssr: false, loading: () => <div className="h-48 bg-surface border border-border rounded-lg animate-pulse" /> }
+    { ssr: false, loading: () => <div className="h-48 bg-surface border border-border animate-pulse" /> }
 )
 const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']
 const REFUND_POLICIES = [
@@ -462,7 +462,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         }
     }
 
-    const inputClass = "w-full bg-surface border border-border rounded-lg px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+    const inputClass = "w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
     const labelClass = "text-xs text-muted block mb-1.5"
 
     function SectionHeader({ num, title: sTitle, open, onToggle }: { num: string; title: string; open: boolean; onToggle: () => void }) {
@@ -529,7 +529,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
                                         {bannerImages.map((url, i) => (
                                             <div key={url} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                                                <img src={url} alt={`Banner ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid #E0E0E8' }} />
+                                                <img src={url} alt={`Banner ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '2px', border: '1px solid #E0E0E8' }} />
                                                 {i === 0 && (
                                                     <span style={{ position: 'absolute', bottom: '3px', left: '3px', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '9px', padding: '1px 4px', borderRadius: '3px' }}>MAIN</span>
                                                 )}
@@ -544,7 +544,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                     </div>
                                 )}
                                 {bannerImages.length < 4 && (
-                                    <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
+                                    <label className="block w-full border-2 border-dashed border-border p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
                                         <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : `Click to upload image ${bannerImages.length + 1} of 4`}</p>
                                         <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
                                     </label>
@@ -566,9 +566,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                         <div className="flex justify-end mt-4">
                             <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
                             >{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     </div>
@@ -671,9 +671,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                         <div className="flex justify-end mt-4">
                             <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
                             >{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     </div>
@@ -687,7 +687,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                     <div className="pb-6">
                         <div className="space-y-4">
                             {tickets.map((tt, i) => (
-                                <div key={i} className="bg-surface border border-border rounded-xl p-4">
+                                <div key={i} className="bg-surface border border-border p-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <span className="text-xs text-muted font-mono">Ticket {i + 1}</span>
                                         <div className="flex gap-2">
@@ -765,9 +765,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                         <div className="flex justify-end mt-4">
                             <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
                             >{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     </div>
@@ -804,9 +804,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         </div>
                         <div className="flex justify-end mt-4">
                             <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
+                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
                             >{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     </div>
@@ -838,7 +838,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                     </div>
                 )}
                 {errors.length > 0 && (
-                    <div className="mb-6 bg-accent/10 border border-accent/30 rounded-xl p-4">
+                    <div className="mb-6 bg-accent/10 border border-accent/30 p-4">
                         <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
                         <ul className="list-disc list-inside space-y-1">
                             {errors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
