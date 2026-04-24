@@ -181,9 +181,19 @@ export async function POST(request: NextRequest) {
         }
 
         for (const item of items) {
-            // One row per physical ticket — each person gets their own QR code
-            for (let t = 0; t < item.quantity; t++) {
-                await adminClient.from('booking_items').insert({
+            const { data: ticketType } = await adminClient
+                .from('ticket_types')
+                .select('is_group, group_size')
+                .eq('id', item.ticket_type_id)
+                .single()
+
+            const tt = ticketType as { is_group?: boolean; group_size?: number } | null
+            const totalRows = (tt?.is_group && (tt.group_size || 1) > 1)
+                ? item.quantity * (tt.group_size || 1)
+                : item.quantity
+
+            for (let t = 0; t < totalRows; t++) {
+                const { error: insertErr } = await adminClient.from('booking_items').insert({
                     booking_id: booking.id,
                     ticket_type_id: item.ticket_type_id,
                     quantity: 1,
@@ -192,6 +202,10 @@ export async function POST(request: NextRequest) {
                     attendee_email: attendee_details.email,
                     qr_code: randomUUID(),
                 })
+                if (insertErr) {
+                    console.error('Failed to insert booking_item:', insertErr.message)
+                    throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                }
             }
 
             const { error: rpcError } = await adminClient.rpc('increment_quantity_sold', {

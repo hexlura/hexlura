@@ -93,20 +93,45 @@ export async function POST(request: Request) {
         for (const item of items) {
             const { data: ticketType } = await supabase
                 .from('ticket_types')
-                .select('price_pence')
+                .select('price_pence, is_group, group_size')
                 .eq('id', item.ticket_type_id)
                 .single()
 
-            for (let t = 0; t < item.quantity; t++) {
-                await supabase.from('booking_items').insert({
-                    booking_id: booking.id,
-                    ticket_type_id: item.ticket_type_id,
-                    quantity: 1,
-                    unit_price_pence: ticketType?.price_pence || 0,
-                    attendee_name: attendeeName,
-                    attendee_email: attendeeEmail,
-                    qr_code: randomUUID(),
-                })
+            const tt = ticketType as { price_pence: number; is_group?: boolean; group_size?: number } | null
+
+            if (tt?.is_group && (tt.group_size || 1) > 1) {
+                const totalMembers = item.quantity * (tt.group_size || 1)
+                for (let g = 1; g <= totalMembers; g++) {
+                    const { error: insertErr } = await supabase.from('booking_items').insert({
+                        booking_id: booking.id,
+                        ticket_type_id: item.ticket_type_id,
+                        quantity: 1,
+                        unit_price_pence: tt.price_pence || 0,
+                        attendee_name: attendeeName,
+                        attendee_email: attendeeEmail,
+                        qr_code: randomUUID(),
+                    })
+                    if (insertErr) {
+                        console.error('Failed to insert group booking_item:', insertErr.message)
+                        throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                    }
+                }
+            } else {
+                for (let t = 0; t < item.quantity; t++) {
+                    const { error: insertErr } = await supabase.from('booking_items').insert({
+                        booking_id: booking.id,
+                        ticket_type_id: item.ticket_type_id,
+                        quantity: 1,
+                        unit_price_pence: tt?.price_pence || 0,
+                        attendee_name: attendeeName,
+                        attendee_email: attendeeEmail,
+                        qr_code: randomUUID(),
+                    })
+                    if (insertErr) {
+                        console.error('Failed to insert booking_item:', insertErr.message)
+                        throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                    }
+                }
             }
 
             // Update quantity_sold

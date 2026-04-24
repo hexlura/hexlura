@@ -95,21 +95,33 @@ export async function POST(request: Request) {
 
     // Insert booking items and increment quantity_sold
     for (const item of items) {
-        const { error: itemError } = await adminClient.from('booking_items').insert({
-            booking_id: booking.id,
-            ticket_type_id: item.ticket_type_id,
-            quantity: item.quantity,
-            unit_price_pence: 0,
-            attendee_name: attendee_details?.full_name || '',
-            attendee_email: attendee_details?.email || '',
-            qr_code: randomUUID(),
-        })
+        const { data: ticketType } = await adminClient
+            .from('ticket_types')
+            .select('is_group, group_size')
+            .eq('id', item.ticket_type_id)
+            .single()
 
-        if (itemError) {
-            console.error('Failed to insert booking_item for comp booking:', itemError.message)
-            // Delete the booking so we don't leave an orphan
-            await adminClient.from('bookings').delete().eq('id', booking.id)
-            return NextResponse.json({ error: 'Failed to create booking items' }, { status: 500 })
+        const tt = ticketType as { is_group?: boolean; group_size?: number } | null
+        const totalRows = (tt?.is_group && (tt.group_size || 1) > 1)
+            ? item.quantity * (tt.group_size || 1)
+            : item.quantity
+
+        for (let t = 0; t < totalRows; t++) {
+            const { error: itemError } = await adminClient.from('booking_items').insert({
+                booking_id: booking.id,
+                ticket_type_id: item.ticket_type_id,
+                quantity: 1,
+                unit_price_pence: 0,
+                attendee_name: attendee_details?.full_name || '',
+                attendee_email: attendee_details?.email || '',
+                qr_code: randomUUID(),
+            })
+
+            if (itemError) {
+                console.error('Failed to insert booking_item for comp booking:', itemError.message)
+                await adminClient.from('bookings').delete().eq('id', booking.id)
+                return NextResponse.json({ error: 'Failed to create booking items' }, { status: 500 })
+            }
         }
 
         const { error: rpcError } = await adminClient.rpc('increment_quantity_sold', {

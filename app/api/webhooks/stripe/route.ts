@@ -337,7 +337,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         if (tt?.is_group && (tt.group_size || 1) > 1) {
             const totalMembers = item.quantity * (tt.group_size || 1)
             for (let g = 1; g <= totalMembers; g++) {
-                await supabase.from('booking_items').insert({
+                const { error: insertErr } = await supabase.from('booking_items').insert({
                     booking_id: booking.id,
                     ticket_type_id: item.ticket_type_id,
                     quantity: 1,
@@ -346,11 +346,15 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                     attendee_email: attendeeEmail,
                     qr_code: randomUUID(),
                 })
+                if (insertErr) {
+                    console.error('Failed to insert group booking_item:', insertErr.message)
+                    throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                }
             }
         } else {
             // Insert one row per individual ticket so each has its own unique QR code
             for (let t = 0; t < item.quantity; t++) {
-                await supabase.from('booking_items').insert({
+                const { error: insertErr } = await supabase.from('booking_items').insert({
                     booking_id: booking.id,
                     ticket_type_id: item.ticket_type_id,
                     quantity: 1,
@@ -359,6 +363,10 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                     attendee_email: attendeeEmail,
                     qr_code: randomUUID(),
                 })
+                if (insertErr) {
+                    console.error('Failed to insert booking_item:', insertErr.message)
+                    throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                }
             }
         }
 
@@ -602,7 +610,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         if (tt?.is_group && (tt.group_size || 1) > 1) {
             const totalMembers = item.quantity * (tt.group_size || 1)
             for (let g = 1; g <= totalMembers; g++) {
-                await supabase.from('booking_items').insert({
+                const { error: insertErr } = await supabase.from('booking_items').insert({
                     booking_id: booking.id,
                     ticket_type_id: item.ticket_type_id,
                     quantity: 1,
@@ -611,11 +619,15 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                     attendee_email: attendeeEmail,
                     qr_code: randomUUID(),
                 })
+                if (insertErr) {
+                    console.error('Failed to insert group booking_item:', insertErr.message)
+                    throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                }
             }
         } else {
             // Insert one row per individual ticket so each has its own unique QR code
             for (let t = 0; t < item.quantity; t++) {
-                await supabase.from('booking_items').insert({
+                const { error: insertErr } = await supabase.from('booking_items').insert({
                     booking_id: booking.id,
                     ticket_type_id: item.ticket_type_id,
                     quantity: 1,
@@ -624,6 +636,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                     attendee_email: attendeeEmail,
                     qr_code: randomUUID(),
                 })
+                if (insertErr) {
+                    console.error('Failed to insert booking_item:', insertErr.message)
+                    throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                }
             }
         }
 
