@@ -161,7 +161,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const [saved, setSaved] = useState(false)
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
-    const [openSections, setOpenSections] = useState<Set<number>>(new Set([1, 2, 3, 4]))
+    const [openSections, setOpenSections] = useState<Set<number>>(new Set([1, 2, 3, 4, 5]))
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     // Auto-generate slug from title (only if not editing)
@@ -564,6 +564,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 <p className="text-xs mt-1" style={{ color: '#666677' }}>Paste a YouTube link to show a promo video on your event page.</p>
                             </div>
                         </div>
+                        <div className="flex justify-end mt-4">
+                            <button type="button" onClick={saveDraft} disabled={saving}
+                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                            >{saving ? 'Saving...' : 'Save'}</button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -662,6 +669,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 )}
                             </div>
                         </div>
+                        <div className="flex justify-end mt-4">
+                            <button type="button" onClick={saveDraft} disabled={saving}
+                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                            >{saving ? 'Saving...' : 'Save'}</button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -748,14 +762,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 </div>
                             ))}
                             <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
-
-                            {/* Guest List / Comp Tickets — only shown when editing an existing event */}
-                            {event?.id && (
-                                <GuestListSection
-                                    eventId={event.id}
-                                    ticketTypes={tickets.filter(t => t.id).map(t => ({ id: t.id!, name: t.name }))}
-                                />
-                            )}
+                        </div>
+                        <div className="flex justify-end mt-4">
+                            <button type="button" onClick={saveDraft} disabled={saving}
+                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                            >{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     </div>
                 )}
@@ -789,9 +802,31 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 </select>
                             </div>
                         </div>
+                        <div className="flex justify-end mt-4">
+                            <button type="button" onClick={saveDraft} disabled={saving}
+                                style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
+                                onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
+                            >{saving ? 'Saving...' : 'Save'}</button>
+                        </div>
                     </div>
                 )}
             </div>
+
+            {/* Section 5 — Guest List / Comp Tickets (only for existing events) */}
+            {event?.id && (
+                <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
+                    <SectionHeader num="05" title="Guest List / Comp Tickets" open={openSections.has(5)} onToggle={() => toggleSection(5)} />
+                    {openSections.has(5) && (
+                        <div className="pb-6">
+                            <GuestListSection
+                                eventId={event.id}
+                                ticketTypes={tickets.filter(t => t.id).map(t => ({ id: t.id!, name: t.name }))}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Action bar */}
             <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 28 }}>
