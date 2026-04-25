@@ -12,7 +12,7 @@ interface BookingEmailData {
     eventTime: string
     venueName: string
     venueAddress: string
-    ticketSummary: { name: string; quantity: number; subtotalPence: number }[]
+    ticketSummary: { name: string; quantity: number; unitPricePence: number }[]
     bookingFeePence: number
     discountPence: number
     totalPence: number
@@ -25,8 +25,8 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
         .map(
             (t) => `
       <tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${t.name} × ${t.quantity}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:right;">£${(t.subtotalPence / 100).toFixed(2)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${t.name}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:right;">${t.quantity} × £${(t.unitPricePence / 100).toFixed(2)}</td>
       </tr>`
         )
         .join('')

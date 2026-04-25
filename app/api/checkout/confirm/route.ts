@@ -232,7 +232,7 @@ export async function POST(request: Request) {
             }).format(new Date(eventData.start_at))
 
             // Fetch ticket names for email
-            const ticketSummary: { name: string; quantity: number; subtotalPence: number }[] = []
+            const ticketSummary: { name: string; quantity: number; unitPricePence: number }[] = []
             for (const item of items) {
                 const { data: tt } = await supabase
                     .from('ticket_types')
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
                     ticketSummary.push({
                         name: tt.name,
                         quantity: item.quantity,
-                        subtotalPence: tt.price_pence * item.quantity,
+                        unitPricePence: tt.price_pence,
                     })
                 }
             }

@@ -160,12 +160,12 @@ export async function POST(request: Request) {
             hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
         }).format(new Date(eventData.start_at))
 
-        const ticketSummary: { name: string; quantity: number; subtotalPence: number }[] = []
+        const ticketSummary: { name: string; quantity: number; unitPricePence: number }[] = []
         for (const item of items) {
             const { data: tt } = await adminClient
                 .from('ticket_types').select('name').eq('id', item.ticket_type_id).single()
             if (tt) {
-                ticketSummary.push({ name: tt.name, quantity: item.quantity, subtotalPence: 0 })
+                ticketSummary.push({ name: tt.name, quantity: item.quantity, unitPricePence: 0 })
             }
         }
 
