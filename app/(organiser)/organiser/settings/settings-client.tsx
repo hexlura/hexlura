@@ -182,20 +182,21 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
         if (file.size > 5 * 1024 * 1024) return alert('File must be under 5MB')
         setLogoUploading(true)
         const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setLogoUploading(false); return }
         const ext = file.name.split('.').pop()
-        const path = `${organiser.id}/logo.${ext}`
+        const path = `${user.id}/logo.${ext}`
         const { error } = await supabase.storage.from('organiser-logos').upload(path, file, { upsert: true })
-        if (!error) {
-            const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
-            const url = urlData.publicUrl
-            await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
-            // Sync to profiles.avatar_url so user profile photo stays in sync
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
-            }
-            setLogoUrl(url)
+        if (error) {
+            alert('Upload failed. Please try again.')
+            setLogoUploading(false)
+            return
         }
+        const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
+        const url = urlData.publicUrl
+        await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
+        await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
+        setLogoUrl(url)
         setLogoUploading(false)
     }
 
@@ -205,15 +206,20 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
         if (file.size > 5 * 1024 * 1024) return alert('File must be under 5MB')
         setCoverUploading(true)
         const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setCoverUploading(false); return }
         const ext = file.name.split('.').pop()
-        const path = `${organiser.id}/cover.${ext}`
+        const path = `${user.id}/cover.${ext}`
         const { error } = await supabase.storage.from('organiser-covers').upload(path, file, { upsert: true })
-        if (!error) {
-            const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
-            const url = urlData.publicUrl
-            await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)
-            setCoverUrl(url)
+        if (error) {
+            alert('Upload failed. Please try again.')
+            setCoverUploading(false)
+            return
         }
+        const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
+        const url = urlData.publicUrl
+        await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)
+        setCoverUrl(url)
         setCoverUploading(false)
     }
 
@@ -253,10 +259,13 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
                         </div>
                     )}
                 </div>
-                <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors inline-block">
-                    {coverUploading ? 'Uploading...' : 'Change Cover Photo'}
-                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCover} className="hidden" />
-                </label>
+                <div className="flex items-center gap-3">
+                    <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors inline-block">
+                        {coverUploading ? 'Uploading...' : 'Change Cover Photo'}
+                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCover} className="hidden" />
+                    </label>
+                    <span style={{ fontSize: 11, color: '#8888AA' }}>Recommended: 1200 x 400px (3:1 ratio). Max 5MB. JPG, PNG or WebP.</span>
+                </div>
             </div>
 
             {/* Profile */}
