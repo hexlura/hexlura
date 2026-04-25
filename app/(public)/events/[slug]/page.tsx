@@ -7,6 +7,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { Badge } from '@/components/ui/Badge';
 import BookingWidget from '@/components/events/BookingWidget';
 import ShareButton from '@/components/events/ShareButton';
+import EventQRButton from '@/components/events/EventQRButton';
 import { Review } from '@/types';
 import LikeButton from '@/components/events/LikeButton';
 import BannerCarousel from '@/components/events/BannerCarousel';
@@ -314,6 +315,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                 isLoggedIn={!!user}
                             />
                             <ShareButton title={event.title} />
+                            <EventQRButton />
                         </div>
 
                         {/* Free event badge */}
