@@ -51,9 +51,10 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 
 interface SettingsClientProps {
     organiser: OrganiserProfile
+    stripeConnectEnabled?: boolean
 }
 
-export function SettingsClient({ organiser: organiserProp }: SettingsClientProps) {
+export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled = false }: SettingsClientProps) {
     const organiser = organiserProp as OrganiserWithExtras
     const [orgName, setOrgName] = useState(organiser.org_name)
     const [description, setDescription] = useState(organiser.description || '')
@@ -365,20 +366,22 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
                                 <p className="text-xs text-muted">Admin manually transfers earnings to your UK bank account</p>
                             </div>
                         </label>
-                        <label className="flex items-start gap-3 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="payoutMethod"
-                                value="stripe_connect"
-                                checked={payoutMethod === 'stripe_connect'}
-                                onChange={() => setPayoutMethod('stripe_connect')}
-                                className="mt-0.5"
-                            />
-                            <div>
-                                <p className="text-sm text-text font-medium">Stripe Connect</p>
-                                <p className="text-xs text-muted">Automated payouts directly to your Stripe account</p>
-                            </div>
-                        </label>
+                        {stripeConnectEnabled && (
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="payoutMethod"
+                                    value="stripe_connect"
+                                    checked={payoutMethod === 'stripe_connect'}
+                                    onChange={() => setPayoutMethod('stripe_connect')}
+                                    className="mt-0.5"
+                                />
+                                <div>
+                                    <p className="text-sm text-text font-medium">Stripe Connect</p>
+                                    <p className="text-xs text-muted">Automated payouts directly to your Stripe account</p>
+                                </div>
+                            </label>
+                        )}
                     </div>
 
                     {payoutMethod === 'bank_transfer' && (
@@ -423,7 +426,7 @@ export function SettingsClient({ organiser: organiserProp }: SettingsClientProps
                         </div>
                     )}
 
-                    {payoutMethod === 'stripe_connect' && (
+                    {stripeConnectEnabled && payoutMethod === 'stripe_connect' && (
                         <div className="pt-2 border-t border-border space-y-3">
                             {organiser.stripe_account_id ? (
                                 <div className="flex items-center gap-2">

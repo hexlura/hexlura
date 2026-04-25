@@ -20,13 +20,20 @@ export default async function SettingsPage() {
         .single()
     if (!organiser) redirect('/organiser/pending')
 
+    const { data: stripeConnectSetting } = await serviceClient
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'stripe_connect_enabled')
+        .single()
+    const stripeConnectEnabled = stripeConnectSetting?.value === 'true'
+
     return (
         <div className="max-w-2xl">
             <div className="mb-8">
                 <h1 className="font-heading text-4xl text-text tracking-wide">SETTINGS</h1>
                 <p className="text-muted text-sm mt-1">Manage your organiser account</p>
             </div>
-            <SettingsClient organiser={organiser} />
+            <SettingsClient organiser={organiser} stripeConnectEnabled={stripeConnectEnabled} />
         </div>
     )
 }

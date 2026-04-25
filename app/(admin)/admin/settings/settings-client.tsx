@@ -40,6 +40,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
 
     // Payout settings
     const [payoutCooldown, setPayoutCooldown] = useState(settings['payout_cooldown_days'] ?? '2')
+    const [stripeConnectEnabled, setStripeConnectEnabled] = useState(settings['stripe_connect_enabled'] === 'true')
 
     // Email settings
     const [fromName, setFromName] = useState(settings['from_name'] ?? 'Hexlura')
@@ -105,7 +106,10 @@ export function SettingsClient({ settings, promoCodes }: Props) {
 
     async function handleSavePayouts() {
         setSaving('payouts')
-        await saveSetting('payout_cooldown_days', payoutCooldown)
+        await Promise.all([
+            saveSetting('payout_cooldown_days', payoutCooldown),
+            saveSetting('stripe_connect_enabled', stripeConnectEnabled ? 'true' : 'false'),
+        ])
         setSaving(null)
         showToast('Payout settings saved')
         router.refresh()
@@ -260,6 +264,18 @@ export function SettingsClient({ settings, promoCodes }: Props) {
             {/* Payout Settings */}
             <div className={sectionClass}>
                 <h2 className="text-sm font-medium text-text mb-4">Payout Settings</h2>
+                <div className="flex items-center justify-between mb-4 py-3 border-b border-border">
+                    <div>
+                        <p className="text-sm text-text">Stripe Connect</p>
+                        <p className="text-xs text-muted">Allow organisers to use Stripe Connect for automated payouts</p>
+                    </div>
+                    <button
+                        onClick={() => setStripeConnectEnabled(!stripeConnectEnabled)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors ${stripeConnectEnabled ? 'bg-accent' : 'bg-border'}`}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${stripeConnectEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
                 <div className="mb-4">
                     <label className={labelClass}>Payout Lock-in Period (days)</label>
                     <input
