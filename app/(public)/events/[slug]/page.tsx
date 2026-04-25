@@ -32,23 +32,23 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         timeZone: 'Europe/London',
     }).format(new Date(event.start_at));
 
-    const description = event.description
-        ? event.description.slice(0, 160)
+    const plainDescription = event.description
+        ? event.description.replace(/<[^>]*>/g, '').slice(0, 160)
         : `${event.title} — ${dateStr}${event.venue_name ? ` at ${event.venue_name}` : ''}`;
 
     return {
         title: event.title,
-        description,
+        description: plainDescription,
         openGraph: {
             title: event.title,
-            description,
+            description: plainDescription,
             type: 'website',
             ...(event.banner_url ? { images: [{ url: event.banner_url, width: 1200, height: 630 }] } : {}),
         },
         twitter: {
             card: 'summary_large_image',
             title: event.title,
-            description,
+            description: plainDescription,
             ...(event.banner_url ? { images: [event.banner_url] } : {}),
         },
     };

@@ -21,6 +21,7 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.hexlura.com"),
   title: "Hexlura | Discover Events",
   description: "Find and book the hottest events near you.",
 };
