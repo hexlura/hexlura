@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 
 export async function signUp(formData: FormData) {
@@ -53,6 +54,24 @@ export async function signUp(formData: FormData) {
         })
         if (profileError) {
             console.error('Profile creation error:', profileError.message)
+        }
+
+        // Notify admins about new user signup
+        const adminClient = createAdminClient()
+        const { data: admins } = await adminClient
+            .from('profiles')
+            .select('id')
+            .eq('role', 'admin')
+        if (admins?.length) {
+            void adminClient.from('notifications').insert(
+                admins.map(admin => ({
+                    user_id: admin.id,
+                    type: 'new_user_signup',
+                    title: 'New user registered',
+                    body: `${fullName} (${email}) just signed up.`,
+                    link: '/admin/users',
+                }))
+            )
         }
     }
 

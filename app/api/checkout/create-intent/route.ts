@@ -265,6 +265,40 @@ export async function POST(request: NextRequest) {
             })
         }
 
+        // Notify buyer: booking confirmed
+        void adminClient.from('notifications').insert({
+            user_id: user.id,
+            type: 'booking_confirmed',
+            title: 'Booking confirmed!',
+            body: `Your booking for ${eventInfo?.title ?? 'the event'} is confirmed. Ref: ${booking.booking_ref}`,
+            link: `/bookings/${booking.booking_ref}`,
+        })
+
+        // Notify organiser: new booking received
+        if (eventInfo) {
+            const { data: eventFull } = await adminClient
+                .from('events')
+                .select('organiser_id')
+                .eq('id', event_id)
+                .single()
+            if (eventFull?.organiser_id) {
+                const { data: orgProfile } = await adminClient
+                    .from('organiser_profiles')
+                    .select('user_id')
+                    .eq('id', eventFull.organiser_id)
+                    .single()
+                if (orgProfile?.user_id) {
+                    void adminClient.from('notifications').insert({
+                        user_id: orgProfile.user_id,
+                        type: 'new_booking',
+                        title: 'New booking received',
+                        body: `A new booking was made for ${eventInfo.title}. Ref: ${booking.booking_ref}`,
+                        link: `/organiser/events/${event_id}/attendees`,
+                    })
+                }
+            }
+        }
+
         return NextResponse.json({ free: true, booking_ref: booking.booking_ref })
     }
 

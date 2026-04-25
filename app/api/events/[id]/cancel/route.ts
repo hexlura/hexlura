@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,12 +8,14 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: organiser } = await supabase
+    const adminClient = createAdminClient()
+
+    const { data: organiser } = await adminClient
         .from('organiser_profiles').select('id').eq('user_id', user.id).single()
     if (!organiser) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     // Verify ownership
-    const { data: event } = await supabase
+    const { data: event } = await adminClient
         .from('events')
         .select('id, title')
         .eq('id', params.id)
@@ -22,11 +25,11 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
     // Update status
-    await supabase.from('events').update({ status: 'cancelled' }).eq('id', params.id)
+    await adminClient.from('events').update({ status: 'cancelled' }).eq('id', params.id)
 
     // Email attendees
     try {
-        const { data: bookings } = await supabase
+        const { data: bookings } = await adminClient
             .from('bookings')
             .select('id, user_id')
             .eq('event_id', params.id)
@@ -36,7 +39,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
         // Notify each attendee
         for (const b of (bookings || []) as { id: string; user_id: string }[]) {
-            void supabase.from('notifications').insert({
+            void adminClient.from('notifications').insert({
                 user_id: b.user_id,
                 type: 'event_cancelled',
                 title: 'Event cancelled',
@@ -45,7 +48,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
             })
         }
         if (bookingIds.length) {
-            const { data: items } = await supabase
+            const { data: items } = await adminClient
                 .from('booking_items')
                 .select('attendee_email')
                 .in('booking_id', bookingIds)
