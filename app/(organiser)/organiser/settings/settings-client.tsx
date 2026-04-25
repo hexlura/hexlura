@@ -26,11 +26,24 @@ type OrganiserWithExtras = OrganiserProfile & {
     social_links?: Record<string, string> | null
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+    const [open, setOpen] = useState(defaultOpen)
     return (
-        <div className="bg-card border border-border rounded-none p-6 mb-6">
-            <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">{title}</h2>
-            {children}
+        <div className="bg-card border border-border rounded-none mb-6">
+            <button
+                type="button"
+                onClick={() => setOpen(!open)}
+                className="w-full flex items-center justify-between p-6 cursor-pointer"
+            >
+                <h2 className="text-sm font-semibold text-text uppercase tracking-wider m-0">{title}</h2>
+                <svg
+                    width="16" height="16" viewBox="0 0 16 16" fill="none"
+                    className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+                >
+                    <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
+            {open && <div className="px-6 pb-6">{children}</div>}
         </div>
     )
 }
@@ -245,8 +258,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     return (
         <>
             {/* Cover Photo */}
-            <div className="bg-card border border-border rounded-none p-6 mb-6">
-                <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">Cover Photo</h2>
+            <Section title="Cover Photo">
                 <div style={{ width: '100%', height: 160, marginBottom: 12, border: '1px solid #E0E0E0', overflow: 'hidden', position: 'relative' }}>
                     {coverUrl ? (
                         <img src={coverUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -267,7 +279,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                     </label>
                     <span style={{ fontSize: 11, color: '#8888AA' }}>Recommended: 1200 x 400px (3:1 ratio). Max 5MB. JPG, PNG or WebP.</span>
                 </div>
-            </div>
+            </Section>
 
             {/* Profile */}
             <Section title="Profile">
@@ -453,8 +465,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
             </Section>
 
             {/* Social Links */}
-            <div className="bg-card border border-border rounded-none p-6 mb-6">
-                <h2 className="text-sm font-semibold text-text mb-4 uppercase tracking-wider">Social Links</h2>
+            <Section title="Social Links">
                 <form onSubmit={saveSocialLinks} className="space-y-4">
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Instagram</label>
@@ -500,11 +511,10 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                         {socialSaved ? 'Saved ✓' : socialSaving ? 'Saving...' : 'Save Social Links'}
                     </Button>
                 </form>
-            </div>
+            </Section>
 
             {/* Social Links */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24, marginBottom: 24 }}>
-                <p style={{ fontSize: 16, fontWeight: 600, color: '#0A0A0F', marginBottom: 8 }}>Social Links</p>
+            <Section title="Social Links">
                 <p style={{ fontSize: 13, color: '#8888AA', marginBottom: 20 }}>
                     Add your social media profiles. Only platforms you add will be shown on your public profile.
                 </p>
@@ -620,17 +630,16 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                         {newSocialSaved ? 'Saved ✓' : newSocialSaving ? 'Saving...' : 'Save Social Links'}
                     </button>
                 </div>
-            </div>
+            </Section>
 
             {/* Danger Zone */}
-            <div className="bg-card border border-accent/30 rounded-none p-6">
-                <h2 className="text-sm font-semibold text-accent mb-4 uppercase tracking-wider">Danger Zone</h2>
+            <Section title="Danger Zone">
                 <p className="text-sm text-muted mb-4">
                     Closing your organiser account will remove your organiser status.
                     Existing events and bookings are not affected. You will need to reapply to create new events.
                 </p>
                 <Button variant="danger" size="md" onClick={() => setShowCloseModal(true)}>Close Organiser Account</Button>
-            </div>
+            </Section>
 
             {/* Close Account Modal */}
             {showCloseModal && (
