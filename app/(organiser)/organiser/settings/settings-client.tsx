@@ -310,9 +310,11 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                             className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
                     </div>
                     <div>
-                        <label className="text-xs text-muted block mb-1.5">Description</label>
-                        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+                        <label className="text-xs text-muted block mb-1.5">Bio</label>
+                        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} maxLength={300}
+                            placeholder="Tell people about yourself or your organisation..."
                             className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent resize-none" />
+                        <p className="text-xs text-muted mt-1 text-right">{description.length}/300</p>
                     </div>
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Website URL</label>
