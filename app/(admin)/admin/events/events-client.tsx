@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { CATEGORIES } from '@/lib/config/categories'
+import { formatPence } from '@/lib/fees'
 
 type Tab = 'all' | 'featured' | 'cancelled'
 
@@ -19,7 +20,8 @@ interface EventRow {
     featured_order: number
     organiser_name: string
     tickets_sold: number
-    revenue_pence: number
+    gross_pence: number
+    fee_pence: number
 }
 
 interface Props {
@@ -183,14 +185,14 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            {['Title', 'Organiser', 'Category', 'Date', 'Status', 'Tickets', 'Featured', 'Actions'].map(h => (
+                            {['Title', 'Organiser', 'Category', 'Date', 'Status', 'Tickets', 'Gross Sales', 'Platform Fee', 'Featured', 'Actions'].map(h => (
                                 <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {events.length === 0 && (
-                            <tr><td colSpan={8} className="text-center text-muted text-xs py-12">No events found</td></tr>
+                            <tr><td colSpan={10} className="text-center text-muted text-xs py-12">No events found</td></tr>
                         )}
                         {events.map(e => (
                             <tr key={e.id} className="border-b border-border/50 hover:bg-surface transition-colors">
@@ -209,6 +211,8 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                     </span>
                                 </td>
                                 <td className="py-3 px-4 text-text text-xs">{e.tickets_sold}</td>
+                                <td className="py-3 px-4 text-text text-xs whitespace-nowrap">{formatPence(e.gross_pence)}</td>
+                                <td className="py-3 px-4 text-gold text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-2">
                                         <button

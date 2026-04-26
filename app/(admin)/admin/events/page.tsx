@@ -43,6 +43,20 @@ export default async function AdminEventsPage({
 
     const { data: eventsData, count } = await query
 
+    // Fetch confirmed booking totals per event
+    const { data: salesData } = await adminClient
+        .from('bookings')
+        .select('event_id, total_pence, booking_fee_pence')
+        .eq('status', 'confirmed')
+
+    const salesMap = new Map<string, { gross: number; fee: number }>()
+    for (const b of salesData || []) {
+        const prev = salesMap.get(b.event_id) || { gross: 0, fee: 0 }
+        prev.gross += b.total_pence || 0
+        prev.fee += b.booking_fee_pence || 0
+        salesMap.set(b.event_id, prev)
+    }
+
     type EventRow = {
         id: string
         title: string
@@ -68,7 +82,8 @@ export default async function AdminEventsPage({
         featured_order: e.featured_order,
         organiser_name: e.organiser_profiles?.org_name ?? '—',
         tickets_sold: e.ticket_types.reduce((s, t) => s + t.quantity_sold, 0),
-        revenue_pence: 0, // Would need bookings join
+        gross_pence: salesMap.get(e.id)?.gross ?? 0,
+        fee_pence: salesMap.get(e.id)?.fee ?? 0,
     }))
 
     return (
