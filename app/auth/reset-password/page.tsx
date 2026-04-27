@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] hover:-translate-y-px active:translate-y-0 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
                 >
                     {loading && (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
