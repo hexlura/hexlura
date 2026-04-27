@@ -1,9 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { updatePassword } from '../actions'
 
 export default function UpdatePasswordPage() {
+    const searchParams = useSearchParams()
+    const urlError = searchParams.get('error_description') || searchParams.get('error')
+    const isExpired = searchParams.get('error_code') === 'otp_expired'
+
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
@@ -20,6 +25,30 @@ export default function UpdatePasswordPage() {
             setLoading(false)
             setSuccess(true)
         }
+    }
+
+    if (urlError) {
+        return (
+            <section className="space-y-6">
+                <div className="space-y-2 text-center">
+                    <h1 className="font-heading text-4xl text-text">LINK EXPIRED</h1>
+                    <p className="text-muted text-sm">
+                        {isExpired
+                            ? 'This password reset link has expired or has already been used.'
+                            : urlError.replace(/\+/g, ' ')}
+                    </p>
+                </div>
+                <div className="bg-accent/10 border border-accent/20 rounded-none px-4 py-3 text-center">
+                    <p className="text-sm text-accent">Please request a new password reset link.</p>
+                </div>
+                <a
+                    href="/auth/reset-password"
+                    className="block w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition text-center leading-[2.75rem]"
+                >
+                    Request New Link
+                </a>
+            </section>
+        )
     }
 
     if (success) {
@@ -83,7 +112,7 @@ export default function UpdatePasswordPage() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full h-11 rounded-sm bg-accent text-white font-semibold text-sm hover:bg-accent/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {loading && (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -91,7 +120,7 @@ export default function UpdatePasswordPage() {
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
                     )}
-                    {loading ? 'Updating...' : 'Update Password'}
+                    {loading ? 'Updating Password...' : 'Update Password'}
                 </button>
             </form>
         </section>
