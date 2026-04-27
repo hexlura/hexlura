@@ -1,33 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { useState } from 'react'
 import { updatePassword } from '../actions'
 
 export default function UpdatePasswordPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
-    const [ready, setReady] = useState(false)
     const [success, setSuccess] = useState(false)
-
-    useEffect(() => {
-        const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        )
-
-        // Listen for the recovery token exchange — Supabase auto-detects
-        // the hash fragment and replaces any existing session with the
-        // recovery user's session, solving the cross-device bug
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (event) => {
-                if (event === 'PASSWORD_RECOVERY') {
-                    setReady(true)
-                }
-            }
-        )
-        return () => subscription.unsubscribe()
-    }, [])
 
     async function handleSubmit(formData: FormData) {
         setError('')
@@ -41,23 +20,6 @@ export default function UpdatePasswordPage() {
             setLoading(false)
             setSuccess(true)
         }
-    }
-
-    if (!ready) {
-        return (
-            <section className="space-y-6">
-                <div className="space-y-2 text-center">
-                    <h1 className="font-heading text-4xl text-text">NEW PASSWORD</h1>
-                    <p className="text-muted text-sm">Verifying your reset link...</p>
-                </div>
-                <div className="flex justify-center py-8">
-                    <svg className="animate-spin h-6 w-6 text-muted" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                </div>
-            </section>
-        )
     }
 
     if (success) {
