@@ -78,7 +78,7 @@ function UpdatePasswordForm() {
                 <p className="text-muted text-sm">Choose a new password for your account.</p>
             </div>
 
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={async (e) => { e.preventDefault(); await handleSubmit(new FormData(e.currentTarget)) }} className="space-y-4">
                 <div className="flex flex-col gap-1">
                     <label htmlFor="password" className="text-sm font-medium text-text">New Password</label>
                     <input
