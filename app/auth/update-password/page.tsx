@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { updatePassword } from '../actions'
 
-export default function UpdatePasswordPage() {
+function UpdatePasswordForm() {
     const searchParams = useSearchParams()
     const urlError = searchParams.get('error_description') || searchParams.get('error')
     const isExpired = searchParams.get('error_code') === 'otp_expired'
@@ -124,5 +124,13 @@ export default function UpdatePasswordPage() {
                 </button>
             </form>
         </section>
+    )
+}
+
+export default function UpdatePasswordPage() {
+    return (
+        <Suspense>
+            <UpdatePasswordForm />
+        </Suspense>
     )
 }
