@@ -16,18 +16,17 @@ export default function UpdatePasswordPage() {
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         )
 
-        // Sign out any existing session first so the recovery token
-        // establishes a clean session for the correct account
-        supabase.auth.signOut().then(() => {
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(
-                (event) => {
-                    if (event === 'PASSWORD_RECOVERY') {
-                        setReady(true)
-                    }
+        // Listen for the recovery token exchange — Supabase auto-detects
+        // the hash fragment and replaces any existing session with the
+        // recovery user's session, solving the cross-device bug
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (event) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    setReady(true)
                 }
-            )
-            return () => subscription.unsubscribe()
-        })
+            }
+        )
+        return () => subscription.unsubscribe()
     }, [])
 
     async function handleSubmit(formData: FormData) {
