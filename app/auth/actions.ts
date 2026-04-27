@@ -191,7 +191,7 @@ export async function updatePassword(formData: FormData) {
         return { error: error.message }
     }
 
-    redirect('/auth/login')
+    return { success: 'Password updated successfully.' }
 }
 
 export async function resendVerificationEmail(email: string) {

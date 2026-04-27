@@ -1,11 +1,34 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 import { updatePassword } from '../actions'
 
 export default function UpdatePasswordPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [ready, setReady] = useState(false)
+    const [success, setSuccess] = useState(false)
+
+    useEffect(() => {
+        const supabase = createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        )
+
+        // Sign out any existing session first so the recovery token
+        // establishes a clean session for the correct account
+        supabase.auth.signOut().then(() => {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(
+                (event) => {
+                    if (event === 'PASSWORD_RECOVERY') {
+                        setReady(true)
+                    }
+                }
+            )
+            return () => subscription.unsubscribe()
+        })
+    }, [])
 
     async function handleSubmit(formData: FormData) {
         setError('')
@@ -15,7 +38,47 @@ export default function UpdatePasswordPage() {
         if (result?.error) {
             setError(result.error)
             setLoading(false)
+        } else {
+            setLoading(false)
+            setSuccess(true)
         }
+    }
+
+    if (!ready) {
+        return (
+            <section className="space-y-6">
+                <div className="space-y-2 text-center">
+                    <h1 className="font-heading text-4xl text-text">NEW PASSWORD</h1>
+                    <p className="text-muted text-sm">Verifying your reset link...</p>
+                </div>
+                <div className="flex justify-center py-8">
+                    <svg className="animate-spin h-6 w-6 text-muted" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                </div>
+            </section>
+        )
+    }
+
+    if (success) {
+        return (
+            <section className="space-y-6">
+                <div className="space-y-2 text-center">
+                    <h1 className="font-heading text-4xl text-text">PASSWORD UPDATED</h1>
+                    <p className="text-muted text-sm">Your password has been changed successfully.</p>
+                </div>
+                <div className="bg-success/10 border border-success/20 rounded-none px-4 py-3 text-center">
+                    <p className="text-sm text-success">You can now sign in with your new password.</p>
+                </div>
+                <a
+                    href="/auth/login"
+                    className="block w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition text-center leading-[2.75rem]"
+                >
+                    Go to Login
+                </a>
+            </section>
+        )
     }
 
     return (
