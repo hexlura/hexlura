@@ -12,6 +12,7 @@ interface UserMenuProps {
 
 export default function UserMenu({ initials, fullName, role }: UserMenuProps) {
     const [open, setOpen] = useState(false)
+    const [signingOut, setSigningOut] = useState(false)
     const ref = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -94,17 +95,27 @@ export default function UserMenu({ initials, fullName, role }: UserMenuProps) {
 
                     <div className="my-1 border-t border-border" />
 
-                    <form action={signOut}>
-                        <button
-                            type="submit"
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-accent hover:bg-card transition"
-                        >
+                    <button
+                        type="button"
+                        disabled={signingOut}
+                        onClick={async () => {
+                            setSigningOut(true)
+                            await signOut()
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-accent hover:bg-card transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {signingOut ? (
+                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                        ) : (
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
-                            Sign Out
-                        </button>
-                    </form>
+                        )}
+                        {signingOut ? 'Signing out...' : 'Sign Out'}
+                    </button>
                 </div>
             )}
         </div>

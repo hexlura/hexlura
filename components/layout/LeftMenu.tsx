@@ -15,6 +15,7 @@ interface LeftMenuProps {
 export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [open, setOpen] = useState<Record<string, boolean>>({})
+    const [signingOut, setSigningOut] = useState(false)
     const pathname = usePathname()
 
     useEffect(() => {
@@ -137,14 +138,23 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                                         <Link href="/admin" onClick={close} className={linkClass('/admin')}>Admin Panel</Link>
                                     )}
                                     <div className="pt-2">
-                                        <form action={signOut}>
-                                            <button
-                                                type="submit"
-                                                className="text-[15px] text-[#E63950] hover:opacity-80 transition-opacity"
-                                            >
-                                                Sign Out
-                                            </button>
-                                        </form>
+                                        <button
+                                            type="button"
+                                            disabled={signingOut}
+                                            onClick={async () => {
+                                                setSigningOut(true)
+                                                await signOut()
+                                            }}
+                                            className="text-[15px] text-[#E63950] hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        >
+                                            {signingOut && (
+                                                <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                </svg>
+                                            )}
+                                            {signingOut ? 'Signing out...' : 'Sign Out'}
+                                        </button>
                                     </div>
                                 </div>
                             )}
