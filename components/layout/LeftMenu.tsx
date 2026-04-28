@@ -144,6 +144,7 @@ export default function LeftMenu({ isLoggedIn, role }: LeftMenuProps) {
                                             onClick={async () => {
                                                 setSigningOut(true)
                                                 await signOut()
+                                                window.location.href = '/'
                                             }}
                                             className="text-[15px] text-[#E63950] hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                         >

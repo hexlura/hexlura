@@ -101,6 +101,7 @@ export default function UserMenu({ initials, fullName, role }: UserMenuProps) {
                         onClick={async () => {
                             setSigningOut(true)
                             await signOut()
+                            window.location.href = '/'
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-accent hover:bg-card transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
