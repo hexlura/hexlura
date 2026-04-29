@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 
-const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Bristol', 'Edinburgh', 'Leeds', 'Liverpool', 'Glasgow', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']
 
 interface PromoRow {
     id: string; code: string; discount_type: string; discount_value: number
@@ -31,8 +30,6 @@ export function SettingsClient({ settings, promoCodes }: Props) {
 
     // Homepage settings
     const [maxFeatured, setMaxFeatured] = useState(settings['max_featured_slots'] ?? '6')
-    const currentCities = (settings['featured_cities'] ?? '').split(',').filter(Boolean)
-    const [selectedCities, setSelectedCities] = useState<string[]>(currentCities)
     const [maintenanceMode, setMaintenanceMode] = useState(settings['maintenance_mode'] === 'true')
 
     // Organiser settings
@@ -88,7 +85,6 @@ export function SettingsClient({ settings, promoCodes }: Props) {
         setSaving('homepage')
         await Promise.all([
             saveSetting('max_featured_slots', maxFeatured),
-            saveSetting('featured_cities', selectedCities.join(',')),
             saveSetting('maintenance_mode', maintenanceMode ? 'true' : 'false'),
         ])
         setSaving(null)
@@ -152,10 +148,6 @@ export function SettingsClient({ settings, promoCodes }: Props) {
         router.refresh()
     }
 
-    function toggleCity(city: string) {
-        setSelectedCities(prev => prev.includes(city) ? prev.filter(c => c !== city) : [...prev, city])
-    }
-
     const sectionClass = "bg-card border border-border rounded-none p-6 mb-6"
     const labelClass = "text-xs text-muted block mb-1"
     const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
@@ -206,22 +198,6 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                 <div className="mb-4">
                     <label className={labelClass}>Max Featured Event Slots</label>
                     <input type="number" min="1" max="20" value={maxFeatured} onChange={e => setMaxFeatured(e.target.value)} className={inputClass} style={{ width: '120px' }} />
-                </div>
-                <div className="mb-4">
-                    <label className={labelClass}>Featured UK Cities</label>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                        {UK_CITIES.map(city => (
-                            <label key={city} className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedCities.includes(city)}
-                                    onChange={() => toggleCity(city)}
-                                    className="accent-accent"
-                                />
-                                <span className="text-sm text-text">{city}</span>
-                            </label>
-                        ))}
-                    </div>
                 </div>
                 <div className="flex items-center justify-between mb-4 py-3 border-y border-border">
                     <div>
