@@ -66,13 +66,18 @@ export default async function AdminFinancialsPage() {
         }
     }
 
-    const monthlyData = months.map(m => ({
-        month: m.label,
-        gmv: monthlyStats[m.key].gmv / 100,
-        revenue: monthlyStats[m.key].revenue / 100,
-        payouts: monthlyStats[m.key].payouts / 100,
-        bookings_count: monthlyStats[m.key].bookings_count,
-    }))
+    const monthlyData = months
+        .filter(m => {
+            const s = monthlyStats[m.key]
+            return s.gmv > 0 || s.revenue > 0 || s.payouts > 0 || s.bookings_count > 0
+        })
+        .map(m => ({
+            month: m.label,
+            gmv: monthlyStats[m.key].gmv / 100,
+            revenue: monthlyStats[m.key].revenue / 100,
+            payouts: monthlyStats[m.key].payouts / 100,
+            bookings_count: monthlyStats[m.key].bookings_count,
+        }))
 
     // Cumulative GMV for area chart
     let cumulative = 0
@@ -117,7 +122,7 @@ export default async function AdminFinancialsPage() {
             {/* Monthly Breakdown Table */}
             <div className="mt-8 bg-card border border-border rounded-none overflow-hidden">
                 <div className="p-6 border-b border-border">
-                    <h2 className="text-sm font-medium text-text">Monthly Breakdown — Last 12 Months</h2>
+                    <h2 className="text-sm font-medium text-text">Monthly Breakdown</h2>
                 </div>
                 <table className="w-full text-sm">
                     <thead>
