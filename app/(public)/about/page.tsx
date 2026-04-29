@@ -23,7 +23,7 @@ export default function AboutPage() {
 
         <div style={{ borderTop: '1px solid #C0C0C8', margin: '40px 0' }} />
 
-        <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>For Organisers</h2>
+        <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>For Business</h2>
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#444455', lineHeight: 1.8, marginBottom: 16 }}>
           Hexlura is built with organisers in mind. We charge a simple, transparent booking fee — organisers keep 100% of the ticket face value. No hidden charges, no complex fee structures.
         </p>

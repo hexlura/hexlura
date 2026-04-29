@@ -119,10 +119,10 @@ export function Footer() {
                         ))}
                     </div>
 
-                    {/* Column 3 — For Organisers */}
+                    {/* Column 3 — For Business */}
                     <div>
                         <p style={{ fontSize: '11px', color: '#FFFFFF', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '20px' }}>
-                            For Organisers
+                            For Business
                         </p>
                         {organiserLinks.map(l => (
                             <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>

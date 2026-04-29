@@ -322,7 +322,7 @@ export default async function HomePage() {
                 }}
             >
                 <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
-                    FOR ORGANISERS
+                    FOR BUSINESS
                 </p>
                 <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(48px, 5vw, 72px)', color: '#FFFFFF', margin: '0 0 8px 0', lineHeight: 0.95 }}>
                     SELLING TICKETS?
