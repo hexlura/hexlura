@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import NextTopLoader from 'nextjs-toploader'
 import MobileBottomNav from '@/components/layout/MobileBottomNav'
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const fontHeading = Bebas_Neue({
@@ -46,6 +47,7 @@ export default function RootLayout({
             shadow="0 0 10px #E63950, 0 0 5px #E63950"
           />
           {children}
+          <SpeedInsights />
           <MobileBottomNav />
         </div>
       </body>
