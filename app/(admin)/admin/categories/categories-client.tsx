@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import type { CategoryRow } from './page'
 
 interface CategoriesClientProps {
@@ -43,19 +44,32 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         setLoading(true)
         const ext = file.name.split('.').pop()
         const path = `categories/${targetSlug}.${ext}`
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('path', path)
-        const res = await fetch('/api/admin/categories/upload', { method: 'POST', body: formData })
-        setLoading(false)
-        if (!res.ok) {
-            const text = await res.text().catch(() => '')
+
+        // Step 1: get a signed upload URL from our API (tiny payload — no Vercel size limit hit)
+        const urlRes = await fetch('/api/admin/categories/upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path }),
+        })
+        if (!urlRes.ok) {
+            setLoading(false)
+            const text = await urlRes.text().catch(() => '')
             let detail = ''
             try { detail = (JSON.parse(text) as { error?: string }).error ?? text } catch { detail = text }
-            return { error: `Upload failed (${res.status})${detail ? `: ${detail}` : ''}` }
+            return { error: `Upload failed (${urlRes.status})${detail ? `: ${detail}` : ''}` }
         }
-        const { url } = await res.json() as { url: string }
-        return { url }
+        const { token, publicUrl } = await urlRes.json() as { signedUrl: string; token: string; path: string; publicUrl: string }
+
+        // Step 2: upload directly from browser to Supabase — bypasses Vercel's 4.5 MB function limit
+        const supabase = createClient()
+        const { error: uploadError } = await supabase.storage
+            .from('category-images')
+            .uploadToSignedUrl(path, token, file, { contentType: file.type })
+
+        setLoading(false)
+        if (uploadError) return { error: `Upload failed: ${uploadError.message}` }
+
+        return { url: publicUrl }
     }
 
     const handleAdd = async (e: React.FormEvent) => {
