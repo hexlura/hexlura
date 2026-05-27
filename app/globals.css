@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #FFFFFF;
+    --surface: #F5F5F7;
+    --card: #FFFFFF;
+    --border: #C0C0C8;
+    --accent: #E63950;
+    --gold: #F5A623;
+    --text: #0A0A0F;
+    --muted: #8888AA;
+    --success: #00C48A;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--text);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  button, a {
+    transition: all 0.15s ease;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+.btn-accent {
+  transition: all 0.15s ease;
+}
+.btn-accent:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.btn-accent:active {
+  transform: translateY(0);
+  opacity: 0.8;
+}
+
+
+.maps-link-btn:hover { border-color: #E63950 !important; }

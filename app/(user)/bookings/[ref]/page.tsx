@@ -1,0 +1,217 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect, notFound } from 'next/navigation'
+import { formatPence } from '@/lib/fees'
+import { Booking } from '@/types'
+import { aggregateBookingItems, type RawBookingItem } from '@/lib/booking-aggregation'
+import RefundButton from './refund-button'
+
+export default async function BookingDetailPage({ params }: { params: { ref: string } }) {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/auth/login')
+    }
+
+    const { data: bookingRaw } = await supabase
+        .from('bookings')
+        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, banner_url, refund_policy), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
+        .eq('booking_ref', params.ref)
+        .eq('user_id', user.id)
+        .single()
+
+    if (!bookingRaw) {
+        notFound()
+    }
+
+    const booking = bookingRaw as Booking
+
+    // Check if refund request exists (all statuses)
+    const { data: existingRefund } = await supabase
+        .from('refund_requests')
+        .select('id, status, refund_amount_pence')
+        .eq('booking_id', booking.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    const event = booking.event
+    const eventDate = event
+        ? new Intl.DateTimeFormat('en-GB', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        }).format(new Date(event.start_at))
+        : ''
+    const eventTime = event
+        ? new Intl.DateTimeFormat('en-GB', {
+            hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+        }).format(new Date(event.start_at))
+        : ''
+
+    const bookingFee = booking.booking_fee_pence || 0
+    const discount = booking.discount_pence || 0
+    const total = booking.total_pence || 0
+
+    const confirmedDate = booking.confirmed_at
+        ? new Intl.DateTimeFormat('en-GB', {
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+        }).format(new Date(booking.confirmed_at))
+        : ''
+
+    // Only block refund if there's an active (pending/approved) request — rejected ones allow re-request
+    const activeRefund = existingRefund &&
+        (existingRefund.status === 'pending' || existingRefund.status === 'organiser_approved')
+
+    const hoursUntilEvent = event
+        ? (new Date(event.start_at).getTime() - Date.now()) / (1000 * 60 * 60)
+        : 0
+    const refundPolicy = event?.refund_policy
+
+    const canRefund =
+        booking.status === 'confirmed' &&
+        event &&
+        refundPolicy !== 'no_refunds' &&
+        hoursUntilEvent > 0 &&
+        (refundPolicy !== '48_hours' || hoursUntilEvent > 48) &&
+        (refundPolicy !== '7_days' || hoursUntilEvent > 168) &&
+        !activeRefund
+
+    type ExtendedItem = { quantity: number; ticket_type?: { is_group?: boolean; group_size?: number } | null }
+    const totalTickets = ((bookingRaw?.items ?? []) as unknown as ExtendedItem[]).reduce((sum, item) => {
+        if (item.ticket_type?.is_group) return sum + (item.ticket_type.group_size ?? 1)
+        return sum + item.quantity
+    }, 0)
+
+    // Collapse group-ticket member rows into a single line per ticket type.
+    const displayItems = aggregateBookingItems((bookingRaw?.items ?? []) as unknown as RawBookingItem[])
+
+    return (
+        <section className="max-w-3xl mx-auto space-y-8">
+            {/* Header */}
+            <div className="space-y-2">
+                <h1 className="font-heading text-4xl text-text">{event?.title || 'Booking'}</h1>
+                <p className="text-muted">{eventDate} · {eventTime}</p>
+                <p className="text-muted">{event?.venue_name}, {event?.venue_address}</p>
+            </div>
+
+            {/* Ticket breakdown */}
+            <div className="bg-surface border border-border rounded-none p-6 space-y-4">
+                <h3 className="font-bold text-text text-lg">Ticket Breakdown</h3>
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="border-b border-border text-muted text-left">
+                            <th className="pb-2">Ticket</th>
+                            <th className="pb-2 text-center">Qty</th>
+                            <th className="pb-2 text-right">Unit Price</th>
+                            <th className="pb-2 text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {displayItems.map(row => (
+                            <tr key={row.key} className="border-b border-border/50">
+                                <td className="py-3 text-text">
+                                    {row.name}
+                                    {row.is_group && row.group_size > 1 && (
+                                        <span className="block text-xs text-muted">Admits {row.group_size} per ticket</span>
+                                    )}
+                                </td>
+                                <td className="py-3 text-center text-text">{row.quantity}</td>
+                                <td className="py-3 text-right text-text">{formatPence(row.unit_price_pence)}</td>
+                                <td className="py-3 text-right text-text">{formatPence(row.subtotal_pence)}</td>
+                            </tr>
+                        ))}
+                        {discount > 0 && (
+                            <tr className="border-b border-border/50">
+                                <td colSpan={3} className="py-3 text-success">Promo discount</td>
+                                <td className="py-3 text-right text-success">-{formatPence(discount)}</td>
+                            </tr>
+                        )}
+                        <tr className="border-b border-border/50">
+                            <td colSpan={3} className="py-3 text-muted">Hexlura booking fee</td>
+                            <td className="py-3 text-right text-muted">{formatPence(bookingFee)}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={3} className="py-3 font-bold text-text text-lg">Total</td>
+                            <td className="py-3 text-right font-bold text-text text-lg">{formatPence(total)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {booking.payment_method && (
+                    <p className="text-sm text-muted">Paid via {booking.payment_method}</p>
+                )}
+                {confirmedDate && (
+                    <p className="text-sm text-muted">Confirmed {confirmedDate}</p>
+                )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3">
+                {totalTickets <= 1 ? (
+                    <a
+                        href={`/api/tickets/${booking.booking_ref}/pdf`}
+                        target="_blank"
+                        className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
+                    >
+                        Download PDF Ticket
+                    </a>
+                ) : (
+                    <div className="flex flex-col gap-2">
+                        {Array.from({ length: totalTickets }, (_, i) => (
+                            <a
+                                key={i}
+                                href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`}
+                                target="_blank"
+                                className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
+                            >
+                                Download Ticket {i + 1}
+                            </a>
+                        ))}
+                    </div>
+                )}
+
+                {canRefund && (
+                    <RefundButton bookingId={booking.id} />
+                )}
+
+                {existingRefund && existingRefund.status === 'pending' && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(245,166,35,0.1)', border: '1px solid #F5A623', color: '#F5A623', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Refund Requested
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>Your request is being reviewed by the organiser.</p>
+                    </div>
+                )}
+                {existingRefund && existingRefund.status === 'organiser_approved' && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(0,100,255,0.1)', border: '1px solid #6B9FFF', color: '#6B9FFF', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Under Review
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>Your refund has been approved by the organiser and is awaiting final confirmation.</p>
+                    </div>
+                )}
+                {existingRefund && existingRefund.status === 'admin_approved' && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(0,229,160,0.1)', border: '1px solid #00E5A0', color: '#00E5A0', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Refunded
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>
+                            Your refund of £{((existingRefund.refund_amount_pence ?? 0) / 100).toFixed(2)} has been processed. Allow 5–10 business days to appear.
+                        </p>
+                    </div>
+                )}
+                {existingRefund && (existingRefund.status === 'organiser_rejected' || existingRefund.status === 'admin_rejected') && (
+                    <div>
+                        <div style={{ display: 'inline-block', background: 'rgba(230,57,80,0.1)', border: '1px solid #E63950', color: '#E63950', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
+                            Refund Declined
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#8888AA' }}>
+                            Your refund request could not be approved. If you believe this is an error, email{' '}
+                            <span style={{ color: '#F0F0F8' }}>support@hexlura.com</span> with your booking reference:{' '}
+                            <span style={{ fontFamily: '"JetBrains Mono", monospace', color: '#E63950' }}>{booking.booking_ref}</span>
+                        </p>
+                    </div>
+                )}
+            </div>
+        </section>
+    )
+}

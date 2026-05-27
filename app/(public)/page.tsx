@@ -1,0 +1,461 @@
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { createClient } from '@/lib/supabase/server';
+import { getStaticPageMetadata } from '@/lib/seo';
+import type { Metadata } from 'next';
+import { Event } from '@/types';
+import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
+import EventCard from '@/components/events/EventCard'
+import RecommendedEvents from '@/components/home/RecommendedEvents';
+
+
+// Emoji fallback used only when a category has no uploaded image yet.
+// Admins manage the image_url for each category in /admin/categories.
+const CATEGORY_EMOJI_FALLBACK: Record<string, string> = {
+    'Club Nights': '🌙',
+    'Gigs & Live Music': '🎵',
+    'Festivals': '🎪',
+    'Comedy': '😂',
+    'Theatre & Arts': '🎭',
+    'Sports & Fitness': '🏆',
+    'Food & Drink': '🍷',
+    'Family & Kids': '🎈',
+    'Business & Networking': '💼',
+    'Classes & Workshops': '📚',
+    'Dating & Social': '💫',
+    'Culture & Heritage': '🎨',
+}
+
+
+export const revalidate = 300
+
+export async function generateMetadata(): Promise<Metadata> {
+    return getStaticPageMetadata('/')
+}
+
+export default async function HomePage() {
+    const supabase = createClient();
+
+    const now = new Date().toISOString();
+
+    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }] = await Promise.all([
+        supabase
+            .from('events')
+            .select('*, ticket_types(*)')
+            .eq('status', 'published')
+            .or(`end_at.gte.${now},end_at.is.null`)
+            .order('start_at', { ascending: true })
+            .limit(10),
+        supabase
+            .from('events')
+            .select('*, ticket_types(*)')
+            .eq('status', 'ended')
+            .order('start_at', { ascending: false })
+            .limit(10),
+        supabase
+            .from('cities')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true }),
+        supabase
+            .from('categories')
+            .select('id, name, slug, image_url')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true }),
+        supabase
+            .from('events')
+            .select('id, title, slug, banner_url, start_at, end_at, venue_name, venue_address, category, ticket_types(price_pence)')
+            .eq('status', 'published')
+            .eq('is_featured', true)
+            .or(`end_at.gte.${now},end_at.is.null`)
+            .order('featured_order', { ascending: true }),
+    ]);
+
+    const events = (eventsRaw || []) as Event[];
+    const pastEvents = (pastEventsRaw || []) as Event[];
+    const cities = (citiesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
+    const categories = (categoriesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
+
+    type FeaturedRaw = FeaturedEvent & { ticket_types: { price_pence: number }[] };
+    const featuredEvents: FeaturedEvent[] = ((featuredRaw || []) as unknown as FeaturedRaw[]).map(e => ({
+        id: e.id,
+        title: e.title,
+        slug: e.slug,
+        banner_url: e.banner_url,
+        start_at: e.start_at,
+        venue_name: e.venue_name,
+        venue_address: e.venue_address,
+        category: e.category,
+        min_price_pence: e.ticket_types?.length > 0
+            ? Math.min(...e.ticket_types.map((t: { price_pence: number }) => t.price_pence))
+            : null,
+    }));
+
+    const slides: SlideData[] = [
+        { type: 'brand' },
+        ...featuredEvents.slice(0, 2).map(e => ({ type: 'event' as const, event: e })),
+        { type: 'organiser' },
+        ...featuredEvents.slice(2).map(e => ({ type: 'event' as const, event: e })),
+        { type: 'fomo' },
+    ];
+
+    return (
+        <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className="page-wrapper">
+
+            {/* Responsive styles — server-rendered to avoid FOUC */}
+            <style>{`
+                .page-wrapper { padding: 0 48px; }
+                @media (max-width: 768px) { .page-wrapper { padding: 0 20px; } }
+                .headline-xl { font-size: 100px; line-height: 0.85; font-family: "Bebas Neue", sans-serif; margin: 0; }
+                @media (max-width: 768px) { .headline-xl { font-size: 60px; } }
+                .full-bleed { margin-left: -48px; margin-right: -48px; }
+                @media (max-width: 768px) { .full-bleed { margin-left: -20px; margin-right: -20px; } }
+                .city-scroll::-webkit-scrollbar { display: none; }
+                .drag-scroll::-webkit-scrollbar { display: none; }
+                .category-scroll::-webkit-scrollbar { display: none; }
+                @media (min-width: 769px) { .category-scroll { justify-content: center; overflow-x: hidden; } }
+                @media (max-width: 768px) { .category-scroll { justify-content: flex-start; overflow-x: auto; } }
+                .slider-wrapper { padding: 0 48px; width: 100%; }
+                @media (max-width: 768px) { .slider-wrapper { padding: 0 16px; } }
+                .cat-circle { width: 64px; height: 64px; font-size: 26px; }
+                @media (max-width: 768px) { .cat-circle { width: 56px; height: 56px; } }
+            `}</style>
+
+            {/* ── CATEGORY ICONS ROW ── */}
+            <div className="full-bleed" style={{ background: '#FFFFFF', padding: '12px 24px 0' }}>
+                <div
+                    className="category-scroll"
+                    style={{
+                        display: 'flex',
+                        gap: '20px',
+                        padding: '12px 0 16px',
+                        scrollbarWidth: 'none',
+                        WebkitOverflowScrolling: 'touch',
+                        cursor: 'grab',
+                    }}
+                >
+                    {categories.map((cat) => (
+                        <Link
+                            key={cat.id}
+                            href={`/events?category=${encodeURIComponent(cat.name)}`}
+                            className="cat-item"
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '8px',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                textDecoration: 'none',
+                                transition: 'transform 0.2s',
+                            }}
+                        >
+                            <div
+                                className="cat-circle"
+                                style={{
+                                    borderRadius: '50%',
+                                    background: '#FFFFFF',
+                                    border: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                    transition: 'box-shadow 0.2s, transform 0.2s',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                {cat.image_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={cat.image_url}
+                                        alt={cat.name}
+                                        loading="lazy"
+                                        width={64}
+                                        height={64}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    CATEGORY_EMOJI_FALLBACK[cat.name] ?? cat.name.charAt(0)
+                                )}
+                            </div>
+                            <span style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: '#0A0A0F',
+                                textAlign: 'center',
+                                maxWidth: '68px',
+                                lineHeight: 1.3,
+                            }}>
+                                {cat.name}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+
+            {/* ── HERO SLIDER ── */}
+            <div className="full-bleed">
+                <div className="slider-wrapper">
+                    <HeroSlider slides={slides} />
+                </div>
+            </div>
+
+            {/* ── STRIPE TRUST BAR ── */}
+            <div className="full-bleed" style={{
+                background: '#F8F8F8',
+                borderBottom: '1px solid #EEEEEE',
+                padding: '10px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '24px',
+                flexWrap: 'wrap',
+            }}>
+                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🔒 Secure payments powered by Stripe</span>
+            </div>
+
+            {/* ── CITY CARDS ── */}
+            <section style={{ marginTop: '0' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    borderBottom: '2px solid #F0F0F0',
+                    paddingBottom: '12px',
+                }}>
+                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
+                        EXPLORE BY CITY
+                    </h2>
+                </div>
+                <div
+                    className="city-scroll"
+                    style={{
+                        display: 'flex',
+                        gap: '24px',
+                        overflowX: 'auto',
+                        scrollbarWidth: 'none',
+                        WebkitOverflowScrolling: 'touch',
+                        padding: '16px 4px 20px',
+                    }}
+                >
+                    {cities.map((city) => (
+                        <Link
+                            key={city.id}
+                            href={`/events?city=${encodeURIComponent(city.slug)}`}
+                            className="city-card"
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                width: '160px',
+                                flexShrink: 0,
+                                textDecoration: 'none',
+                            }}
+                        >
+                            <div
+                                className="city-circle"
+                                style={{
+                                    width: '160px',
+                                    height: '160px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    border: '3px solid #FFFFFF',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                                    transition: 'all 0.3s ease',
+                                }}
+                            >
+                                {city.image_url ? (
+                                    <Image
+                                        src={city.image_url}
+                                        alt={city.name}
+                                        width={160}
+                                        height={160}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            objectPosition: 'center',
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        background: '#E0E0E8',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '48px',
+                                        fontWeight: 700,
+                                        color: '#8888AA',
+                                        fontFamily: '"Bebas Neue", sans-serif',
+                                    }}>
+                                        {city.name.charAt(0)}
+                                    </div>
+                                )}
+                            </div>
+                            <span style={{
+                                textAlign: 'center',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: '#0A0A0F',
+                                marginTop: '10px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                            }}>
+                                {city.name}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            </section>
+
+            {/* ── UPCOMING EVENTS ── */}
+            <section style={{ marginTop: '48px', paddingBottom: '48px' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    borderBottom: '2px solid #F0F0F0',
+                    paddingBottom: '12px',
+                }}>
+                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
+                        UPCOMING EVENTS
+                    </h2>
+                    <Link
+                        href="/events"
+                        style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                        See All &rarr;
+                    </Link>
+                </div>
+
+                {events.length === 0 ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center', color: '#8888AA' }}>
+                        No upcoming events yet. Check back soon!
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {events.map((event, i) => (
+                            <EventCard key={event.id} event={event} priority={i < 4} />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* ── RECOMMENDED EVENTS (personalised, client-rendered) ── */}
+            <RecommendedEvents />
+
+            {/* ── SECTION 3: ORGANISER CTA — full bleed ── */}
+            <section
+                className="full-bleed"
+                style={{
+                    background: '#0A0A0F',
+                    padding: '80px 24px',
+                    textAlign: 'center',
+                    marginTop: '60px',
+                }}
+            >
+                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
+                    FOR BUSINESS
+                </p>
+                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(48px, 5vw, 72px)', color: '#FFFFFF', margin: '0 0 8px 0', lineHeight: 0.95 }}>
+                    SELLING TICKETS?
+                </h2>
+                <h3 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#8888AA', margin: '0 0 24px 0', fontWeight: 400 }}>
+                    JOIN HUNDREDS OF UK ORGANISERS
+                </h3>
+                <p style={{ fontSize: '16px', color: '#8888AA', marginBottom: '40px', lineHeight: 1.5 }}>
+                    Free to start. No monthly fees. You keep 100% of ticket face value.
+                </p>
+                <Link
+                    href="/sell-tickets"
+                    style={{
+                        display: 'inline-block',
+                        background: '#E63950',
+                        color: '#FFFFFF',
+                        padding: '16px 48px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        borderRadius: 0,
+                        border: 'none',
+                        textDecoration: 'none',
+                        letterSpacing: '0.3px',
+                    }}
+                >
+                    Start Selling Free &rarr;
+                </Link>
+                <Link
+                    href="/auth/login"
+                    style={{
+                        display: 'block',
+                        fontSize: '13px',
+                        color: '#8888AA',
+                        marginTop: '16px',
+                        textDecoration: 'none',
+                    }}
+                >
+                    Already have an account? Sign in &rarr;
+                </Link>
+            </section>
+
+            {/* ── PAST EVENTS ── */}
+            {pastEvents.length > 0 && (
+                <section style={{ marginTop: '60px', paddingBottom: '48px' }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        borderBottom: '2px solid #F0F0F0',
+                        paddingBottom: '12px',
+                    }}>
+                        <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
+                            PAST EVENTS
+                        </h2>
+                        <Link
+                            href="/events?tab=past"
+                            style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                        >
+                            See All &rarr;
+                        </Link>
+                    </div>
+                    <div
+                        className="past-scroll"
+                        style={{
+                            display: 'flex',
+                            gap: '16px',
+                            overflowX: 'auto',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            padding: '4px 4px 16px',
+                        }}
+                    >
+                        {pastEvents.map((event) => (
+                            <div key={event.id} style={{ width: '160px', flexShrink: 0 }}>
+                                <EventCard event={event} compact />
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* CSS hover effects — replaces inline JS for better performance */}
+            <style>{`
+                .city-card:hover .city-circle { box-shadow: 0 8px 28px rgba(0,0,0,0.25); transform: scale(1.05); }
+                .book-now-btn:hover { background: #C0392B !important; }
+                .event-portrait-card { transition: transform 0.2s, box-shadow 0.2s; }
+                .event-portrait-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+                .event-portrait-card:hover .portrait-img { transform: scale(1.04); }
+                .portrait-img { transition: transform 0.2s; }
+                .cat-item:hover { transform: translateY(-3px); }
+                .past-scroll::-webkit-scrollbar { display: none; }
+            `}</style>
+        </div>
+    );
+}

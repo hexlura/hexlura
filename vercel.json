@@ -1,0 +1,13 @@
+{
+  "regions": ["lhr1"],
+  "crons": [
+    {
+      "path": "/api/cron/end-events",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/event-reminders",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

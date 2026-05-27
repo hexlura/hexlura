@@ -1,0 +1,170 @@
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { type NextRequest, NextResponse } from 'next/server'
+
+export async function updateSession(request: NextRequest) {
+    // Step 1: Create response and Supabase client to refresh session
+    let supabaseResponse = NextResponse.next({
+        request: { headers: request.headers },
+    })
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return request.cookies.get(name)?.value
+                },
+                set(name: string, value: string, options: CookieOptions) {
+                    request.cookies.set({ name, value, ...options })
+                    supabaseResponse = NextResponse.next({
+                        request: { headers: request.headers },
+                    })
+                    supabaseResponse.cookies.set({ name, value, ...options })
+                },
+                remove(name: string, options: CookieOptions) {
+                    request.cookies.set({ name, value: '', ...options })
+                    supabaseResponse = NextResponse.next({
+                        request: { headers: request.headers },
+                    })
+                    supabaseResponse.cookies.set({ name, value: '', ...options })
+                },
+            },
+        }
+    )
+
+    // Step 2: Refresh session and get user
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const pathname = request.nextUrl.pathname
+
+    // Classify routes
+    const isAdminRoute = pathname.startsWith('/admin')
+    const isOrganiserRoute = pathname.startsWith('/organiser/')
+    const isPromoterRoute = pathname.startsWith('/promoter') && !pathname.startsWith('/promoter/apply') && !pathname.startsWith('/promoter/invite/accept')
+    const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
+    const isAuthRoute = (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register'))
+    // /checkin routes (excludes /checkin/login which is public)
+    const isCheckinRoute = pathname.startsWith('/checkin') && !pathname.startsWith('/checkin/login')
+    // /organiser/events/[id]/checkin — door_staff allowed here too
+    const isOrganiserCheckinPath = /^\/organiser\/events\/[^/]+\/(checkin|attendees)/.test(pathname)
+    const isProtectedRoute = isAdminRoute || isOrganiserRoute || isPromoterRoute || isAccountRoute || isCheckinRoute
+
+    // Helper: redirect while preserving session cookies
+    function redirectTo(path: string): NextResponse {
+        const url = request.nextUrl.clone()
+        url.pathname = path
+        const redirectRes = NextResponse.redirect(url)
+        supabaseResponse.cookies.getAll().forEach(cookie => {
+            redirectRes.cookies.set(cookie)
+        })
+        return redirectRes
+    }
+
+    // Unauthenticated users trying to access protected routes → login
+    if (!user && isProtectedRoute) {
+        return redirectTo('/auth/login')
+    }
+
+    // No role checks needed for unauthenticated users on public/auth routes
+    if (!user) {
+        return supabaseResponse
+    }
+
+    // Step 3: Authenticated user — fetch role
+    const serviceClient = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } }
+    )
+
+    const { data: profile } = await serviceClient
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    const role = profile?.role || 'user'
+
+    // For 'user' role, check organiser_team privilege once for all relevant route types
+    let teamPrivilege: string | null = null
+    if (role === 'user' && (isAuthRoute || isCheckinRoute || isOrganiserCheckinPath || isOrganiserRoute)) {
+        const { data: teamRows } = await serviceClient
+            .from('organiser_team')
+            .select('privilege')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .limit(1)
+        teamPrivilege = Array.isArray(teamRows) && teamRows[0] ? teamRows[0].privilege : null
+    }
+
+    const isTeamDoorStaff = teamPrivilege === 'door_staff'
+
+    // Check promoter status when relevant (auth-route redirect or promoter-route gating)
+    let hasPromoterRow = false
+    if (isPromoterRoute || isAuthRoute) {
+        const { data: promoterRow } = await serviceClient
+            .from('promoter_profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle()
+        hasPromoterRow = !!promoterRow
+    }
+
+    // Authenticated user on auth pages → redirect to their dashboard
+    if (isAuthRoute) {
+        if (role === 'admin') return redirectTo('/admin')
+        if (role === 'organiser') return redirectTo('/organiser')
+        if (role === 'door_staff' || isTeamDoorStaff) return redirectTo('/checkin')
+        if (hasPromoterRow) return redirectTo('/promoter')
+        // no special redirect for non-door-staff team members
+        return redirectTo('/account')
+    }
+
+    // Door staff: only allowed on /checkin routes and organiser event checkin
+    if (role === 'door_staff' && !isCheckinRoute && !isOrganiserCheckinPath) {
+        return redirectTo('/checkin')
+    }
+
+    // /checkin routes: require door_staff, organiser, admin, or team door_staff
+    if (isCheckinRoute) {
+        if (role !== 'door_staff' && role !== 'organiser' && role !== 'admin' && !isTeamDoorStaff) {
+            return redirectTo('/')
+        }
+        return supabaseResponse
+    }
+
+    // Admin routes: must be admin
+    if (isAdminRoute) {
+        if (role !== 'admin') return redirectTo('/')
+    }
+
+    // Organiser routes (except /organiser/apply)
+    if (isOrganiserRoute) {
+        const isExempt = pathname === '/organiser/apply'
+
+        if (!isExempt) {
+            if (isOrganiserCheckinPath) {
+                // Checkin scanner: organiser, admin, door_staff, or team door_staff
+                if (role !== 'organiser' && role !== 'admin' && role !== 'door_staff' && !isTeamDoorStaff) {
+                    return redirectTo('/')
+                }
+            } else if (role !== 'organiser' && role !== 'admin') {
+                return redirectTo('/')
+            }
+        }
+    }
+
+    // Promoter routes: must have a promoter_profiles row (admin can access too)
+    if (isPromoterRoute) {
+        if (role !== 'admin' && !hasPromoterRow) {
+            return redirectTo('/promoter/apply')
+        }
+    }
+
+    // Account routes: already checked auth above, allow through
+    // All other routes: allow through
+
+    return supabaseResponse
+}

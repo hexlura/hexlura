@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const pkg = require\\(''./node_modules/stripe/cjs/stripe.cjs.node.js''\\); console.log\\(typeof pkg\\)\")",
+      "Bash(node -e \"const s = require\\(''stripe''\\); console.log\\(s.Stripe?.LATEST_API_VERSION || ''no version found''\\)\")",
+      "Bash(node -e \"const x = require\\(''path''\\); console.log\\(x.join\\(''a'', ''b''\\)\\);\")",
+      "Bash(node:*)",
+      "Bash(ls \"c:/Users/PC/.gemini/antigravity/scratch/hexlura/app/\\(admin\\)/admin/users/\")",
+      "Bash(git push *)",
+      "Bash(npx tsc *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(python build_client_handover.py)",
+      "Bash(python -c ' *)"
+    ]
+  }
+}
