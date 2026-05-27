@@ -25,6 +25,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
     const [editData, setEditData] = useState<Partial<CategoryRow>>({})
     const [editFile, setEditFile] = useState<File | null>(null)
     const [saving, setSaving] = useState(false)
+    const [editError, setEditError] = useState('')
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
     const fileRef = useRef<HTMLInputElement>(null)
 
@@ -33,7 +34,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         setSlug(slugify(val))
     }
 
-    const handleFileUpload = async (file: File, targetSlug: string) => {
+    const handleFileUpload = async (file: File, targetSlug: string): Promise<{ url: string } | { error: string }> => {
         setUploading(true)
         const ext = file.name.split('.').pop()
         const path = `categories/${targetSlug}.${ext}`
@@ -43,11 +44,12 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         const res = await fetch('/api/admin/categories/upload', { method: 'POST', body: formData })
         setUploading(false)
         if (!res.ok) {
-            setAddError('Upload failed')
-            return null
+            const body = await res.json().catch(() => ({})) as { error?: string }
+            const msg = body.error ? `Upload failed: ${body.error}` : 'Upload failed'
+            return { error: msg }
         }
-        const { url } = await res.json()
-        return url as string
+        const { url } = await res.json() as { url: string }
+        return { url }
     }
 
     const handleAdd = async (e: React.FormEvent) => {
@@ -61,9 +63,9 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         let finalImageUrl = imageUrl
 
         if (fileRef.current?.files?.[0]) {
-            const uploaded = await handleFileUpload(fileRef.current.files[0], slug)
-            if (!uploaded) { setAdding(false); return }
-            finalImageUrl = uploaded
+            const result = await handleFileUpload(fileRef.current.files[0], slug)
+            if ('error' in result) { setAddError(result.error); setAdding(false); return }
+            finalImageUrl = result.url
         }
 
         const res = await fetch('/api/admin/categories', {
@@ -106,13 +108,14 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
 
     const handleEditSave = async (cat: CategoryRow) => {
         setSaving(true)
+        setEditError('')
 
         let nextImageUrl = editData.image_url ?? cat.image_url ?? null
         if (editFile) {
             const targetSlug = (editData.slug ?? cat.slug) as string
-            const uploaded = await handleFileUpload(editFile, targetSlug)
-            if (!uploaded) { setSaving(false); return }
-            nextImageUrl = uploaded
+            const result = await handleFileUpload(editFile, targetSlug)
+            if ('error' in result) { setEditError(result.error); setSaving(false); return }
+            nextImageUrl = result.url
         }
 
         const payload = { id: cat.id, ...editData, image_url: nextImageUrl }
@@ -122,15 +125,16 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         })
-        const data = await res.json()
+        const data = await res.json() as { error?: string }
         setSaving(false)
         if (res.ok) {
             setCategories(prev => prev.map(c => c.id === cat.id ? { ...c, ...editData, image_url: nextImageUrl } : c))
             setEditId(null)
             setEditData({})
             setEditFile(null)
+            setEditError('')
         } else {
-            alert(data.error || 'Save failed')
+            setEditError(data.error || 'Save failed')
         }
     }
 
@@ -377,6 +381,9 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                                 onChange={e => setEditFile(e.target.files?.[0] ?? null)}
                                                 style={{ fontSize: '12px', color: '#0A0A0F' }}
                                             />
+                                            {editError && (
+                                                <p style={{ fontSize: '12px', color: '#E63950', margin: '0 0 4px 0' }}>{editError}</p>
+                                            )}
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button
                                                     onClick={() => handleEditSave(cat)}
@@ -386,7 +393,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                                     {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save'}
                                                 </button>
                                                 <button
-                                                    onClick={() => { setEditId(null); setEditData({}); setEditFile(null) }}
+                                                    onClick={() => { setEditId(null); setEditData({}); setEditFile(null); setEditError('') }}
                                                     style={{ padding: '6px 16px', background: 'transparent', color: '#0A0A0F', border: '1px solid #C0C0C8', fontSize: '13px', cursor: 'pointer' }}
                                                 >
                                                     Cancel
