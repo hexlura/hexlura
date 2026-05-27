@@ -20,7 +20,8 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
     const [isActive, setIsActive] = useState(true)
     const [adding, setAdding] = useState(false)
     const [addError, setAddError] = useState('')
-    const [uploading, setUploading] = useState(false)
+    const [addUploading, setAddUploading] = useState(false)
+    const [editUploading, setEditUploading] = useState(false)
     const [editId, setEditId] = useState<string | null>(null)
     const [editData, setEditData] = useState<Partial<CategoryRow>>({})
     const [editFile, setEditFile] = useState<File | null>(null)
@@ -34,15 +35,19 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         setSlug(slugify(val))
     }
 
-    const handleFileUpload = async (file: File, targetSlug: string): Promise<{ url: string } | { error: string }> => {
-        setUploading(true)
+    const handleFileUpload = async (
+        file: File,
+        targetSlug: string,
+        setLoading: (v: boolean) => void,
+    ): Promise<{ url: string } | { error: string }> => {
+        setLoading(true)
         const ext = file.name.split('.').pop()
         const path = `categories/${targetSlug}.${ext}`
         const formData = new FormData()
         formData.append('file', file)
         formData.append('path', path)
         const res = await fetch('/api/admin/categories/upload', { method: 'POST', body: formData })
-        setUploading(false)
+        setLoading(false)
         if (!res.ok) {
             const body = await res.json().catch(() => ({})) as { error?: string }
             const msg = body.error ? `Upload failed: ${body.error}` : 'Upload failed'
@@ -63,7 +68,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         let finalImageUrl = imageUrl
 
         if (fileRef.current?.files?.[0]) {
-            const result = await handleFileUpload(fileRef.current.files[0], slug)
+            const result = await handleFileUpload(fileRef.current.files[0], slug, setAddUploading)
             if ('error' in result) { setAddError(result.error); setAdding(false); return }
             finalImageUrl = result.url
         }
@@ -113,7 +118,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         let nextImageUrl = editData.image_url ?? cat.image_url ?? null
         if (editFile) {
             const targetSlug = (editData.slug ?? cat.slug) as string
-            const result = await handleFileUpload(editFile, targetSlug)
+            const result = await handleFileUpload(editFile, targetSlug, setEditUploading)
             if ('error' in result) { setEditError(result.error); setSaving(false); return }
             nextImageUrl = result.url
         }
@@ -274,7 +279,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
 
                     <button
                         type="submit"
-                        disabled={adding || uploading}
+                        disabled={adding || addUploading}
                         style={{
                             background: '#0A0A0F',
                             color: '#FFFFFF',
@@ -282,11 +287,11 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                             fontSize: '14px',
                             fontWeight: 600,
                             border: 'none',
-                            cursor: adding || uploading ? 'not-allowed' : 'pointer',
-                            opacity: adding || uploading ? 0.6 : 1,
+                            cursor: adding || addUploading ? 'not-allowed' : 'pointer',
+                            opacity: adding || addUploading ? 0.6 : 1,
                         }}
                     >
-                        {uploading ? 'Uploading...' : adding ? 'Adding...' : 'Add Category'}
+                        {addUploading ? 'Uploading...' : adding ? 'Adding...' : 'Add Category'}
                     </button>
                 </form>
             </div>
@@ -387,10 +392,10 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button
                                                     onClick={() => handleEditSave(cat)}
-                                                    disabled={saving || uploading}
-                                                    style={{ padding: '6px 16px', background: '#0A0A0F', color: '#FFFFFF', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: 600, opacity: (saving || uploading) ? 0.6 : 1 }}
+                                                    disabled={saving || editUploading}
+                                                    style={{ padding: '6px 16px', background: '#0A0A0F', color: '#FFFFFF', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: 600, opacity: (saving || editUploading) ? 0.6 : 1 }}
                                                 >
-                                                    {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save'}
+                                                    {editUploading ? 'Uploading...' : saving ? 'Saving...' : 'Save'}
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditId(null); setEditData({}); setEditFile(null); setEditError('') }}
