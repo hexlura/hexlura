@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
 import { CrispChat } from '@/components/support/CrispChat'
+import { DesignTokens } from '@/components/DesignTokens'
 import "./globals.css";
 
 const fontHeading = Bebas_Neue({
@@ -38,6 +39,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Suspense fallback={null}>
+          <DesignTokens />
+        </Suspense>
+      </head>
       <body
         className={`${fontBody.variable} ${fontHeading.variable} ${fontMono.variable} font-sans antialiased pb-16 md:pb-0`}
       >
