@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/compress-image'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -115,20 +116,16 @@ export default function AccountSettingsPage() {
         if (!file || !userId) return
 
         setAvatarError(null)
-
-        if (file.size > 2 * 1024 * 1024) {
-            setAvatarError('File exceeds 2MB limit.')
-            return
-        }
-
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-        const path = `${userId}/avatar.${ext}`
+        const path = `${userId}/avatar.webp`
 
         setAvatarUploading(true)
         try {
+            let blob: Blob
+            try { blob = await compressImage(file, 400) } catch { blob = file }
+
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
-                .upload(path, file, { upsert: true })
+                .upload(path, blob, { upsert: true, contentType: 'image/webp' })
 
             if (uploadError) throw uploadError
 

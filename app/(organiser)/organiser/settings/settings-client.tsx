@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/compress-image'
 import { Button } from '@/components/ui/Button'
 import type { OrganiserProfile } from '@/types'
 
@@ -258,19 +259,15 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (!file) return
-        if (file.size > 5 * 1024 * 1024) return alert('File must be under 5MB')
         setLogoUploading(true)
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { setLogoUploading(false); return }
-        const ext = file.name.split('.').pop()
-        const path = `${user.id}/logo.${ext}`
-        const { error } = await supabase.storage.from('organiser-logos').upload(path, file, { upsert: true })
-        if (error) {
-            alert('Upload failed. Please try again.')
-            setLogoUploading(false)
-            return
-        }
+        let blob: Blob
+        try { blob = await compressImage(file, 400) } catch { blob = file }
+        const path = `${user.id}/logo.webp`
+        const { error } = await supabase.storage.from('organiser-logos').upload(path, blob, { upsert: true, contentType: 'image/webp' })
+        if (error) { alert('Upload failed. Please try again.'); setLogoUploading(false); return }
         const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
         const url = urlData.publicUrl
         await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
@@ -282,19 +279,15 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     async function uploadCover(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (!file) return
-        if (file.size > 5 * 1024 * 1024) return alert('File must be under 5MB')
         setCoverUploading(true)
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { setCoverUploading(false); return }
-        const ext = file.name.split('.').pop()
-        const path = `${user.id}/cover.${ext}`
-        const { error } = await supabase.storage.from('organiser-covers').upload(path, file, { upsert: true })
-        if (error) {
-            alert('Upload failed. Please try again.')
-            setCoverUploading(false)
-            return
-        }
+        let blob: Blob
+        try { blob = await compressImage(file, 1600) } catch { blob = file }
+        const path = `${user.id}/cover.webp`
+        const { error } = await supabase.storage.from('organiser-covers').upload(path, blob, { upsert: true, contentType: 'image/webp' })
+        if (error) { alert('Upload failed. Please try again.'); setCoverUploading(false); return }
         const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
         const url = urlData.publicUrl
         await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/compress-image'
 import type { CityRow } from './page'
 
 interface CitiesClientProps {
@@ -33,24 +35,34 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
     }
 
     const handleFileUpload = async (file: File, targetSlug: string) => {
-        if (file.size > 2 * 1024 * 1024) {
-            setAddError('File must be under 2MB')
-            return null
-        }
         setUploading(true)
-        const ext = file.name.split('.').pop()
-        const path = `cities/${targetSlug}.${ext}`
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('path', path)
-        const res = await fetch('/api/admin/cities/upload', { method: 'POST', body: formData })
-        setUploading(false)
-        if (!res.ok) {
-            setAddError('Upload failed')
+
+        let blob: Blob
+        try { blob = await compressImage(file, 1200) } catch { blob = file }
+
+        const path = `cities/${targetSlug}.webp`
+
+        const urlRes = await fetch('/api/admin/cities/upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path }),
+        })
+        if (!urlRes.ok) {
+            setUploading(false)
+            const body = await urlRes.json().catch(() => ({})) as { error?: string }
+            setAddError(body.error ? `Upload failed: ${body.error}` : 'Upload failed')
             return null
         }
-        const { url } = await res.json()
-        return url as string
+        const { token, publicUrl } = await urlRes.json() as { token: string; publicUrl: string; signedUrl: string; path: string }
+
+        const supabase = createClient()
+        const { error: uploadError } = await supabase.storage
+            .from('city-images')
+            .uploadToSignedUrl(path, token, blob, { contentType: 'image/webp' })
+
+        setUploading(false)
+        if (uploadError) { setAddError(`Upload failed: ${uploadError.message}`); return null }
+        return publicUrl
     }
 
     const handleAdd = async (e: React.FormEvent) => {
@@ -204,7 +216,7 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
 
                     {/* Row 3: File upload */}
                     <div style={{ marginBottom: '16px' }}>
-                        <label style={labelStyle}>OR Upload Image (JPG/PNG/WebP, max 2MB)</label>
+                        <label style={labelStyle}>OR Upload Image (JPG/PNG/WebP)</label>
                         <input
                             ref={fileRef}
                             type="file"

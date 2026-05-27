@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/compress-image'
 import type { CategoryRow } from './page'
 
 interface CategoriesClientProps {
@@ -12,35 +13,6 @@ function slugify(name: string): string {
     return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 }
 
-// Compress + resize to WebP before upload. Max 1200px on longest side, 82% quality.
-// Typical result: 3 MB JPEG → ~120 KB WebP with no visible quality loss.
-function compressImage(file: File): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-        const img = new Image()
-        const objectUrl = URL.createObjectURL(file)
-        img.onload = () => {
-            URL.revokeObjectURL(objectUrl)
-            const MAX = 1200
-            let { width, height } = img
-            if (width > MAX || height > MAX) {
-                if (width > height) { height = Math.round((height * MAX) / width); width = MAX }
-                else { width = Math.round((width * MAX) / height); height = MAX }
-            }
-            const canvas = document.createElement('canvas')
-            canvas.width = width
-            canvas.height = height
-            const ctx = canvas.getContext('2d')
-            if (!ctx) { reject(new Error('Canvas not supported')); return }
-            ctx.drawImage(img, 0, 0, width, height)
-            canvas.toBlob(blob => {
-                if (blob) resolve(blob)
-                else reject(new Error('Compression failed'))
-            }, 'image/webp', 0.82)
-        }
-        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Could not load image')) }
-        img.src = objectUrl
-    })
-}
 
 export function CategoriesClient({ categories: initialCategories }: CategoriesClientProps) {
     const [categories, setCategories] = useState<CategoryRow[]>(initialCategories)

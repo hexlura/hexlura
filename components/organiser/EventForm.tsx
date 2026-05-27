@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/compress-image'
 import { Button } from '@/components/ui/Button'
 import { calculateBookingFeePerTicket, formatPence } from '@/lib/fees'
 import { useFeeConfig } from '@/lib/use-fee-config'
@@ -403,13 +404,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         const file = e.target.files?.[0]
         if (!file) return
         setBannerError('')
-        if (file.size > 5 * 1024 * 1024) { setBannerError('File must be under 5MB'); return }
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setBannerError('Only JPG, PNG or WEBP files are allowed'); return }
 
         setBannerUploading(true)
         const supabase = createClient()
-        const path = `organisers/${organiserId}/${Date.now()}-${file.name}`
-        const { error } = await supabase.storage.from('event-banners').upload(path, file)
+        let blob: Blob
+        try { blob = await compressImage(file, 1600) } catch { blob = file }
+        const path = `organisers/${organiserId}/${Date.now()}.webp`
+        const { error } = await supabase.storage.from('event-banners').upload(path, blob, { contentType: 'image/webp' })
         if (error) {
             setBannerError(error.message)
         } else {

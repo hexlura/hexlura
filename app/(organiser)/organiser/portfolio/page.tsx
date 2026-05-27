@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { compressImage } from '@/lib/compress-image'
 
 interface PortfolioItem {
     id: string
@@ -125,15 +126,13 @@ export default function PortfolioPage() {
         const supabase = createClient()
 
         for (const file of photoFiles) {
-            if (file.size > 5 * 1024 * 1024) {
-                setUploadError(`${file.name} exceeds 5MB limit`)
-                continue
-            }
+            let blob: Blob
+            try { blob = await compressImage(file, 1400) } catch { blob = file }
             const timestamp = Date.now()
-            const path = `${organiserId}/${timestamp}-${file.name}`
+            const path = `${organiserId}/${timestamp}.webp`
             const { error: storageError } = await supabase.storage
                 .from('organiser-portfolio')
-                .upload(path, file)
+                .upload(path, blob, { contentType: 'image/webp' })
             if (storageError) {
                 setUploadError('Upload failed: ' + storageError.message)
                 continue
