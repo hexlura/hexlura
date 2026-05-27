@@ -34,10 +34,6 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
     }
 
     const handleFileUpload = async (file: File, targetSlug: string) => {
-        if (file.size > 2 * 1024 * 1024) {
-            setAddError('File must be under 2MB')
-            return null
-        }
         setUploading(true)
         const ext = file.name.split('.').pop()
         const path = `categories/${targetSlug}.${ext}`
@@ -217,7 +213,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
 
                     {/* Row 3: File upload */}
                     <div style={{ marginBottom: '16px' }}>
-                        <label style={labelStyle}>OR Upload Image (JPG/PNG/WebP, max 2MB)</label>
+                        <label style={labelStyle}>OR Upload Image (JPG/PNG/WebP)</label>
                         <input
                             ref={fileRef}
                             type="file"
@@ -286,7 +282,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                             opacity: adding || uploading ? 0.6 : 1,
                         }}
                     >
-                        {adding || uploading ? 'Adding...' : 'Add Category'}
+                        {uploading ? 'Uploading...' : adding ? 'Adding...' : 'Add Category'}
                     </button>
                 </form>
             </div>
@@ -387,7 +383,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                                     disabled={saving || uploading}
                                                     style={{ padding: '6px 16px', background: '#0A0A0F', color: '#FFFFFF', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: 600, opacity: (saving || uploading) ? 0.6 : 1 }}
                                                 >
-                                                    {saving || uploading ? '...' : 'Save'}
+                                                    {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save'}
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditId(null); setEditData({}); setEditFile(null) }}
