@@ -12,6 +12,36 @@ function slugify(name: string): string {
     return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 }
 
+// Compress + resize to WebP before upload. Max 1200px on longest side, 82% quality.
+// Typical result: 3 MB JPEG → ~120 KB WebP with no visible quality loss.
+function compressImage(file: File): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        const objectUrl = URL.createObjectURL(file)
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl)
+            const MAX = 1200
+            let { width, height } = img
+            if (width > MAX || height > MAX) {
+                if (width > height) { height = Math.round((height * MAX) / width); width = MAX }
+                else { width = Math.round((width * MAX) / height); height = MAX }
+            }
+            const canvas = document.createElement('canvas')
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext('2d')
+            if (!ctx) { reject(new Error('Canvas not supported')); return }
+            ctx.drawImage(img, 0, 0, width, height)
+            canvas.toBlob(blob => {
+                if (blob) resolve(blob)
+                else reject(new Error('Compression failed'))
+            }, 'image/webp', 0.82)
+        }
+        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Could not load image')) }
+        img.src = objectUrl
+    })
+}
+
 export function CategoriesClient({ categories: initialCategories }: CategoriesClientProps) {
     const [categories, setCategories] = useState<CategoryRow[]>(initialCategories)
     const [name, setName] = useState('')
@@ -42,10 +72,16 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         setLoading: (v: boolean) => void,
     ): Promise<{ url: string } | { error: string }> => {
         setLoading(true)
-        const ext = file.name.split('.').pop()
-        const path = `categories/${targetSlug}.${ext}`
 
-        // Step 1: get a signed upload URL from our API (tiny payload — no Vercel size limit hit)
+        // Compress + convert to WebP before upload
+        let blob: Blob
+        try { blob = await compressImage(file) }
+        catch { blob = file }
+
+        // Always store as .webp regardless of original format
+        const path = `categories/${targetSlug}.webp`
+
+        // Step 1: get a signed upload URL (tiny JSON payload — no Vercel size limit hit)
         const urlRes = await fetch('/api/admin/categories/upload-url', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -60,11 +96,11 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         }
         const { token, publicUrl } = await urlRes.json() as { signedUrl: string; token: string; path: string; publicUrl: string }
 
-        // Step 2: upload directly from browser to Supabase — bypasses Vercel's 4.5 MB function limit
+        // Step 2: upload compressed blob directly from browser to Supabase
         const supabase = createClient()
         const { error: uploadError } = await supabase.storage
             .from('category-images')
-            .uploadToSignedUrl(path, token, file, { contentType: file.type })
+            .uploadToSignedUrl(path, token, blob, { contentType: 'image/webp' })
 
         setLoading(false)
         if (uploadError) return { error: `Upload failed: ${uploadError.message}` }
