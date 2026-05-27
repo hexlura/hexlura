@@ -49,9 +49,10 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
         const res = await fetch('/api/admin/categories/upload', { method: 'POST', body: formData })
         setLoading(false)
         if (!res.ok) {
-            const body = await res.json().catch(() => ({})) as { error?: string }
-            const msg = body.error ? `Upload failed: ${body.error}` : 'Upload failed'
-            return { error: msg }
+            const text = await res.text().catch(() => '')
+            let detail = ''
+            try { detail = (JSON.parse(text) as { error?: string }).error ?? text } catch { detail = text }
+            return { error: `Upload failed (${res.status})${detail ? `: ${detail}` : ''}` }
         }
         const { url } = await res.json() as { url: string }
         return { url }

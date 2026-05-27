@@ -17,6 +17,11 @@ export async function POST(req: NextRequest) {
 
     if (!file || !path) return NextResponse.json({ error: 'file and path are required' }, { status: 400 })
 
+    // Ensure the bucket exists — migrations may not have been applied in production
+    await adminClient.storage.createBucket('category-images', { public: true }).catch(() => {
+        // Ignore: bucket already exists
+    })
+
     const buffer = Buffer.from(await file.arrayBuffer())
 
     const { error } = await adminClient.storage
