@@ -11,6 +11,7 @@ export function CrispChat() {
         __html: `
           window.$crisp=[];
           window.CRISP_WEBSITE_ID="b69e3a5d-f4a9-41f0-bbe5-2e85ab90dc6b";
+          window.$crisp.push(["config", "position:reverse", [true]]);
           (function(){
             var d=document;
             var s=d.createElement("script");
