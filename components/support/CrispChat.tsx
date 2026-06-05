@@ -19,28 +19,18 @@ export function CrispChat() {
             d.getElementsByTagName("head")[0].appendChild(s);
           })();
           (function(){
-            var OFFSET = 70;
-            function isMobile() { return window.innerWidth < 768; }
-            function applyOffset(container) {
-              var els = container.querySelectorAll('*');
-              for (var i = 0; i < els.length; i++) {
-                if (window.getComputedStyle(els[i]).position === 'fixed') {
-                  els[i].style.bottom = isMobile() ? OFFSET + 'px' : '';
-                }
+            var styleEl = null;
+            function update() {
+              if (!styleEl) {
+                styleEl = document.createElement('style');
+                document.head.appendChild(styleEl);
               }
+              styleEl.textContent = window.innerWidth < 768
+                ? '#crisp-chatbox iframe { bottom: 70px !important; top: auto !important; }'
+                : '';
             }
-            function init() {
-              var container = document.getElementById('crisp-chatbox');
-              if (!container) { setTimeout(init, 400); return; }
-              var observer = new MutationObserver(function() { applyOffset(container); });
-              observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
-              applyOffset(container);
-            }
-            init();
-            window.addEventListener('resize', function() {
-              var c = document.getElementById('crisp-chatbox');
-              if (c) applyOffset(c);
-            });
+            update();
+            window.addEventListener('resize', update);
           })();
         `,
       }}
