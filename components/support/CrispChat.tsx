@@ -22,11 +22,7 @@ export function CrispChat() {
             function adjustCrisp() {
               var el = document.getElementById('crisp-chatbox');
               if (el) {
-                if (window.innerWidth < 768) {
-                  el.style.setProperty('bottom', '70px', 'important');
-                } else {
-                  el.style.removeProperty('bottom');
-                }
+                el.style.transform = window.innerWidth < 768 ? 'translateY(-70px)' : '';
               } else {
                 setTimeout(adjustCrisp, 300);
               }
