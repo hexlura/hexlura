@@ -18,20 +18,6 @@ export function CrispChat() {
             s.async=1;
             d.getElementsByTagName("head")[0].appendChild(s);
           })();
-          (function(){
-            var styleEl = null;
-            function update() {
-              if (!styleEl) {
-                styleEl = document.createElement('style');
-                document.head.appendChild(styleEl);
-              }
-              styleEl.textContent = window.innerWidth < 768
-                ? '#crisp-chatbox iframe { bottom: 70px !important; top: auto !important; }'
-                : '';
-            }
-            update();
-            window.addEventListener('resize', update);
-          })();
         `,
       }}
     />
