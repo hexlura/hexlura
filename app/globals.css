@@ -53,10 +53,3 @@
 
 
 .maps-link-btn:hover { border-color: #E63950 !important; }
-
-/* Push Crisp chat widget above the mobile bottom nav (64px) */
-@media (max-width: 767px) {
-  #crisp-chatbox {
-    bottom: 64px !important;
-  }
-}

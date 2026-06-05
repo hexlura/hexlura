@@ -18,6 +18,22 @@ export function CrispChat() {
             s.async=1;
             d.getElementsByTagName("head")[0].appendChild(s);
           })();
+          (function(){
+            function adjustCrisp() {
+              var el = document.getElementById('crisp-chatbox');
+              if (el) {
+                if (window.innerWidth < 768) {
+                  el.style.setProperty('bottom', '70px', 'important');
+                } else {
+                  el.style.removeProperty('bottom');
+                }
+              } else {
+                setTimeout(adjustCrisp, 300);
+              }
+            }
+            adjustCrisp();
+            window.addEventListener('resize', adjustCrisp);
+          })();
         `,
       }}
     />
