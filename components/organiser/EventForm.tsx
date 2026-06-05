@@ -114,13 +114,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const [checkinStartAt, setCheckinStartAt] = useState(toDatetimeLocal((event as (typeof event & { checkin_start_at?: string }))?.checkin_start_at))
     const [checkinEndAt, setCheckinEndAt] = useState(toDatetimeLocal((event as (typeof event & { checkin_end_at?: string }))?.checkin_end_at))
     const [venueName, setVenueName] = useState(event?.venue_name || '')
-    // Parse city from stored venue_address (saved as "street, city")
-    const _rawAddr = event?.venue_address || ''
-    const _parts = _rawAddr.split(',')
-    const _initCity = _parts.length > 1 ? _parts[_parts.length - 1].trim() : ''
-    const _initAddr = _parts.length > 1 ? _parts.slice(0, -1).join(',').trim() : _rawAddr
-    const [venueAddress, setVenueAddress] = useState(_initAddr)
-    const [venueCity, setVenueCity] = useState(_initCity)
+    const [venueAddress, setVenueAddress] = useState(event?.venue_address?.replace(/,\s*[^,]+$/, '').trim() || '')
+    const [venueCity, setVenueCity] = useState((event as (typeof event & { venue_city?: string | null }))?.venue_city || '')
     const [venuePostcode, setVenuePostcode] = useState(event?.venue_postcode || '')
     const [venueLat, setVenueLat] = useState<number | null>((event as { venue_lat?: number | null })?.venue_lat ?? null)
     const [venueLng, setVenueLng] = useState<number | null>((event as { venue_lng?: number | null })?.venue_lng ?? null)
@@ -223,6 +218,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                 tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 venue_name: venueName,
                 venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
+                venue_city: venueCity || null,
                 venue_postcode: venuePostcode,
                 venue_lat: venueLat,
                 venue_lng: venueLng,
@@ -260,6 +256,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
             venue_name: venueName,
             venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
+            venue_city: venueCity || null,
             venue_postcode: venuePostcode,
             venue_lat: venueLat,
             venue_lng: venueLng,
@@ -316,6 +313,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         if (!startAt) errs.push('Start date & time is required')
         if (!endAt) errs.push('End date & time is required')
         if (!venueName.trim()) errs.push('Venue name is required')
+        if (!venueCity.trim()) errs.push('City is required')
         if (!venuePostcode.trim()) errs.push('Postcode is required')
         if (tickets.length === 0 && ticketAvailability !== 'coming_soon') errs.push('At least one ticket type is required')
         return errs
@@ -346,6 +344,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
             venue_name: venueName,
             venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
+            venue_city: venueCity || null,
             venue_postcode: venuePostcode,
             venue_lat: venueLat,
             venue_lng: venueLng,
@@ -638,7 +637,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                 <input type="text" value={venueAddress} onChange={e => setVenueAddress(e.target.value)} className={inputClass} placeholder="Street address" />
                             </div>
                             <div>
-                                <label className={labelClass}>City</label>
+                                <label className={labelClass}>City *</label>
                                 <input
                                     type="text"
                                     value={venueCity}
@@ -646,6 +645,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                     placeholder="e.g. Manchester"
                                     list="uk-cities"
                                     className={inputClass}
+                                    required
                                 />
                                 <datalist id="uk-cities">
                                     {UK_CITIES.map(c => <option key={c} value={c} />)}

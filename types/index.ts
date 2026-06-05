@@ -53,6 +53,7 @@ export interface Event {
     tags: string[] | null;
     venue_name: string | null;
     venue_address: string | null;
+    venue_city: string | null;
     venue_postcode: string | null;
     lat: number | null;
     lng: number | null;

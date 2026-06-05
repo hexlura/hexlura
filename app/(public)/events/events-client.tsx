@@ -108,7 +108,7 @@ export default function BrowseEventsClient() {
 
       if (query) q = q.ilike('title', `%${query}%`)
       if (category && category !== 'All') q = q.eq('category', category)
-      if (location && location !== 'Any') q = q.ilike('venue_address', `%${location}%`)
+      if (location && location !== 'Any') q = q.ilike('venue_city', `%${location}%`)
 
       if (minPrice > 0) q = q.gte('ticket_types.price_pence', minPrice * 100)
       if (maxPrice < 500) q = q.lte('ticket_types.price_pence', maxPrice * 100)
@@ -255,15 +255,19 @@ export default function BrowseEventsClient() {
 
           <div className="space-y-3 mb-6">
             <label className="text-sm font-medium">Location</label>
-            <select
+            <input
+              type="text"
+              list="browse-cities"
+              placeholder="Any city..."
+              value={localLocation === 'Any' ? '' : localLocation}
+              onChange={e => setLocalLocation(e.target.value || 'Any')}
               className="w-full h-10 px-3 py-2 rounded-sm border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              value={localLocation}
-              onChange={e => setLocalLocation(e.target.value)}
-            >
-              {CITIES.map(city => (
-                <option key={city} value={city}>{city}</option>
+            />
+            <datalist id="browse-cities">
+              {CITIES.filter(c => c !== 'Any').map(city => (
+                <option key={city} value={city} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div className="space-y-3 mb-6">
@@ -434,9 +438,12 @@ export default function BrowseEventsClient() {
 
               {/* Location */}
               <div>
-                <select
-                  value={localLocation}
-                  onChange={e => setLocalLocation(e.target.value)}
+                <input
+                  type="text"
+                  list="browse-cities-mobile"
+                  placeholder="Any city..."
+                  value={localLocation === 'Any' ? '' : localLocation}
+                  onChange={e => setLocalLocation(e.target.value || 'Any')}
                   style={{
                     width: '100%',
                     height: 40,
@@ -447,11 +454,12 @@ export default function BrowseEventsClient() {
                     color: '#0A0A0F',
                     outline: 'none',
                   }}
-                >
-                  {CITIES.map(city => (
-                    <option key={city} value={city}>{city}</option>
+                />
+                <datalist id="browse-cities-mobile">
+                  {CITIES.filter(c => c !== 'Any').map(city => (
+                    <option key={city} value={city} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               {/* Near Postcode */}
