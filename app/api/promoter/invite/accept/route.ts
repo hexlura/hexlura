@@ -19,6 +19,15 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
+    const { data: promoterProfile } = await adminClient
+        .from('promoter_profiles')
+        .select('status')
+        .eq('id', promoterId)
+        .single()
+    if (promoterProfile?.status === 'suspended') {
+        return NextResponse.json({ error: 'Your account has been suspended' }, { status: 403 })
+    }
+
     const { data: assignment } = await adminClient
         .from('promoter_event_assignments')
         .select('id, status, event_id')

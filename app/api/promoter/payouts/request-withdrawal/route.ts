@@ -17,11 +17,12 @@ export async function POST() {
 
     const { data: profile } = await adminClient
         .from('promoter_profiles')
-        .select('display_name, referral_code, payout_method, bank_account_number, stripe_account_id')
+        .select('display_name, referral_code, payout_method, bank_account_number, stripe_account_id, status')
         .eq('id', promoterId)
         .single()
 
     if (!profile) return NextResponse.json({ error: 'Promoter profile not found' }, { status: 404 })
+    if (profile.status === 'suspended') return NextResponse.json({ error: 'Your account has been suspended' }, { status: 403 })
 
     const hasMethod =
         (profile.payout_method === 'stripe_connect' && profile.stripe_account_id) ||

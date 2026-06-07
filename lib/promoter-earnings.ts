@@ -68,17 +68,27 @@ export async function reversePromoterEarningsForBooking(bookingId: string): Prom
     const supabase = createServiceClient()
     const { data: row } = await supabase
         .from('promoter_earnings')
-        .select('id, status')
+        .select('id, status, commission_pence, promoter_id, event_id, organiser_id')
         .eq('booking_id', bookingId)
         .maybeSingle()
 
     if (!row) return
 
     if (row.status === 'paid') {
-        console.warn(
-            `Cannot reverse promoter_earnings ${row.id} — already paid out. ` +
-            `Deduct manually from next payout for booking ${bookingId}.`
-        )
+        // Already paid out — insert a negative clawback row so it auto-deducts from the
+        // promoter's next payout request instead of requiring manual intervention.
+        if (row.commission_pence > 0) {
+            await supabase.from('promoter_earnings').insert({
+                promoter_id: row.promoter_id,
+                event_id: row.event_id,
+                organiser_id: row.organiser_id,
+                ticket_subtotal_pence: 0,
+                commission_percent: 0,
+                commission_pence: -row.commission_pence,
+                status: 'available',
+                available_at: new Date().toISOString(),
+            })
+        }
         return
     }
 

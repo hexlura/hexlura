@@ -11,6 +11,14 @@ export async function PATCH(request: NextRequest) {
     const promoterId = await resolvePromoterId(user.id)
     if (!promoterId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+    const adminClient = createAdminClient()
+    const { data: promoterProfile } = await adminClient
+        .from('promoter_profiles')
+        .select('status')
+        .eq('id', promoterId)
+        .single()
+    if (promoterProfile?.status === 'suspended') return NextResponse.json({ error: 'Your account has been suspended' }, { status: 403 })
+
     const body = await request.json().catch(() => ({})) as {
         display_name?: string
         bio?: string | null
@@ -34,7 +42,6 @@ export async function PATCH(request: NextRequest) {
     if (body.bank_account_number !== undefined) update.bank_account_number = body.bank_account_number
     if (body.bank_sort_code !== undefined) update.bank_sort_code = body.bank_sort_code
 
-    const adminClient = createAdminClient()
     const { error } = await adminClient
         .from('promoter_profiles')
         .update(update)
