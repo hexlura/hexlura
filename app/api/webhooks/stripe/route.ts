@@ -195,12 +195,23 @@ export async function POST(req: NextRequest) {
 
     if (event.type === 'account.updated') {
         const account = event.data.object as Stripe.Account
-        // We don't gate anything on Connect account.updated today — keep the
-        // signal as a log line so we can spot Connect onboarding completing.
         console.log('account.updated received:', account.id, {
             charges_enabled: account.charges_enabled,
             payouts_enabled: account.payouts_enabled,
         })
+
+        try {
+            const supabase = createAdminClient()
+            await supabase
+                .from('organiser_profiles')
+                .update({
+                    stripe_charges_enabled: account.charges_enabled ?? false,
+                    stripe_payouts_enabled: account.payouts_enabled ?? false,
+                })
+                .eq('stripe_account_id', account.id)
+        } catch (err) {
+            console.error('Failed to update organiser Connect status from account.updated:', err)
+        }
     }
 
     if (
@@ -545,7 +556,11 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                     transfer_group: booking.booking_ref,
                 })
             } catch (err) {
-                console.error('Stripe transfer failed:', err)
+                console.error('Stripe transfer failed — marking for manual payout:', err)
+                await supabase
+                    .from('bookings')
+                    .update({ needs_manual_payout: true })
+                    .eq('id', booking.id)
             }
         }
     }
@@ -855,7 +870,11 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                     transfer_group: booking.booking_ref,
                 })
             } catch (err) {
-                console.error('Stripe transfer failed:', err)
+                console.error('Stripe transfer failed — marking for manual payout:', err)
+                await supabase
+                    .from('bookings')
+                    .update({ needs_manual_payout: true })
+                    .eq('id', booking.id)
             }
         }
     }
@@ -926,3 +945,4 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
     }
 }
+

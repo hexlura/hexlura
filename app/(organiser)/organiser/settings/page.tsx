@@ -25,7 +25,8 @@ export default async function SettingsPage() {
         .select('value')
         .eq('key', 'stripe_connect_enabled')
         .single()
-    const stripeConnectEnabled = stripeConnectSetting?.value === 'true'
+    // Platform-wide kill-switch AND per-organiser admin allowlist must both be on
+    const stripeConnectEnabled = stripeConnectSetting?.value === 'true' && organiser.stripe_connect_allowed === true
 
     return (
         <div className="max-w-2xl">

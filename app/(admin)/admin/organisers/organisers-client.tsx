@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { formatPence } from '@/lib/fees'
 
@@ -255,7 +256,11 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                             )}
                             {active.map(org => (
                                 <tr key={org.id} className="border-b border-border/50 hover:bg-surface transition-colors">
-                                    <td className="py-3 px-4 text-text font-medium">{org.org_name}</td>
+                                    <td className="py-3 px-4 text-text font-medium">
+                                        <Link href={`/admin/organisers/${org.id}`} className="hover:text-accent hover:underline">
+                                            {org.org_name}
+                                        </Link>
+                                    </td>
                                     <td className="py-3 px-4">
                                         <OrgTypeBadge type={org.organiser_type} />
                                     </td>
@@ -274,12 +279,17 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                                     </td>
                                     <td className="py-3 px-4 text-muted text-xs whitespace-nowrap">{fmt(org.created_at)}</td>
                                     <td className="py-3 px-4">
-                                        <button
-                                            onClick={() => { setSuspendModal(org); setSuspendReason('') }}
-                                            className="text-xs text-accent hover:underline"
-                                        >
-                                            Suspend
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <Link href={`/admin/organisers/${org.id}`} className="text-xs text-accent hover:underline">
+                                                Manage
+                                            </Link>
+                                            <button
+                                                onClick={() => { setSuspendModal(org); setSuspendReason('') }}
+                                                className="text-xs text-accent hover:underline"
+                                            >
+                                                Suspend
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

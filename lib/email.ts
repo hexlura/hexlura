@@ -478,6 +478,35 @@ export async function sendWaitlistNotificationEmails(data: {
     }
 }
 
+export async function sendStripeConnectedEmail(data: {
+    to: string
+    fullName: string
+    orgName: string
+}): Promise<void> {
+    try {
+        const appUrl = getAppUrl()
+        const html = `
+            <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
+                <h2 style="margin:0 0 16px;color:#111;">Stripe account connected</h2>
+                <p style="margin:0 0 8px;">Hi ${data.fullName},</p>
+                <p style="margin:0 0 16px;">Your Stripe account is now connected to <strong>${data.orgName}</strong> on Hexlura. Payouts from ticket sales will be transferred directly to your Stripe account once your Connect onboarding is complete.</p>
+                <p style="margin:0 0 16px;">You can manage your payout settings from your organiser dashboard at any time.</p>
+                <p style="margin:24px 0 0;">
+                    <a href="${appUrl}/organiser/settings" style="display:inline-block;background:#E63950;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View Settings</a>
+                </p>
+            </div>`
+        await getResend().emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: 'support@hexlura.com',
+            to: data.to,
+            subject: 'Stripe account connected — payouts enabled',
+            html,
+        })
+    } catch (err) {
+        console.error('Failed to send stripe connected email:', err)
+    }
+}
+
 export async function sendAdminPromoterPayoutRequestEmail(data: {
     promoterName: string
     promoterEmail: string
