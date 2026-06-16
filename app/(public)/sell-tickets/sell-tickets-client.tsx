@@ -107,7 +107,7 @@ function IconBank() {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-export default function SellTicketsClient() {
+export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
   const steps = [
     {
       num: '01',
@@ -255,7 +255,7 @@ export default function SellTicketsClient() {
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 32 }}>
             <Link
-              href="/auth/register?next=/organiser/apply"
+              href={ctaHref}
               style={{
                 background: '#0A0A0F',
                 color: '#fff',
@@ -664,7 +664,7 @@ export default function SellTicketsClient() {
           Join hundreds of UK organisers already selling on Hexlura. Free to start. No contracts. Cancel anytime.
         </p>
         <Link
-          href="/auth/register?next=/organiser/apply"
+          href={ctaHref}
           style={{
             display: 'inline-block',
             background: '#E63950',
