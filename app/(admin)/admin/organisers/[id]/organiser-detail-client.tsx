@@ -107,7 +107,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                         disabled={saving}
                         role="switch"
                         aria-checked={allowed}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${allowed ? 'bg-accent' : 'bg-muted/30'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${allowed ? 'bg-accent' : 'bg-border'}`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${allowed ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
