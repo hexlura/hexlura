@@ -37,6 +37,9 @@ export function SettingsClient({ settings, promoCodes }: Props) {
     const [payoutCooldown, setPayoutCooldown] = useState(settings['payout_cooldown_days'] ?? '2')
     const [stripeConnectEnabled, setStripeConnectEnabled] = useState(settings['stripe_connect_enabled'] === 'true')
 
+    // Analytics settings
+    const [metaPixelId, setMetaPixelId] = useState(settings['meta_pixel_id'] ?? '')
+
     // Email settings
     const [fromName, setFromName] = useState(settings['from_name'] ?? 'Hexlura')
     const [fromEmail, setFromEmail] = useState(settings['from_email'] ?? 'tickets@hexlura.com')
@@ -107,6 +110,14 @@ export function SettingsClient({ settings, promoCodes }: Props) {
         ])
         setSaving(null)
         showFeedback('payouts', 'Payout settings saved')
+        router.refresh()
+    }
+
+    async function handleSaveAnalytics() {
+        setSaving('analytics')
+        await saveSetting('meta_pixel_id', metaPixelId.trim())
+        setSaving(null)
+        showFeedback('analytics', 'Analytics settings saved')
         router.refresh()
     }
 
@@ -316,6 +327,29 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                         </table>
                     </div>
                 )}
+            </div>
+
+            {/* Analytics */}
+            <div className={sectionClass}>
+                <h2 className="text-sm font-medium text-text mb-4">Analytics</h2>
+                <div className="mb-4">
+                    <label className={labelClass}>Meta (Facebook) Pixel ID</label>
+                    <input
+                        type="text"
+                        value={metaPixelId}
+                        onChange={e => setMetaPixelId(e.target.value.replace(/\D/g, ''))}
+                        placeholder="e.g. 1234567890"
+                        maxLength={20}
+                        className={inputClass}
+                    />
+                    <p className="text-xs text-muted mt-1.5">Platform-wide Meta Pixel. Fires on every page for Hexlura&apos;s own ad tracking.</p>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Button variant="primary" size="md" onClick={handleSaveAnalytics} disabled={saving === 'analytics'}>
+                        {saving === 'analytics' ? 'Saving...' : 'Save Analytics Settings'}
+                    </Button>
+                    <SaveFeedback message={feedback.analytics ?? null} />
+                </div>
             </div>
 
             {/* Email Config */}

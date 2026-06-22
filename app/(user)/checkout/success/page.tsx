@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { formatPence } from '@/lib/fees'
+import { MetaPixelPurchase } from '@/components/analytics/MetaPixelEvents'
 
 interface BookingData {
     booking_ref: string
@@ -146,6 +147,10 @@ function SuccessContent() {
 
             {booking && (
                 <>
+                    <MetaPixelPurchase
+                        valuePence={booking.total_pence ?? 0}
+                        bookingRef={booking.booking_ref}
+                    />
                     <div className="bg-surface border border-border rounded-none p-6 space-y-4">
                         <p className="text-xs text-muted uppercase tracking-wider">Booking Reference</p>
                         <p className="text-3xl font-bold text-accent font-mono tracking-wider">{booking.booking_ref}</p>

@@ -5,9 +5,11 @@ import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
+import { MetaPixelInit } from '@/components/analytics/MetaPixel'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
 import { CrispChat } from '@/components/support/CrispChat'
 import { DesignTokens } from '@/components/DesignTokens'
+import { createServiceClient } from '@/lib/supabase/service'
 import "./globals.css";
 
 const fontHeading = Bebas_Neue({
@@ -32,11 +34,19 @@ export const metadata: Metadata = {
   description: "Find and book the hottest events near you.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const serviceClient = createServiceClient()
+  const { data: pixelSetting } = await serviceClient
+    .from('platform_settings')
+    .select('value')
+    .eq('key', 'meta_pixel_id')
+    .single()
+  const platformPixelId = pixelSetting?.value || ''
+
   return (
     <html lang="en">
       <head>
@@ -63,6 +73,7 @@ export default function RootLayout({
             <GoogleAnalytics />
           </Suspense>
           <CookieConsent />
+          <MetaPixelInit pixelId={platformPixelId} />
           <CrispChat />
         </div>
       </body>

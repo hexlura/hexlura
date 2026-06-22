@@ -43,6 +43,7 @@ export interface OrganiserProfile {
     identity_verified_at: string | null;
     identity_last_attempt_at: string | null;
     identity_failure_reason: string | null;
+    meta_pixel_id: string | null;
     created_at: string;
 }
 

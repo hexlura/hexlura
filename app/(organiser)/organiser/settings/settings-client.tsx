@@ -170,6 +170,9 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     const [showPlatformDropdown, setShowPlatformDropdown] = useState(false)
     const [newSocialSaving, setNewSocialSaving] = useState(false)
     const [newSocialSaved, setNewSocialSaved] = useState(false)
+    const [metaPixelId, setMetaPixelId] = useState(organiser.meta_pixel_id || '')
+    const [analyticsSaving, setAnalyticsSaving] = useState(false)
+    const [analyticsSaved, setAnalyticsSaved] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -187,6 +190,19 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
         document.addEventListener('mousedown', handleClick)
         return () => document.removeEventListener('mousedown', handleClick)
     }, [])
+
+    async function saveAnalytics(e: React.FormEvent) {
+        e.preventDefault()
+        setAnalyticsSaving(true)
+        const supabase = createClient()
+        await supabase
+            .from('organiser_profiles')
+            .update({ meta_pixel_id: metaPixelId.trim() || null })
+            .eq('id', organiser.id)
+        setAnalyticsSaved(true)
+        setTimeout(() => setAnalyticsSaved(false), 2000)
+        setAnalyticsSaving(false)
+    }
 
     async function saveNewSocialLinks() {
         setNewSocialSaving(true)
@@ -751,6 +767,27 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                         {newSocialSaved ? 'Saved ✓' : newSocialSaving ? 'Saving...' : 'Save Social Links'}
                     </button>
                 </div>
+            </Section>
+
+            {/* Analytics & Tracking */}
+            <Section title="Analytics & Tracking">
+                <form onSubmit={saveAnalytics} className="space-y-4">
+                    <div>
+                        <label className="text-xs text-muted block mb-1.5">Meta (Facebook) Pixel ID</label>
+                        <input
+                            type="text"
+                            value={metaPixelId}
+                            onChange={e => setMetaPixelId(e.target.value.replace(/\D/g, ''))}
+                            placeholder="e.g. 1234567890"
+                            maxLength={20}
+                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        />
+                        <p className="text-xs text-muted mt-1.5">Your Meta Pixel ID tracks conversions from your Facebook and Instagram ads. It fires on your event pages and at checkout.</p>
+                    </div>
+                    <Button type="submit" variant="primary" size="md" disabled={analyticsSaving}>
+                        {analyticsSaved ? 'Saved ✓' : analyticsSaving ? 'Saving...' : 'Save'}
+                    </Button>
+                </form>
             </Section>
 
             {/* Danger Zone */}

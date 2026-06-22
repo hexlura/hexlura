@@ -6,6 +6,7 @@ import { useCheckout } from '@/lib/checkout-context'
 import { createClient } from '@/lib/supabase/client'
 import { formatPence } from '@/lib/fees'
 import StepPayment from './step-payment'
+import { MetaPixelInitiateCheckout } from '@/components/analytics/MetaPixelEvents'
 
 const STEP_LABELS = ['Payment', 'Confirmation']
 
@@ -339,7 +340,15 @@ export default function CheckoutFlow() {
                 </div>
             )}
 
-            {state.step === 1 && proceedToPayment && <StepPayment />}
+            {state.step === 1 && proceedToPayment && (
+                <>
+                    <MetaPixelInitiateCheckout
+                        valuePence={totalPence}
+                        numItems={state.items.reduce((s, i) => s + i.quantity, 0)}
+                    />
+                    <StepPayment />
+                </>
+            )}
         </div>
     )
 }

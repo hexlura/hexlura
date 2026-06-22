@@ -12,7 +12,8 @@ import { Review } from '@/types';
 import LikeButton from '@/components/events/LikeButton';
 import BannerCarousel from '@/components/events/BannerCarousel';
 import FollowButton from '@/components/organisers/FollowButton';
-import PromoterRefCapture from '@/components/events/PromoterRefCapture';
+import PromoterRefCapture from '@/components/events/PromoterRefCapture'
+import { MetaPixelViewContent } from '@/components/analytics/MetaPixelEvents';
 
 import type { Metadata } from 'next';
 import { getDynamicPageMetadata } from '@/lib/seo';
@@ -92,7 +93,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     ] = await Promise.all([
         serviceClient
             .from('organiser_profiles')
-            .select('id, org_name, organiser_type, logo_url, slug')
+            .select('id, org_name, organiser_type, logo_url, slug, meta_pixel_id')
             .eq('id', event.organiser_id)
             .single(),
         supabase
@@ -163,6 +164,12 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
             {/* Promoter referral capture: reads ?ref=, sets cookie, logs click. Renders nothing. */}
             <PromoterRefCapture eventId={event.id} />
+            <MetaPixelViewContent
+                organiserPixelId={organiser?.meta_pixel_id}
+                eventId={event.id}
+                eventName={event.title}
+                valuePence={ticketTypes.length > 0 ? ticketTypes[0].price_pence : 0}
+            />
 
             {/* Organiser badge — full width, above grid */}
             {organiser && (
