@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { TM } from '@/components/ui/TM'
 import { useRouter } from 'next/navigation'
 
 const COLORS = [
@@ -205,7 +206,7 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                         </select>
                         <div style={previewBox}>
                             <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '32px', margin: 0, color: '#0A0A0F', lineHeight: 1 }}>
-                                HEXLURA™ EVENTS
+                                HEXLURA<TM /> EVENTS
                             </p>
                             <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '18px', margin: '8px 0 0', color: '#8888AA', lineHeight: 1 }}>
                                 DISCOVER WHAT&apos;S ON NEAR YOU

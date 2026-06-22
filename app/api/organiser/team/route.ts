@@ -26,7 +26,7 @@ async function sendInviteEmail(to: string, orgName: string, inviteToken: string)
     <div style="background:#f5f5f5;padding:32px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
       <div style="max-width:560px;margin:0 auto;">
         <div style="background:#E63950;padding:20px;text-align:center;">
-          <span style="font-size:28px;font-weight:bold;color:#fff;letter-spacing:4px;">HEXLURA™</span>
+          <span style="font-size:28px;font-weight:bold;color:#fff;letter-spacing:4px;">HEXLURA<span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid currentColor;font-size:6px;line-height:10px;text-align:center;vertical-align:super;margin-left:2px;">&#8482;</span></span>
         </div>
         <div style="background:#fff;padding:32px;">
           <h1 style="font-size:22px;margin:0 0 16px;color:#0A0A0F;">You've been invited to join a team</h1>
