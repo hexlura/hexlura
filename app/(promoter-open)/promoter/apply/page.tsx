@@ -22,7 +22,7 @@ export default async function PromoterApplyPage() {
     return (
         <div className="min-h-screen bg-background">
             <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA</a>
+                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA™</a>
                 <a href="/account" className="flex items-center gap-1.5 text-sm text-muted hover:text-text transition-colors">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                     Back to Dashboard

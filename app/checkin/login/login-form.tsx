@@ -70,7 +70,7 @@ export function LoginForm() {
                 borderRadius: '0',
             }}>
                 <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '32px', color: '#E63950', textAlign: 'center', marginBottom: '4px', letterSpacing: '2px' }}>
-                    HEXLURA
+                    HEXLURA™
                 </p>
                 <p style={{ fontSize: '13px', color: '#8888AA', textAlign: 'center', marginBottom: '32px' }}>
                     Door Staff Check-in

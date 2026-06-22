@@ -92,7 +92,7 @@ export function Navbar() {
                 {/* Left: logo */}
                 <div className="flex items-center">
                     <Link href="/" className="flex items-center gap-2">
-                        <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
+                        <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA™</span>
                     </Link>
                 </div>
 
@@ -189,7 +189,7 @@ export function Navbar() {
                     <>
                         <div className="flex items-center">
                             <Link href="/" className="flex items-center gap-2">
-                                <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA</span>
+                                <span className="font-heading text-2xl text-accent tracking-wider">HEXLURA™</span>
                             </Link>
                         </div>
                         <div className="flex items-center gap-3">
