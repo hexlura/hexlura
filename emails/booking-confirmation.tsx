@@ -17,6 +17,9 @@ interface BookingConfirmationProps {
     venueAddress: string
     bookingRef: string
     ticketItems: TicketItem[]
+    bookingFeePence?: number
+    processingFeePence?: number
+    discountPence?: number
     totalPaid: string
     downloadUrl: string
 }
@@ -30,6 +33,9 @@ export default function BookingConfirmation({
     venueAddress,
     bookingRef,
     ticketItems,
+    bookingFeePence = 0,
+    processingFeePence = 0,
+    discountPence = 0,
     totalPaid,
     downloadUrl,
 }: BookingConfirmationProps) {
@@ -64,6 +70,28 @@ export default function BookingConfirmation({
                         <span style={ticketPriceStyle}>{item.quantity} × {item.price}</span>
                     </div>
                 ))}
+
+                <Hr style={dividerStyle} />
+
+                {/* Fee breakdown */}
+                {discountPence > 0 && (
+                    <div style={tableRowStyle}>
+                        <span style={{ ...ticketNameStyle, color: '#00C48A' }}>Discount</span>
+                        <span style={{ ...ticketPriceStyle, color: '#00C48A' }}>-£{(discountPence / 100).toFixed(2)}</span>
+                    </div>
+                )}
+                {bookingFeePence > 0 && (
+                    <div style={tableRowStyle}>
+                        <span style={ticketNameStyle}>Booking fee</span>
+                        <span style={ticketPriceStyle}>£{(bookingFeePence / 100).toFixed(2)}</span>
+                    </div>
+                )}
+                {processingFeePence > 0 && (
+                    <div style={tableRowStyle}>
+                        <span style={ticketNameStyle}>Order processing fee</span>
+                        <span style={ticketPriceStyle}>£{(processingFeePence / 100).toFixed(2)}</span>
+                    </div>
+                )}
 
                 <Hr style={dividerStyle} />
 

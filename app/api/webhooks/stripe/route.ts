@@ -338,6 +338,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     const discountPence = parseInt(meta.discount_pence)
     const promoCodeId = meta.promo_code_id || null
     const organiserStripeAccountId = meta.organiser_stripe_account_id || null
+    const useDestinationCharge = meta.use_destination_charge === 'true'
+    const orderProcessingFeePence = meta.order_processing_fee_pence ? parseInt(meta.order_processing_fee_pence) : 0
     const items: { ticket_type_id: string; quantity: number }[] = JSON.parse(meta.items)
     const attendeeName = meta.attendee_name
     const attendeeEmail = meta.attendee_email
@@ -362,7 +364,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         return
     }
 
-    const totalPence = ticketSubtotalPence - discountPence + bookingFeePence
+    const totalPence = ticketSubtotalPence - discountPence + bookingFeePence + orderProcessingFeePence
 
     // Final availability check — refund if oversold
     for (const item of items) {
@@ -395,6 +397,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
             status: 'confirmed',
             ticket_subtotal_pence: ticketSubtotalPence,
             booking_fee_pence: bookingFeePence,
+            order_processing_fee_pence: orderProcessingFeePence,
             discount_pence: discountPence,
             total_pence: totalPence,
             promo_code_id: promoCodeId,
@@ -544,8 +547,10 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         }
     }
 
-    // Stripe Connect transfer
-    if (organiserStripeAccountId) {
+    // Platform model: if use_destination_charge, Stripe already split the funds at charge time
+    // (application_fee stays with Hexlura, organiser share went to their account instantly).
+    // Only fall back to a manual transfer if this was NOT a destination charge.
+    if (organiserStripeAccountId && !useDestinationCharge) {
         const transferAmount = ticketSubtotalPence - discountPence
         if (transferAmount > 0) {
             try {
@@ -616,6 +621,9 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                 venueAddress: eventData.venue_address || '',
                 bookingRef: booking.booking_ref,
                 ticketItems,
+                bookingFeePence,
+                processingFeePence: orderProcessingFeePence,
+                discountPence,
                 totalPaid: `£${(totalPence / 100).toFixed(2)}`,
                 downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
             }))
@@ -665,6 +673,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     const discountPence = parseInt(meta.discount_pence)
     const promoCodeId = meta.promo_code_id || null
     const organiserStripeAccountId = meta.organiser_stripe_account_id || null
+    const useDestinationCharge = meta.use_destination_charge === 'true'
+    const orderProcessingFeePence = meta.order_processing_fee_pence ? parseInt(meta.order_processing_fee_pence) : 0
     const items: { ticket_type_id: string; quantity: number }[] = JSON.parse(meta.items)
     const attendeeName = meta.attendee_name
     const attendeeEmail = meta.attendee_email
@@ -677,7 +687,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         return
     }
 
-    const totalPence = ticketSubtotalPence - discountPence + bookingFeePence
+    const totalPence = ticketSubtotalPence - discountPence + bookingFeePence + orderProcessingFeePence
 
     // Final availability check — refund if oversold
     for (const item of items) {
@@ -710,6 +720,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             status: 'confirmed',
             ticket_subtotal_pence: ticketSubtotalPence,
             booking_fee_pence: bookingFeePence,
+            order_processing_fee_pence: orderProcessingFeePence,
             discount_pence: discountPence,
             total_pence: totalPence,
             promo_code_id: promoCodeId,
@@ -858,8 +869,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
     }
 
-    // Stripe Connect transfer
-    if (organiserStripeAccountId) {
+    // Platform model: destination charge already split funds at charge time. Only do
+    // a manual transfer for legacy/bank-transfer organisers.
+    if (organiserStripeAccountId && !useDestinationCharge) {
         const transferAmount = ticketSubtotalPence - discountPence
         if (transferAmount > 0) {
             try {
@@ -930,6 +942,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 venueAddress: eventData.venue_address || '',
                 bookingRef: booking.booking_ref,
                 ticketItems,
+                bookingFeePence,
+                processingFeePence: orderProcessingFeePence,
+                discountPence,
                 totalPaid: `£${(totalPence / 100).toFixed(2)}`,
                 downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
             }))

@@ -50,6 +50,7 @@ interface CheckoutContextType {
     ticketSubtotalPence: number
     discountPence: number
     bookingFeePence: number
+    processingFeePence: number
     totalPence: number
 }
 
@@ -84,7 +85,9 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         0
     )
 
-    const totalPence = ticketSubtotalPence - discountPence + bookingFeePence
+    const processingFeePence = ticketSubtotalPence > 0 ? feeConfig.processingFeePence : 0
+
+    const totalPence = ticketSubtotalPence - discountPence + bookingFeePence + processingFeePence
 
     return (
         <CheckoutContext.Provider
@@ -100,6 +103,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 ticketSubtotalPence,
                 discountPence,
                 bookingFeePence,
+                processingFeePence,
                 totalPence,
             }}
         >

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Verify event exists and is published
     const { data: event } = await supabase
         .from('events')
-        .select('*, organiser:organiser_profiles(stripe_account_id)')
+        .select('*, organiser:organiser_profiles(stripe_account_id, stripe_connect_allowed, stripe_charges_enabled)')
         .eq('id', event_id)
         .eq('status', 'published')
         .single()
@@ -153,7 +153,8 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    const totalPence = ticketSubtotalPence - discountPence + totalBookingFeePence
+    const orderProcessingFeePence = ticketSubtotalPence > 0 ? feeConfig.processingFeePence : 0
+    const totalPence = ticketSubtotalPence - discountPence + totalBookingFeePence + orderProcessingFeePence
 
     // Validate promoter referral code (if any) — must have an active assignment for THIS event,
     // and the buyer must not be the promoter themselves.
@@ -198,6 +199,7 @@ export async function POST(request: NextRequest) {
                 promo_code_id: promoCodeId,
                 stripe_payment_intent_id: `free-${randomUUID()}`,
                 payment_method: 'free',
+                order_processing_fee_pence: 0,
                 confirmed_at: new Date().toISOString(),
                 needs_manual_payout: false,
                 promoter_id: promoterId,
@@ -364,19 +366,36 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Order total too low' }, { status: 400 })
     }
 
-    const organiserStripeAccountId = event.organiser?.stripe_account_id || null
+    type OrgConnect = { stripe_account_id: string | null; stripe_connect_allowed: boolean; stripe_charges_enabled: boolean } | null
+    const orgConnect = event.organiser as OrgConnect
+
+    // Use platform destination charge only for organisers with Connect fully onboarded + allowed
+    const useDestinationCharge = !!(
+        orgConnect?.stripe_account_id &&
+        orgConnect?.stripe_connect_allowed &&
+        orgConnect?.stripe_charges_enabled
+    )
+    const organiserStripeAccountId = orgConnect?.stripe_account_id || null
 
     // Create Stripe PaymentIntent
+    // Platform model: if organiser has Connect, Stripe splits the charge automatically —
+    // application_fee_amount stays with Hexlura, the rest goes to the organiser instantly.
     const paymentIntent = await getStripe().paymentIntents.create({
         amount: totalPence,
         currency: 'gbp',
         automatic_payment_methods: { enabled: true },
+        ...(useDestinationCharge ? {
+            application_fee_amount: totalBookingFeePence,
+            transfer_data: { destination: organiserStripeAccountId! },
+        } : {}),
         metadata: {
             event_id,
             user_id: user.id,
             organiser_stripe_account_id: organiserStripeAccountId || '',
+            use_destination_charge: useDestinationCharge ? 'true' : 'false',
             ticket_subtotal_pence: String(ticketSubtotalPence),
             booking_fee_pence: String(totalBookingFeePence),
+            order_processing_fee_pence: String(orderProcessingFeePence),
             discount_pence: String(discountPence),
             promo_code_id: promoCodeId || '',
             items: JSON.stringify(items),

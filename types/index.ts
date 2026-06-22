@@ -119,6 +119,7 @@ export interface Booking {
     total_pence: number | null;
     promo_code_id: string | null;
     discount_pence: number;
+    order_processing_fee_pence: number;
     stripe_payment_intent_id: string | null;
     stripe_charge_id: string | null;
     payment_method: string | null;

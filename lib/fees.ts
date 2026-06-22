@@ -18,6 +18,8 @@ export interface FeeConfig {
     minPence: number
     /** Maximum fee per ticket in pence */
     maxPence: number
+    /** Flat order processing fee per order in pence */
+    processingFeePence: number
 }
 
 /** Fallback defaults matching DB seed values in 004_platform_settings.sql */
@@ -25,6 +27,7 @@ export const DEFAULT_FEE_CONFIG: FeeConfig = {
     percent: 5,
     minPence: 99,
     maxPence: 500,
+    processingFeePence: 49,
 }
 
 /**
@@ -41,6 +44,7 @@ export async function getFeeConfig(): Promise<FeeConfig> {
             'booking_fee_percent',
             'booking_fee_min_pence',
             'booking_fee_max_pence',
+            'order_processing_fee_pence',
         ])
 
     const settings: Record<string, string> = {}
@@ -54,6 +58,9 @@ export async function getFeeConfig(): Promise<FeeConfig> {
         percent: parseFloat(settings['booking_fee_percent']) || DEFAULT_FEE_CONFIG.percent,
         minPence: parseInt(settings['booking_fee_min_pence']) || DEFAULT_FEE_CONFIG.minPence,
         maxPence: parseInt(settings['booking_fee_max_pence']) || DEFAULT_FEE_CONFIG.maxPence,
+        processingFeePence: settings['order_processing_fee_pence'] !== undefined
+            ? parseInt(settings['order_processing_fee_pence'])
+            : DEFAULT_FEE_CONFIG.processingFeePence,
     }
 }
 

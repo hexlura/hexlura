@@ -11,7 +11,7 @@ const STEP_LABELS = ['Payment', 'Confirmation']
 
 export default function CheckoutFlow() {
     const searchParams = useSearchParams()
-    const { state, setItems, setEventInfo, setAttendeeDetails, setStep } = useCheckout()
+    const { state, setItems, setEventInfo, setAttendeeDetails, setStep, ticketSubtotalPence, bookingFeePence, processingFeePence, totalPence } = useCheckout()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
@@ -195,8 +195,6 @@ export default function CheckoutFlow() {
         )
     }
 
-    const ticketSubtotal = state.items.reduce((s, i) => s + i.price_pence * i.quantity, 0)
-
     return (
         <div className="max-w-3xl mx-auto py-8 space-y-8">
             {/* Progress indicator */}
@@ -237,10 +235,22 @@ export default function CheckoutFlow() {
                                     <span className="text-text">{formatPence(item.price_pence * item.quantity)}</span>
                                 </div>
                             ))}
+                            {bookingFeePence > 0 && (
+                                <div className="flex justify-between text-muted">
+                                    <span>Booking fee</span>
+                                    <span>{formatPence(bookingFeePence)}</span>
+                                </div>
+                            )}
+                            {processingFeePence > 0 && (
+                                <div className="flex justify-between text-muted">
+                                    <span>Order processing fee</span>
+                                    <span>{formatPence(processingFeePence)}</span>
+                                </div>
+                            )}
                         </div>
                         <div className="border-t border-border pt-2 flex justify-between font-bold">
                             <span className="text-text">Total</span>
-                            <span className="text-text">{formatPence(ticketSubtotal)}</span>
+                            <span className="text-text">{formatPence(ticketSubtotalPence > 0 ? totalPence : ticketSubtotalPence)}</span>
                         </div>
                     </div>
 

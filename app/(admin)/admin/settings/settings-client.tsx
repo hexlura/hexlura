@@ -27,6 +27,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
     const [feePercent, setFeePercent] = useState(settings['booking_fee_percent'] ?? '5')
     const [feeMin, setFeeMin] = useState(String((parseInt(settings['booking_fee_min_pence'] ?? '99') / 100).toFixed(2)))
     const [feeMax, setFeeMax] = useState(String((parseInt(settings['booking_fee_max_pence'] ?? '500') / 100).toFixed(2)))
+    const [processingFee, setProcessingFee] = useState(String((parseInt(settings['order_processing_fee_pence'] ?? '49') / 100).toFixed(2)))
 
     // Homepage settings
     const [maxFeatured, setMaxFeatured] = useState(settings['max_featured_slots'] ?? '6')
@@ -80,6 +81,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
             saveSetting('booking_fee_percent', feePercent),
             saveSetting('booking_fee_min_pence', String(Math.round(parseFloat(feeMin) * 100))),
             saveSetting('booking_fee_max_pence', String(Math.round(parseFloat(feeMax) * 100))),
+            saveSetting('order_processing_fee_pence', String(Math.round(parseFloat(processingFee) * 100))),
         ])
         setSaving(null)
         showFeedback('fees', 'Fee settings saved')
@@ -160,17 +162,21 @@ export function SettingsClient({ settings, promoCodes }: Props) {
             <div className={sectionClass}>
                 <h2 className="text-sm font-medium text-text mb-4">Platform Fees</h2>
                 <p className="text-xs text-gold mb-4">Note: Fee changes apply to new bookings only</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className={labelClass}>Booking Fee % (per ticket)</label>
                         <input type="number" step="0.1" value={feePercent} onChange={e => setFeePercent(e.target.value)} className={inputClass} />
                     </div>
                     <div>
-                        <label className={labelClass}>Minimum Fee per Ticket (£)</label>
+                        <label className={labelClass}>Order Processing Fee per Order (£)</label>
+                        <input type="number" step="0.01" value={processingFee} onChange={e => setProcessingFee(e.target.value)} className={inputClass} />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Minimum Booking Fee per Ticket (£)</label>
                         <input type="number" step="0.01" value={feeMin} onChange={e => setFeeMin(e.target.value)} className={inputClass} />
                     </div>
                     <div>
-                        <label className={labelClass}>Maximum Fee per Ticket (£)</label>
+                        <label className={labelClass}>Maximum Booking Fee per Ticket (£)</label>
                         <input type="number" step="0.01" value={feeMax} onChange={e => setFeeMax(e.target.value)} className={inputClass} />
                     </div>
                 </div>
