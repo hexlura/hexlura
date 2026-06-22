@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import { TM } from '@/components/ui/TM'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { AcceptClient } from './accept-client'
@@ -49,7 +48,7 @@ export default async function PromoterInviteAcceptPage({
     return (
         <div className="min-h-screen bg-background">
             <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA<TM /></a>
+                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA</a>
             </header>
 
             <div className="flex items-center justify-center p-6 py-12">

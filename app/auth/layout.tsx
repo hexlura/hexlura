@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { TM } from '@/components/ui/TM'
 
 export default function AuthLayout({
     children,
@@ -11,7 +10,7 @@ export default function AuthLayout({
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
                     <Link href="/">
-                        <span className="font-heading text-4xl text-accent tracking-wider">HEXLURA<TM /></span>
+                        <span className="font-heading text-4xl text-accent tracking-wider">HEXLURA</span>
                     </Link>
                 </div>
                 <div className="bg-surface border border-border rounded-none p-8">

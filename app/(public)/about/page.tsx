@@ -1,5 +1,4 @@
 import { getStaticPageMetadata } from '@/lib/seo'
-import { TM } from '@/components/ui/TM'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
@@ -13,7 +12,7 @@ export default function AboutPage() {
     <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px' }}>
         <h1 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 48, color: '#0A0A0F', marginBottom: 8 }}>
-          ABOUT HEXLURA<TM />
+          ABOUT HEXLURA
         </h1>
         <p style={{ fontSize: 11, color: '#444455', marginBottom: 40 }}>Last updated: March 2026</p>
 

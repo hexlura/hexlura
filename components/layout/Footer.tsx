@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { TM } from '@/components/ui/TM'
 
 const discoverLinks = [
     { label: 'Find Events', href: '/events' },
@@ -76,7 +75,7 @@ export function Footer() {
                             letterSpacing: '4px',
                             marginBottom: '12px',
                         }}>
-                            HEXLURA<TM />
+                            HEXLURA
                         </div>
                         <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '16px' }}>
                             The UK&apos;s home for live events

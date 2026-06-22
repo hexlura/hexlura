@@ -10,7 +10,7 @@ interface UserWelcomeProps {
 export default function UserWelcome({ fullName, appUrl }: UserWelcomeProps) {
     return (
         <BaseEmail previewText="Welcome to Hexlura — discover live events near you">
-            <Text style={headingStyle}>WELCOME TO HEXLURA<span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', border: '1px solid currentColor', fontSize: '6px', lineHeight: '10px', textAlign: 'center', verticalAlign: 'super', marginLeft: '2px' }}>™</span></Text>
+            <Text style={headingStyle}>WELCOME TO HEXLURA</Text>
 
             <Text style={greetingStyle}>Hi {fullName},</Text>
 

@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { TM } from '@/components/ui/TM'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -130,7 +129,7 @@ export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupport
 
             {/* Mobile header bar — hidden on desktop */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center justify-between px-4">
-                <Link href="/" className="font-heading text-accent tracking-widest text-lg">HEXLURA<TM /></Link>
+                <Link href="/" className="font-heading text-accent tracking-widest text-lg">HEXLURA</Link>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleSignOut}
@@ -199,7 +198,7 @@ export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupport
                 </button>
 
                 <Link href="/" className="block px-6 py-5 border-b border-border flex-shrink-0 hover:bg-card transition-colors">
-                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA<TM /></div>
+                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA</div>
                     <div className="text-xs text-muted mt-0.5">Admin Console</div>
                 </Link>
 

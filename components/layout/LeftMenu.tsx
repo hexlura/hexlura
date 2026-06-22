@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { TM } from '@/components/ui/TM'
 import { signOut } from '@/app/auth/actions'
 import { CATEGORIES } from '@/lib/config/categories'
 
@@ -106,7 +105,7 @@ export default function LeftMenu({ isLoggedIn, role, isPromoter = false }: LeftM
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0 border-b border-[#E8E8EE]">
                     <div>
-                        <p className="font-heading text-2xl text-[#E63950] tracking-wider">HEXLURA<TM /></p>
+                        <p className="font-heading text-2xl text-[#E63950] tracking-wider">HEXLURA</p>
                         <p className="text-xs text-[#666677] mt-0.5">UK Event Tickets</p>
                     </div>
                     <button

@@ -253,7 +253,7 @@ export async function GET(
     <div class="top-bar"></div>
 
     <div class="header">
-      <div class="logo">HEXLURA<span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid currentColor;font-size:6px;line-height:10px;text-align:center;vertical-align:super;margin-left:2px;">&#8482;</span></div>
+      <div class="logo">HEXLURA</div>
       <div class="ticket-label">E-TICKET${ticketLabelLine}</div>
     </div>
 
@@ -332,7 +332,7 @@ export async function GET(
 
     <div class="footer">
       <div class="footer-text">Valid for 1 person · Non-transferable</div>
-      <div class="footer-logo">HEXLURA<span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid currentColor;font-size:6px;line-height:10px;text-align:center;vertical-align:super;margin-left:2px;">&#8482;</span></div>
+      <div class="footer-logo">HEXLURA</div>
     </div>
 
   </div>
