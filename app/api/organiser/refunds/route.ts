@@ -130,6 +130,40 @@ export async function POST(request: NextRequest) {
                 organiser_note: organiser_note || null,
             })
             .eq('id', refund_request_id)
+
+        // Notify buyer their refund was rejected
+        const buyerUserId = refundReq.user_id as string | null
+        const eventTitle = bookingData?.event?.title || 'your event'
+
+        if (buyerUserId) {
+            void adminClient.from('notifications').insert({
+                user_id: buyerUserId,
+                type: 'refund_rejected',
+                title: 'Refund request not approved',
+                body: `Your refund request for ${eventTitle} was not approved by the organiser. Contact support if you have questions.`,
+                link: '/bookings',
+            })
+
+            void (async () => {
+                try {
+                    const { data: { user: buyerUser } } = await adminClient.auth.admin.getUserById(buyerUserId)
+                    if (!buyerUser?.email) return
+
+                    const escHtml = (str: string) => str
+                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+
+                    await getResend().emails.send({
+                        from: 'Hexlura <noreply@hexlura.com>',
+                        to: buyerUser.email,
+                        subject: 'Update on your refund request',
+                        html: `<p>Hi,</p><p>Your refund request for <strong>${escHtml(eventTitle)}</strong> was not approved by the organiser.</p>${organiser_note ? `<p>Organiser note: ${escHtml(organiser_note)}</p>` : ''}<p>If you have questions or believe this is incorrect, please contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
+                    })
+                } catch (err) {
+                    console.error('Failed to send refund rejected email to buyer:', err)
+                }
+            })()
+        }
     }
 
     return NextResponse.json({ success: true })

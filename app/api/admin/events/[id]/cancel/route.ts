@@ -24,7 +24,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         .single()
 
     // Get all confirmed bookings for this event and mark as refunded
-    const { data: bookings } = await supabase
+    const { data: bookings } = await adminClient
         .from('bookings')
         .select('id, user_id, total_pence, stripe_payment_intent_id')
         .eq('event_id', params.id)
@@ -44,6 +44,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
             }
         }
         await adminClient.from('bookings').update({ status: 'refunded' }).eq('id', booking.id)
+        await adminClient.from('booking_items').update({ status: 'cancelled' }).eq('booking_id', booking.id)
         // Reverse any promoter commission attributed to this booking (event cancellation)
         await reversePromoterEarningsForBooking(booking.id)
         // Notify attendee

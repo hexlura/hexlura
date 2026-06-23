@@ -136,6 +136,11 @@ export async function POST(request: NextRequest) {
         .update({ status: 'refunded' })
         .eq('id', booking_id)
 
+    await adminClient
+        .from('booking_items')
+        .update({ status: 'cancelled' })
+        .eq('booking_id', booking_id)
+
     // Reverse any promoter commission attributed to this booking (full refund)
     await reversePromoterEarningsForBooking(booking_id)
 
