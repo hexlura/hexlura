@@ -294,6 +294,36 @@ npm run type-check
 
 ---
 
+## Security Standards (Mandatory)
+
+Every API route, server action, and data mutation must pass this checklist before being considered done. No exceptions.
+
+### 8-Point Security Checklist
+
+1. **Auth** — Is the caller authenticated? Always use `createClient()` + `supabase.auth.getUser()` first.
+2. **Authorization** — Is the caller allowed to act on this specific resource? Check role AND ownership (e.g. organiser owns the event, user owns the booking).
+3. **Input validation** — Are all user-supplied values validated against an explicit allowlist or numeric range before touching the DB? Never write arbitrary strings directly to the database.
+4. **Secrets** — Are secrets passed in `Authorization: Bearer` headers, never in query strings or URLs (query strings appear in server logs, browser history, and Referer headers).
+5. **OAuth / state tokens** — Are state parameters session-bound (verified against the logged-in user), never a plain user ID that an attacker can forge.
+6. **Output encoding** — Is user-controlled data (event titles, names, etc.) HTML-escaped before being interpolated into raw HTML strings (emails, PDFs)? React components are safe; manual string interpolation is not.
+7. **Role scoping** — Does each role only access their own data? Door staff → assigned events only. Organiser → own events only. Promoter → own referrals only.
+8. **Side-effect ordering** — Do destructive state changes (cancel booking, void tickets, mark refunded) only happen AFTER the irreversible external action (Stripe charge/refund) has succeeded?
+
+### Known Patterns to Never Repeat
+
+| Anti-pattern | Correct pattern |
+|---|---|
+| `searchParams.get('secret')` for auth | `req.headers.get('authorization')` Bearer token |
+| `state: user.id` in OAuth flow | Verify `session.user.id === state` in callback |
+| `update({ role: anyString })` | Validate against `['user','organiser','promoter','door_staff','admin']` |
+| `upsert({ key: anyKey })` on settings | Validate key against explicit allowlist first |
+| Door staff role check without event check | Also verify assignment to the specific event being scanned |
+| Organiser approval cancels tickets immediately | Only cancel booking/items after Stripe refund is confirmed |
+| `<strong>${eventName}</strong>` in email HTML | `<strong>${escHtml(eventName)}</strong>` |
+| Public OAuth callback with no session check | `getUser()` first, reject if `user.id !== state` |
+
+---
+
 ## Collaboration Notes
 
 When taking over this project:

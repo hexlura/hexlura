@@ -64,23 +64,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'approve') {
+        // Only mark the request as approved — do NOT cancel booking/items yet.
+        // Tickets remain valid until admin confirms the refund and Stripe processes it.
         await adminClient
             .from('refund_requests')
             .update({ status: 'organiser_approved' })
             .eq('id', refund_request_id)
-
-        const bookingId = bookingData?.id
-        if (bookingId) {
-            await adminClient
-                .from('bookings')
-                .update({ status: 'refunded' })
-                .eq('id', bookingId)
-
-            await adminClient
-                .from('booking_items')
-                .update({ status: 'cancelled' })
-                .eq('booking_id', bookingId)
-        }
 
         // Notify admin of refund awaiting review
         void (async () => {

@@ -8,8 +8,9 @@ import { Resend } from 'resend'
  * One-time admin utility to resend ticket confirmation emails after the
  * booking_items migration (splitting qty>1 rows into individual rows).
  *
- * Usage (call from browser after deploy):
- *   GET /api/admin/resend-tickets?ref=HXL-XXXXXX&secret=YOUR_ADMIN_SECRET
+ * Usage:
+ *   GET /api/admin/resend-tickets?ref=HXL-XXXXXX
+ *   Header: Authorization: Bearer YOUR_ADMIN_SECRET
  *
  * ADMIN_SECRET must be set in .env / Vercel env vars.
  */
@@ -21,10 +22,10 @@ function getResend() {
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const bookingRef = searchParams.get('ref')
-    const secret = searchParams.get('secret')
 
-    // Basic secret guard so this can't be called by anyone
-    if (!secret || secret !== process.env.ADMIN_SECRET) {
+    const authHeader = req.headers.get('authorization')
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    if (!token || token !== process.env.ADMIN_SECRET) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

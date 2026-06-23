@@ -14,6 +14,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { role } = await request.json() as { role: string }
+
+    const VALID_ROLES = ['user', 'organiser', 'promoter', 'door_staff', 'admin'] as const
+    if (!VALID_ROLES.includes(role as typeof VALID_ROLES[number])) {
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    }
+
     const { data: currentProfile } = await adminClient.from('profiles').select('role').eq('id', params.id).single()
 
     await adminClient.from('profiles').update({ role }).eq('id', params.id)

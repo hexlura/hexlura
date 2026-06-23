@@ -10,6 +10,15 @@ function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
 }
 
+function escHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
 export async function POST(request: NextRequest) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
                         from: 'Hexlura <noreply@hexlura.com>',
                         to: buyerUser.email,
                         subject: 'Update on your refund request',
-                        html: `<p>Hi,</p><p>Unfortunately, your refund request for <strong>${eventName}</strong> could not be approved.</p><p>If you have any questions, please contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
+                        html: `<p>Hi,</p><p>Unfortunately, your refund request for <strong>${escHtml(eventName)}</strong> could not be approved.</p><p>If you have any questions, please contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
                     })
                 } catch (err) {
                     console.error('Failed to send refund denied email:', err)
@@ -180,7 +189,7 @@ export async function POST(request: NextRequest) {
                     from: 'Hexlura <noreply@hexlura.com>',
                     to: buyerUser.email,
                     subject: `Your refund of ${refundFormatted} has been processed`,
-                    html: `<p>Hi,</p><p>Your refund of <strong>${refundFormatted}</strong> for <strong>${eventName}</strong> has been processed.</p><p>Please allow 5–10 business days for the funds to appear on your statement.</p><p>If you have any questions, contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
+                    html: `<p>Hi,</p><p>Your refund of <strong>${escHtml(refundFormatted)}</strong> for <strong>${escHtml(eventName)}</strong> has been processed.</p><p>Please allow 5–10 business days for the funds to appear on your statement.</p><p>If you have any questions, contact <a href="mailto:support@hexlura.com">support@hexlura.com</a>.</p><p>The Hexlura Team</p>`,
                 })
             } catch (err) {
                 console.error('Failed to send refund confirmation email:', err)
