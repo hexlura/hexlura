@@ -379,13 +379,15 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe PaymentIntent
     // Platform model: if organiser has Connect, Stripe splits the charge automatically —
-    // application_fee_amount stays with Hexlura, the rest goes to the organiser instantly.
+    // application_fee_amount stays with Hexlura (booking fee + order processing fee),
+    // the remainder (ticket subtotal minus any discount) goes to the organiser instantly.
+    const platformFeePence = totalBookingFeePence + orderProcessingFeePence
     const paymentIntent = await getStripe().paymentIntents.create({
         amount: totalPence,
         currency: 'gbp',
         automatic_payment_methods: { enabled: true },
         ...(useDestinationCharge ? {
-            application_fee_amount: totalBookingFeePence,
+            application_fee_amount: platformFeePence,
             transfer_data: { destination: organiserStripeAccountId! },
         } : {}),
         metadata: {
