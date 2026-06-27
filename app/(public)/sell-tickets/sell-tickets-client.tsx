@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 
@@ -258,7 +259,7 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
               href={ctaHref}
               style={{
                 background: '#0A0A0F',
-                color: '#fff',
+                color: '#ffffffff',
                 padding: '16px 32px',
                 fontSize: 16,
                 fontWeight: 600,
@@ -301,7 +302,278 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
         </div>
       </section>
 
-      {/* ── SECTION 2: STATS BAR ────────────────────────────────────────── */}
+
+      {/* ── SECTION 2: REVENUE CALCULATOR ───────────────────────────────── */}
+      <section style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '100px 24px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          maxWidth: 1200,
+          width: '100%',
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 2,
+        }}>
+          <div className="sell-calculator-container">
+            {/* Left Column: Reference Image Content */}
+            <div className="sell-calc-left" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              textAlign: 'left',
+            }}>
+              <h2 style={{
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: 'clamp(26px, 5vw, 46px)',
+                fontWeight: 600,
+                fontStyle: 'bold',
+                lineHeight: 1.1,
+                letterSpacing: '-1.5px',
+                color: '#0A0A0F',
+                margin: 0,
+              }}>
+                <span style={{ color: '#E63950' }}>Start hosting</span> your events <br /> today
+              </h2>
+
+              {/* Earn Row */}
+              <div style={{
+                background: 'rgba(230, 57, 80, 0.04)',
+                border: '1px solid rgba(230, 57, 80, 0.25)',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                fontSize: '16px',
+                fontWeight: 500,
+                color: '#0A0A0F',
+                fontFamily: 'DM Sans, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              }}>
+                <span>Earn <strong style={{ color: '#E63950', fontWeight: 700 }}>5% extra</strong> on every ticket sold</span>
+              </div>
+
+              {/* List Cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Card 1 */}
+                <div style={{
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(12, 12, 16, 0.08)',
+                  borderRadius: '16px',
+                  padding: '20px 24px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '20px',
+                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.04)',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(230, 57, 80, 0.08)',
+                    color: '#E63950',
+                    flexShrink: 0,
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h3 style={{
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: '#0A0A0F',
+                      margin: 0,
+                    }}>
+                      Host for Free, Everything Unlocked
+                    </h3>
+                    <p style={{
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: '14px',
+                      color: 'rgba(10, 10, 15, 0.6)',
+                      lineHeight: '1.5',
+                      margin: 0,
+                    }}>
+                      Access all features – unlimited events, ticket types, promos, and check-ins at no cost.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 2 */}
+                <div style={{
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(12, 12, 16, 0.08)',
+                  borderRadius: '16px',
+                  padding: '20px 24px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '20px',
+                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.04)',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(59, 130, 246, 0.08)',
+                    color: '#3B82F6',
+                    flexShrink: 0,
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 18H6l3-6V8a3 3 0 1 1 6 0" />
+                      <line x1="6" y1="12" x2="13" y2="12" />
+                    </svg>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h3 style={{
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: '#0A0A0F',
+                      margin: 0,
+                    }}>
+                      Fast Payouts
+                    </h3>
+                    <p style={{
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: '14px',
+                      color: 'rgba(10, 10, 15, 0.6)',
+                      lineHeight: '1.5',
+                      margin: 0,
+                    }}>
+                      Get paid within 48 hours of your event.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 3 */}
+                <div style={{
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(12, 12, 16, 0.08)',
+                  borderRadius: '16px',
+                  padding: '20px 24px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '20px',
+                  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.04)',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(236, 72, 153, 0.08)',
+                    color: '#EC4899',
+                    flexShrink: 0,
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                      <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                    </svg>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h3 style={{
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: '#0A0A0F',
+                      margin: 0,
+                    }}>
+                      Live Sales Analytics
+                    </h3>
+                    <p style={{
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: '14px',
+                      color: 'rgba(10, 10, 15, 0.6)',
+                      lineHeight: '1.5',
+                      margin: 0,
+                    }}>
+                      Track sales, scans and earnings in real time.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Revenue Calculator */}
+            <div className="sell-calc-right" style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <RevenueCalculator
+                accentColor="#E63950"
+                glowColor="#E63950"
+                glowIntensity={0.22}
+                glassTint={0.08}
+                innerTint={0.05}
+                showCta={false}
+                ctaTextColor="#FFFFFF"
+                titleColor='#0A0A0F'
+                subtitleColor='#666677'
+                rowLabelColor='#0A0A0F'
+                rowValueColor='#000000ff'
+              />
+            </div>
+
+            {/* Bottom Row / Container: Create Event Button */}
+            <div className="sell-calc-btn-container">
+              <Link
+                href={ctaHref}
+                className="sell-calc-btn"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  background: '#0A0A0F',
+                  color: '#FFFFFF',
+                  borderRadius: 2,
+                  padding: '16px 32px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontFamily: 'DM Sans, sans-serif',
+                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.25)'
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.15)'
+                }}
+              >
+                Create Event
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ── SECTION 3: STATS BAR ────────────────────────────────────────── */}
       <section style={{
         background: '#F0F0F0',
         borderTop: '1px solid #C0C0C8',
@@ -351,7 +623,7 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
         </div>
       </section>
 
-      {/* ── SECTION 3: HOW IT WORKS ─────────────────────────────────────── */}
+      {/* ── SECTION 4: HOW IT WORKS ─────────────────────────────────────── */}
       <section id="how-it-works" style={{ padding: '100px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <p style={{
@@ -436,7 +708,7 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
         </div>
       </section>
 
-      {/* ── SECTION 5: FEATURES ─────────────────────────────────────────── */}
+      {/* ── SECTION 6: FEATURES ─────────────────────────────────────────── */}
       <section style={{ padding: '100px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <p style={{
@@ -518,7 +790,7 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
         </div>
       </section>
 
-      {/* ── SECTION 6: TESTIMONIALS ─────────────────────────────────────── */}
+      {/* ── SECTION 7: TESTIMONIALS ─────────────────────────────────────── */}
       <section style={{
         padding: '100px 24px',
         background: '#F5F5F7',
@@ -626,7 +898,7 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
         </div>
       </section>
 
-      {/* ── SECTION 7: FINAL CTA ────────────────────────────────────────── */}
+      {/* ── SECTION 8: FINAL CTA ────────────────────────────────────────── */}
       <section style={{
         padding: 'clamp(80px, 10vw, 120px) 24px',
         background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(230,57,80,0.06), transparent)',
@@ -698,6 +970,50 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
 
       {/* ── Responsive styles ───────────────────────────────────────────── */}
       <style>{`
+        .sell-calculator-container {
+          display: grid;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: 32px 64px;
+        }
+        .sell-calc-left {
+          grid-column: 1;
+          grid-row: 1;
+        }
+        .sell-calc-right {
+          grid-column: 2;
+          grid-row: 1 / span 2;
+          align-self: center;
+        }
+        .sell-calc-btn-container {
+          grid-column: 1;
+          grid-row: 2;
+          display: flex;
+          justify-content: flex-start;
+        }
+        @media (min-width: 1025px) {
+          .sell-calc-btn {
+            padding: 5px 24px !important;
+          }
+        }
+        @media (max-width: 1024px) {
+          .sell-calculator-container {
+            grid-template-columns: 1fr !important;
+            gap: 40px !important;
+          }
+          .sell-calc-left {
+            grid-column: 1 !important;
+            grid-row: 1 !important;
+          }
+          .sell-calc-right {
+            grid-column: 1 !important;
+            grid-row: 2 !important;
+          }
+          .sell-calc-btn-container {
+            grid-column: 1 !important;
+            grid-row: 3 !important;
+            justify-content: center !important;
+          }
+        }
         @media (max-width: 900px) {
           .sell-steps-grid {
             grid-template-columns: repeat(2, 1fr) !important;

@@ -8,6 +8,7 @@ import { Event } from '@/types';
 import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
 import EventCard from '@/components/events/EventCard'
 import RecommendedEvents from '@/components/home/RecommendedEvents';
+// import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
 
 
 // Emoji fallback used only when a category has no uploaded image yet.
