@@ -14,6 +14,9 @@ import EventCancelled from '@/emails/event-cancelled'
 import EventReminder from '@/emails/event-reminder'
 import WaitlistAvailable from '@/emails/waitlist-available'
 import PayoutRequestedOrganiser from '@/emails/payout-requested-organiser'
+import PayoutRequestAdmin from '@/emails/payout-request-admin'
+import PromoterPayoutRequestAdmin from '@/emails/promoter-payout-request-admin'
+import StripeConnected from '@/emails/stripe-connected'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -103,17 +106,13 @@ export async function sendAdminPayoutRequestEmail(data: {
     try {
         const appUrl = getAppUrl()
         const amount = `£${(data.totalRequestedPence / 100).toFixed(2)}`
-        const html = `
-            <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-                <h2 style="margin:0 0 16px;color:#111;">New Payout Request</h2>
-                <p style="margin:0 0 8px;"><strong>Organiser:</strong> ${data.orgName}</p>
-                <p style="margin:0 0 8px;"><strong>Contact:</strong> ${data.organiserEmail}</p>
-                <p style="margin:0 0 8px;"><strong>Amount requested:</strong> ${amount}</p>
-                <p style="margin:0 0 16px;"><strong>Payouts in batch:</strong> ${data.payoutCount}</p>
-                <p style="margin:24px 0 0;">
-                    <a href="${appUrl}/admin/payouts" style="display:inline-block;background:#E63950;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">Review in Admin Panel</a>
-                </p>
-            </div>`
+        const html = await render(PayoutRequestAdmin({
+            orgName: data.orgName,
+            organiserEmail: data.organiserEmail,
+            totalRequestedPence: data.totalRequestedPence,
+            payoutCount: data.payoutCount,
+            appUrl,
+        }))
         await getResend().emails.send({
             from: 'Hexlura <noreply@hexlura.com>',
             replyTo: data.organiserEmail,
@@ -514,16 +513,11 @@ export async function sendStripeConnectedEmail(data: {
 }): Promise<void> {
     try {
         const appUrl = getAppUrl()
-        const html = `
-            <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-                <h2 style="margin:0 0 16px;color:#111;">Stripe account connected</h2>
-                <p style="margin:0 0 8px;">Hi ${data.fullName},</p>
-                <p style="margin:0 0 16px;">Your Stripe account is now connected to <strong>${data.orgName}</strong> on Hexlura. Payouts from ticket sales will be transferred directly to your Stripe account once your Connect onboarding is complete.</p>
-                <p style="margin:0 0 16px;">You can manage your payout settings from your organiser dashboard at any time.</p>
-                <p style="margin:24px 0 0;">
-                    <a href="${appUrl}/organiser/settings" style="display:inline-block;background:#E63950;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View Settings</a>
-                </p>
-            </div>`
+        const html = await render(StripeConnected({
+            fullName: data.fullName,
+            orgName: data.orgName,
+            appUrl,
+        }))
         await getResend().emails.send({
             from: 'Hexlura <noreply@hexlura.com>',
             replyTo: 'support@hexlura.com',
@@ -546,17 +540,14 @@ export async function sendAdminPromoterPayoutRequestEmail(data: {
     try {
         const appUrl = getAppUrl()
         const amount = `£${(data.totalRequestedPence / 100).toFixed(2)}`
-        const html = `
-            <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-                <h2 style="margin:0 0 16px;color:#111;">New Promoter Payout Request</h2>
-                <p style="margin:0 0 8px;"><strong>Promoter:</strong> ${data.promoterName} (${data.referralCode})</p>
-                <p style="margin:0 0 8px;"><strong>Contact:</strong> ${data.promoterEmail}</p>
-                <p style="margin:0 0 8px;"><strong>Amount requested:</strong> ${amount}</p>
-                <p style="margin:0 0 16px;"><strong>Payouts in batch:</strong> ${data.payoutCount}</p>
-                <p style="margin:24px 0 0;">
-                    <a href="${appUrl}/admin/payouts" style="display:inline-block;background:#E63950;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">Review in Admin Panel</a>
-                </p>
-            </div>`
+        const html = await render(PromoterPayoutRequestAdmin({
+            promoterName: data.promoterName,
+            promoterEmail: data.promoterEmail,
+            referralCode: data.referralCode,
+            totalRequestedPence: data.totalRequestedPence,
+            payoutCount: data.payoutCount,
+            appUrl,
+        }))
         await getResend().emails.send({
             from: 'Hexlura <noreply@hexlura.com>',
             replyTo: data.promoterEmail,
