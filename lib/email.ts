@@ -13,6 +13,7 @@ import Announcement from '@/emails/announcement'
 import EventCancelled from '@/emails/event-cancelled'
 import EventReminder from '@/emails/event-reminder'
 import WaitlistAvailable from '@/emails/waitlist-available'
+import PayoutRequestedOrganiser from '@/emails/payout-requested-organiser'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -122,6 +123,34 @@ export async function sendAdminPayoutRequestEmail(data: {
         })
     } catch (err) {
         console.error('Failed to send admin payout request email:', err)
+    }
+}
+
+export async function sendPayoutRequestedOrganiserEmail(data: {
+    to: string
+    fullName: string
+    orgName: string
+    totalRequestedPence: number
+    payoutCount: number
+}): Promise<void> {
+    try {
+        const appUrl = getAppUrl()
+        const html = await render(PayoutRequestedOrganiser({
+            fullName: data.fullName,
+            orgName: data.orgName,
+            totalRequestedPence: data.totalRequestedPence,
+            payoutCount: data.payoutCount,
+            appUrl,
+        }))
+        await getResend().emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: 'support@hexlura.com',
+            to: data.to,
+            subject: `Payout request received — £${(data.totalRequestedPence / 100).toFixed(2)}`,
+            html,
+        })
+    } catch (err) {
+        console.error('Failed to send organiser payout request email:', err)
     }
 }
 

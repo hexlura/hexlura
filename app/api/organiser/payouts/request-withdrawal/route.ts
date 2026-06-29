@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendAdminPayoutRequestEmail } from '@/lib/email'
+import { sendAdminPayoutRequestEmail, sendPayoutRequestedOrganiserEmail } from '@/lib/email'
 import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export async function POST() {
@@ -61,16 +61,26 @@ export async function POST() {
     if (payoutCount > 0) {
         const adminClient = createAdminClient()
 
-        // Get organiser's contact email for the support inbox
+        // Get organiser's contact email and name
         const { data: organiserProfile } = await adminClient
             .from('profiles')
-            .select('email')
+            .select('email, full_name')
             .eq('id', organiser.user_id)
             .single()
 
+        const organiserEmail = organiserProfile?.email || user.email || 'unknown'
+
         await sendAdminPayoutRequestEmail({
             orgName: organiser.org_name,
-            organiserEmail: organiserProfile?.email || user.email || 'unknown',
+            organiserEmail,
+            totalRequestedPence: totalRequested,
+            payoutCount,
+        })
+
+        await sendPayoutRequestedOrganiserEmail({
+            to: organiserEmail,
+            fullName: organiserProfile?.full_name || organiser.org_name,
+            orgName: organiser.org_name,
             totalRequestedPence: totalRequested,
             payoutCount,
         })
