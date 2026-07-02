@@ -151,6 +151,18 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     const [logoUploading, setLogoUploading] = useState(false)
     const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
     const [showCloseModal, setShowCloseModal] = useState(false)
+    const [closingAccount, setClosingAccount] = useState(false)
+
+    async function handleCloseAccount() {
+        setClosingAccount(true)
+        const res = await fetch('/api/organiser/close-account', { method: 'POST' })
+        if (res.ok) {
+            window.location.href = '/'
+        } else {
+            setClosingAccount(false)
+            alert('Something went wrong. Please try again.')
+        }
+    }
 
     // Cover photo
     const [coverUrl, setCoverUrl] = useState(organiser.cover_url || '')
@@ -806,8 +818,10 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                         <h3 className="font-heading text-xl text-text mb-3">Close Organiser Account?</h3>
                         <p className="text-sm text-muted mb-4">This will remove your organiser status. This action cannot be undone.</p>
                         <div className="flex gap-3">
-                            <Button variant="danger" size="md" onClick={() => setShowCloseModal(false)}>Close Account</Button>
-                            <Button variant="secondary" size="md" onClick={() => setShowCloseModal(false)}>Cancel</Button>
+                            <Button variant="danger" size="md" onClick={handleCloseAccount} disabled={closingAccount}>
+                                {closingAccount ? 'Closing...' : 'Close Account'}
+                            </Button>
+                            <Button variant="secondary" size="md" onClick={() => setShowCloseModal(false)} disabled={closingAccount}>Cancel</Button>
                         </div>
                     </div>
                 </div>
