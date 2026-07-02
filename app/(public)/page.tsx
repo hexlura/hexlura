@@ -8,6 +8,7 @@ import { Event } from '@/types';
 import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
 import EventCard from '@/components/events/EventCard'
 import RecommendedEvents from '@/components/home/RecommendedEvents';
+import TrustedPartners from '@/components/home/TrustedPartners';
 // import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
 
 
@@ -40,7 +41,7 @@ export default async function HomePage() {
 
     const now = new Date().toISOString();
 
-    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }] = await Promise.all([
+    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }] = await Promise.all([
         supabase
             .from('events')
             .select('*, ticket_types(*)')
@@ -71,12 +72,18 @@ export default async function HomePage() {
             .eq('is_featured', true)
             .or(`end_at.gte.${now},end_at.is.null`)
             .order('featured_order', { ascending: true }),
+        supabase
+            .from('trusted_parterns')
+            .select('name, image_url')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true }),
     ]);
 
     const events = (eventsRaw || []) as Event[];
     const pastEvents = (pastEventsRaw || []) as Event[];
     const cities = (citiesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
     const categories = (categoriesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
+    const partners = (partnersRaw || []).filter(p => !!p.image_url) as Array<{ name: string; image_url: string }>;
 
     type FeaturedRaw = FeaturedEvent & { ticket_types: { price_pence: number }[] };
     const featuredEvents: FeaturedEvent[] = ((featuredRaw || []) as unknown as FeaturedRaw[]).map(e => ({
@@ -110,8 +117,8 @@ export default async function HomePage() {
                 @media (max-width: 768px) { .page-wrapper { padding: 0 20px; } }
                 .headline-xl { font-size: 100px; line-height: 0.85; font-family: "Bebas Neue", sans-serif; margin: 0; }
                 @media (max-width: 768px) { .headline-xl { font-size: 60px; } }
-                .full-bleed { margin-left: -48px; margin-right: -48px; }
-                @media (max-width: 768px) { .full-bleed { margin-left: -20px; margin-right: -20px; } }
+                . { margin-left: -48px; margin-right: -48px; }
+                @media (max-width: 768px) { . { margin-left: -20px; margin-right: -20px; } }
                 .city-scroll::-webkit-scrollbar { display: none; }
                 .drag-scroll::-webkit-scrollbar { display: none; }
                 .category-scroll::-webkit-scrollbar { display: none; }
@@ -124,7 +131,7 @@ export default async function HomePage() {
             `}</style>
 
             {/* ── CATEGORY ICONS ROW ── */}
-            <div className="full-bleed" style={{ background: '#FFFFFF', padding: '12px 24px 0' }}>
+            <div className="" style={{ background: '#FFFFFF', padding: '12px 24px 0' }}>
                 <div
                     className="category-scroll"
                     style={{
@@ -197,14 +204,14 @@ export default async function HomePage() {
             </div>
 
             {/* ── HERO SLIDER ── */}
-            <div className="full-bleed">
+            <div className="">
                 <div className="slider-wrapper">
                     <HeroSlider slides={slides} />
                 </div>
             </div>
 
             {/* ── STRIPE TRUST BAR ── */}
-            <div className="full-bleed" style={{
+            <div className="" style={{
                 background: '#F8F8F8',
                 borderBottom: '1px solid #EEEEEE',
                 padding: '10px 24px',
@@ -354,7 +361,7 @@ export default async function HomePage() {
 
             {/* ── SECTION 3: ORGANISER CTA — full bleed ── */}
             <section
-                className="full-bleed"
+                className=""
                 style={{
                     background: '#0A0A0F',
                     padding: '80px 24px',
@@ -445,6 +452,11 @@ export default async function HomePage() {
                     </div>
                 </section>
             )}
+
+            {/* ── TRUSTED PARTNERS ── */}
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 pb-10 sm:py-10">
+                <TrustedPartners partners={partners} />
+            </div>
 
             {/* CSS hover effects — replaces inline JS for better performance */}
             <style>{`
