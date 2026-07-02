@@ -149,8 +149,8 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
     }
 
     const tabs: { value: Tab; label: string; count: number }[] = [
-        { value: 'pending', label: 'Pending', count: pending.length },
         { value: 'active', label: 'Active', count: active.length },
+        { value: 'pending', label: 'Pending', count: pending.length },
         { value: 'suspended', label: 'Suspended', count: suspended.length },
     ]
 
@@ -177,7 +177,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                     >
                         {t.label}
                         {t.count > 0 && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${t.value === 'pending' ? 'bg-gold text-black' : 'bg-muted/20 text-muted'}`}>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${t.value === 'pending' && t.count > 0 ? 'bg-gold text-black' : 'bg-muted/20 text-muted'}`}>
                                 {t.count}
                             </span>
                         )}

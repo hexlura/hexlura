@@ -108,7 +108,7 @@ export default async function AdminOrganisersPage({
             pending={pending}
             active={active}
             suspended={suspended}
-            defaultTab={(searchParams.tab as 'pending' | 'active' | 'suspended') ?? 'pending'}
+            defaultTab={(searchParams.tab as 'pending' | 'active' | 'suspended') ?? 'active'}
         />
     )
 }
