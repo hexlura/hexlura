@@ -71,66 +71,95 @@ export function SettingsClient({ settings, promoCodes }: Props) {
     }
 
     async function saveSetting(key: string, value: string) {
-        await fetch('/api/admin/settings', {
+        const res = await fetch('/api/admin/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ key, value }),
         })
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}))
+            throw new Error(body.error || `Failed to save ${key}`)
+        }
     }
 
     async function handleSaveFees() {
         setSaving('fees')
-        await Promise.all([
-            saveSetting('booking_fee_percent', feePercent),
-            saveSetting('booking_fee_min_pence', String(Math.round(parseFloat(feeMin) * 100))),
-            saveSetting('booking_fee_max_pence', String(Math.round(parseFloat(feeMax) * 100))),
-            saveSetting('order_processing_fee_pence', String(Math.round(parseFloat(processingFee) * 100))),
-        ])
-        setSaving(null)
-        showFeedback('fees', 'Fee settings saved')
-        router.refresh()
+        try {
+            await Promise.all([
+                saveSetting('booking_fee_percent', feePercent),
+                saveSetting('booking_fee_min_pence', String(Math.round(parseFloat(feeMin) * 100))),
+                saveSetting('booking_fee_max_pence', String(Math.round(parseFloat(feeMax) * 100))),
+                saveSetting('order_processing_fee_pence', String(Math.round(parseFloat(processingFee) * 100))),
+            ])
+            showFeedback('fees', 'Fee settings saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('fees', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
     }
 
     async function handleSaveHomepage() {
         setSaving('homepage')
-        await Promise.all([
-            saveSetting('max_featured_slots', maxFeatured),
-            saveSetting('maintenance_mode', maintenanceMode ? 'true' : 'false'),
-        ])
-        setSaving(null)
-        showFeedback('homepage', 'Homepage settings saved')
-        router.refresh()
+        try {
+            await Promise.all([
+                saveSetting('max_featured_slots', maxFeatured),
+                saveSetting('maintenance_mode', maintenanceMode ? 'true' : 'false'),
+            ])
+            showFeedback('homepage', 'Homepage settings saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('homepage', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
     }
 
     async function handleSavePayouts() {
         setSaving('payouts')
-        await Promise.all([
-            saveSetting('payout_cooldown_days', payoutCooldown),
-            saveSetting('stripe_connect_enabled', stripeConnectEnabled ? 'true' : 'false'),
-        ])
-        setSaving(null)
-        showFeedback('payouts', 'Payout settings saved')
-        router.refresh()
+        try {
+            await Promise.all([
+                saveSetting('payout_cooldown_days', payoutCooldown),
+                saveSetting('stripe_connect_enabled', stripeConnectEnabled ? 'true' : 'false'),
+            ])
+            showFeedback('payouts', 'Payout settings saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('payouts', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
     }
 
     async function handleSaveAnalytics() {
         setSaving('analytics')
-        await saveSetting('meta_pixel_id', metaPixelId.trim())
-        setSaving(null)
-        showFeedback('analytics', 'Analytics settings saved')
-        router.refresh()
+        try {
+            await saveSetting('meta_pixel_id', metaPixelId.trim())
+            showFeedback('analytics', 'Analytics settings saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('analytics', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
     }
 
     async function handleSaveEmail() {
         setSaving('email')
-        await Promise.all([
-            saveSetting('from_name', fromName),
-            saveSetting('from_email', fromEmail),
-            saveSetting('support_email', supportEmail),
-        ])
-        setSaving(null)
-        showFeedback('email', 'Email settings saved')
-        router.refresh()
+        try {
+            await Promise.all([
+                saveSetting('from_name', fromName),
+                saveSetting('from_email', fromEmail),
+                saveSetting('support_email', supportEmail),
+            ])
+            showFeedback('email', 'Email settings saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('email', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
     }
 
     async function handleCreatePromo() {
