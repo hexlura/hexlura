@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
         'booking_fee_percent',
         'booking_fee_min_pence',
         'booking_fee_max_pence',
+        'order_processing_fee_pence',
         'max_featured_slots',
         'maintenance_mode',
         'auto_approve_organisers',
@@ -27,13 +28,14 @@ export async function POST(request: NextRequest) {
         'from_name',
         'from_email',
         'support_email',
+        'meta_pixel_id',
     ] as const
 
     if (!VALID_SETTING_KEYS.includes(key as typeof VALID_SETTING_KEYS[number])) {
         return NextResponse.json({ error: 'Invalid setting key' }, { status: 400 })
     }
 
-    const NUMERIC_KEYS = ['booking_fee_percent', 'booking_fee_min_pence', 'booking_fee_max_pence', 'max_featured_slots', 'payout_cooldown_days']
+    const NUMERIC_KEYS = ['booking_fee_percent', 'booking_fee_min_pence', 'booking_fee_max_pence', 'order_processing_fee_pence', 'max_featured_slots', 'payout_cooldown_days']
     const BOOLEAN_KEYS = ['maintenance_mode', 'auto_approve_organisers', 'stripe_connect_enabled']
 
     if (NUMERIC_KEYS.includes(key)) {
