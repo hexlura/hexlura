@@ -8,7 +8,7 @@ export async function GET() {
 
     return NextResponse.json(config, {
         headers: {
-            'Cache-Control': 'public, max-age=60, stale-while-revalidate=120',
+            'Cache-Control': 'no-store',
         },
     })
 }
