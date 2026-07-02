@@ -116,8 +116,8 @@ function AcceptContent() {
             <div style={containerStyle}>
                 <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Already Accepted</h1>
                 <p style={{ color: '#8888AA', fontSize: 15, marginBottom: 24 }}>You have already accepted this invitation.</p>
-                <Link href="/organiser" style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-                    Go to Organiser Portal
+                <Link href="/checkin" style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+                    Go to Check-in Scanner
                 </Link>
             </div>
         )

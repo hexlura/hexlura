@@ -142,37 +142,34 @@ export async function POST(req: NextRequest) {
             const resolvedEventId = bk.event_id
             let eventAssigned = false
 
-            if (isOrgTeamDoorStaff) {
-                const { data: teamAssignment } = await adminClient
-                    .from('organiser_team')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('event_id', resolvedEventId)
-                    .eq('privilege', 'door_staff')
-                    .eq('status', 'active')
-                    .maybeSingle()
-                eventAssigned = !!teamAssignment
-            } else {
-                // Global door_staff profile role — check door_staff assignments table
-                const { data: dsAssignment } = await adminClient
-                    .from('door_staff')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('event_id', resolvedEventId)
-                    .maybeSingle()
-                eventAssigned = !!dsAssignment
+            // Both systems need the event's organiser_id — fetch once, share between paths
+            const { data: eventRow } = await adminClient
+                .from('events')
+                .select('organiser_id')
+                .eq('id', resolvedEventId)
+                .single()
 
-                // Also accept organiser_team assignment as fallback
-                if (!eventAssigned) {
+            if (eventRow) {
+                if (isOrgTeamDoorStaff) {
+                    // New system: organiser_team is org-level — verify staff is on this event's org team
                     const { data: teamAssignment } = await adminClient
                         .from('organiser_team')
                         .select('id')
                         .eq('user_id', user.id)
-                        .eq('event_id', resolvedEventId)
+                        .eq('organiser_id', eventRow.organiser_id)
                         .eq('privilege', 'door_staff')
                         .eq('status', 'active')
                         .maybeSingle()
                     eventAssigned = !!teamAssignment
+                } else {
+                    // Legacy system: check door_staff table by organiser
+                    const { data: dsAssignment } = await adminClient
+                        .from('door_staff')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .eq('organiser_id', eventRow.organiser_id)
+                        .maybeSingle()
+                    eventAssigned = !!dsAssignment
                 }
             }
 

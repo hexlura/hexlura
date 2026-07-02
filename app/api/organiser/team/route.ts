@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
+import { render } from '@react-email/components'
+import TeamInvite from '@/emails/team-invite'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -19,34 +21,10 @@ async function getOrganiserProfile(userId: string) {
 
 async function sendInviteEmail(to: string, orgName: string, inviteToken: string) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.hexlura.com'
-    const privilegeLabel = 'Door Staff'
     const acceptUrl = `${appUrl}/team/accept?token=${inviteToken}`
 
-    const html = `
-    <div style="background:#f5f5f5;padding:32px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-      <div style="max-width:560px;margin:0 auto;">
-        <div style="background:#E63950;padding:20px;text-align:center;">
-          <span style="font-size:28px;font-weight:bold;color:#fff;letter-spacing:4px;">HEXLURA</span>
-        </div>
-        <div style="background:#fff;padding:32px;">
-          <h1 style="font-size:22px;margin:0 0 16px;color:#0A0A0F;">You've been invited to join a team</h1>
-          <p style="font-size:15px;color:#555;margin:0 0 24px;">
-            <strong>${orgName}</strong> has invited you to join their team as <strong>${privilegeLabel}</strong>.
-          </p>
-          <div style="text-align:center;margin:32px 0;">
-            <a href="${acceptUrl}" style="display:inline-block;background:#0A0A0F;color:#fff;font-weight:bold;text-decoration:none;padding:14px 32px;font-size:14px;">
-              Accept Invitation
-            </a>
-          </div>
-          <p style="font-size:13px;color:#888;margin:0;">
-            If you don't have a Hexlura account, you'll need to create one first.
-          </p>
-        </div>
-        <p style="text-align:center;font-size:12px;color:#999;margin:16px 0 0;">hexlura.com · support@hexlura.com</p>
-      </div>
-    </div>`
-
     try {
+        const html = await render(TeamInvite({ orgName, acceptUrl }))
         await getResend().emails.send({
             from: 'Hexlura <noreply@hexlura.com>',
             to,

@@ -139,11 +139,19 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: 'Failed to remove door staff' }, { status: 500 })
     }
 
-    // Reset role to user
-    await adminClient
-        .from('profiles')
-        .update({ role: 'user' })
-        .eq('id', user_id)
+    // Only reset role if not still assigned to another organiser
+    const { data: remaining } = await adminClient
+        .from('door_staff')
+        .select('id')
+        .eq('user_id', user_id)
+        .limit(1)
+
+    if (!remaining || remaining.length === 0) {
+        await adminClient
+            .from('profiles')
+            .update({ role: 'user' })
+            .eq('id', user_id)
+    }
 
     return NextResponse.json({ success: true })
 }
