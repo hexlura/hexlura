@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
         const { data: checkerProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
         const checkerRole = checkerProfile?.role as string | undefined
 
-        // needsEventCheck: non-admin/organiser roles must be verified against the specific event after ticket lookup
+        // needsEventCheck: all non-admin roles must be verified against the specific event after ticket lookup
         let isAuthorized = !!checkerRole && ['door_staff', 'organiser', 'admin'].includes(checkerRole)
-        let needsEventCheck = checkerRole === 'door_staff'
+        let needsEventCheck = checkerRole === 'door_staff' || checkerRole === 'organiser'
         let isOrgTeamDoorStaff = false
 
         if (!isAuthorized) {
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
             const { data, error: biErr } = await adminClient
                 .from('booking_items')
                 .select(`
-                    id, qr_code, attendee_name,
+                    id, qr_code, attendee_name, quantity,
                     ticket_type:ticket_types(name),
                     booking:bookings(id, status, event_id,
                         event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
             const { data: byQr, error: qrErr } = await adminClient
                 .from('booking_items')
                 .select(`
-                    id, qr_code, attendee_name,
+                    id, qr_code, attendee_name, quantity,
                     ticket_type:ticket_types(name),
                     booking:bookings(id, status, event_id,
                         event:events(id, title, start_at, end_at, status, checkin_start_at, checkin_end_at)
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
                 if (booking) {
                     const { data: items } = await adminClient
                         .from('booking_items')
-                        .select('id, qr_code, attendee_name, ticket_type:ticket_types(name)')
+                        .select('id, qr_code, attendee_name, quantity, ticket_type:ticket_types(name)')
                         .eq('booking_id', (booking as { id: string }).id)
                         .limit(1)
                     if (items && items[0]) {
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
             if (booking) {
                 const { data: items, error: itemsErr } = await adminClient
                     .from('booking_items')
-                    .select('id, qr_code, attendee_name, ticket_type:ticket_types(name)')
+                    .select('id, qr_code, attendee_name, quantity, ticket_type:ticket_types(name)')
                     .eq('booking_id', (booking as { id: string }).id)
                     .limit(1)
                 if (itemsErr) console.error('Checkin items lookup failed:', itemsErr.message)
@@ -150,7 +150,16 @@ export async function POST(req: NextRequest) {
                 .single()
 
             if (eventRow) {
-                if (isOrgTeamDoorStaff) {
+                if (checkerRole === 'organiser') {
+                    // Organiser: verify this event belongs to their organiser profile
+                    const { data: orgProfile } = await adminClient
+                        .from('organiser_profiles')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .eq('id', eventRow.organiser_id)
+                        .maybeSingle()
+                    eventAssigned = !!orgProfile
+                } else if (isOrgTeamDoorStaff) {
                     // New system: organiser_team is org-level — verify staff is on this event's org team
                     const { data: teamAssignment } = await adminClient
                         .from('organiser_team')
@@ -226,15 +235,26 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: 'This ticket has been cancelled or refunded', code: 'CANCELLED_TICKET' })
         }
 
-        // Step 6 — Check if already scanned
-        const { data: existing } = await adminClient
+        // Step 6 — Check if already scanned (group tickets allow multiple scans up to quantity)
+        const groupTotal = bookingItem.quantity > 1 ? bookingItem.quantity : 1
+
+        const { data: existingScans } = await adminClient
             .from('checkins')
             .select('checked_in_at')
             .eq('booking_item_id', bookingItem.id)
-            .maybeSingle()
+            .order('checked_in_at', { ascending: true })
 
-        if (existing?.checked_in_at) {
-            const checkedAt = new Date(existing.checked_in_at)
+        const scannedCount = existingScans?.length ?? 0
+
+        if (scannedCount >= groupTotal) {
+            if (groupTotal > 1) {
+                return NextResponse.json({
+                    success: false,
+                    message: `All ${groupTotal} members of this group have already checked in`,
+                    code: 'ALREADY_SCANNED',
+                })
+            }
+            const checkedAt = new Date(existingScans![0].checked_in_at)
             const formattedTime = new Intl.DateTimeFormat('en-GB', {
                 hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
             }).format(checkedAt)
@@ -255,6 +275,8 @@ export async function POST(req: NextRequest) {
                 booking_item_id: bookingItem.id,
                 qr_token: bookingItem.qr_code || booking_ref || 'manual',
                 checked_in_by: user.id,
+                group_index: scannedCount + 1,
+                group_total: groupTotal,
             })
 
         if (error) {
@@ -265,9 +287,14 @@ export async function POST(req: NextRequest) {
             hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London',
         }).format(new Date())
 
+        const isGroup = groupTotal > 1
+        const newCount = scannedCount + 1
+
         return NextResponse.json({
             success: true,
-            message: 'Welcome! Checked in successfully',
+            message: isGroup
+                ? `Group check-in ${newCount} of ${groupTotal}`
+                : 'Welcome! Checked in successfully',
             code: 'SUCCESS',
             data: {
                 attendee_name: bookingItem.attendee_name || 'Attendee',

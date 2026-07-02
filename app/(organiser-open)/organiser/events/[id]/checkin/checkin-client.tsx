@@ -23,6 +23,7 @@ interface BookingItemRow {
     ticket_type: string
     attendee_name: string | null
     quantity: number
+    scanned_count: number
     checked_in: boolean
     checked_in_at?: string
 }
@@ -137,7 +138,11 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
         setCheckingItemId(null)
         if (res?.success) {
             setBookingItems(prev => prev
-                ? prev.map(i => i.id === item.id ? { ...i, checked_in: true } : i)
+                ? prev.map(i => {
+                    if (i.id !== item.id) return i
+                    const newCount = i.scanned_count + 1
+                    return { ...i, scanned_count: newCount, checked_in: newCount >= i.quantity }
+                })
                 : prev
             )
         }
@@ -227,17 +232,24 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                                     <div className="flex items-center gap-2 shrink-0">
                                         {item.checked_in ? (
                                             <span className="text-xs font-semibold px-2 py-1 rounded-sm" style={{ background: 'rgba(0,229,160,0.1)', color: '#00E5A0' }}>
-                                                In {item.checked_in_at ? `· ${item.checked_in_at}` : ''}
+                                                {item.quantity > 1 ? `All ${item.quantity} in` : `In${item.checked_in_at ? ` · ${item.checked_in_at}` : ''}`}
                                             </span>
                                         ) : (
-                                            <button
-                                                onClick={() => handleItemCheckin(item)}
-                                                disabled={checkingItemId === item.id}
-                                                className="text-xs font-semibold px-3 py-1.5 bg-accent text-white rounded-sm disabled:opacity-50 transition-opacity"
-                                                style={{ background: '#E63950' }}
-                                            >
-                                                {checkingItemId === item.id ? '...' : 'Check In'}
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                {item.quantity > 1 && item.scanned_count > 0 && (
+                                                    <span className="text-xs font-semibold px-2 py-1 rounded-sm" style={{ background: 'rgba(245,166,35,0.1)', color: '#F5A623' }}>
+                                                        {item.scanned_count}/{item.quantity} in
+                                                    </span>
+                                                )}
+                                                <button
+                                                    onClick={() => handleItemCheckin(item)}
+                                                    disabled={checkingItemId === item.id}
+                                                    className="text-xs font-semibold px-3 py-1.5 text-white rounded-sm disabled:opacity-50 transition-opacity"
+                                                    style={{ background: '#E63950' }}
+                                                >
+                                                    {checkingItemId === item.id ? '...' : 'Check In'}
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
