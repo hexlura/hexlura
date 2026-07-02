@@ -27,7 +27,7 @@ export const DEFAULT_FEE_CONFIG: FeeConfig = {
     percent: 5,
     minPence: 99,
     maxPence: 500,
-    processingFeePence: 49,
+    processingFeePence: 0,
 }
 
 /**
