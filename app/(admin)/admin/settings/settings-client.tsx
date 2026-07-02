@@ -24,10 +24,10 @@ export function SettingsClient({ settings, promoCodes }: Props) {
     const router = useRouter()
 
     // Fee settings
-    const [feePercent, setFeePercent] = useState(settings['booking_fee_percent'] ?? '5')
-    const [feeMin, setFeeMin] = useState(String((parseInt(settings['booking_fee_min_pence'] ?? '99') / 100).toFixed(2)))
-    const [feeMax, setFeeMax] = useState(String((parseInt(settings['booking_fee_max_pence'] ?? '500') / 100).toFixed(2)))
-    const [processingFee, setProcessingFee] = useState(String((parseInt(settings['order_processing_fee_pence'] ?? '49') / 100).toFixed(2)))
+    const [feePercent, setFeePercent] = useState(settings['booking_fee_percent'] ?? '0')
+    const [feeMin, setFeeMin] = useState(String((parseInt(settings['booking_fee_min_pence'] ?? '0') / 100).toFixed(2)))
+    const [feeMax, setFeeMax] = useState(String((parseInt(settings['booking_fee_max_pence'] ?? '0') / 100).toFixed(2)))
+    const [processingFee, setProcessingFee] = useState(String((parseInt(settings['order_processing_fee_pence'] ?? '0') / 100).toFixed(2)))
 
     // Homepage settings
     const [maxFeatured, setMaxFeatured] = useState(settings['max_featured_slots'] ?? '6')

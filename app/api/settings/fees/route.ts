@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { DEFAULT_FEE_CONFIG } from '@/lib/fees'
 import type { FeeConfig } from '@/lib/fees'
 
 export const dynamic = 'force-dynamic'
@@ -20,12 +19,10 @@ export async function GET() {
     for (const row of (data ?? [])) s[row.key] = row.value
 
     const config: FeeConfig = {
-        percent: parseFloat(s['booking_fee_percent']) || DEFAULT_FEE_CONFIG.percent,
-        minPence: parseInt(s['booking_fee_min_pence']) || DEFAULT_FEE_CONFIG.minPence,
-        maxPence: parseInt(s['booking_fee_max_pence']) || DEFAULT_FEE_CONFIG.maxPence,
-        processingFeePence: s['order_processing_fee_pence'] !== undefined
-            ? parseInt(s['order_processing_fee_pence'])
-            : DEFAULT_FEE_CONFIG.processingFeePence,
+        percent: parseFloat(s['booking_fee_percent']) || 0,
+        minPence: parseInt(s['booking_fee_min_pence']) || 0,
+        maxPence: parseInt(s['booking_fee_max_pence']) || 0,
+        processingFeePence: parseInt(s['order_processing_fee_pence'] ?? '0'),
     }
 
     return NextResponse.json(config, {

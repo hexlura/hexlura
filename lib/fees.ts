@@ -22,11 +22,10 @@ export interface FeeConfig {
     processingFeePence: number
 }
 
-/** Fallback defaults matching DB seed values in 004_platform_settings.sql */
 export const DEFAULT_FEE_CONFIG: FeeConfig = {
-    percent: 5,
-    minPence: 99,
-    maxPence: 500,
+    percent: 0,
+    minPence: 0,
+    maxPence: 0,
     processingFeePence: 0,
 }
 

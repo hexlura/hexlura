@@ -56,7 +56,7 @@ interface CheckoutContextType {
 
 const CheckoutContext = createContext<CheckoutContextType | null>(null)
 
-export function CheckoutProvider({ children, initialFeeConfig }: { children: ReactNode; initialFeeConfig?: import('@/lib/fees').FeeConfig }) {
+export function CheckoutProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<CheckoutState>({
         eventId: '',
         eventTitle: '',
@@ -71,7 +71,7 @@ export function CheckoutProvider({ children, initialFeeConfig }: { children: Rea
         step: 1,
     })
 
-    const feeConfig = useFeeConfig(initialFeeConfig)
+    const feeConfig = useFeeConfig()
 
     const ticketSubtotalPence = state.items.reduce(
         (sum, item) => sum + item.price_pence * item.quantity,
