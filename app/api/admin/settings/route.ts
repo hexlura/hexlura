@@ -49,12 +49,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Value must be true or false' }, { status: 400 })
     }
 
-    await adminClient.from('platform_settings').upsert({
+    const { error: upsertError } = await adminClient.from('platform_settings').upsert({
         key,
         value,
         updated_at: new Date().toISOString(),
         updated_by: user.id,
     }, { onConflict: 'key' })
+
+    if (upsertError) {
+        console.error('platform_settings upsert failed:', upsertError)
+        return NextResponse.json({ error: upsertError.message }, { status: 500 })
+    }
 
     await logAuditAction({
         actorId: user.id,
