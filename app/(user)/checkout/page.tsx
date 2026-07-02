@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Suspense } from 'react'
 import { CheckoutProvider } from '@/lib/checkout-context'
 import { getFeeConfig } from '@/lib/fees'
