@@ -152,6 +152,9 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
     const [showCloseModal, setShowCloseModal] = useState(false)
     const [closingAccount, setClosingAccount] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deletingAccount, setDeletingAccount] = useState(false)
+    const [deleteError, setDeleteError] = useState<string | null>(null)
 
     async function handleCloseAccount() {
         setClosingAccount(true)
@@ -161,6 +164,19 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
         } else {
             setClosingAccount(false)
             alert('Something went wrong. Please try again.')
+        }
+    }
+
+    async function handleDeleteAccount() {
+        setDeletingAccount(true)
+        setDeleteError(null)
+        const res = await fetch('/api/organiser/delete-account', { method: 'POST' })
+        if (res.ok) {
+            window.location.href = '/'
+        } else {
+            const json = await res.json()
+            setDeleteError(json.error || 'Something went wrong. Please try again.')
+            setDeletingAccount(false)
         }
     }
 
@@ -804,12 +820,50 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
 
             {/* Danger Zone */}
             <Section title="Danger Zone">
-                <p className="text-sm text-muted mb-4">
-                    Closing your organiser account will remove your organiser status.
-                    Existing events and bookings are not affected. You will need to reapply to create new events.
-                </p>
-                <Button variant="danger" size="md" onClick={() => setShowCloseModal(true)}>Close Organiser Account</Button>
+                <div className="space-y-6">
+                    <div>
+                        <p className="text-sm text-text font-medium mb-1">Close Organiser Account</p>
+                        <p className="text-sm text-muted mb-3">
+                            Removes your organiser status. Your account remains active. You can reapply to create events in future.
+                        </p>
+                        <Button variant="danger" size="md" onClick={() => setShowCloseModal(true)}>Close Organiser Account</Button>
+                    </div>
+                    <div className="border-t border-border pt-6">
+                        <p className="text-sm text-text font-medium mb-1">Delete Account Permanently</p>
+                        <p className="text-sm text-muted mb-3">
+                            Permanently deletes your account and all associated data. This cannot be undone.
+                            Not available if you have upcoming events with confirmed bookings.
+                        </p>
+                        <Button variant="danger" size="md" onClick={() => { setShowDeleteModal(true); setDeleteError(null) }}>
+                            Delete Account Permanently
+                        </Button>
+                    </div>
+                </div>
             </Section>
+
+            {/* Delete Account Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                        <h3 className="font-heading text-xl text-text mb-3">Delete Account Permanently?</h3>
+                        <p className="text-sm text-muted mb-2">
+                            This will permanently delete your account, organiser profile, and all your events. This cannot be undone.
+                        </p>
+                        <p className="text-sm text-muted mb-4">
+                            Confirmed bookings made by attendees will be preserved for financial records.
+                        </p>
+                        {deleteError && (
+                            <p className="text-sm text-accent mb-4 bg-accent/10 border border-accent/30 px-3 py-2">{deleteError}</p>
+                        )}
+                        <div className="flex gap-3">
+                            <Button variant="danger" size="md" onClick={handleDeleteAccount} disabled={deletingAccount}>
+                                {deletingAccount ? 'Deleting...' : 'Yes, Delete Everything'}
+                            </Button>
+                            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)} disabled={deletingAccount}>Cancel</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Close Account Modal */}
             {showCloseModal && (
