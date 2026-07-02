@@ -832,7 +832,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                         <p className="text-sm text-text font-medium mb-1">Delete Account Permanently</p>
                         <p className="text-sm text-muted mb-3">
                             Permanently deletes your account and all associated data. This cannot be undone.
-                            Not available if you have upcoming events with confirmed bookings.
+                            Not available if you have any events with confirmed bookings — contact support in that case.
                         </p>
                         <Button variant="danger" size="md" onClick={() => { setShowDeleteModal(true); setDeleteError(null) }}>
                             Delete Account Permanently
@@ -846,11 +846,9 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
                     <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Delete Account Permanently?</h3>
-                        <p className="text-sm text-muted mb-2">
-                            This will permanently delete your account, organiser profile, and all your events. This cannot be undone.
-                        </p>
                         <p className="text-sm text-muted mb-4">
-                            Confirmed bookings made by attendees will be preserved for financial records.
+                            This will permanently delete your account, organiser profile, and all your events. This cannot be undone.
+                            If you have any events with confirmed bookings, you will be directed to contact support instead.
                         </p>
                         {deleteError && (
                             <p className="text-sm text-accent mb-4 bg-accent/10 border border-accent/30 px-3 py-2">{deleteError}</p>

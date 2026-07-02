@@ -31,25 +31,31 @@ export async function POST() {
         return NextResponse.json({ error: 'Organiser profile not found' }, { status: 404 })
     }
 
-    // Block deletion if they have upcoming events with confirmed bookings
-    const { data: blockingEvents } = await adminClient
+    // Block deletion if ANY of their events have confirmed bookings (past or future).
+    // Deleting the account cascades: organiser → events → bookings, wiping financial records.
+    const { data: theirEvents } = await adminClient
         .from('events')
-        .select(`
-            id,
-            bookings!inner(id)
-        `)
+        .select('id')
         .eq('organiser_id', orgProfile.id)
-        .not('status', 'in', '("ended","cancelled")')
-        .eq('bookings.status', 'confirmed')
-        .limit(1)
 
-    if (blockingEvents && blockingEvents.length > 0) {
-        return NextResponse.json({
-            error: 'You have upcoming events with confirmed bookings. Cancel or end all events before deleting your account.',
-        }, { status: 409 })
+    if (theirEvents && theirEvents.length > 0) {
+        const eventIds = theirEvents.map(e => e.id)
+        const { data: confirmedBookings } = await adminClient
+            .from('bookings')
+            .select('id')
+            .in('event_id', eventIds)
+            .eq('status', 'confirmed')
+            .limit(1)
+
+        if (confirmedBookings && confirmedBookings.length > 0) {
+            return NextResponse.json({
+                error: 'Your account has events with confirmed bookings which must be retained for financial records. Please contact support@hexlura.com to request account deletion.',
+            }, { status: 409 })
+        }
     }
 
-    // Delete the auth user — cascades to profiles → organiser_profiles → events
+    // Safe to delete — no confirmed bookings exist on any of their events.
+    // Cascade: auth.users → profiles → organiser_profiles → events → ticket_types
     const { error } = await adminClient.auth.admin.deleteUser(user.id)
     if (error) {
         console.error('Delete user error:', error)
