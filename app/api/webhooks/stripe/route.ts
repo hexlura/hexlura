@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { render } from '@react-email/components'
 import BookingConfirmation from '@/emails/booking-confirmation'
+import NewBookingOrganiser from '@/emails/new-booking-organiser'
 import PayoutFailedAdmin from '@/emails/payout-failed-admin'
 import { sendOrganiserIdentityVerifiedEmail } from '@/lib/email'
 import { Resend } from 'resend'
@@ -616,6 +617,55 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
         } catch (err) {
             console.error('Failed to send booking confirmation email:', err)
         }
+
+        // Notify organiser — in-app + email
+        try {
+            const { data: orgProfile } = await supabase
+                .from('organiser_profiles')
+                .select('org_name, user_id')
+                .eq('id', eventData.organiser_id)
+                .single()
+
+            if (orgProfile) {
+                void supabase.from('notifications').insert({
+                    user_id: orgProfile.user_id,
+                    type: 'new_booking',
+                    title: 'New booking received',
+                    body: `New booking for ${eventData.title}. Ref: ${booking.booking_ref}`,
+                    link: `/organiser/events/${eventId}/attendees`,
+                })
+
+                const { data: organiserUser } = await supabase
+                    .from('profiles')
+                    .select('email')
+                    .eq('id', orgProfile.user_id)
+                    .single()
+
+                if (organiserUser?.email) {
+                    const organiserRevenuePence = Math.max(0, ticketSubtotalPence - discountPence)
+                    const organiserHtml = await render(NewBookingOrganiser({
+                        organiserName: orgProfile.org_name,
+                        eventName: eventData.title,
+                        eventDate,
+                        buyerName: attendeeName || 'Guest',
+                        buyerEmail: attendeeEmail,
+                        ticketItems,
+                        totalRevenue: `£${(organiserRevenuePence / 100).toFixed(2)}`,
+                        bookingRef: booking.booking_ref,
+                        dashboardUrl: `https://www.hexlura.com/organiser/events/${eventId}/attendees`,
+                    }))
+
+                    await getResend().emails.send({
+                        from: 'Hexlura <noreply@hexlura.com>',
+                        to: organiserUser.email,
+                        subject: `New booking for ${eventData.title} — ${booking.booking_ref}`,
+                        html: organiserHtml,
+                    })
+                }
+            }
+        } catch (err) {
+            console.error('Failed to send organiser new booking notification:', err)
+        }
     }
 }
 
@@ -936,6 +986,55 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             })
         } catch (err) {
             console.error('Failed to send booking confirmation email:', err)
+        }
+
+        // Notify organiser — in-app + email
+        try {
+            const { data: orgProfile } = await supabase
+                .from('organiser_profiles')
+                .select('org_name, user_id')
+                .eq('id', eventData.organiser_id)
+                .single()
+
+            if (orgProfile) {
+                void supabase.from('notifications').insert({
+                    user_id: orgProfile.user_id,
+                    type: 'new_booking',
+                    title: 'New booking received',
+                    body: `New booking for ${eventData.title}. Ref: ${booking.booking_ref}`,
+                    link: `/organiser/events/${eventId}/attendees`,
+                })
+
+                const { data: organiserUser } = await supabase
+                    .from('profiles')
+                    .select('email')
+                    .eq('id', orgProfile.user_id)
+                    .single()
+
+                if (organiserUser?.email) {
+                    const organiserRevenuePence = Math.max(0, ticketSubtotalPence - discountPence)
+                    const organiserHtml = await render(NewBookingOrganiser({
+                        organiserName: orgProfile.org_name,
+                        eventName: eventData.title,
+                        eventDate,
+                        buyerName: attendeeName || 'Guest',
+                        buyerEmail: attendeeEmail,
+                        ticketItems,
+                        totalRevenue: `£${(organiserRevenuePence / 100).toFixed(2)}`,
+                        bookingRef: booking.booking_ref,
+                        dashboardUrl: `https://www.hexlura.com/organiser/events/${eventId}/attendees`,
+                    }))
+
+                    await getResend().emails.send({
+                        from: 'Hexlura <noreply@hexlura.com>',
+                        to: organiserUser.email,
+                        subject: `New booking for ${eventData.title} — ${booking.booking_ref}`,
+                        html: organiserHtml,
+                    })
+                }
+            }
+        } catch (err) {
+            console.error('Failed to send organiser new booking notification:', err)
         }
     }
 }

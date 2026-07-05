@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify event exists and is published
+    const adminClient = createAdminClient()
     const { data: event } = await supabase
         .from('events')
-        .select('*, organiser:organiser_profiles(stripe_account_id, stripe_connect_allowed, stripe_charges_enabled)')
+        .select('*')
         .eq('id', event_id)
         .eq('status', 'published')
         .single()
@@ -61,6 +62,13 @@ export async function POST(request: NextRequest) {
     if (!event) {
         return NextResponse.json({ error: 'Event not found or not available' }, { status: 404 })
     }
+
+    // Fetch organiser Connect fields via admin client — anon RLS blocks the join
+    const { data: orgConnectData } = await adminClient
+        .from('organiser_profiles')
+        .select('stripe_account_id, stripe_connect_allowed, stripe_charges_enabled')
+        .eq('id', event.organiser_id)
+        .single()
 
     // Stop sales after event ends
     if (event.end_at && new Date() > new Date(event.end_at)) {
@@ -366,16 +374,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Order total too low' }, { status: 400 })
     }
 
-    type OrgConnect = { stripe_account_id: string | null; stripe_connect_allowed: boolean; stripe_charges_enabled: boolean } | null
-    const orgConnect = event.organiser as OrgConnect
-
     // Use platform destination charge only for organisers with Connect fully onboarded + allowed
     const useDestinationCharge = !!(
-        orgConnect?.stripe_account_id &&
-        orgConnect?.stripe_connect_allowed &&
-        orgConnect?.stripe_charges_enabled
+        orgConnectData?.stripe_account_id &&
+        orgConnectData?.stripe_connect_allowed &&
+        orgConnectData?.stripe_charges_enabled
     )
-    const organiserStripeAccountId = orgConnect?.stripe_account_id || null
+    const organiserStripeAccountId = orgConnectData?.stripe_account_id || null
 
     // Create Stripe PaymentIntent
     // Platform model: if organiser has Connect, Stripe splits the charge automatically —
