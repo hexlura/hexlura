@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
@@ -108,7 +110,56 @@ function IconBank() {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
+export default function SellTicketsClient({
+  ctaHref,
+  bucketName,
+  storagePath,
+}: {
+  ctaHref: string
+  bucketName: string
+  storagePath: string
+}) {
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+
+  const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    setIsDownloading(true)
+    setDownloadError(null)
+
+    try {
+      const supabase = createClient()
+
+      // Extract the path inside the bucket
+      const prefix = bucketName + '/';
+      const pathInsideBucket = storagePath.startsWith(prefix)
+        ? storagePath.substring(prefix.length)
+        : storagePath;
+
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .download(pathInsideBucket)
+
+      if (error || !data) {
+        throw new Error(error?.message || 'File not found')
+      }
+
+      const url = window.URL.createObjectURL(data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'hexlura-organiser-guide.pdf'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    } catch (err: any) {
+      console.error('Download error:', err)
+      setDownloadError('The organiser guide is currently unavailable. Please try again later.')
+      setTimeout(() => setDownloadError(null), 4000)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
   const steps = [
     {
       num: '01',
@@ -704,6 +755,80 @@ export default function SellTicketsClient({ ctaHref }: { ctaHref: string }) {
                 </p>
               </div>
             ))}
+          </div>
+
+          {/* Download Button */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            marginTop: '48px',
+          }}>
+            <button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="sell-calc-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                background: '#FFFFFF',
+                color: '#0A0A0F',
+                border: '1px solid #C0C0C8',
+                padding: '16px 32px',
+                fontSize: '16px',
+                fontWeight: 600,
+                borderRadius: 2,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                transition: 'all 0.2s ease',
+                cursor: isDownloading ? 'wait' : 'pointer',
+                opacity: isDownloading ? 0.7 : 1,
+              }}
+              onMouseOver={e => {
+                if (isDownloading) return;
+                e.currentTarget.style.borderColor = '#0A0A0F';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseOut={e => {
+                if (isDownloading) return;
+                e.currentTarget.style.borderColor = '#C0C0C8';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              {isDownloading ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <line x1="12" y1="18" x2="12" y2="22" />
+                  <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+                  <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+                  <line x1="2" y1="12" x2="6" y2="12" />
+                  <line x1="18" y1="12" x2="22" y2="12" />
+                  <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+                  <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              )}
+              {isDownloading ? 'Downloading...' : 'Download Organiser Guide'}
+            </button>
+            {downloadError && (
+              <p style={{
+                color: '#E63950',
+                fontSize: '14px',
+                fontWeight: 500,
+                marginTop: '12px',
+                fontFamily: 'DM Sans, sans-serif',
+                textAlign: 'center',
+              }}>
+                {downloadError}
+              </p>
+            )}
           </div>
         </div>
       </section>

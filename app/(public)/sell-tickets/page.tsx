@@ -22,5 +22,16 @@ export default async function SellTicketsPage() {
         else ctaHref = '/organiser/apply'
     }
 
-    return <SellTicketsClient ctaHref={ctaHref} />
+    // Fetch the organiser guide storage details from the assets table
+    const { data: asset } = await supabase
+        .from('assets')
+        .select('bucket_name, storage_path')
+        .eq('file_name', 'hexlura-organiser-guide.pdf')
+        .eq('is_active', true)
+        .maybeSingle()
+
+    const bucketName = asset?.bucket_name || 'terms-and-guidelines'
+    const storagePath = asset?.storage_path || 'terms-and-guidelines/organiser/guidelines/hexlura-organiser-guide.pdf'
+
+    return <SellTicketsClient ctaHref={ctaHref} bucketName={bucketName} storagePath={storagePath} />
 }
