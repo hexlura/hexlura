@@ -493,12 +493,15 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
             }
         }
 
-        // Update quantity_sold
-        const { error: rpcError } = await supabase.rpc('increment_quantity_sold', {
+        // Update quantity_sold — RPC does the check-and-increment atomically so
+        // concurrent sales for the same ticket type can't overwrite each other.
+        const { data: incremented, error: rpcError } = await supabase.rpc('increment_quantity_sold', {
             p_ticket_type_id: item.ticket_type_id,
             p_quantity: item.quantity,
         })
         if (rpcError) {
+            // RPC itself failed (e.g. missing function) — fall back so a sale is never lost,
+            // at the cost of losing the atomicity guarantee for this one update.
             const { data: current } = await supabase
                 .from('ticket_types')
                 .select('quantity_sold')
@@ -508,6 +511,12 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
                 .from('ticket_types')
                 .update({ quantity_sold: (current?.quantity_sold ?? 0) + item.quantity })
                 .eq('id', item.ticket_type_id)
+        } else if (incremented === false) {
+            // RPC ran fine and correctly refused — no capacity left. Refund and cancel.
+            console.error(`Oversold on commit: ${item.ticket_type_id} — refunding and cancelling booking ${booking.id}`)
+            await getStripe().refunds.create({ payment_intent: paymentIntent.id })
+            await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id)
+            return
         }
     }
 
@@ -863,13 +872,15 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             }
         }
 
-        // Update quantity_sold
-        const { error: rpcError } = await supabase.rpc('increment_quantity_sold', {
+        // Update quantity_sold — RPC does the check-and-increment atomically so
+        // concurrent sales for the same ticket type can't overwrite each other.
+        const { data: incremented, error: rpcError } = await supabase.rpc('increment_quantity_sold', {
             p_ticket_type_id: item.ticket_type_id,
             p_quantity: item.quantity,
         })
-        // Fallback: direct update if RPC doesn't exist
         if (rpcError) {
+            // RPC itself failed (e.g. missing function) — fall back so a sale is never lost,
+            // at the cost of losing the atomicity guarantee for this one update.
             const { data: current } = await supabase
                 .from('ticket_types')
                 .select('quantity_sold')
@@ -879,6 +890,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 .from('ticket_types')
                 .update({ quantity_sold: (current?.quantity_sold ?? 0) + item.quantity })
                 .eq('id', item.ticket_type_id)
+        } else if (incremented === false) {
+            // RPC ran fine and correctly refused — no capacity left. Refund and cancel.
+            console.error(`Oversold on commit: ${item.ticket_type_id} — refunding and cancelling booking ${booking.id}`)
+            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id)
+            return
         }
     }
 

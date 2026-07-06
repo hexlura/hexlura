@@ -20,58 +20,32 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createAdminClient()
-    const reservationIds: string[] = []
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
-    for (const ticket of tickets) {
-        const { ticket_type_id, quantity } = ticket
+    // Atomic, all-or-nothing: locks each ticket type row, re-checks capacity
+    // under that lock, and inserts — so concurrent requests for the same
+    // ticket type can't all pass the check before any of them inserts, and a
+    // failure partway through a multi-item request rolls back the whole call
+    // instead of leaving earlier items reserved. See migrations/054.
+    const { data: reservations, error } = await adminClient.rpc('reserve_tickets', {
+        p_user_id: user.id,
+        p_session_id: session_id,
+        p_expires_at: expiresAt,
+        p_items: tickets.map((t) => ({ ticket_type_id: t.ticket_type_id, quantity: t.quantity })),
+    })
 
-        // Get ticket type availability
-        const { data: ticketType } = await adminClient
-            .from('ticket_types')
-            .select('quantity_total, quantity_sold')
-            .eq('id', ticket_type_id)
-            .single()
-
-        if (!ticketType) {
-            return NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 })
-        }
-
-        // Count all active reservations for this ticket type
-        const { data: activeReservations } = await adminClient
-            .from('reservations')
-            .select('quantity')
-            .eq('ticket_type_id', ticket_type_id)
-            .eq('status', 'active')
-            .gt('expires_at', new Date().toISOString())
-
-        const reservedQty = activeReservations?.reduce((sum, r) => sum + r.quantity, 0) ?? 0
-        const available = ticketType.quantity_total - ticketType.quantity_sold - reservedQty
-
-        if (quantity > available) {
+    if (error) {
+        if (error.message?.startsWith('SOLD_OUT:')) {
             return NextResponse.json({ success: false, message: 'Tickets sold out' }, { status: 409 })
         }
-
-        // Create reservation
-        const { data: reservation, error } = await adminClient
-            .from('reservations')
-            .insert({
-                ticket_type_id,
-                user_id: user.id,
-                quantity,
-                session_id,
-                expires_at: expiresAt,
-                status: 'active',
-            })
-            .select('id')
-            .single()
-
-        if (error || !reservation) {
-            return NextResponse.json({ success: false, message: 'Failed to create reservation' }, { status: 500 })
+        if (error.message?.startsWith('TICKET_NOT_FOUND:')) {
+            return NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 })
         }
-
-        reservationIds.push(reservation.id)
+        console.error('reserve_tickets RPC failed:', error.message)
+        return NextResponse.json({ success: false, message: 'Failed to create reservation' }, { status: 500 })
     }
+
+    const reservationIds = (reservations ?? []).map((r: { reservation_id: string }) => r.reservation_id)
 
     return NextResponse.json({ success: true, reservation_ids: reservationIds, expires_at: expiresAt })
 }
