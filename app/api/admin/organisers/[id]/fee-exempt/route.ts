@@ -13,24 +13,31 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const { allowed } = await request.json() as { allowed: boolean }
-    if (typeof allowed !== 'boolean') {
-        return NextResponse.json({ error: 'allowed must be a boolean' }, { status: 400 })
+    const { exempt } = await request.json() as { exempt: boolean }
+    if (typeof exempt !== 'boolean') {
+        return NextResponse.json({ error: 'exempt must be a boolean' }, { status: 400 })
     }
 
-    const updateRow: Record<string, boolean | string> = { stripe_connect_allowed: allowed }
-    if (!allowed) {
-        // Revoking access — fall back to bank_transfer so the organiser isn't
-        // left selecting a payout method they're no longer permitted to use,
-        // and fee exemption can't outlive the Connect access it depends on.
-        updateRow.payout_method = 'bank_transfer'
-        updateRow.fee_exempt = false
+    if (exempt) {
+        const { data: organiser } = await adminClient
+            .from('organiser_profiles')
+            .select('stripe_connect_allowed, stripe_charges_enabled')
+            .eq('id', params.id)
+            .single()
+
+        if (!organiser?.stripe_connect_allowed || !organiser?.stripe_charges_enabled) {
+            return NextResponse.json(
+                { error: 'Organiser must have Stripe Connect fully enabled before granting a fee exemption' },
+                { status: 400 }
+            )
+        }
     }
-    await adminClient.from('organiser_profiles').update(updateRow).eq('id', params.id)
+
+    await adminClient.from('organiser_profiles').update({ fee_exempt: exempt }).eq('id', params.id)
 
     await logAuditAction({
         actorId: user.id,
-        action: allowed ? 'allow_stripe_connect' : 'revoke_stripe_connect',
+        action: exempt ? 'grant_fee_exemption' : 'revoke_fee_exemption',
         entityType: 'organiser',
         entityId: params.id,
     })

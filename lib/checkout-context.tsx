@@ -71,7 +71,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         step: 1,
     })
 
-    const feeConfig = useFeeConfig()
+    const feeConfig = useFeeConfig(state.eventId || undefined)
 
     const ticketSubtotalPence = state.items.reduce(
         (sum, item) => sum + item.price_pence * item.quantity,
