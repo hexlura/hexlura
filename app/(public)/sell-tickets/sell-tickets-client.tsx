@@ -152,7 +152,7 @@ export default function SellTicketsClient({
       a.click()
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Download error:', err)
       setDownloadError('The organiser guide is currently unavailable. Please try again later.')
       setTimeout(() => setDownloadError(null), 4000)
