@@ -764,6 +764,17 @@ export default function SellTicketsClient({
             alignItems: 'center',
             marginTop: '48px',
           }}>
+            <p style={{
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: '14px',
+              fontWeight: 500,
+              marginTop: '12px',
+              color: '#0A0A0F',
+              textAlign: 'center',
+              marginBottom: '12px',
+            }}>
+              Hexlura Event Organiser Guidelines
+            </p>
             <button
               onClick={handleDownload}
               disabled={isDownloading}
@@ -772,8 +783,8 @@ export default function SellTicketsClient({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
-                background: '#FFFFFF',
-                color: '#0A0A0F',
+                background: '#0A0A0F',
+                color: '#FFFFFF',
                 border: '1px solid #C0C0C8',
                 padding: '16px 32px',
                 fontSize: '16px',
@@ -815,7 +826,7 @@ export default function SellTicketsClient({
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
               )}
-              {isDownloading ? 'Downloading...' : 'Download Organiser Guide'}
+              {isDownloading ? 'Downloading...' : 'Download'}
             </button>
             {downloadError && (
               <p style={{
