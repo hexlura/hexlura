@@ -26,19 +26,22 @@ export async function GET(request: NextRequest) {
     }
 
     const eventId = request.nextUrl.searchParams.get('event_id')
+    console.log('[fees-debug] eventId param:', eventId)
     if (eventId) {
-        const { data: event } = await adminClient
+        const { data: event, error: eventError } = await adminClient
             .from('events')
             .select('organiser_id')
             .eq('id', eventId)
             .single()
+        console.log('[fees-debug] event lookup:', JSON.stringify(event), 'error:', JSON.stringify(eventError))
 
         if (event?.organiser_id) {
-            const { data: organiser } = await adminClient
+            const { data: organiser, error: organiserError } = await adminClient
                 .from('organiser_profiles')
                 .select('booking_fee_exempt, processing_fee_exempt')
                 .eq('id', event.organiser_id)
                 .single()
+            console.log('[fees-debug] organiser lookup:', JSON.stringify(organiser), 'error:', JSON.stringify(organiserError))
 
             if (organiser?.booking_fee_exempt) {
                 config.percent = 0
@@ -50,6 +53,7 @@ export async function GET(request: NextRequest) {
             }
         }
     }
+    console.log('[fees-debug] final config:', JSON.stringify(config))
 
     return NextResponse.json(config, {
         headers: { 'Cache-Control': 'no-store' },
