@@ -36,6 +36,7 @@ interface CheckoutState {
     promo: PromoDiscount | null
     clientSecret: string | null
     paymentIntentId: string | null
+    connectedAccountId: string | null
     step: number
 }
 
@@ -45,7 +46,7 @@ interface CheckoutContextType {
     setEventInfo: (info: { eventId: string; eventTitle: string; eventDate: string; eventTime: string; venueName: string }) => void
     setAttendeeDetails: (details: AttendeeDetails) => void
     setPromo: (promo: PromoDiscount | null) => void
-    setPaymentInfo: (clientSecret: string, paymentIntentId: string) => void
+    setPaymentInfo: (clientSecret: string, paymentIntentId: string, connectedAccountId: string | null) => void
     setStep: (step: number) => void
     ticketSubtotalPence: number
     discountPence: number
@@ -68,6 +69,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         promo: null,
         clientSecret: null,
         paymentIntentId: null,
+        connectedAccountId: null,
         step: 1,
     })
 
@@ -97,8 +99,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 setEventInfo: (info) => setState((s) => ({ ...s, ...info })),
                 setAttendeeDetails: (attendeeDetails) => setState((s) => ({ ...s, attendeeDetails })),
                 setPromo: (promo) => setState((s) => ({ ...s, promo })),
-                setPaymentInfo: (clientSecret, paymentIntentId) =>
-                    setState((s) => ({ ...s, clientSecret, paymentIntentId })),
+                setPaymentInfo: (clientSecret, paymentIntentId, connectedAccountId) =>
+                    setState((s) => ({ ...s, clientSecret, paymentIntentId, connectedAccountId })),
                 setStep: (step) => setState((s) => ({ ...s, step })),
                 ticketSubtotalPence,
                 discountPence,

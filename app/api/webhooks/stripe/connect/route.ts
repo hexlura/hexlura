@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
+import { processPaymentIntentSucceeded } from '@/lib/process-payment-success'
 
 export async function POST(req: NextRequest) {
     const body = await req.text()
@@ -24,6 +25,31 @@ export async function POST(req: NextRequest) {
     } catch (err) {
         console.error('Connect webhook signature verification failed:', err)
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    }
+
+    // Direct-charge PaymentIntents (fully fee-exempt Connect organisers) are created
+    // directly on the connected account, so their events arrive here rather than on
+    // the platform webhook. Filter on our own metadata so unrelated activity on a
+    // Standard connected account's own Stripe usage isn't mistaken for a Hexlura sale.
+    if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+
+        if (paymentIntent.metadata?.event_id && paymentIntent.metadata?.charge_type === 'direct') {
+            try {
+                await processPaymentIntentSucceeded(paymentIntent, event.account)
+            } catch (err) {
+                console.error('Error handling connect payment_intent.succeeded:', err)
+                // Still return 200 so Stripe does not retry
+            }
+        }
+    }
+
+    if (event.type === 'payment_intent.payment_failed') {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+
+        if (paymentIntent.metadata?.event_id && paymentIntent.metadata?.charge_type === 'direct') {
+            console.error('Direct charge payment failed:', paymentIntent.id, paymentIntent.last_payment_error?.message)
+        }
     }
 
     if (event.type === 'account.updated') {

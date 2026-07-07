@@ -1,13 +1,9 @@
 import Stripe from 'stripe'
-import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { render } from '@react-email/components'
 import BookingConfirmation from '@/emails/booking-confirmation'
 import NewBookingOrganiser from '@/emails/new-booking-organiser'
-import PayoutFailedAdmin from '@/emails/payout-failed-admin'
-import { sendOrganiserIdentityVerifiedEmail } from '@/lib/email'
-import { processPaymentIntentSucceeded } from '@/lib/process-payment-success'
 import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
 
@@ -15,324 +11,18 @@ function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
 }
 
-export async function POST(req: NextRequest) {
-    const body = await req.text()
-    const signature = req.headers.get('stripe-signature')
-
-    if (!signature) {
-        return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
-    }
-
-    let event: Stripe.Event
-
-    try {
-        event = getStripe().webhooks.constructEvent(
-            body,
-            signature,
-            process.env.STRIPE_WEBHOOK_SECRET!
-        )
-    } catch (err) {
-        console.error('Webhook signature verification failed:', err)
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
-    }
-
-    if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent
-
-        try {
-            await processPaymentIntentSucceeded(paymentIntent)
-        } catch (err) {
-            console.error('Error handling payment_intent.succeeded:', err)
-            // Still return 200 so Stripe does not retry
-        }
-    }
-
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as Stripe.Checkout.Session
-
-        try {
-            await handleCheckoutComplete(session)
-        } catch (err) {
-            console.error('Error handling checkout.session.completed:', err)
-            // Still return 200 so Stripe does not retry
-        }
-    }
-
-    if (event.type === 'payment_intent.payment_failed') {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent
-        const bookingRef = paymentIntent.metadata?.booking_ref
-
-        if (bookingRef) {
-            try {
-                const supabase = createAdminClient()
-
-                const { data: booking } = await supabase
-                    .from('bookings')
-                    .select('id, status')
-                    .eq('booking_ref', bookingRef)
-                    .maybeSingle()
-
-                if (booking && booking.status === 'pending') {
-                    await supabase
-                        .from('bookings')
-                        .update({ status: 'cancelled' })
-                        .eq('id', booking.id)
-
-                    const { data: bookingItems } = await supabase
-                        .from('booking_items')
-                        .select('ticket_type_id, quantity')
-                        .eq('booking_id', booking.id)
-
-                    if (bookingItems) {
-                        for (const item of bookingItems) {
-                            const { data: tt } = await supabase
-                                .from('ticket_types')
-                                .select('quantity_sold')
-                                .eq('id', item.ticket_type_id)
-                                .single()
-
-                            if (tt) {
-                                await supabase
-                                    .from('ticket_types')
-                                    .update({ quantity_sold: Math.max(0, tt.quantity_sold - item.quantity) })
-                                    .eq('id', item.ticket_type_id)
-                            }
-                        }
-                    }
-
-                    console.log('Payment failed — booking cancelled and tickets released:', bookingRef)
-                }
-            } catch (err) {
-                console.error('Error handling payment_intent.payment_failed:', err)
-            }
-        } else {
-            console.error('Payment failed:', paymentIntent.id, paymentIntent.last_payment_error?.message)
-        }
-    }
-
-    if (event.type === 'transfer.reversed') {
-        const transfer = event.data.object as Stripe.Transfer
-
-        try {
-            const supabase = createAdminClient()
-
-            const { data: payout } = await supabase
-                .from('payouts')
-                .select('id, amount_pence, organiser_id, event_id')
-                .eq('stripe_transfer_id', transfer.id)
-                .maybeSingle()
-
-            if (payout) {
-                await supabase
-                    .from('payouts')
-                    .update({ status: 'failed' })
-                    .eq('id', payout.id)
-
-                const { data: adminUser } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('role', 'admin')
-                    .limit(1)
-                    .maybeSingle()
-
-                if (adminUser) {
-                    const amountPounds = ((payout.amount_pence ?? 0) / 100).toFixed(2)
-                    await supabase.from('notifications').insert({
-                        user_id: adminUser.id,
-                        type: 'payout_failed',
-                        title: 'Payout transfer failed',
-                        body: `Payout transfer failed for £${amountPounds} — manual action required`,
-                    })
-                }
-
-                // Send payout failed email to admin
-                void (async () => {
-                    try {
-                        let organiserName = 'Unknown Organiser'
-                        let eventName = 'Unknown Event'
-
-                        if (payout.organiser_id) {
-                            const { data: orgProfile } = await supabase
-                                .from('organiser_profiles')
-                                .select('org_name')
-                                .eq('id', payout.organiser_id)
-                                .single()
-                            if (orgProfile?.org_name) organiserName = orgProfile.org_name
-                        }
-
-                        if (payout.event_id) {
-                            const { data: eventRow } = await supabase
-                                .from('events')
-                                .select('title')
-                                .eq('id', payout.event_id)
-                                .single()
-                            if (eventRow?.title) eventName = eventRow.title
-                        }
-
-                        const html = await render(PayoutFailedAdmin({
-                            organiserName,
-                            eventName,
-                            amount: `£${((payout.amount_pence ?? 0) / 100).toFixed(2)}`,
-                            failureReason: 'Stripe transfer failed — check Stripe dashboard for details',
-                            dashboardUrl: 'https://www.hexlura.com/admin/payouts',
-                        }))
-
-                        await getResend().emails.send({
-                            from: 'Hexlura <noreply@hexlura.com>',
-                            to: 'support@hexlura.com',
-                            subject: '⚠️ Payout failed — manual action required',
-                            html,
-                        })
-                    } catch (err) {
-                        console.error('Failed to send payout failed email:', err)
-                    }
-                })()
-            }
-
-            console.log('Transfer failed — payout marked as failed:', transfer.id)
-        } catch (err) {
-            console.error('Error handling transfer.failed:', err)
-        }
-    }
-
-    if (
-        event.type === 'identity.verification_session.verified' ||
-        event.type === 'identity.verification_session.requires_input' ||
-        event.type === 'identity.verification_session.canceled'
-    ) {
-        try {
-            await handleIdentityVerificationEvent(event)
-        } catch (err) {
-            console.error(`Error handling ${event.type}:`, err)
-        }
-    }
-
-    return NextResponse.json({ received: true }, { status: 200 })
-}
-
-async function handleIdentityVerificationEvent(event: Stripe.Event) {
-    const session = event.data.object as Stripe.Identity.VerificationSession
+/**
+ * Shared by both webhook endpoints: the platform webhook (app/api/webhooks/stripe/route.ts)
+ * for destination/platform charges, and the Connect webhook
+ * (app/api/webhooks/stripe/connect/route.ts) for direct charges, whose
+ * payment_intent.succeeded events fire on the connected account instead of the
+ * platform. `stripeAccountId` is only passed for the latter — refunds on a
+ * direct-charge PaymentIntent must be scoped to the connected account it lives on.
+ */
+export async function processPaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, stripeAccountId?: string) {
     const supabase = createAdminClient()
-
-    // Match by metadata.organiser_id (set when we create the session) with a
-    // fallback to identity_session_id in case metadata is missing.
-    const organiserId = session.metadata?.organiser_id
-    let organiserRow: { id: string; user_id: string; org_name: string } | null = null
-
-    if (organiserId) {
-        const { data } = await supabase
-            .from('organiser_profiles')
-            .select('id, user_id, org_name')
-            .eq('id', organiserId)
-            .maybeSingle()
-        organiserRow = data
-    }
-
-    if (!organiserRow) {
-        const { data } = await supabase
-            .from('organiser_profiles')
-            .select('id, user_id, org_name')
-            .eq('identity_session_id', session.id)
-            .maybeSingle()
-        organiserRow = data
-    }
-
-    if (!organiserRow) {
-        console.warn(`Identity webhook ${event.type} received but no matching organiser for session ${session.id}`)
-        return
-    }
-
-    if (event.type === 'identity.verification_session.verified') {
-        const verifiedAt = new Date()
-        await supabase
-            .from('organiser_profiles')
-            .update({
-                identity_status: 'verified',
-                identity_verified_at: verifiedAt.toISOString(),
-                identity_failure_reason: null,
-            })
-            .eq('id', organiserRow.id)
-
-        // Notify the organiser: in-app + email
-        await supabase.from('notifications').insert({
-            user_id: organiserRow.user_id,
-            type: 'identity_verified',
-            title: 'Identity verified',
-            body: 'Your identity has been verified — payouts are now enabled.',
-            link: '/organiser/payouts',
-        })
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('email, full_name')
-            .eq('id', organiserRow.user_id)
-            .single()
-
-        if (profile?.email) {
-            await sendOrganiserIdentityVerifiedEmail({
-                to: profile.email,
-                fullName: profile.full_name || organiserRow.org_name,
-                orgName: organiserRow.org_name,
-                verifiedAt,
-            })
-        }
-        return
-    }
-
-    if (event.type === 'identity.verification_session.requires_input') {
-        const reason = session.last_error?.reason ?? session.last_error?.code ?? 'unknown'
-        await supabase
-            .from('organiser_profiles')
-            .update({
-                identity_status: 'requires_input',
-                identity_failure_reason: reason,
-            })
-            .eq('id', organiserRow.id)
-
-        await supabase.from('notifications').insert({
-            user_id: organiserRow.user_id,
-            type: 'identity_requires_input',
-            title: 'Identity verification needs another try',
-            body: 'We couldn’t verify your ID. Open settings to try again.',
-            link: '/organiser/settings',
-        })
-        return
-    }
-
-    if (event.type === 'identity.verification_session.canceled') {
-        await supabase
-            .from('organiser_profiles')
-            .update({ identity_status: 'canceled' })
-            .eq('id', organiserRow.id)
-        return
-    }
-}
-
-async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
-    const supabase = createAdminClient()
-
-    // The PaymentIntent holds all metadata set by create-intent/route.ts
-    const paymentIntentId = session.payment_intent as string
-    if (!paymentIntentId) {
-        console.error('No payment_intent on session:', session.id)
-        return
-    }
-
-    // Idempotency: if a booking already exists for this PaymentIntent, skip
-    const { data: existing } = await supabase
-        .from('bookings')
-        .select('id')
-        .eq('stripe_payment_intent_id', paymentIntentId)
-        .maybeSingle()
-
-    if (existing) {
-        console.log('Booking already exists for payment_intent:', paymentIntentId)
-        return
-    }
-
-    // Retrieve PaymentIntent to access metadata set at checkout creation
-    const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId)
     const meta = paymentIntent.metadata
+    const stripeOptions = stripeAccountId ? { stripeAccount: stripeAccountId } : undefined
 
     const eventId = meta.event_id
     const userId = meta.user_id
@@ -351,7 +41,19 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     const promoterCommissionPence = meta.promoter_commission_pence ? parseInt(meta.promoter_commission_pence) : null
 
     if (!eventId || !userId) {
-        console.error('Missing required metadata in payment_intent:', paymentIntentId)
+        console.error('Missing required metadata in payment_intent:', paymentIntent.id)
+        return
+    }
+
+    // Idempotency: skip if booking already exists for this PaymentIntent
+    const { data: existing } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('stripe_payment_intent_id', paymentIntent.id)
+        .maybeSingle()
+
+    if (existing) {
+        console.log('Booking already exists for payment_intent:', paymentIntent.id)
         return
     }
 
@@ -367,14 +69,14 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
         if (!ticketType) {
             console.error(`Ticket type ${item.ticket_type_id} not found — refunding`)
-            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await getStripe().refunds.create({ payment_intent: paymentIntent.id }, stripeOptions)
             return
         }
 
         const available = ticketType.quantity_total - ticketType.quantity_sold
         if (item.quantity > available) {
             console.error(`Oversold: ${ticketType.name} — refunding`)
-            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await getStripe().refunds.create({ payment_intent: paymentIntent.id }, stripeOptions)
             return
         }
     }
@@ -392,15 +94,15 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             discount_pence: discountPence,
             total_pence: totalPence,
             promo_code_id: promoCodeId,
-            stripe_payment_intent_id: paymentIntentId,
-            payment_method: 'card',
+            stripe_payment_intent_id: paymentIntent.id,
+            payment_method: paymentIntent.payment_method_types?.[0] || 'card',
             confirmed_at: new Date().toISOString(),
             needs_manual_payout: !organiserStripeAccountId,
             promoter_id: promoterId,
             promoter_commission_percent: promoterCommissionPercent,
             promoter_commission_pence: promoterCommissionPence,
         })
-        .select('id, booking_ref')
+        .select('id, booking_ref, event_id')
         .single()
 
     if (bookingError || !booking) {
@@ -411,8 +113,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     console.log('Booking created:', booking.booking_ref)
 
     // Promoter earnings ledger — best-effort, isolated try/catch.
+    // The UNIQUE(booking_id) constraint makes this idempotent on Stripe retries.
     if (promoterId) {
         try {
+            // Re-validate the assignment is still active (could have been removed mid-flight)
             const { data: assignment } = await supabase
                 .from('promoter_event_assignments')
                 .select('organiser_id')
@@ -441,9 +145,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     }
 
     // Update profile phone if provided
-    const attendeePhoneCS = meta.attendee_phone
-    if (attendeePhoneCS && userId) {
-        await supabase.from('profiles').update({ phone: attendeePhoneCS }).eq('id', userId)
+    const attendeePhone = meta.attendee_phone
+    if (attendeePhone && userId) {
+        await supabase.from('profiles').update({ phone: attendeePhone }).eq('id', userId)
     }
 
     // Mark reservations as confirmed for this user
@@ -523,7 +227,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         } else if (incremented === false) {
             // RPC ran fine and correctly refused — no capacity left. Refund and cancel.
             console.error(`Oversold on commit: ${item.ticket_type_id} — refunding and cancelling booking ${booking.id}`)
-            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await getStripe().refunds.create({ payment_intent: paymentIntent.id }, stripeOptions)
             await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id)
             return
         }
@@ -545,8 +249,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
     }
 
-    // Platform model: destination charge already split funds at charge time. Only do
-    // a manual transfer for legacy/bank-transfer organisers.
+    // Platform model: if use_destination_charge (or a direct charge), Stripe already
+    // split/settled the funds at charge time. Only fall back to a manual transfer if
+    // this was neither — i.e. a plain platform charge for an organiser who has a
+    // connected account but isn't (or is no longer) allowed to use it.
     if (organiserStripeAccountId && !useDestinationCharge) {
         const transferAmount = ticketSubtotalPence - discountPence
         if (transferAmount > 0) {
@@ -685,4 +391,3 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
     }
 }
-

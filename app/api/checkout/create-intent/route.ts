@@ -386,47 +386,56 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Order total too low' }, { status: 400 })
     }
 
-    // Create Stripe PaymentIntent
+    // Create Stripe PaymentIntent.
     // Platform model: if organiser has Connect, Stripe splits the charge automatically —
     // application_fee_amount stays with Hexlura (booking fee + order processing fee),
     // the remainder (ticket subtotal minus any discount) goes to the organiser instantly.
-    // on_behalf_of only applies when BOTH fees are waived (application_fee_amount is then
-    // fully 0), making the organiser the merchant of record so Stripe's own processing
-    // cost comes out of their connected account instead of the platform's. A partial
-    // waiver (only one fee off) still leaves the platform collecting some fee revenue,
-    // so it keeps absorbing Stripe's cut from that, same as an unexempted organiser.
+    // When BOTH fees are waived, application_fee_amount would be 0 anyway — but a
+    // destination charge is *always* billed to the platform for Stripe's own processing
+    // fee regardless of on_behalf_of (confirmed in Stripe's docs), so that case instead
+    // uses a genuine direct charge: the PaymentIntent is created directly on the
+    // organiser's connected account (via the stripeAccount request option), which is the
+    // only charge type where the connected account itself can bear Stripe's own cut.
+    // A partial waiver (only one fee off) still leaves the platform collecting some fee
+    // revenue, so it stays a normal destination charge and keeps absorbing Stripe's cut.
     const bothFeesExempt = bookingFeeExempt && processingFeeExempt
+    const useDirectCharge = useDestinationCharge && bothFeesExempt
     const platformFeePence = totalBookingFeePence + orderProcessingFeePence
-    const paymentIntent = await getStripe().paymentIntents.create({
-        amount: totalPence,
-        currency: 'gbp',
-        automatic_payment_methods: { enabled: true },
-        ...(useDestinationCharge ? {
-            application_fee_amount: platformFeePence,
-            transfer_data: { destination: organiserStripeAccountId! },
-            ...(bothFeesExempt ? { on_behalf_of: organiserStripeAccountId! } : {}),
-        } : {}),
-        metadata: {
-            event_id,
-            user_id: user.id,
-            organiser_stripe_account_id: organiserStripeAccountId || '',
-            use_destination_charge: useDestinationCharge ? 'true' : 'false',
-            booking_fee_exempt: bookingFeeExempt ? 'true' : 'false',
-            processing_fee_exempt: processingFeeExempt ? 'true' : 'false',
-            ticket_subtotal_pence: String(ticketSubtotalPence),
-            booking_fee_pence: String(totalBookingFeePence),
-            order_processing_fee_pence: String(orderProcessingFeePence),
-            discount_pence: String(discountPence),
-            promo_code_id: promoCodeId || '',
-            items: JSON.stringify(items),
-            attendee_name: attendee_details.full_name,
-            attendee_email: attendee_details.email,
-            attendee_phone: attendee_details.phone,
-            promoter_id: promoterId || '',
-            promoter_commission_percent: promoterCommissionPercent !== null ? String(promoterCommissionPercent) : '',
-            promoter_commission_pence: promoterCommissionPence !== null ? String(promoterCommissionPence) : '',
+    const chargeType = useDirectCharge ? 'direct' : useDestinationCharge ? 'destination' : 'platform'
+
+    const paymentIntent = await getStripe().paymentIntents.create(
+        {
+            amount: totalPence,
+            currency: 'gbp',
+            automatic_payment_methods: { enabled: true },
+            ...(useDestinationCharge && !useDirectCharge ? {
+                application_fee_amount: platformFeePence,
+                transfer_data: { destination: organiserStripeAccountId! },
+            } : {}),
+            metadata: {
+                event_id,
+                user_id: user.id,
+                organiser_stripe_account_id: organiserStripeAccountId || '',
+                use_destination_charge: useDestinationCharge ? 'true' : 'false',
+                charge_type: chargeType,
+                booking_fee_exempt: bookingFeeExempt ? 'true' : 'false',
+                processing_fee_exempt: processingFeeExempt ? 'true' : 'false',
+                ticket_subtotal_pence: String(ticketSubtotalPence),
+                booking_fee_pence: String(totalBookingFeePence),
+                order_processing_fee_pence: String(orderProcessingFeePence),
+                discount_pence: String(discountPence),
+                promo_code_id: promoCodeId || '',
+                items: JSON.stringify(items),
+                attendee_name: attendee_details.full_name,
+                attendee_email: attendee_details.email,
+                attendee_phone: attendee_details.phone,
+                promoter_id: promoterId || '',
+                promoter_commission_percent: promoterCommissionPercent !== null ? String(promoterCommissionPercent) : '',
+                promoter_commission_pence: promoterCommissionPence !== null ? String(promoterCommissionPence) : '',
+            },
         },
-    })
+        useDirectCharge ? { stripeAccount: organiserStripeAccountId! } : undefined
+    )
 
     // Confirm active reservations for this user so they aren't double-counted
     const confirmClient = createAdminClient()
@@ -442,5 +451,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
         client_secret: paymentIntent.client_secret,
         payment_intent_id: paymentIntent.id,
+        connected_account_id: useDirectCharge ? organiserStripeAccountId : null,
     })
 }

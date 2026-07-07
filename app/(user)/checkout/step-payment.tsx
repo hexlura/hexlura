@@ -7,7 +7,25 @@ import { useCheckout } from '@/lib/checkout-context'
 import { formatPence } from '@/lib/fees'
 import OrderSummary from './order-summary'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+// Direct-charge PaymentIntents (fully fee-exempt Connect organisers) live on the
+// connected account, not the platform — Stripe.js must be scoped to that account
+// to find/confirm their client_secret. Cached per account id so we don't reload
+// Stripe.js on every render; undefined (no connected account) reuses the same
+// cache key as the default platform-scoped instance.
+const stripePromiseCache = new Map<string, ReturnType<typeof loadStripe>>()
+function getStripePromise(connectedAccountId: string | null) {
+    const key = connectedAccountId || '__platform__'
+    if (!stripePromiseCache.has(key)) {
+        stripePromiseCache.set(
+            key,
+            loadStripe(
+                process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+                connectedAccountId ? { stripeAccount: connectedAccountId } : undefined
+            )
+        )
+    }
+    return stripePromiseCache.get(key)!
+}
 
 function PaymentForm() {
     const stripe = useStripe()
@@ -132,7 +150,7 @@ export default function StepPayment() {
                     return
                 }
 
-                setPaymentInfo(data.client_secret, data.payment_intent_id)
+                setPaymentInfo(data.client_secret, data.payment_intent_id, data.connected_account_id || null)
             } catch {
                 setError('Network error. Please try again.')
             }
@@ -184,7 +202,7 @@ export default function StepPayment() {
 
                 {state.clientSecret && (
                     <Elements
-                        stripe={stripePromise}
+                        stripe={getStripePromise(state.connectedAccountId)}
                         options={{
                             clientSecret: state.clientSecret,
                             appearance: {
