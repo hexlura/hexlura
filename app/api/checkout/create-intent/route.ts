@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Fetch organiser Connect fields via admin client — anon RLS blocks the join
     const { data: orgConnectData } = await adminClient
         .from('organiser_profiles')
-        .select('stripe_account_id, stripe_connect_allowed, stripe_charges_enabled, fee_exempt')
+        .select('stripe_account_id, stripe_connect_allowed, stripe_charges_enabled, booking_fee_exempt, processing_fee_exempt')
         .eq('id', event.organiser_id)
         .single()
 
@@ -77,7 +77,9 @@ export async function POST(request: NextRequest) {
         orgConnectData?.stripe_charges_enabled
     )
     const organiserStripeAccountId = orgConnectData?.stripe_account_id || null
-    const feeExempt = useDestinationCharge && !!orgConnectData?.fee_exempt
+    // Independent of Connect status — works for bank-transfer organisers too.
+    const bookingFeeExempt = !!orgConnectData?.booking_fee_exempt
+    const processingFeeExempt = !!orgConnectData?.processing_fee_exempt
 
     // Stop sales after event ends
     if (event.end_at && new Date() > new Date(event.end_at)) {
@@ -170,8 +172,8 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    if (feeExempt) totalBookingFeePence = 0
-    const orderProcessingFeePence = feeExempt ? 0 : (ticketSubtotalPence > 0 ? feeConfig.processingFeePence : 0)
+    if (bookingFeeExempt) totalBookingFeePence = 0
+    const orderProcessingFeePence = processingFeeExempt ? 0 : (ticketSubtotalPence > 0 ? feeConfig.processingFeePence : 0)
     const totalPence = ticketSubtotalPence - discountPence + totalBookingFeePence + orderProcessingFeePence
 
     // Validate promoter referral code (if any) — must have an active assignment for THIS event,
@@ -388,9 +390,12 @@ export async function POST(request: NextRequest) {
     // Platform model: if organiser has Connect, Stripe splits the charge automatically —
     // application_fee_amount stays with Hexlura (booking fee + order processing fee),
     // the remainder (ticket subtotal minus any discount) goes to the organiser instantly.
-    // For fee-exempt organisers, application_fee_amount is 0 and on_behalf_of makes the
-    // organiser the merchant of record, so Stripe's own processing cost comes out of
-    // their connected account balance instead of the platform's.
+    // on_behalf_of only applies when BOTH fees are waived (application_fee_amount is then
+    // fully 0), making the organiser the merchant of record so Stripe's own processing
+    // cost comes out of their connected account instead of the platform's. A partial
+    // waiver (only one fee off) still leaves the platform collecting some fee revenue,
+    // so it keeps absorbing Stripe's cut from that, same as an unexempted organiser.
+    const bothFeesExempt = bookingFeeExempt && processingFeeExempt
     const platformFeePence = totalBookingFeePence + orderProcessingFeePence
     const paymentIntent = await getStripe().paymentIntents.create({
         amount: totalPence,
@@ -399,14 +404,15 @@ export async function POST(request: NextRequest) {
         ...(useDestinationCharge ? {
             application_fee_amount: platformFeePence,
             transfer_data: { destination: organiserStripeAccountId! },
-            ...(feeExempt ? { on_behalf_of: organiserStripeAccountId! } : {}),
+            ...(bothFeesExempt ? { on_behalf_of: organiserStripeAccountId! } : {}),
         } : {}),
         metadata: {
             event_id,
             user_id: user.id,
             organiser_stripe_account_id: organiserStripeAccountId || '',
             use_destination_charge: useDestinationCharge ? 'true' : 'false',
-            fee_exempt: feeExempt ? 'true' : 'false',
+            booking_fee_exempt: bookingFeeExempt ? 'true' : 'false',
+            processing_fee_exempt: processingFeeExempt ? 'true' : 'false',
             ticket_subtotal_pence: String(ticketSubtotalPence),
             booking_fee_pence: String(totalBookingFeePence),
             order_processing_fee_pence: String(orderProcessingFeePence),

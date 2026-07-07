@@ -36,15 +36,16 @@ export async function GET(request: NextRequest) {
         if (event?.organiser_id) {
             const { data: organiser } = await adminClient
                 .from('organiser_profiles')
-                .select('stripe_connect_allowed, stripe_charges_enabled, fee_exempt')
+                .select('booking_fee_exempt, processing_fee_exempt')
                 .eq('id', event.organiser_id)
                 .single()
 
-            const exempt = !!(organiser?.stripe_connect_allowed && organiser?.stripe_charges_enabled && organiser?.fee_exempt)
-            if (exempt) {
+            if (organiser?.booking_fee_exempt) {
                 config.percent = 0
                 config.minPence = 0
                 config.maxPence = 0
+            }
+            if (organiser?.processing_fee_exempt) {
                 config.processingFeePence = 0
             }
         }

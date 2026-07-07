@@ -11,7 +11,7 @@ interface OrganiserDetail {
     stripe_account_id: string | null; stripe_connect_allowed: boolean
     stripe_charges_enabled: boolean; stripe_payouts_enabled: boolean
     payout_method: string; is_approved: boolean; is_suspended: boolean
-    fee_exempt: boolean
+    booking_fee_exempt: boolean; processing_fee_exempt: boolean
     identity_status: IdentityStatus
     created_at: string; approved_at: string | null; user_id: string
     profiles: { full_name: string | null; email: string | null } | null
@@ -24,9 +24,10 @@ function fmt(d: string) {
 export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetail }) {
     const router = useRouter()
     const [allowed, setAllowed] = useState(organiser.stripe_connect_allowed)
-    const [feeExempt, setFeeExempt] = useState(organiser.fee_exempt)
+    const [bookingFeeExempt, setBookingFeeExempt] = useState(organiser.booking_fee_exempt)
+    const [processingFeeExempt, setProcessingFeeExempt] = useState(organiser.processing_fee_exempt)
     const [saving, setSaving] = useState(false)
-    const [savingFeeExempt, setSavingFeeExempt] = useState(false)
+    const [savingField, setSavingField] = useState<string | null>(null)
     const [toastMsg, setToastMsg] = useState<string | null>(null)
 
     function showToast(msg: string) {
@@ -52,18 +53,19 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
         }
     }
 
-    async function handleFeeExemptToggle() {
-        const next = !feeExempt
-        setSavingFeeExempt(true)
+    async function handleFeeExemptToggle(field: 'booking_fee_exempt' | 'processing_fee_exempt', current: boolean) {
+        const next = !current
+        setSavingField(field)
         const res = await fetch(`/api/admin/organisers/${organiser.id}/fee-exempt`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ exempt: next }),
+            body: JSON.stringify({ field, exempt: next }),
         })
-        setSavingFeeExempt(false)
+        setSavingField(null)
         if (res.ok) {
-            setFeeExempt(next)
-            showToast(next ? 'Fees waived for this organiser' : 'Fee exemption revoked')
+            if (field === 'booking_fee_exempt') setBookingFeeExempt(next)
+            else setProcessingFeeExempt(next)
+            showToast(next ? 'Fee waived for this organiser' : 'Fee exemption revoked')
             router.refresh()
         } else {
             const { error } = await res.json().catch(() => ({ error: 'Failed to update — try again' }))
@@ -72,6 +74,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
     }
 
     const connectReady = allowed && organiser.stripe_charges_enabled
+    const bothWaived = bookingFeeExempt && processingFeeExempt
 
     return (
         <div className="max-w-3xl">
@@ -147,32 +150,50 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
             </div>
 
             <div className="bg-card border border-border rounded-none p-6 mt-6">
-                <h2 className="font-heading text-xl text-text mb-2">Fee-free for buyers</h2>
+                <h2 className="font-heading text-xl text-text mb-2">Fee waivers</h2>
                 <p className="text-xs text-muted mb-4">
-                    When enabled, buyers pay only the ticket price for this organiser&apos;s events — no booking fee,
-                    no order processing fee. Stripe&apos;s own processing cost comes out of the organiser&apos;s
-                    connected account instead of the platform&apos;s. Requires Stripe Connect to be enabled above.
+                    Waive the booking fee and/or order processing fee for this organiser&apos;s events — independently,
+                    and available regardless of payout method.
+                    {connectReady
+                        ? bothWaived
+                            ? ' Since both are waived, Stripe’s own processing cost comes out of this organiser’s connected account instead of the platform’s.'
+                            : ' If both are waived together, Stripe’s own processing cost shifts to this organiser’s connected account instead of the platform’s; otherwise the platform continues to absorb it.'
+                        : ' This organiser is on bank transfer, so the platform simply collects less on each sale — there’s no connected Stripe account to shift costs to.'}
                 </p>
 
                 <div className="flex items-center justify-between border-t border-border pt-4">
                     <div>
-                        <p className="text-sm text-text font-medium">Waive platform fees</p>
+                        <p className="text-sm text-text font-medium">Waive booking fee</p>
                         <p className="text-xs text-muted mt-0.5">
-                            {!connectReady
-                                ? 'Enable Stripe Connect for this organiser first.'
-                                : feeExempt
-                                    ? 'Buyers of this organiser\'s events pay ticket price only.'
-                                    : 'Buyers pay the standard platform fees.'}
+                            {bookingFeeExempt ? 'Buyers of this organiser\'s events are not charged the booking fee.' : 'Buyers pay the standard booking fee.'}
                         </p>
                     </div>
                     <button
-                        onClick={handleFeeExemptToggle}
-                        disabled={savingFeeExempt || !connectReady}
+                        onClick={() => handleFeeExemptToggle('booking_fee_exempt', bookingFeeExempt)}
+                        disabled={savingField === 'booking_fee_exempt'}
                         role="switch"
-                        aria-checked={feeExempt}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${feeExempt ? 'bg-accent' : 'bg-border'}`}
+                        aria-checked={bookingFeeExempt}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${bookingFeeExempt ? 'bg-accent' : 'bg-border'}`}
                     >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${feeExempt ? 'translate-x-6' : 'translate-x-1'}`} />
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bookingFeeExempt ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-border pt-4 mt-4">
+                    <div>
+                        <p className="text-sm text-text font-medium">Waive order processing fee</p>
+                        <p className="text-xs text-muted mt-0.5">
+                            {processingFeeExempt ? 'Buyers of this organiser\'s events are not charged the order processing fee.' : 'Buyers pay the standard order processing fee.'}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => handleFeeExemptToggle('processing_fee_exempt', processingFeeExempt)}
+                        disabled={savingField === 'processing_fee_exempt'}
+                        role="switch"
+                        aria-checked={processingFeeExempt}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${processingFeeExempt ? 'bg-accent' : 'bg-border'}`}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${processingFeeExempt ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
                 </div>
             </div>

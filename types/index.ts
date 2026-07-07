@@ -29,7 +29,8 @@ export interface OrganiserProfile {
     stripe_connect_allowed: boolean;
     stripe_charges_enabled: boolean;
     stripe_payouts_enabled: boolean;
-    fee_exempt: boolean;
+    booking_fee_exempt: boolean;
+    processing_fee_exempt: boolean;
     organiser_type: 'individual' | 'artist' | 'club_venue' | 'event_company' | 'charity' | 'education';
     payout_method: 'stripe_connect' | 'bank_transfer';
     bank_account_name: string | null;

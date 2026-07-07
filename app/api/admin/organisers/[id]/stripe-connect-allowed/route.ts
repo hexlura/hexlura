@@ -21,10 +21,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const updateRow: Record<string, boolean | string> = { stripe_connect_allowed: allowed }
     if (!allowed) {
         // Revoking access — fall back to bank_transfer so the organiser isn't
-        // left selecting a payout method they're no longer permitted to use,
-        // and fee exemption can't outlive the Connect access it depends on.
+        // left selecting a payout method they're no longer permitted to use.
+        // Fee exemption is independent of Connect status, so it's untouched here.
         updateRow.payout_method = 'bank_transfer'
-        updateRow.fee_exempt = false
     }
     await adminClient.from('organiser_profiles').update(updateRow).eq('id', params.id)
 

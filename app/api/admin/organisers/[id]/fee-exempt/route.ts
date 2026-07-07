@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 
+const VALID_FIELDS = ['booking_fee_exempt', 'processing_fee_exempt'] as const
+type ExemptField = typeof VALID_FIELDS[number]
+
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -13,31 +16,19 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const { exempt } = await request.json() as { exempt: boolean }
+    const { field, exempt } = await request.json() as { field: string; exempt: boolean }
+    if (!VALID_FIELDS.includes(field as ExemptField)) {
+        return NextResponse.json({ error: 'Invalid field' }, { status: 400 })
+    }
     if (typeof exempt !== 'boolean') {
         return NextResponse.json({ error: 'exempt must be a boolean' }, { status: 400 })
     }
 
-    if (exempt) {
-        const { data: organiser } = await adminClient
-            .from('organiser_profiles')
-            .select('stripe_connect_allowed, stripe_charges_enabled')
-            .eq('id', params.id)
-            .single()
-
-        if (!organiser?.stripe_connect_allowed || !organiser?.stripe_charges_enabled) {
-            return NextResponse.json(
-                { error: 'Organiser must have Stripe Connect fully enabled before granting a fee exemption' },
-                { status: 400 }
-            )
-        }
-    }
-
-    await adminClient.from('organiser_profiles').update({ fee_exempt: exempt }).eq('id', params.id)
+    await adminClient.from('organiser_profiles').update({ [field]: exempt }).eq('id', params.id)
 
     await logAuditAction({
         actorId: user.id,
-        action: exempt ? 'grant_fee_exemption' : 'revoke_fee_exemption',
+        action: `${exempt ? 'grant' : 'revoke'}_${field}`,
         entityType: 'organiser',
         entityId: params.id,
     })
