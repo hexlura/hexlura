@@ -3,6 +3,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { FeeConfig } from '@/lib/fees'
 
 export const dynamic = 'force-dynamic'
+// force-dynamic alone does NOT stop Next.js's Data Cache from serving stale
+// Supabase GET responses inside this route — fee-exemption toggles appeared
+// stuck because reads were frozen at first-fetch. Belt and braces with the
+// no-store fetch in lib/supabase/admin.ts.
+export const fetchCache = 'force-no-store'
 
 export async function GET(request: NextRequest) {
     const adminClient = createAdminClient()
@@ -26,22 +31,19 @@ export async function GET(request: NextRequest) {
     }
 
     const eventId = request.nextUrl.searchParams.get('event_id')
-    console.log('[fees-debug] eventId param:', eventId)
     if (eventId) {
-        const { data: event, error: eventError } = await adminClient
+        const { data: event } = await adminClient
             .from('events')
             .select('organiser_id')
             .eq('id', eventId)
             .single()
-        console.log('[fees-debug] event lookup:', JSON.stringify(event), 'error:', JSON.stringify(eventError))
 
         if (event?.organiser_id) {
-            const { data: organiser, error: organiserError } = await adminClient
+            const { data: organiser } = await adminClient
                 .from('organiser_profiles')
                 .select('booking_fee_exempt, processing_fee_exempt')
                 .eq('id', event.organiser_id)
                 .single()
-            console.log('[fees-debug] organiser lookup:', JSON.stringify(organiser), 'error:', JSON.stringify(organiserError))
 
             if (organiser?.booking_fee_exempt) {
                 config.percent = 0
@@ -53,7 +55,6 @@ export async function GET(request: NextRequest) {
             }
         }
     }
-    console.log('[fees-debug] final config:', JSON.stringify(config))
 
     return NextResponse.json(config, {
         headers: { 'Cache-Control': 'no-store' },
