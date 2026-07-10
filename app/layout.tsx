@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import NextTopLoader from 'nextjs-toploader'
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { MetaPixelInit } from '@/components/analytics/MetaPixel'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
@@ -68,7 +67,6 @@ export default async function RootLayout({
           />
           {children}
           <Analytics />
-          <SpeedInsights />
           <Suspense fallback={null}>
             <GoogleAnalytics />
           </Suspense>
