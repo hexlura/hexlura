@@ -90,6 +90,22 @@ function priceToPence(str: string) {
     return isNaN(n) ? 0 : Math.round(n * 100)
 }
 
+function randomSlugSuffix() {
+    return Math.random().toString(36).slice(2, 6)
+}
+
+// RLS blocks reads of other organisers' drafts, so slug availability can't be
+// checked up front — collisions are handled by retrying the write with a
+// suffixed slug when Postgres reports a unique violation (code 23505).
+const PERMISSION_MSG = "Save failed: this account doesn't have permission to change this event. Only the organiser account that owns the event can edit it."
+
+function friendlyDbError(error: { code?: string; message?: string } | null | undefined, action: string): string {
+    if (!error) return `${action} failed — please try again`
+    if (error.code === '23505') return `${action} failed: this event slug is already taken by another event. Change the Event Slug in section 02 and try again.`
+    if (error.code === '42501' || (error.message || '').includes('row-level security')) return PERMISSION_MSG
+    return `${action} failed: ${error.message || 'unexpected error'}. Your changes have NOT been saved.`
+}
+
 export function EventForm({ organiserId, event, ticketTypes: initTickets }: EventFormProps) {
     const router = useRouter()
     const feeConfig = useFeeConfig()
@@ -158,10 +174,15 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
 
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
+    const [saveError, setSaveError] = useState('')
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
     const [openSections, setOpenSections] = useState<Set<number>>(new Set())
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    // Remembers an event created mid-session so a failed save can be retried
+    // without inserting a duplicate event (the `event` prop only updates after
+    // navigation to the edit page).
+    const createdEventIdRef = useRef<string | null>(null)
 
     // Auto-generate slug from title (only if not editing)
     useEffect(() => {
@@ -202,55 +223,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         return () => { if (autoSaveRef.current) clearInterval(autoSaveRef.current) }
     }, [title, description, tickets, status])
 
-    async function getOrCreateEventId(): Promise<string | null> {
-        const supabase = createClient()
-        if (event?.id) return event.id
-
-        const eventSlug = slug || toSlug(title) || `event-${Date.now()}`
-        const { data, error } = await supabase
-            .from('events')
-            .insert({
-                organiser_id: organiserId,
-                title,
-                slug: eventSlug,
-                description,
-                category: category || 'Other',
-                tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-                venue_name: venueName,
-                venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
-                venue_city: venueCity || null,
-                venue_postcode: venuePostcode,
-                venue_lat: venueLat,
-                venue_lng: venueLng,
-                start_at: startAt ? ukTimeToUTC(startAt) : null,
-                end_at: endAt ? ukTimeToUTC(endAt) : null,
-                checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
-                checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
-                banner_url: bannerImages[0] || null,
-                banner_images: bannerImages,
-                youtube_url: youtubeUrl || null,
-                status: 'draft',
-                min_age: minAge,
-                max_tickets_per_order: maxTicketsPerOrder,
-                refund_policy: refundPolicy,
-                ticket_availability: ticketAvailability,
-            })
-            .select('id')
-            .single()
-
-        if (error) { console.error('Create event error:', error); return null }
-        return data.id
-    }
-
-    async function saveDraft() {
-        setSaving(true)
-        const supabase = createClient()
-        const eventId = await getOrCreateEventId()
-        if (!eventId) { setSaving(false); return }
-
-        await supabase.from('events').update({
+    function buildEventPayload(slugValue: string) {
+        return {
             title,
-            slug,
+            slug: slugValue,
             description,
             category: category || 'Other',
             tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
@@ -271,39 +247,111 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             max_tickets_per_order: maxTicketsPerOrder,
             refund_policy: refundPolicy,
             ticket_availability: ticketAvailability,
-        }).eq('id', eventId)
+        }
+    }
 
-        // Upsert ticket types
+    function buildTicketPayload(tt: TicketTypeRow, sortOrder: number) {
+        return {
+            name: tt.name, description: tt.description, price_pence: tt.price_pence,
+            quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
+            is_visible: tt.is_visible, sort_order: sortOrder,
+            sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+            is_group: tt.is_group, group_size: tt.group_size,
+        }
+    }
+
+    async function getOrCreateEventId(): Promise<{ id: string; slug: string } | null> {
+        const supabase = createClient()
+        const existingId = event?.id || createdEventIdRef.current
+        if (existingId) return { id: existingId, slug: slug || event?.slug || '' }
+
+        const baseSlug = slug || toSlug(title) || `event-${Date.now()}`
+        let candidate = baseSlug
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const { data, error } = await supabase
+                .from('events')
+                .insert({ organiser_id: organiserId, ...buildEventPayload(candidate), status: 'draft' })
+                .select('id')
+                .single()
+
+            if (data && !error) {
+                createdEventIdRef.current = data.id
+                if (candidate !== slug) setSlug(candidate)
+                return { id: data.id, slug: candidate }
+            }
+            if (error?.code === '23505') {
+                candidate = `${baseSlug}-${randomSlugSuffix()}`
+                continue
+            }
+            console.error('Create event error:', error)
+            setSaveError(friendlyDbError(error, 'Saving your draft'))
+            return null
+        }
+        setSaveError('Saving failed: could not find an available slug. Set a custom Event Slug in section 02 and try again.')
+        return null
+    }
+
+    // Returns a failure message per ticket that could not be saved (empty = all good)
+    async function saveTicketTypes(eventId: string): Promise<string[]> {
+        const supabase = createClient()
+        const failures: string[] = []
         for (let i = 0; i < tickets.length; i++) {
             const tt = tickets[i]
             if (tt.id) {
-                await supabase.from('ticket_types').update({
-                    name: tt.name, description: tt.description, price_pence: tt.price_pence,
-                    quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
-                    is_visible: tt.is_visible, sort_order: i,
-                    sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
-                    is_group: tt.is_group, group_size: tt.group_size,
-                }).eq('id', tt.id)
+                // .select() so an RLS-filtered update (0 rows, no error) is detectable
+                const { data, error } = await supabase.from('ticket_types')
+                    .update(buildTicketPayload(tt, i)).eq('id', tt.id).select('id')
+                if (error) failures.push(`"${tt.name}": ${error.message}`)
+                else if (!data || data.length === 0) failures.push(`"${tt.name}": no permission to update`)
             } else {
-                const { data: newTt } = await supabase.from('ticket_types').insert({
-                    event_id: eventId, name: tt.name, description: tt.description,
-                    price_pence: tt.price_pence, quantity_total: tt.quantity_total,
-                    max_per_order: tt.max_per_order, is_visible: tt.is_visible, sort_order: i,
-                    sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
-                    is_group: tt.is_group, group_size: tt.group_size,
-                }).select('id').single()
-                if (newTt) {
-                    setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, id: newTt.id } : t))
-                }
+                const { data: newTt, error } = await supabase.from('ticket_types')
+                    .insert({ event_id: eventId, ...buildTicketPayload(tt, i) })
+                    .select('id').single()
+                if (error) failures.push(`"${tt.name}": ${error.message}`)
+                else if (newTt) setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, id: newTt.id } : t))
             }
+        }
+        return failures
+    }
+
+    async function saveDraft() {
+        setSaving(true)
+        setSaveError('')
+        const supabase = createClient()
+        const created = await getOrCreateEventId()
+        if (!created) { setSaving(false); return }
+
+        let effectiveSlug = created.slug || toSlug(title) || `event-${Date.now()}`
+        // .select() so an RLS-filtered update (0 rows, no error) is detectable
+        let { data: updated, error: updateError } = await supabase.from('events')
+            .update(buildEventPayload(effectiveSlug)).eq('id', created.id).select('id')
+        if (updateError?.code === '23505') {
+            effectiveSlug = `${effectiveSlug}-${randomSlugSuffix()}`
+            const retry = await supabase.from('events')
+                .update(buildEventPayload(effectiveSlug)).eq('id', created.id).select('id')
+            updated = retry.data
+            updateError = retry.error
+        }
+        if (updateError || !updated || updated.length === 0) {
+            console.error('Save draft error:', updateError)
+            setSaveError(updateError ? friendlyDbError(updateError, 'Saving your draft') : PERMISSION_MSG)
+            setSaving(false)
+            return
+        }
+        if (effectiveSlug !== slug) setSlug(effectiveSlug)
+
+        const ticketFailures = await saveTicketTypes(created.id)
+        setSaving(false)
+        if (ticketFailures.length) {
+            setSaveError(`Event details saved, but some tickets failed — ${ticketFailures.join('; ')}`)
+            return
         }
 
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
-        setSaving(false)
 
         // Navigate to edit page if just created
-        if (!event?.id) router.replace(`/organiser/events/${eventId}`)
+        if (!event?.id) router.replace(`/organiser/events/${created.id}`)
     }
 
     function validate() {
@@ -331,61 +379,45 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         const errs = validate()
         if (errs.length) { setErrors(errs); return }
         setErrors([])
+        setSaveError('')
         setPublishing(true)
         const supabase = createClient()
-        const eventId = await getOrCreateEventId()
-        if (!eventId) { setPublishing(false); return }
-
-        await supabase.from('events').update({
-            title,
-            slug,
-            description,
-            category: category || 'Other',
-            tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-            venue_name: venueName,
-            venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
-            venue_city: venueCity || null,
-            venue_postcode: venuePostcode,
-            venue_lat: venueLat,
-            venue_lng: venueLng,
-            start_at: startAt ? ukTimeToUTC(startAt) : null,
-            end_at: endAt ? ukTimeToUTC(endAt) : null,
-            checkin_start_at: checkinStartAt ? ukTimeToUTC(checkinStartAt) : null,
-            checkin_end_at: checkinEndAt ? ukTimeToUTC(checkinEndAt) : null,
-            banner_url: bannerImages[0] || null,
-            banner_images: bannerImages,
-            youtube_url: youtubeUrl || null,
-            min_age: minAge,
-            max_tickets_per_order: maxTicketsPerOrder,
-            refund_policy: refundPolicy,
-            ticket_availability: ticketAvailability,
-            status: 'published',
-        }).eq('id', eventId)
-
-        // Save ticket types (same as saveDraft)
-        for (let i = 0; i < tickets.length; i++) {
-            const tt = tickets[i]
-            if (tt.id) {
-                await supabase.from('ticket_types').update({
-                    name: tt.name, description: tt.description, price_pence: tt.price_pence,
-                    quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
-                    is_visible: tt.is_visible, sort_order: i,
-                    sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
-                    is_group: tt.is_group, group_size: tt.group_size,
-                }).eq('id', tt.id)
-            } else {
-                const { data: newTt } = await supabase.from('ticket_types').insert({
-                    event_id: eventId, name: tt.name, description: tt.description,
-                    price_pence: tt.price_pence, quantity_total: tt.quantity_total,
-                    max_per_order: tt.max_per_order, is_visible: tt.is_visible, sort_order: i,
-                    sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
-                    is_group: tt.is_group, group_size: tt.group_size,
-                }).select('id').single()
-                if (newTt) {
-                    setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, id: newTt.id } : t))
-                }
-            }
+        const created = await getOrCreateEventId()
+        if (!created) {
+            setErrors(['Could not save the event — see the message in the top-right corner.'])
+            setPublishing(false)
+            return
         }
+
+        // Save tickets BEFORE flipping the event live, so an event is never
+        // published while its ticket types failed to save.
+        const ticketFailures = await saveTicketTypes(created.id)
+        if (ticketFailures.length) {
+            setErrors(ticketFailures.map(f => `Ticket ${f}`))
+            setPublishing(false)
+            return
+        }
+
+        let effectiveSlug = created.slug || toSlug(title) || `event-${Date.now()}`
+        // .select() so an RLS-filtered update (0 rows, no error) is detectable
+        let { data: updated, error: updateError } = await supabase.from('events')
+            .update({ ...buildEventPayload(effectiveSlug), status: 'published' })
+            .eq('id', created.id).select('id')
+        if (updateError?.code === '23505') {
+            effectiveSlug = `${effectiveSlug}-${randomSlugSuffix()}`
+            const retry = await supabase.from('events')
+                .update({ ...buildEventPayload(effectiveSlug), status: 'published' })
+                .eq('id', created.id).select('id')
+            updated = retry.data
+            updateError = retry.error
+        }
+        if (updateError || !updated || updated.length === 0) {
+            console.error('Publish error:', updateError)
+            setErrors([updateError ? friendlyDbError(updateError, 'Publishing') : PERMISSION_MSG])
+            setPublishing(false)
+            return
+        }
+        if (effectiveSlug !== slug) setSlug(effectiveSlug)
 
         setStatus('published')
         setPublishing(false)
@@ -393,7 +425,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         // Fire-and-forget the "your event is live" notification + email.
         // The API is idempotent (uses events.published_email_sent_at), so
         // republishes won't double-send.
-        void fetch(`/api/organiser/events/${eventId}/notify-published`, { method: 'POST' })
+        void fetch(`/api/organiser/events/${created.id}/notify-published`, { method: 'POST' })
             .catch(err => console.error('publish notify failed:', err))
 
         router.push('/organiser/events')
@@ -509,6 +541,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             <div className="fixed top-4 right-4 z-40 flex flex-col gap-2 items-end">
                 {saved && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Saved ✓</span>}
                 {saving && <span className="text-muted text-xs">Saving...</span>}
+                {saveError && !saving && (
+                    <span className="text-accent text-xs border border-accent/40 px-3 py-1.5 rounded max-w-sm text-right" style={{ background: '#FFF5F6' }}>
+                        {saveError}
+                    </span>
+                )}
             </div>
 
             {/* Section 1 — Basic Info */}
