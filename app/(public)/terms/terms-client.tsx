@@ -75,7 +75,7 @@ export default function TermsClient() {
                     Hexlura Ltd · Company No. 17102803 · Registered in England &amp; Wales
                 </p>
                 <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '8px' }}>
-                    Last updated: March 2026
+                    Last updated: July 2026
                 </p>
                 <div style={{ borderTop: '3px solid #E63950', margin: '24px 0 40px' }} />
 
@@ -193,6 +193,21 @@ export default function TermsClient() {
                         ].map(item => <li key={item} style={liStyle}>{item}</li>)}
                     </ul>
                     <p style={bodyStyle}>6.3 Hexlura reserves the right to remove any Event listing, cancel ticket sales or withhold payouts at its absolute discretion where it deems an Event to be in breach of these Terms or applicable law.</p>
+
+                    <p style={subStyle}>6.4 Attendee Data Protection</p>
+                    <p style={bodyStyle}>6.4.1 Through the Platform, Organisers receive personal data of Buyers and attendees, including names, email addresses and phone numbers (&quot;Attendee Data&quot;), solely for the purposes of organising, managing and delivering the specific Event booked.</p>
+                    <p style={{ ...bodyStyle, marginBottom: '8px' }}>6.4.2 Organisers must process Attendee Data in accordance with the UK GDPR and the Data Protection Act 2018, and must not:</p>
+                    <ul style={{ paddingLeft: '24px', margin: '0 0 16px' }}>
+                        {[
+                            'Sell, rent, licence or otherwise share Attendee Data with any third party',
+                            'Use Attendee Data to market any other event, product or service without the attendee’s separate, explicit consent',
+                            'Retain Attendee Data for longer than is reasonably necessary after the Event has taken place',
+                            'Transfer Attendee Data outside the UK or EEA without adequate safeguards as required by law',
+                        ].map(item => <li key={item} style={liStyle}>{item}</li>)}
+                    </ul>
+                    <p style={bodyStyle}>6.4.3 Any breach of this clause 6.4 is a material breach of these Terms. Hexlura may immediately suspend or terminate the Organiser&apos;s account, remove or delist their Events, and withhold access to further Attendee Data.</p>
+                    <p style={bodyStyle}>6.4.4 The Organiser shall indemnify Hexlura in full against all losses, claims, damages, regulatory fines and legal costs arising from the Organiser&apos;s misuse of Attendee Data or breach of applicable data protection law.</p>
+                    <p style={bodyStyle}>6.4.5 Hexlura may report suspected unlawful processing of Attendee Data to the Information Commissioner&apos;s Office and will cooperate with any affected individual&apos;s complaint or claim.</p>
 
                     <h3 style={sectionStyle}>7. Prohibited Conduct</h3>
                     <p style={{ ...bodyStyle, marginBottom: '8px' }}>Users must not:</p>

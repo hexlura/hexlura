@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
+import { TERMS_VERSION } from '@/lib/terms'
 
 interface ApplyFormProps {
     userId: string
@@ -70,6 +71,8 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
                     organiser_type: orgType,
                     is_approved: true,
                     approved_at: new Date().toISOString(),
+                    terms_accepted_at: new Date().toISOString(),
+                    terms_version: TERMS_VERSION,
                 })
 
             if (insertError) {
@@ -184,7 +187,7 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
             <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={agreedTerms} onChange={e => setAgreedTerms(e.target.checked)} className="mt-0.5 accent-accent" />
                 <span className="text-sm text-muted">
-                    I agree to the <a href="#" className="text-accent hover:underline">Organiser Terms</a> and confirm I am authorised to create events on behalf of this organisation.
+                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Terms &amp; Conditions</a> (including the Event Organiser and Attendee Data Protection sections) and confirm I am authorised to create events on behalf of this organisation.
                 </span>
             </label>
             {error && <p className="text-accent text-xs">{error}</p>}
