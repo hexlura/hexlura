@@ -75,7 +75,7 @@ export function Footer() {
                             letterSpacing: '4px',
                             marginBottom: '12px',
                         }}>
-                            HEXLURA
+                            HEXLURA<sup style={{ fontSize: '0.45em', letterSpacing: 'normal' }}>®</sup>
                         </div>
                         <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '16px' }}>
                             The UK&apos;s home for live events

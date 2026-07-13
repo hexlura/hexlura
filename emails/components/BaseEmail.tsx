@@ -24,7 +24,7 @@ export default function BaseEmail({ children, previewText }: BaseEmailProps) {
                 <Container style={containerStyle}>
                     {/* Header */}
                     <Section style={headerStyle}>
-                        <Heading style={logoStyle}>HEXLURA</Heading>
+                        <Heading style={logoStyle}>HEXLURA<sup style={{ fontSize: '0.45em', letterSpacing: 'normal' }}>®</sup></Heading>
                         <Text style={taglineStyle}>UK Event Ticketing</Text>
                     </Section>
 

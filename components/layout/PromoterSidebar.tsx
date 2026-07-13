@@ -135,7 +135,7 @@ export function PromoterSidebar({ userName, referralCode, userId }: PromoterSide
     return (
         <>
             <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center justify-between px-4">
-                <Link href="/" className="font-heading text-accent tracking-widest text-lg">HEXLURA</Link>
+                <Link href="/" className="font-heading text-accent tracking-widest text-lg">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></Link>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsOpen(true)}
@@ -183,7 +183,7 @@ export function PromoterSidebar({ userName, referralCode, userId }: PromoterSide
                 </button>
 
                 <Link href="/" className="block px-6 py-5 border-b border-border hover:bg-card transition-colors">
-                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA</div>
+                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></div>
                     <div className="text-xs text-muted mt-0.5">Promoter Portal</div>
                 </Link>
 
