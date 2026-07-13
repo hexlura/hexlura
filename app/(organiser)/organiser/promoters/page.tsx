@@ -25,7 +25,7 @@ export default async function OrganiserPromotersPage() {
             promoter:promoter_profiles(id, display_name, referral_code, user_id)
         `)
         .eq('organiser_id', organiserId)
-        .neq('status', 'removed')
+        .not('status', 'in', '(removed,declined)')
         .order('created_at', { ascending: false })
 
     type AssignmentRow = {
@@ -110,7 +110,7 @@ export default async function OrganiserPromotersPage() {
 
     const items = assignments.map(a => ({
         id: a.id,
-        status: a.status as 'invited' | 'active',
+        status: a.status as 'invited' | 'active' | 'requested',
         commissionPercent: a.commission_percent,
         invitedEmail: a.invited_email,
         event: a.event,

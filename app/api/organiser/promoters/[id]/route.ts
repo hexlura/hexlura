@@ -9,7 +9,8 @@ async function loadAssignment(adminClient: ReturnType<typeof createAdminClient>,
         .from('promoter_event_assignments')
         .select(`
             id, organiser_id, event_id, status, commission_percent, invited_email, invite_token, promoter_id,
-            event:events(title, start_at, organiser:organiser_profiles(org_name))
+            event:events(title, slug, start_at, organiser:organiser_profiles(org_name)),
+            promoter:promoter_profiles(user_id, display_name)
         `)
         .eq('id', id)
         .maybeSingle()
@@ -22,7 +23,8 @@ async function loadAssignment(adminClient: ReturnType<typeof createAdminClient>,
         invited_email: string | null
         invite_token: string | null
         promoter_id: string | null
-        event: { title: string; start_at: string; organiser: { org_name: string } | null } | null
+        event: { title: string; slug: string; start_at: string; organiser: { org_name: string } | null } | null
+        promoter: { user_id: string; display_name: string } | null
     } | null
 }
 
@@ -43,6 +45,58 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const body = await request.json().catch(() => ({})) as {
         commission_percent?: number
         resend?: boolean
+        action?: 'approve' | 'decline'
+    }
+
+    // Approve / decline a self-service "Promote this event" request
+    if (body.action === 'approve' || body.action === 'decline') {
+        if (assignment.status !== 'requested') {
+            return NextResponse.json({ error: 'Only pending requests can be approved or declined' }, { status: 400 })
+        }
+
+        if (body.action === 'approve') {
+            if (typeof body.commission_percent !== 'number' || body.commission_percent < 0 || body.commission_percent > 100) {
+                return NextResponse.json({ error: 'Commission must be 0–100' }, { status: 400 })
+            }
+            const { error } = await adminClient
+                .from('promoter_event_assignments')
+                .update({
+                    status: 'active',
+                    commission_percent: body.commission_percent,
+                    accepted_at: new Date().toISOString(),
+                })
+                .eq('id', params.id)
+            if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+            if (assignment.promoter?.user_id) {
+                void adminClient.from('notifications').insert({
+                    user_id: assignment.promoter.user_id,
+                    type: 'promoter_request_approved',
+                    title: 'Promotion request approved',
+                    body: `You can now promote ${assignment.event?.title || 'the event'} at ${body.commission_percent}% commission. Grab your link!`,
+                    link: '/promoter/links',
+                })
+            }
+            return NextResponse.json({ success: true })
+        }
+
+        // decline
+        const { error } = await adminClient
+            .from('promoter_event_assignments')
+            .update({ status: 'declined' })
+            .eq('id', params.id)
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+        if (assignment.promoter?.user_id) {
+            void adminClient.from('notifications').insert({
+                user_id: assignment.promoter.user_id,
+                type: 'promoter_request_declined',
+                title: 'Promotion request declined',
+                body: `The organiser declined your request to promote ${assignment.event?.title || 'the event'}.`,
+                link: assignment.event?.slug ? `/events/${assignment.event.slug}` : '/events',
+            })
+        }
+        return NextResponse.json({ success: true })
     }
 
     if (body.resend) {

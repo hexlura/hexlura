@@ -6,7 +6,7 @@ import { formatPence } from '@/lib/fees'
 
 interface AssignmentItem {
     id: string
-    status: 'invited' | 'active'
+    status: 'invited' | 'active' | 'requested'
     commissionPercent: number
     invitedEmail: string | null
     event: { id: string; title: string; slug: string } | null
@@ -50,11 +50,39 @@ export function PromotersClient({ kpis, items, events }: Props) {
         setTimeout(() => setToast(null), 3000)
     }
 
+    // Self-service "Promote this event" requests are handled in their own
+    // section; the main table/tabs only show invited + active assignments.
+    const requests = useMemo(() => items.filter(i => i.status === 'requested'), [items])
+    const tableItems = useMemo(() => items.filter(i => i.status !== 'requested'), [items])
+
     const filtered = useMemo(() => {
-        if (tab === 'active') return items.filter(i => i.status === 'active')
-        if (tab === 'invited') return items.filter(i => i.status === 'invited')
-        return items
-    }, [items, tab])
+        if (tab === 'active') return tableItems.filter(i => i.status === 'active')
+        if (tab === 'invited') return tableItems.filter(i => i.status === 'invited')
+        return tableItems
+    }, [tableItems, tab])
+
+    const [requestCommissions, setRequestCommissions] = useState<Record<string, string>>({})
+    const [actingRequestId, setActingRequestId] = useState<string | null>(null)
+
+    async function decideRequest(id: string, action: 'approve' | 'decline') {
+        const commission = parseFloat(requestCommissions[id] ?? '10')
+        if (action === 'approve' && (isNaN(commission) || commission < 0 || commission > 100)) {
+            showToast('Commission must be 0–100')
+            return
+        }
+        if (action === 'decline' && !confirm('Decline this promotion request?')) return
+        setActingRequestId(id)
+        const res = await fetch(`/api/organiser/promoters/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(action === 'approve' ? { action, commission_percent: commission } : { action }),
+        })
+        const json = await res.json().catch(() => ({}))
+        setActingRequestId(null)
+        if (!res.ok) { showToast(json.error || 'Failed'); return }
+        showToast(action === 'approve' ? 'Request approved — promoter notified' : 'Request declined')
+        router.refresh()
+    }
 
     async function handleInvite(e: React.FormEvent) {
         e.preventDefault()
@@ -123,7 +151,7 @@ export function PromotersClient({ kpis, items, events }: Props) {
     // Build chart data — group sales/earned by promoter (across all their assignments)
     const chartData = useMemo(() => {
         const byPromoter: Record<string, { name: string; sales: number; earnedPence: number }> = {}
-        for (const i of items) {
+        for (const i of tableItems) {
             if (!i.promoter) continue
             const key = i.promoter.id
             if (!byPromoter[key]) byPromoter[key] = { name: i.promoter.displayName, sales: 0, earnedPence: 0 }
@@ -131,7 +159,7 @@ export function PromotersClient({ kpis, items, events }: Props) {
             byPromoter[key].earnedPence += i.earnedPence
         }
         return Object.values(byPromoter)
-    }, [items])
+    }, [tableItems])
     const maxSales = Math.max(1, ...chartData.map(c => c.sales))
     const maxEarned = Math.max(1, ...chartData.map(c => c.earnedPence))
 
@@ -226,6 +254,57 @@ export function PromotersClient({ kpis, items, events }: Props) {
                     </form>
                 )}
             </div>
+
+            {/* Pending promotion requests */}
+            {requests.length > 0 && (
+                <div className="bg-card border border-gold/40 p-6 mb-6">
+                    <h2 className="text-sm font-medium text-text mb-1">
+                        Promotion Requests
+                        <span className="ml-2 text-xs text-gold bg-gold/10 border border-gold/20 px-2 py-0.5 rounded-full">{requests.length} pending</span>
+                    </h2>
+                    <p className="text-xs text-muted mb-4">These people asked to promote your events. Set their commission and approve, or decline.</p>
+                    <div className="flex flex-col gap-3">
+                        {requests.map(r => (
+                            <div key={r.id} className="flex flex-wrap items-center gap-3 border border-border bg-surface px-4 py-3">
+                                <div className="min-w-0 flex-1">
+                                    <div className="text-sm text-text font-medium">{r.promoter?.displayName || 'Unknown'}</div>
+                                    <div className="text-xs text-muted truncate">
+                                        {r.promoter?.email || '—'} · wants to promote <span className="text-text">{r.event?.title || '—'}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
+                                        value={requestCommissions[r.id] ?? '10'}
+                                        onChange={e => setRequestCommissions(prev => ({ ...prev, [r.id]: e.target.value }))}
+                                        className="w-16 bg-card border border-border rounded-sm px-2 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
+                                    />
+                                    <span className="text-xs text-muted">%</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => decideRequest(r.id, 'approve')}
+                                        disabled={actingRequestId === r.id}
+                                        className="bg-text text-white text-xs font-medium px-4 py-2 hover:bg-text/90 disabled:opacity-50"
+                                    >
+                                        {actingRequestId === r.id ? '…' : 'Approve'}
+                                    </button>
+                                    <button
+                                        onClick={() => decideRequest(r.id, 'decline')}
+                                        disabled={actingRequestId === r.id}
+                                        className="text-xs text-muted border border-border px-4 py-2 hover:text-text hover:border-text disabled:opacity-50"
+                                    >
+                                        Decline
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Tabs */}
             <div className="flex gap-1 mb-6 border-b border-border">

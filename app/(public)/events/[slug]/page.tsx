@@ -13,6 +13,7 @@ import LikeButton from '@/components/events/LikeButton';
 import BannerCarousel from '@/components/events/BannerCarousel';
 import FollowButton from '@/components/organisers/FollowButton';
 import PromoterRefCapture from '@/components/events/PromoterRefCapture'
+import PromoteEventButton from '@/components/events/PromoteEventButton';
 import { MetaPixelViewContent } from '@/components/analytics/MetaPixelEvents';
 
 import type { Metadata } from 'next';
@@ -93,7 +94,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     ] = await Promise.all([
         serviceClient
             .from('organiser_profiles')
-            .select('id, org_name, organiser_type, logo_url, slug, meta_pixel_id')
+            .select('id, user_id, org_name, organiser_type, logo_url, slug, meta_pixel_id')
             .eq('id', event.organiser_id)
             .single(),
         supabase
@@ -112,6 +113,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         { count: organiserEventCountRaw },
         { count: followCountRaw },
         { data: followRow },
+        { data: promoteAssignmentRow },
     ] = await Promise.all([
         organiser?.id
             ? supabase.from('events').select('*', { count: 'exact', head: true }).eq('organiser_id', organiser.id).eq('status', 'published')
@@ -122,11 +124,36 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         organiser?.id && user
             ? supabase.from('follows').select('id').eq('organiser_id', organiser.id).eq('user_id', user.id).maybeSingle()
             : Promise.resolve({ data: null, error: null }),
+        // Viewer's own promoter assignment for this event (RLS: promoters read own rows)
+        user
+            ? supabase
+                .from('promoter_event_assignments')
+                .select('status, promoter:promoter_profiles!inner(user_id)')
+                .eq('event_id', event.id)
+                .eq('promoter.user_id', user.id)
+                .maybeSingle()
+            : Promise.resolve({ data: null, error: null }),
     ]);
 
     const organiserEventCount = organiserEventCountRaw ?? 0;
     const followCount = followCountRaw ?? 0;
     const userFollowing = !!followRow;
+
+    // "Promote this event" button state — hidden for the event's own organiser,
+    // declined requesters, and non-published events
+    const assignmentStatus = (promoteAssignmentRow as { status?: string } | null)?.status;
+    let promoteState: 'none' | 'requested' | 'active' | 'invited' | null;
+    if (event.status !== 'published' || (user && organiser?.user_id === user.id) || assignmentStatus === 'declined') {
+        promoteState = null;
+    } else if (assignmentStatus === 'active') {
+        promoteState = 'active';
+    } else if (assignmentStatus === 'requested') {
+        promoteState = 'requested';
+    } else if (assignmentStatus === 'invited') {
+        promoteState = 'invited';
+    } else {
+        promoteState = 'none'; // no relationship yet, or previously removed (may re-request)
+    }
 
     const formattedDate = new Intl.DateTimeFormat('en-GB', {
         weekday: 'long',
@@ -191,6 +218,13 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         </div>
                     </Link>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        {promoteState !== null && (
+                            <PromoteEventButton
+                                eventId={event.id}
+                                initialState={promoteState}
+                                isLoggedIn={!!user}
+                            />
+                        )}
                         <FollowButton
                             organiserId={organiser.id}
                             initialFollowing={userFollowing}
