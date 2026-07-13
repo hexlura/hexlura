@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { formatPence } from '@/lib/fees'
 import { MetaPixelPurchase } from '@/components/analytics/MetaPixelEvents'
+import FollowOrganiserPrompt from '@/components/organisers/FollowOrganiserPrompt'
 
 interface BookingData {
     booking_ref: string
@@ -217,6 +218,8 @@ function SuccessContent() {
                             </div>
                         )
                     })()}
+
+                    <FollowOrganiserPrompt bookingRef={booking.booking_ref} />
                 </>
             )}
 
