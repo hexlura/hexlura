@@ -57,6 +57,7 @@ const NAV_SECTIONS: { title: string; links: NavLink[] }[] = [
             { href: '/admin/categories', label: 'Categories', exact: false },
             { href: '/admin/design', label: 'Design', exact: false },
             { href: '/admin/seo', label: 'SEO', exact: false },
+            { href: '/admin/legal', label: 'Legal Pages', exact: false },
             { href: '/admin/settings', label: 'Settings', exact: false },
             { href: '/admin/audit-log', label: 'Audit Log', exact: false },
         ],

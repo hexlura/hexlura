@@ -1,13 +1,17 @@
 import { getStaticPageMetadata } from '@/lib/seo'
 import type { Metadata } from 'next'
+import { getLatestLegalDocument } from '@/lib/legal'
+import { PublishedLegalDocument } from '@/components/legal/PublishedLegalDocument'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
     return getStaticPageMetadata('/privacy')
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const doc = await getLatestLegalDocument('privacy')
+  if (doc) return <PublishedLegalDocument doc={doc} title="Privacy Policy" />
   return (
     <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px' }}>

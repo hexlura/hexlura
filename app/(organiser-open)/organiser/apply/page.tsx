@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ApplyForm } from './apply-form'
+import { getLatestLegalDocument } from '@/lib/legal'
+import { TERMS_VERSION } from '@/lib/terms'
 
 export default async function OrganiserApplyPage() {
     const supabase = createClient()
@@ -13,6 +15,11 @@ export default async function OrganiserApplyPage() {
 
     if (profile?.role === 'organiser') redirect('/organiser')
     if (profile?.role === 'admin') redirect('/admin')
+
+    // Acceptance is stamped with the currently-published terms version
+    // (falls back to the code constant until the first admin publish)
+    const publishedTerms = await getLatestLegalDocument('terms')
+    const termsVersion = publishedTerms?.version ?? TERMS_VERSION
 
     return (
         <div className="min-h-screen bg-background">
@@ -30,7 +37,7 @@ export default async function OrganiserApplyPage() {
                     <div className="bg-card border border-border rounded-none p-8">
                         <h1 className="font-heading text-3xl text-text tracking-wide mb-2">BECOME AN ORGANISER</h1>
                         <p className="text-muted text-sm mb-8">Tell us about your events and we&apos;ll get you set up.</p>
-                        <ApplyForm userId={user.id} userEmail={user.email || ''} />
+                        <ApplyForm userId={user.id} userEmail={user.email || ''} termsVersion={termsVersion} />
                     </div>
                 </div>
             </div>

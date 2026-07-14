@@ -1,5 +1,9 @@
 import { getStaticPageMetadata } from '@/lib/seo'
 import type { Metadata } from 'next'
+import { getLatestLegalDocument } from '@/lib/legal'
+import { PublishedLegalDocument } from '@/components/legal/PublishedLegalDocument'
+
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
     return getStaticPageMetadata('/cookies')
@@ -70,7 +74,9 @@ const cookies = [
     { name: 'Performance', type: 'Analytics', purpose: 'Monitors page load times and errors', duration: '12 months' },
 ]
 
-export default function CookiesPage() {
+export default async function CookiesPage() {
+    const doc = await getLatestLegalDocument('cookies')
+    if (doc) return <PublishedLegalDocument doc={doc} title="Cookie Policy" />
     return (
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
             <div style={{ maxWidth: '860px', margin: '0 auto', padding: '60px 24px' }}>

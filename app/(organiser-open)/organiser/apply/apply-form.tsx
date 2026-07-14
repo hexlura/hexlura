@@ -9,6 +9,7 @@ import { TERMS_VERSION } from '@/lib/terms'
 interface ApplyFormProps {
     userId: string
     userEmail: string
+    termsVersion?: string
 }
 
 type OrgType = 'individual' | 'artist' | 'club_venue' | 'event_company' | 'charity' | 'education'
@@ -22,7 +23,7 @@ const ORG_TYPES: { value: OrgType; emoji: string; name: string; description: str
     { value: 'education', emoji: '🎓', name: 'Education', description: 'School, university, training provider or workshop host' },
 ]
 
-export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
+export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
     const router = useRouter()
     const [orgType, setOrgType] = useState<OrgType | null>(null)
     const [orgName, setOrgName] = useState('')
@@ -72,7 +73,7 @@ export function ApplyForm({ userId, userEmail }: ApplyFormProps) {
                     is_approved: true,
                     approved_at: new Date().toISOString(),
                     terms_accepted_at: new Date().toISOString(),
-                    terms_version: TERMS_VERSION,
+                    terms_version: termsVersion || TERMS_VERSION,
                 })
 
             if (insertError) {
