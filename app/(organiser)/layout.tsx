@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { OrganiserSidebar } from '@/components/layout/OrganiserSidebar'
 import MobileBottomNav from '@/components/layout/MobileBottomNav'
+import { getLatestLegalDocument } from '@/lib/legal'
 
 async function getUserTeamAccess(userId: string) {
     const serviceClient = createServiceClient()
@@ -29,7 +30,7 @@ export default async function OrganiserLayout({
     const serviceClient = createServiceClient()
     const [profileRes, organiserRes] = await Promise.all([
         serviceClient.from('profiles').select('full_name, role').eq('id', user.id).single(),
-        serviceClient.from('organiser_profiles').select('org_name, is_approved, identity_status').eq('user_id', user.id).maybeSingle(),
+        serviceClient.from('organiser_profiles').select('org_name, is_approved, identity_status, terms_version').eq('user_id', user.id).maybeSingle(),
     ])
 
     const role = profileRes.data?.role || 'user'
@@ -42,6 +43,18 @@ export default async function OrganiserLayout({
         // Redirect unapproved organisers to pending (admins bypass this)
         if (role === 'organiser' && !organiserRes.data?.is_approved) {
             redirect('/organiser/pending')
+        }
+
+        // Force re-acceptance when the published Terms have moved on since
+        // this organiser last accepted (including organisers who signed up
+        // before terms_version was ever recorded — null counts as stale).
+        // Scoped to the account owner only — team members never accepted
+        // Terms individually, so they aren't gated here.
+        if (role === 'organiser' && organiserRes.data) {
+            const latestTerms = await getLatestLegalDocument('terms')
+            if (latestTerms && organiserRes.data.terms_version !== latestTerms.version) {
+                redirect('/organiser/terms-update')
+            }
         }
     } else {
         // Check organiser_team membership for non-organiser users

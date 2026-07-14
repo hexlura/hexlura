@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
-import { LEGAL_DOC_TYPES, type LegalDocType } from '@/lib/legal'
+import { LEGAL_DOC_TYPES, notifyAllUsersOfLegalUpdate, type LegalDocType } from '@/lib/legal'
 
 export const dynamic = 'force-dynamic'
 
@@ -92,6 +92,11 @@ export async function POST(request: NextRequest) {
         entityId: created.id,
         metadata: { doc_type: docType, version: created.version, content_length: contentHtml.length },
     })
+
+    // Awaited (not fire-and-forget): serverless functions can be frozen the
+    // instant the response is sent, so a "void" background call here could
+    // simply never run.
+    await notifyAllUsersOfLegalUpdate(docType, created.version)
 
     return NextResponse.json({ success: true, version: created.version, published_at: created.published_at })
 }
