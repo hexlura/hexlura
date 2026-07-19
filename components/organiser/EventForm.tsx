@@ -354,6 +354,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         if (!event?.id) router.replace(`/organiser/events/${created.id}`)
     }
 
+    // Check-in close must be after check-in open — a close time before open
+    // means the door scanner rejects every ticket for the entire event
+    // (compares fine as plain strings: both are "YYYY-MM-DDTHH:mm").
+    const checkinTimesInvalid = !!checkinStartAt && !!checkinEndAt && checkinEndAt <= checkinStartAt
+
     function validate() {
         const errs: string[] = []
         if (!title.trim()) errs.push('Event title is required')
@@ -364,6 +369,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         if (!venueCity.trim()) errs.push('City is required')
         if (!venuePostcode.trim()) errs.push('Postcode is required')
         if (tickets.length === 0 && ticketAvailability !== 'coming_soon') errs.push('At least one ticket type is required')
+        if (checkinTimesInvalid) errs.push('Check-in closing time must be after the check-in opening time')
         return errs
     }
 
@@ -655,7 +661,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                             </div>
                             <div>
                                 <label className={labelClass}>Check-in Closes</label>
-                                <DateTimePicker value={checkinEndAt} onChange={setCheckinEndAt} placeholder="Select check-in close time" className={inputClass} />
+                                <DateTimePicker value={checkinEndAt} onChange={setCheckinEndAt} min={checkinStartAt || undefined} placeholder="Select check-in close time" className={inputClass} />
+                                {checkinTimesInvalid && (
+                                    <p className="text-accent text-xs mt-1">Check-in closing time must be after the check-in opening time — otherwise the door scanner will reject every ticket.</p>
+                                )}
                             </div>
                             <div>
                                 <label className={labelClass}>Timezone</label>
