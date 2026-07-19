@@ -94,7 +94,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     ] = await Promise.all([
         serviceClient
             .from('organiser_profiles')
-            .select('id, user_id, org_name, organiser_type, logo_url, slug, meta_pixel_id')
+            .select('id, user_id, org_name, organiser_type, logo_url, slug, meta_pixel_id, cover_url, location')
             .eq('id', event.organiser_id)
             .single(),
         supabase
@@ -200,43 +200,112 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
             {/* Organiser badge — full width, above grid */}
             {organiser && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#F5F5F7', border: '1px solid #E0E0E8', flexWrap: 'wrap', marginBottom: '24px' }}>
-                    <Link href={`/organisers/${organiser.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 140px', minWidth: 0, textDecoration: 'none', color: 'inherit' }}>
-                        <div className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center" style={{ width: '36px', height: '36px', background: '#C0C0C8' }}>
-                            {organiser.logo_url ? (
-                                <Image src={organiser.logo_url} alt="" fill className="object-cover" />
-                            ) : (
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: '#0A0A0F' }}>{organiser.org_name.charAt(0).toUpperCase()}</span>
+                <div className="relative mb-[140px] md:mb-[100px]">
+
+                    {/* Cover Image */}
+                    <div className="h-[200px] md:h-[250px]" style={{ position: 'relative', width: '100%', overflow: 'hidden', borderRadius: '16px' }}>
+                        {organiser.cover_url ? (
+                            <Image src={organiser.cover_url} alt={`${organiser.org_name} cover`} fill sizes="100vw" className="object-cover object-center" priority />
+                        ) : (
+                            <div style={{ position: 'absolute', inset: 0, background: '#F5F5F7' }} />
+                        )}
+                    </div>
+
+                    {/* Floating Glass Widget */}
+                    <div
+                        className="absolute top-[112%] md:top-[105%] left-[12px] z-10 flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.12)] box-border"
+                        style={{
+                            transform: 'translateY(-50%)',
+                            width: 'calc(100% - 24px)',
+                            background: 'rgba(255, 255, 255, 0.45)',
+                            backdropFilter: 'blur(12px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                        }}
+                    >
+
+                        {/* Left Side: Profile Info */}
+                        {/* Added w-full so it takes the whole width before the buttons wrap below it */}
+                        <Link href={`/organisers/${organiser.slug}`} className="flex flex-col gap-2 w-full md:w-auto md:flex-1 min-w-0 no-underline text-inherit">
+
+                            {/* Top Half: Avatar & Stats Row */}
+                            <div className="flex items-center gap-4">
+
+                                {/* Avatar */}
+                                <div className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center bg-black/5" style={{ width: '60px', height: '60px' }}>
+                                    {organiser.logo_url ? (
+                                        <Image src={organiser.logo_url} alt="" fill className="object-cover" />
+                                    ) : (
+                                        <span style={{ fontSize: '16px', fontWeight: 700, color: '#0A0A0F' }}>{organiser.org_name.charAt(0).toUpperCase()}</span>
+                                    )}
+                                </div>
+
+                                {/* Stats Block */}
+                                <div className="flex flex-col gap-1 flex-1 min-w-0 no-underline text-inherit">
+                                    <div className="text-[14px] font-semibold text-[#0A0A0F] whitespace-nowrap overflow-hidden text-ellipsis">
+                                        {organiser.org_name}
+                                    </div>
+                                    <div className="flex gap-5">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[11px] font-bold text-[#0A0A0F] leading-tight">
+                                                {organiserEventCount}
+                                            </span>
+                                            <span className="text-[10px] text-[#0A0A0F] mt-[2px]">
+                                                event{organiserEventCount !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[11px] font-bold text-[#0A0A0F] leading-tight">
+                                                {followCount}
+                                            </span>
+                                            <span className="text-[10px] text-[#0A0A0F] mt-[2px]">
+                                                follower{followCount !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bottom Half: Details (Bio) */}
+                            <div className="min-w-0 flex flex-col">
+                                <p className="text-[11px] text-[#0A0A0F] mt-[2px] whitespace-nowrap overflow-hidden text-ellipsis flex items-center">
+                                    <span>{organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}</span>
+                                    {organiser.location && (
+                                        <span className="inline-flex items-center gap-1 ml-1 overflow-hidden text-ellipsis">
+                                            {' · '}
+                                            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0">
+                                                <path d="M8 1C5.24 1 3 3.24 3 6c0 4 5 9 5 9s5-5 5-9c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 8 4a1.5 1.5 0 0 1 0 3z" fill="#0A0A0F" />
+                                            </svg>
+                                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{organiser.location}</span>
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                        </Link>
+
+                        {/* Right Side: Actions */}
+                        {/* Added flex-wrap and w-full so buttons distribute cleanly on small screens */}
+                        <div className="flex items-center justify-start md:justify-end gap-2 shrink-0 w-full md:w-auto ">
+                            {promoteState !== null && (
+                                <PromoteEventButton
+                                    eventId={event.id}
+                                    initialState={promoteState}
+                                    isLoggedIn={!!user}
+                                />
                             )}
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#0A0A0F', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{organiser.org_name}</p>
-                            <p style={{ fontSize: '11px', color: '#666677', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type}
-                                {' · '}{organiserEventCount} event{organiserEventCount !== 1 ? 's' : ''}
-                            </p>
-                        </div>
-                    </Link>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                        {promoteState !== null && (
-                            <PromoteEventButton
-                                eventId={event.id}
-                                initialState={promoteState}
+                            <FollowButton
+                                organiserId={organiser.id}
+                                initialFollowing={userFollowing}
+                                initialCount={followCount}
+                                initialCountShow={false}
                                 isLoggedIn={!!user}
                             />
-                        )}
-                        <FollowButton
-                            organiserId={organiser.id}
-                            initialFollowing={userFollowing}
-                            initialCount={followCount}
-                            isLoggedIn={!!user}
-                        />
-                        <LikeButton
-                            eventId={event.id}
-                            initialLiked={userLiked}
-                            initialCount={likeCount ?? 0}
-                            isLoggedIn={!!user}
-                        />
+                            <LikeButton
+                                eventId={event.id}
+                                initialLiked={userLiked}
+                                initialCount={likeCount ?? 0}
+                                isLoggedIn={!!user}
+                            />
+                        </div>
                     </div>
                 </div>
             )}
@@ -309,7 +378,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                         DOORS / CHECK-IN
                                     </p>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#0A0A0F' }}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h10"/><path d="M18 8l4 4-4 4"/><path d="M8 12h14"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h10" /><path d="M18 8l4 4-4 4" /><path d="M8 12h14" /></svg>
                                         {windowStr}
                                     </div>
                                 </div>
@@ -378,7 +447,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         } else {
                             videoId = parsed.searchParams.get('v')
                         }
-                    } catch {}
+                    } catch { }
                     if (!videoId) return null
                     return (
                         <div className="md:col-start-1" style={{ aspectRatio: '16/9', width: '100%' }}>
@@ -431,7 +500,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                     }}
                                 >
                                     View on Google Maps
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
                                 </a>
                             </div>
                         );

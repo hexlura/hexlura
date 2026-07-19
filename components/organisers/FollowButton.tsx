@@ -7,6 +7,7 @@ interface FollowButtonProps {
     organiserId: string;
     initialFollowing: boolean;
     initialCount: number;
+    initialCountShow: boolean;
     isLoggedIn: boolean;
 }
 
@@ -15,7 +16,7 @@ function formatCount(n: number): string {
     return String(n);
 }
 
-export default function FollowButton({ organiserId, initialFollowing, initialCount, isLoggedIn }: FollowButtonProps) {
+export default function FollowButton({ organiserId, initialFollowing, initialCount, initialCountShow, isLoggedIn }: FollowButtonProps) {
     const [following, setFollowing] = useState(initialFollowing);
     const [count, setCount] = useState(initialCount);
     const [loading, setLoading] = useState(false);
@@ -71,9 +72,11 @@ export default function FollowButton({ organiserId, initialFollowing, initialCou
             >
                 {following ? 'Following' : 'Follow'}
             </button>
-            <span style={{ fontSize: '12px', color: '#666677' }}>
-                {formatCount(count)} Follower{count !== 1 ? 's' : ''}
-            </span>
+            {initialCountShow ? (
+                <span style={{ fontSize: '12px', color: '#666677' }}>
+                    {formatCount(count)} Follower{count !== 1 ? 's' : ''}
+                </span>
+            ) : null}
         </div>
     );
 }

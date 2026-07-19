@@ -415,6 +415,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                             organiserId={organiser.id}
                             initialFollowing={userFollowing}
                             initialCount={followerCount ?? 0}
+                            initialCountShow={true}
                             isLoggedIn={!!user}
                         />
                     </div>

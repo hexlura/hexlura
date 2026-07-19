@@ -36,7 +36,7 @@ export default function EventCard({ event, compact = false, priority = false }: 
     }).format(new Date(event.start_at));
 
 
-const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
+    const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
 
     // Price range display
     function getPriceRange(types: typeof visibleTypes): string {

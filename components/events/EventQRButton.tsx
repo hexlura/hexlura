@@ -64,7 +64,7 @@ export default function EventQRButton() {
                 className="flex items-center gap-1.5 transition-colors hover:border-[#0A0A0F] hover:text-[#0A0A0F]"
                 style={{
                     fontSize: '13px',
-                    padding: '6px 14px',
+                    padding: '11px 14px',
                     border: '1px solid #C0C0C8',
                     borderRadius: '2px',
                     background: 'transparent',
