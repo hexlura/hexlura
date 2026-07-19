@@ -46,6 +46,22 @@ export function LoginForm() {
         } else if (role === 'organiser' || role === 'admin') {
             router.push('/organiser')
         } else {
+            // Not door_staff by profile role — check the newer organiser_team
+            // door_staff assignment before rejecting (mirrors the check
+            // already done in app/checkin/page.tsx and /api/checkin).
+            const { data: teamRows } = await supabase
+                .from('organiser_team')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('privilege', 'door_staff')
+                .eq('status', 'active')
+                .limit(1)
+
+            if (teamRows && teamRows.length > 0) {
+                router.push('/checkin')
+                return
+            }
+
             await supabase.auth.signOut()
             setError('This account does not have door staff access.')
             setLoading(false)
