@@ -9,6 +9,7 @@ import ShareButton from '@/components/events/ShareButton';
 import FollowButton from '@/components/organisers/FollowButton';
 import ReviewsSection from '@/components/organisers/ReviewsSection';
 import PortfolioSection from '@/components/organisers/PortfolioSection';
+import OrganiserBadge from '@/components/organisers/OrganiserBadge';
 import { Event, Review } from '@/types';
 import type { Metadata } from 'next';
 import { getDynamicPageMetadata } from '@/lib/seo';
@@ -55,6 +56,11 @@ type OrganiserRow = {
     social_instagram: string | null;
     social_facebook: string | null;
     social_website: string | null;
+    social_tiktok: string | null;
+    social_youtube: string | null;
+    social_twitter: string | null;
+    social_linkedin: string | null;
+    social_spotify: string | null;
     social_links: Record<string, string> | null;
     location: string | null;
     is_approved: boolean;
@@ -241,187 +247,19 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
     return (
         <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
 
-            {/* ─── SECTION 1: HERO COVER BANNER ─── */}
-            <div className="h-[140px] md:h-[200px]" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-                {organiser.cover_url ? (
-                    <Image
-                        src={organiser.cover_url}
-                        alt={`${organiser.org_name} cover`}
-                        fill
-                        sizes="100vw"
-                        className="object-cover object-center"
-                        priority
-                    />
-                ) : (
-                    <div style={{ position: 'absolute', inset: 0, background: '#F5F5F7' }} />
-                )}
-            </div>
-
-            {/* ─── SECTION 2: PROFILE INFO ─── */}
-            <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-                <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 py-6 border-b border-[#E0E0E0]">
-
-                    {/* Avatar */}
-                    <div className="flex justify-center md:block flex-shrink-0">
-                        <div style={{
-                            width: 80,
-                            height: 80,
-                            borderRadius: '50%',
-                            border: '2px solid #E0E0E0',
-                            background: '#E63950',
-                            overflow: 'hidden',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'relative',
-                        }}>
-                            {(organiser.avatar_url || organiser.logo_url) ? (
-                                <Image
-                                    src={(organiser.avatar_url || organiser.logo_url)!}
-                                    alt={organiser.org_name}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <span style={{ fontSize: 30, color: '#FFFFFF', fontWeight: 900, lineHeight: 1 }}>
-                                    {initials}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 text-center md:text-left">
-                        <h1 style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 36,
-                            fontWeight: 900,
-                            color: '#0A0A0F',
-                            letterSpacing: '1px',
-                            lineHeight: 1.1,
-                            margin: '0 0 4px',
-                        }}>
-                            {organiser.org_name}
-                        </h1>
-
-                        <p style={{
-                            fontSize: 11,
-                            color: '#E63950',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '1.5px',
-                            margin: '0 0 8px',
-                        }}>
-                            {typeLabel}
-                        </p>
-
-                        {organiser.description && (
-                            <p style={{
-                                fontSize: 14,
-                                color: '#333344',
-                                maxWidth: 480,
-                                lineHeight: 1.7,
-                                margin: '4px auto 0',
-                                whiteSpace: 'pre-line',
-                            }}
-                                className="md:mx-0"
-                            >
-                                {organiser.description}
-                            </p>
-                        )}
-
-                        {/* Stats row */}
-                        <div className="flex justify-center md:justify-start flex-wrap gap-x-6 gap-y-2 mt-3 items-center">
-                            <div>
-                                <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0F' }}>
-                                    {(followerCount ?? 0).toLocaleString()}
-                                </span>
-                                <span style={{ fontSize: 13, color: '#8888AA', marginLeft: 4 }}>Followers</span>
-                            </div>
-                            <div>
-                                <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0F' }}>
-                                    {totalEventsCount ?? 0}
-                                </span>
-                                <span style={{ fontSize: 13, color: '#8888AA', marginLeft: 4 }}>Events</span>
-                            </div>
-                            {reviewCount > 0 && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0F' }}>
-                                        {averageRating.toFixed(1)}
-                                    </span>
-                                    <Stars rating={averageRating} size={13} />
-                                    <span style={{ fontSize: 13, color: '#8888AA' }}>Rating</span>
-                                </div>
-                            )}
-                            {organiser.location && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                        <path d="M8 1C5.24 1 3 3.24 3 6c0 4 5 9 5 9s5-5 5-9c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 8 4a1.5 1.5 0 0 1 0 3z" fill="#8888AA" />
-                                    </svg>
-                                    <span style={{ fontSize: 13, color: '#8888AA' }}>{organiser.location}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Social links */}
-                        {(() => {
-                            // Merge legacy columns + JSONB social_links
-                            const links: { key: string; url: string }[] = []
-                            if (organiser.social_instagram) links.push({ key: 'instagram', url: organiser.social_instagram })
-                            if (organiser.social_facebook) links.push({ key: 'facebook', url: organiser.social_facebook })
-                            if (organiser.social_links) {
-                                for (const [key, url] of Object.entries(organiser.social_links)) {
-                                    if (url && !links.some(l => l.key === key)) links.push({ key, url })
-                                }
-                            }
-                            if (!links.some(l => l.key === 'website') && (organiser.social_website || organiser.website)) {
-                                links.push({ key: 'website', url: (organiser.social_website || organiser.website)! })
-                            }
-                            if (links.length === 0) return null
-                            return (
-                                <div className="flex justify-center md:justify-start flex-wrap gap-[10px] mt-3">
-                                    {links.map(({ key, url }) => {
-                                        const platform = SOCIAL_PLATFORMS[key]
-                                        if (!platform) return null
-                                        return (
-                                            <a
-                                                key={key}
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title={platform.label}
-                                                style={{
-                                                    width: 34, height: 34,
-                                                    borderRadius: '50%',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: platform.color,
-                                                    textDecoration: 'none',
-                                                    flexShrink: 0,
-                                                }}
-                                            >
-                                                <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: platform.svg }} />
-                                            </a>
-                                        )
-                                    })}
-                                </div>
-                            )
-                        })()}
-                    </div>
-
-                    {/* Follow + Share buttons — right side */}
-                    <div className="flex flex-row justify-center md:justify-end gap-2 w-full md:w-auto md:flex-shrink-0 md:self-start md:pt-1">
-                        <ShareButton title={organiser.org_name} />
-                        <FollowButton
-                            organiserId={organiser.id}
-                            initialFollowing={userFollowing}
-                            initialCount={followerCount ?? 0}
-                            initialCountShow={true}
-                            isLoggedIn={!!user}
-                        />
-                    </div>
-
-                </div>
-            </div>
+            {/* ─── SECTION 1: ORGANISER BADGE ─── */}
+            <OrganiserBadge
+                organiser={organiser}
+                organiserEventCount={totalEventsCount ?? 0}
+                followCount={followerCount ?? 0}
+                userFollowing={userFollowing}
+                isLoggedIn={!!user}
+                averageRating={averageRating}
+                reviewCount={reviewCount}
+                extraActions={
+                    <ShareButton title={organiser.org_name} />
+                }
+            />
 
             {/* ─── SECTION 3: UPCOMING EVENTS ─── */}
             <div style={{ maxWidth: 1200, margin: '40px auto 0', padding: '0 24px' }}>
