@@ -213,7 +213,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                 })))
             }
         })
-    }, [event?.id])
+    }, [event?.id, tickets.length])
 
     // Auto-save every 30 seconds
     useEffect(() => {
@@ -221,7 +221,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             if (title) saveDraft()
         }, 30000)
         return () => { if (autoSaveRef.current) clearInterval(autoSaveRef.current) }
-    }, [title, description, tickets, status])
+    }, [title, description, tickets, status, saveDraft])
 
     function buildEventPayload(slugValue: string) {
         return {

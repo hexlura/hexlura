@@ -40,7 +40,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
         if (editor && content !== editor.getHTML()) {
             editor.commands.setContent(content)
         }
-    }, [content])
+    }, [content, editor])
 
     if (!editor) return null
 

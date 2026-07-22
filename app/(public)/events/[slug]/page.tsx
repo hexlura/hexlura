@@ -1,6 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
@@ -11,9 +9,7 @@ import EventQRButton from '@/components/events/EventQRButton';
 import { Review } from '@/types';
 import LikeButton from '@/components/events/LikeButton';
 import BannerCarousel from '@/components/events/BannerCarousel';
-import FollowButton from '@/components/organisers/FollowButton';
 import PromoterRefCapture from '@/components/events/PromoterRefCapture'
-import PromoteEventButton from '@/components/events/PromoteEventButton';
 import { MetaPixelViewContent } from '@/components/analytics/MetaPixelEvents';
 import OrganiserBadge from '@/components/organisers/OrganiserBadge';
 
@@ -52,14 +48,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     );
 }
 
-const organiserTypeLabels: Record<string, string> = {
-    club_venue: 'Club & Venue',
-    individual: 'Individual Organiser',
-    artist: 'Artist',
-    event_company: 'Event Company',
-    charity: 'Charity',
-    education: 'Education',
-};
+
 
 export default async function EventDetailPage({ params }: { params: { slug: string } }) {
     const supabase = createClient();
