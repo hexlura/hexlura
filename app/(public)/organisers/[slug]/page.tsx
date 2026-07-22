@@ -131,7 +131,6 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .from('events')
         .select('*', { count: 'exact', head: true })
         .eq('organiser_id', organiser.id)
-        .eq('status', 'published');
 
     // Follower count
     const { count: followerCount } = await supabase

@@ -106,7 +106,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         { data: promoteAssignmentRow },
     ] = await Promise.all([
         organiser?.id
-            ? supabase.from('events').select('*', { count: 'exact', head: true }).eq('organiser_id', organiser.id).eq('status', 'published')
+            ? supabase.from('events').select('*', { count: 'exact', head: true }).eq('organiser_id', organiser.id)
             : Promise.resolve({ count: 0, error: null }),
         organiser?.id
             ? supabase.from('follows').select('*', { count: 'exact', head: true }).eq('organiser_id', organiser.id)
