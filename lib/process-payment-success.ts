@@ -6,6 +6,7 @@ import BookingConfirmation from '@/emails/booking-confirmation'
 import NewBookingOrganiser from '@/emails/new-booking-organiser'
 import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
+import { autoFollowOrganiser } from '@/lib/auto-follow'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -312,6 +313,9 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                 })
             }
         }
+
+        // Silently follow the organiser on the buyer's behalf
+        void autoFollowOrganiser(userId, eventData.organiser_id)
 
         // Buyer confirmation email
         try {

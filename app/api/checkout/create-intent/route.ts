@@ -7,6 +7,7 @@ import { sendBookingConfirmationEmail } from '@/lib/email'
 import { getPromoterByReferralCode } from '@/lib/promoter-access'
 import { randomUUID } from 'crypto'
 import { checkoutLimiter, getIP } from '@/lib/rate-limit'
+import { autoFollowOrganiser } from '@/lib/auto-follow'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -232,6 +233,9 @@ export async function POST(request: NextRequest) {
         if (bookingError || !booking) {
             return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
         }
+
+        // Silently follow the organiser on the buyer's behalf
+        void autoFollowOrganiser(user.id, event.organiser_id)
 
         for (const item of items) {
             const { data: ticketType } = await adminClient
