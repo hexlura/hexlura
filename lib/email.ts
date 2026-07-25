@@ -17,6 +17,7 @@ import PayoutRequestedOrganiser from '@/emails/payout-requested-organiser'
 import PayoutRequestAdmin from '@/emails/payout-request-admin'
 import PromoterPayoutRequestAdmin from '@/emails/promoter-payout-request-admin'
 import StripeConnected from '@/emails/stripe-connected'
+import EventPromoCampaign from '@/emails/event-promo-campaign'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -528,6 +529,67 @@ export async function sendStripeConnectedEmail(data: {
     } catch (err) {
         console.error('Failed to send stripe connected email:', err)
     }
+}
+
+// Resend's batch endpoint caps out well under a few thousand recipients per call,
+// so campaigns (capped at 2000 recipients) are sent in chunks of 100.
+const CAMPAIGN_SEND_CHUNK_SIZE = 100
+
+export async function sendEventPromoCampaignEmails(data: {
+    orgName: string
+    eventTitle: string
+    eventSlug: string
+    subject: string
+    message: string
+    replyTo: string
+    recipients: { email: string; unsubscribeToken: string }[]
+}): Promise<{ email: string; success: boolean; messageId?: string }[]> {
+    const appUrl = getAppUrl()
+    const eventUrl = `${appUrl}/events/${data.eventSlug}`
+    const results: { email: string; success: boolean; messageId?: string }[] = []
+
+    for (let i = 0; i < data.recipients.length; i += CAMPAIGN_SEND_CHUNK_SIZE) {
+        const chunk = data.recipients.slice(i, i + CAMPAIGN_SEND_CHUNK_SIZE)
+
+        const rendered = await Promise.all(chunk.map(async recipient => {
+            const unsubscribeUrl = `${appUrl}/api/unsubscribe?token=${encodeURIComponent(recipient.unsubscribeToken)}`
+            const html = await render(EventPromoCampaign({
+                orgName: data.orgName,
+                eventTitle: data.eventTitle,
+                subject: data.subject,
+                message: data.message,
+                eventUrl,
+                unsubscribeUrl,
+            }))
+            return { email: recipient.email, html }
+        }))
+
+        try {
+            const { data: sendResults, error } = await getResend().batch.send(
+                rendered.map(r => ({
+                    from: 'Hexlura <noreply@hexlura.com>' as const,
+                    replyTo: data.replyTo,
+                    to: [r.email],
+                    subject: `[${data.eventTitle}] ${data.subject}`,
+                    html: r.html,
+                }))
+            )
+
+            if (error || !sendResults) {
+                console.error('Campaign batch send error:', error)
+                rendered.forEach(r => results.push({ email: r.email, success: false }))
+            } else {
+                sendResults.data.forEach((r, idx) => {
+                    results.push({ email: rendered[idx].email, success: true, messageId: r.id })
+                })
+            }
+        } catch (err) {
+            console.error('Campaign batch send threw:', err)
+            rendered.forEach(r => results.push({ email: r.email, success: false }))
+        }
+    }
+
+    return results
 }
 
 export async function sendAdminPromoterPayoutRequestEmail(data: {

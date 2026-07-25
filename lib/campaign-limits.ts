@@ -1,0 +1,2 @@
+export const MAX_CAMPAIGN_RECIPIENTS = 2000
+export const MAX_SENDS_PER_EVENT_PER_WEEK = 3
