@@ -18,6 +18,7 @@ import PayoutRequestAdmin from '@/emails/payout-request-admin'
 import PromoterPayoutRequestAdmin from '@/emails/promoter-payout-request-admin'
 import StripeConnected from '@/emails/stripe-connected'
 import EventPromoCampaign from '@/emails/event-promo-campaign'
+import NewEventFollowers from '@/emails/new-event-followers'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -590,6 +591,55 @@ export async function sendEventPromoCampaignEmails(data: {
     }
 
     return results
+}
+
+// Resend's batch endpoint has a real per-call recipient limit, and a popular
+// organiser's follower count can exceed it — chunk to keep this working at scale.
+const FOLLOWER_EMAIL_CHUNK_SIZE = 100
+
+export async function sendNewEventFollowersEmails(data: {
+    emails: string[]
+    orgName: string
+    eventTitle: string
+    eventDate: string
+    venueName: string | null
+    eventSlug: string
+}): Promise<number> {
+    const appUrl = getAppUrl()
+    const eventUrl = `${appUrl}/events/${data.eventSlug}`
+    let sent = 0
+
+    try {
+        const html = await render(NewEventFollowers({
+            orgName: data.orgName,
+            eventTitle: data.eventTitle,
+            eventDate: data.eventDate,
+            venueName: data.venueName,
+            eventUrl,
+        }))
+
+        for (let i = 0; i < data.emails.length; i += FOLLOWER_EMAIL_CHUNK_SIZE) {
+            const chunk = data.emails.slice(i, i + FOLLOWER_EMAIL_CHUNK_SIZE)
+            try {
+                await getResend().batch.send(
+                    chunk.map(email => ({
+                        from: 'Hexlura <noreply@hexlura.com>' as const,
+                        replyTo: 'support@hexlura.com',
+                        to: [email],
+                        subject: `${data.orgName} just announced: ${data.eventTitle}`,
+                        html,
+                    }))
+                )
+                sent += chunk.length
+            } catch (err) {
+                console.error('New event follower email chunk failed:', err)
+            }
+        }
+    } catch (err) {
+        console.error('Failed to render new event follower email:', err)
+    }
+
+    return sent
 }
 
 export async function sendAdminPromoterPayoutRequestEmail(data: {

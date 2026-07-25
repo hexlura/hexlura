@@ -77,6 +77,7 @@ export interface Event {
     refund_policy: string | null;
     total_capacity: number | null;
     created_at: string;
+    followers_notified_at?: string | null;
     organiser?: OrganiserProfile;
     ticket_types?: TicketType[];
 }

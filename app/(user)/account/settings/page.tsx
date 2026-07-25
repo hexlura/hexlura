@@ -74,6 +74,11 @@ export default function AccountSettingsPage() {
 
     const [deleteLoading, setDeleteLoading] = useState(false)
 
+    // Notification preferences
+    const [emailMarketingOptOut, setEmailMarketingOptOut] = useState(false)
+    const [notifLoading, setNotifLoading] = useState(false)
+    const [notifMsg, setNotifMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
     const today = new Date().toISOString().split('T')[0]
 
     useEffect(() => {
@@ -85,7 +90,7 @@ export default function AccountSettingsPage() {
 
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('full_name, phone, avatar_url, date_of_birth, gender, address_line1, city, postcode')
+                .select('full_name, phone, avatar_url, date_of_birth, gender, address_line1, city, postcode, email_marketing_opt_out')
                 .eq('id', user.id)
                 .single()
 
@@ -98,6 +103,7 @@ export default function AccountSettingsPage() {
                 setAddressLine1(profile.address_line1 || '')
                 setCity(profile.city || '')
                 setPostcode(profile.postcode || '')
+                setEmailMarketingOptOut(!!profile.email_marketing_opt_out)
 
                 const name = profile.full_name || user.email || '?'
                 setInitials(
@@ -256,6 +262,30 @@ export default function AccountSettingsPage() {
             setPasswordMsg({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update password.' })
         } finally {
             setPasswordLoading(false)
+        }
+    }
+
+    async function handleToggleEmailMarketing() {
+        const next = !emailMarketingOptOut
+        setEmailMarketingOptOut(next)
+        setNotifLoading(true)
+        setNotifMsg(null)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error('Not authenticated')
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({ email_marketing_opt_out: next })
+                .eq('id', user.id)
+
+            if (error) throw error
+            setNotifMsg({ type: 'success', text: 'Preference saved.' })
+        } catch {
+            setEmailMarketingOptOut(!next)
+            setNotifMsg({ type: 'error', text: 'Something went wrong. Please try again.' })
+        } finally {
+            setNotifLoading(false)
         }
     }
 
@@ -508,7 +538,28 @@ export default function AccountSettingsPage() {
                 </form>
             </div>
 
-            {/* Section 5 — Danger Zone */}
+            {/* Section 5 — Notification Preferences */}
+            <div style={cardStyle}>
+                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 20 }}>Notification Preferences</h2>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+                    <input
+                        type="checkbox"
+                        checked={!emailMarketingOptOut}
+                        onChange={handleToggleEmailMarketing}
+                        disabled={notifLoading}
+                        style={{ marginTop: 3 }}
+                    />
+                    <span style={{ fontSize: 13, color: '#0A0A0F' }}>
+                        Email me when an organiser I follow announces a new event
+                        <span style={{ display: 'block', fontSize: 11, color: '#8888AA', marginTop: 2 }}>
+                            You&apos;ll still see these as notifications on Hexlura either way.
+                        </span>
+                    </span>
+                </label>
+                {notifMsg && <div style={{ marginTop: 10 }}><StatusMsg msg={notifMsg} /></div>}
+            </div>
+
+            {/* Section 6 — Danger Zone */}
             <div style={{ border: '1px solid #E63950', padding: 24 }}>
                 <h2 style={{ fontSize: 16, color: '#E63950', fontWeight: 600, marginBottom: 12 }}>Danger Zone</h2>
                 <p style={{ fontSize: 13, color: '#8888AA', marginBottom: 16 }}>
