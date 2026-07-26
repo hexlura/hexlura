@@ -102,9 +102,9 @@ export default function LikeButton({
                     </svg>
                 </span>
 
-                <span className="button-label">
+                {/* <span className="button-label">
                     {liked ? 'Liked' : 'Like'}
-                </span>
+                </span> */}
 
                 <span className="like-count" aria-hidden="true">
                     {count}
