@@ -53,13 +53,23 @@ export default function PromoteEventButton({ eventId, initialState, isLoggedIn }
         fontWeight: 600,
         borderRadius: '2px',
         whiteSpace: 'nowrap',
+        background: '#FFFFFF',
+        color: '#0A0A0F',
+        border: '1px solid #E4E4E7',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 
     if (state === 'active') {
         return (
             <Link
                 href="/promoter/links"
-                style={{ ...baseStyle, border: '1px solid #00C48A', background: 'rgba(0,196,138,0.1)', color: '#00996B', textDecoration: 'none' }}
+                style={{
+                    ...baseStyle,
+                    textDecoration: 'none',
+                }}
             >
                 Promoting · Get link
             </Link>
@@ -70,9 +80,17 @@ export default function PromoteEventButton({ eventId, initialState, isLoggedIn }
         return (
             <span
                 title="The organiser will review your request"
-                style={{ ...baseStyle, border: '1px solid #C0C0C8', background: '#F5F5F7', color: '#666677', cursor: 'default' }}
+                style={{
+                    ...baseStyle,
+                    cursor: 'default',
+                    gap: '4px',
+                }}
             >
-                Requested ✓
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
+                </svg>
+
+                Requested
             </span>
         )
     }
@@ -81,7 +99,10 @@ export default function PromoteEventButton({ eventId, initialState, isLoggedIn }
         return (
             <span
                 title="You already have an invitation for this event — check your email"
-                style={{ ...baseStyle, border: '1px solid #C0C0C8', background: '#F5F5F7', color: '#666677', cursor: 'default' }}
+                style={{
+                    ...baseStyle,
+                    cursor: 'default',
+                }}
             >
                 Invite pending
             </span>
@@ -96,9 +117,6 @@ export default function PromoteEventButton({ eventId, initialState, isLoggedIn }
                 title="Ask the organiser for a commission link to promote this event"
                 style={{
                     ...baseStyle,
-                    border: '1px solid #0A0A0F',
-                    background: 'transparent',
-                    color: '#0A0A0F',
                     cursor: loading ? 'default' : 'pointer',
                     opacity: loading ? 0.6 : 1,
                 }}
