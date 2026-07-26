@@ -155,6 +155,8 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deletingAccount, setDeletingAccount] = useState(false)
     const [deleteError, setDeleteError] = useState<string | null>(null)
+    const [deleteReason, setDeleteReason] = useState('')
+    const [deleteRequestSubmitted, setDeleteRequestSubmitted] = useState(false)
 
     async function handleCloseAccount() {
         setClosingAccount(true)
@@ -168,15 +170,23 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     }
 
     async function handleDeleteAccount() {
+        if (!deleteReason.trim()) {
+            setDeleteError('Please tell us why you want to delete your account.')
+            return
+        }
         setDeletingAccount(true)
         setDeleteError(null)
-        const res = await fetch('/api/organiser/delete-account', { method: 'POST' })
+        const res = await fetch('/api/organiser/delete-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: deleteReason }),
+        })
+        setDeletingAccount(false)
         if (res.ok) {
-            window.location.href = '/'
+            setDeleteRequestSubmitted(true)
         } else {
             const json = await res.json()
             setDeleteError(json.error || 'Something went wrong. Please try again.')
-            setDeletingAccount(false)
         }
     }
 
@@ -831,10 +841,11 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                     <div className="border-t border-border pt-6">
                         <p className="text-sm text-text font-medium mb-1">Delete Account Permanently</p>
                         <p className="text-sm text-muted mb-3">
-                            Permanently deletes your account and all associated data. This cannot be undone.
-                            Not available if you have any events with confirmed bookings — contact support in that case.
+                            Requests permanent deletion of your account and all associated data. Goes through
+                            admin review — if you have events with confirmed bookings, those are refunded
+                            automatically as part of approval.
                         </p>
-                        <Button variant="danger" size="md" onClick={() => { setShowDeleteModal(true); setDeleteError(null) }}>
+                        <Button variant="danger" size="md" onClick={() => { setShowDeleteModal(true); setDeleteError(null); setDeleteReason(''); setDeleteRequestSubmitted(false) }}>
                             Delete Account Permanently
                         </Button>
                     </div>
@@ -845,20 +856,43 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
             {showDeleteModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
                     <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
-                        <h3 className="font-heading text-xl text-text mb-3">Delete Account Permanently?</h3>
-                        <p className="text-sm text-muted mb-4">
-                            This will permanently delete your account, organiser profile, and all your events. This cannot be undone.
-                            If you have any events with confirmed bookings, you will be directed to contact support instead.
-                        </p>
-                        {deleteError && (
-                            <p className="text-sm text-accent mb-4 bg-accent/10 border border-accent/30 px-3 py-2">{deleteError}</p>
+                        {deleteRequestSubmitted ? (
+                            <>
+                                <h3 className="font-heading text-xl text-text mb-3">Request Submitted</h3>
+                                <p className="text-sm text-muted mb-4">
+                                    Your account remains active for now. Our team will review your request —
+                                    if approved, any confirmed bookings on your events are refunded automatically
+                                    before your account is deleted.
+                                </p>
+                                <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)}>Close</Button>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="font-heading text-xl text-text mb-3">Request Account Deletion?</h3>
+                                <p className="text-sm text-muted mb-4">
+                                    This submits a request for admin review — your account is not deleted yet.
+                                    If approved, your account, organiser profile, and events are permanently deleted;
+                                    any confirmed bookings are refunded first.
+                                </p>
+                                <label className="block text-xs font-semibold text-text mb-1">Why do you want to delete your account?</label>
+                                <textarea
+                                    value={deleteReason}
+                                    onChange={e => setDeleteReason(e.target.value)}
+                                    rows={3}
+                                    placeholder="Required — this is shown to our review team"
+                                    className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-3"
+                                />
+                                {deleteError && (
+                                    <p className="text-sm text-accent mb-4 bg-accent/10 border border-accent/30 px-3 py-2">{deleteError}</p>
+                                )}
+                                <div className="flex gap-3">
+                                    <Button variant="danger" size="md" onClick={handleDeleteAccount} disabled={deletingAccount}>
+                                        {deletingAccount ? 'Submitting...' : 'Submit Request'}
+                                    </Button>
+                                    <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)} disabled={deletingAccount}>Cancel</Button>
+                                </div>
+                            </>
                         )}
-                        <div className="flex gap-3">
-                            <Button variant="danger" size="md" onClick={handleDeleteAccount} disabled={deletingAccount}>
-                                {deletingAccount ? 'Deleting...' : 'Yes, Delete Everything'}
-                            </Button>
-                            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)} disabled={deletingAccount}>Cancel</Button>
-                        </div>
                     </div>
                 </div>
             )}

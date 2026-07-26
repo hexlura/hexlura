@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { formatPence } from '@/lib/fees'
-import { createClient } from '@/lib/supabase/client'
 
 type EventStatus = 'draft' | 'published' | 'cancelled' | 'archived'
 
@@ -37,7 +36,10 @@ export function EventsClient({ events }: EventsClientProps) {
     const [showCancelModal, setShowCancelModal] = useState<string | null>(null)
     const [cancelling, setCancelling] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null)
+    const [deleteReason, setDeleteReason] = useState('')
     const [deleting, setDeleting] = useState(false)
+    const [deleteError, setDeleteError] = useState('')
+    const [deleteSuccess, setDeleteSuccess] = useState(false)
     const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
 
@@ -78,13 +80,25 @@ export function EventsClient({ events }: EventsClientProps) {
     }
 
     async function handleDelete(eventId: string) {
+        if (!deleteReason.trim()) {
+            setDeleteError('Please tell us why you want to delete this event.')
+            return
+        }
         setDeleting(true)
-        const supabase = createClient()
-        await supabase.from('ticket_types').delete().eq('event_id', eventId)
-        await supabase.from('events').delete().eq('id', eventId)
+        setDeleteError('')
+        const res = await fetch(`/api/organiser/events/${eventId}/request-deletion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: deleteReason }),
+        })
+        const json = await res.json()
         setDeleting(false)
-        setShowDeleteModal(null)
-        window.location.reload()
+        if (!res.ok) {
+            setDeleteError(json.error || 'Failed to submit request.')
+            return
+        }
+        setDeleteSuccess(true)
+        setTimeout(() => window.location.reload(), 1800)
     }
 
     return (
@@ -157,12 +171,8 @@ export function EventsClient({ events }: EventsClientProps) {
                                                         <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline">Cancel</button>
                                                     </>
                                                 )}
-                                                {e.ticketsSold === 0 && (
-                                                    <>
-                                                        <span className="text-border">·</span>
-                                                        <button type="button" onClick={() => setShowDeleteModal(e.id)} className="text-xs text-accent hover:underline">Delete</button>
-                                                    </>
-                                                )}
+                                                <span className="text-border">·</span>
+                                                <button type="button" onClick={() => { setShowDeleteModal(e.id); setDeleteReason(''); setDeleteError(''); setDeleteSuccess(false) }} className="text-xs text-accent hover:underline">Delete</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -207,9 +217,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                                 {e.status !== 'cancelled' && (
                                                     <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Cancel Event</button>
                                                 )}
-                                                {e.ticketsSold === 0 && (
-                                                    <button type="button" onClick={() => setShowDeleteModal(e.id)} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Delete Event</button>
-                                                )}
+                                                <button type="button" onClick={() => { setShowDeleteModal(e.id); setDeleteReason(''); setDeleteError(''); setDeleteSuccess(false) }} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Delete Event</button>
                                             </div>
                                         )}
                                     </div>
@@ -239,21 +247,42 @@ export function EventsClient({ events }: EventsClientProps) {
                 </div>
             )}
 
-            {/* Delete confirmation modal */}
+            {/* Delete request modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
                     <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
-                        <h3 className="font-heading text-xl text-text mb-3">Delete Event?</h3>
-                        <p className="text-sm text-muted mb-4">
-                            This will permanently delete the event and all its ticket types.
-                            This action cannot be undone.
-                        </p>
-                        <div className="flex gap-3">
-                            <Button variant="danger" size="md" onClick={() => handleDelete(showDeleteModal)} disabled={deleting}>
-                                {deleting ? 'Deleting...' : 'Yes, Delete Event'}
-                            </Button>
-                            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(null)}>Keep Event</Button>
-                        </div>
+                        {deleteSuccess ? (
+                            <>
+                                <h3 className="font-heading text-xl text-text mb-3">Request Submitted</h3>
+                                <p className="text-sm text-muted">
+                                    The event has been unpublished and your deletion request is with our team for review.
+                                    You&apos;ll be notified once it&apos;s decided.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="font-heading text-xl text-text mb-3">Request to Delete Event?</h3>
+                                <p className="text-sm text-muted mb-4">
+                                    Event deletions go through admin review. Requesting this will immediately
+                                    unpublish the event while it&apos;s reviewed — it is not deleted yet.
+                                </p>
+                                <label className="block text-xs font-semibold text-text mb-1">Why do you want to delete this event?</label>
+                                <textarea
+                                    value={deleteReason}
+                                    onChange={e => setDeleteReason(e.target.value)}
+                                    rows={3}
+                                    placeholder="Required — this is shown to our review team"
+                                    className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-3"
+                                />
+                                {deleteError && <p className="text-accent text-xs mb-3">{deleteError}</p>}
+                                <div className="flex gap-3">
+                                    <Button variant="danger" size="md" onClick={() => handleDelete(showDeleteModal)} disabled={deleting}>
+                                        {deleting ? 'Submitting...' : 'Submit Request'}
+                                    </Button>
+                                    <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(null)} disabled={deleting}>Cancel</Button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

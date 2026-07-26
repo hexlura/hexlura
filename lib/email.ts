@@ -19,6 +19,9 @@ import PromoterPayoutRequestAdmin from '@/emails/promoter-payout-request-admin'
 import StripeConnected from '@/emails/stripe-connected'
 import EventPromoCampaign from '@/emails/event-promo-campaign'
 import NewEventFollowers from '@/emails/new-event-followers'
+import EventDeletionRequestedAdmin from '@/emails/event-deletion-requested-admin'
+import AccountDeletionRequestedAdmin from '@/emails/account-deletion-requested-admin'
+import AccountDeletionApproved from '@/emails/account-deletion-approved'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -640,6 +643,88 @@ export async function sendNewEventFollowersEmails(data: {
     }
 
     return sent
+}
+
+export async function sendEventDeletionRequestedAdminEmail(data: {
+    orgName: string
+    organiserEmail: string
+    eventTitle: string
+    reason: string
+    confirmedBookingCount: number
+    revenuePence: number
+}): Promise<void> {
+    try {
+        const appUrl = getAppUrl()
+        const html = await render(EventDeletionRequestedAdmin({
+            orgName: data.orgName,
+            organiserEmail: data.organiserEmail,
+            eventTitle: data.eventTitle,
+            reason: data.reason,
+            confirmedBookingCount: data.confirmedBookingCount,
+            revenuePence: data.revenuePence,
+            appUrl,
+        }))
+        await getResend().emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: data.organiserEmail,
+            to: 'support@hexlura.com',
+            subject: `Event deletion requested: ${data.eventTitle} (${data.orgName})`,
+            html,
+        })
+    } catch (err) {
+        console.error('Failed to send event deletion requested admin email:', err)
+    }
+}
+
+export async function sendAccountDeletionRequestedAdminEmail(data: {
+    orgName: string
+    requesterEmail: string
+    reason: string
+    eventCount: number
+    confirmedBookingCount: number
+}): Promise<void> {
+    try {
+        const appUrl = getAppUrl()
+        const html = await render(AccountDeletionRequestedAdmin({
+            orgName: data.orgName,
+            requesterEmail: data.requesterEmail,
+            reason: data.reason,
+            eventCount: data.eventCount,
+            confirmedBookingCount: data.confirmedBookingCount,
+            appUrl,
+        }))
+        await getResend().emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: data.requesterEmail,
+            to: 'support@hexlura.com',
+            subject: `Account deletion requested: ${data.orgName}`,
+            html,
+        })
+    } catch (err) {
+        console.error('Failed to send account deletion requested admin email:', err)
+    }
+}
+
+export async function sendAccountDeletionApprovedEmail(data: {
+    to: string
+    fullName: string
+    orgName: string
+}): Promise<void> {
+    try {
+        const html = await render(AccountDeletionApproved({
+            fullName: data.fullName,
+            orgName: data.orgName,
+        }))
+        await getResend().emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: 'support@hexlura.com',
+            to: data.to,
+            subject: 'Your Hexlura account has been deleted',
+            html,
+        })
+    } catch (err) {
+        console.error('Failed to send account deletion approved email:', err)
+    }
 }
 
 export async function sendAdminPromoterPayoutRequestEmail(data: {

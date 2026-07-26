@@ -33,6 +33,8 @@ const NAV_SECTIONS: { title: string; links: NavLink[] }[] = [
             { href: '/admin/promoters', label: 'Promoters', exact: false },
             { href: '/admin/events', label: 'Events', exact: false },
             { href: '/admin/bookings', label: 'Bookings', exact: false },
+            { href: '/admin/event-deletion-requests', label: 'Event Deletions', exact: false },
+            { href: '/admin/account-deletion-requests', label: 'Account Deletions', exact: false },
         ],
     },
     {

@@ -20,6 +20,7 @@ export default async function OrganiserEventsPage() {
         .from('events')
         .select('id, title, slug, start_at, status')
         .eq('organiser_id', organiserId)
+        .neq('status', 'deleted')
         .order('start_at', { ascending: false })
 
     const eventIds = (eventsData || []).map((e: { id: string }) => e.id)
