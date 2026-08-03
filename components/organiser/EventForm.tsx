@@ -263,9 +263,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     async function getOrCreateEventId(): Promise<{ id: string; slug: string } | null> {
         const supabase = createClient()
         const existingId = event?.id || createdEventIdRef.current
-        if (existingId) return { id: existingId, slug: slug || event?.slug || '' }
+        // toSlug() here matters: the Event Slug field (section 02) is a free-typed
+        // input that's only auto-sanitized while creating a brand-new event — once
+        // editing, nothing else cleans it, so a manually retyped value with spaces/
+        // caps/punctuation would otherwise reach the DB (and the public URL) as-is.
+        if (existingId) return { id: existingId, slug: toSlug(slug || event?.slug || '') || event?.slug || '' }
 
-        const baseSlug = slug || toSlug(title) || `event-${Date.now()}`
+        const baseSlug = toSlug(slug) || toSlug(title) || `event-${Date.now()}`
         let candidate = baseSlug
         for (let attempt = 0; attempt < 3; attempt++) {
             const { data, error } = await supabase
@@ -321,7 +325,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         const created = await getOrCreateEventId()
         if (!created) { setSaving(false); return }
 
-        let effectiveSlug = created.slug || toSlug(title) || `event-${Date.now()}`
+        let effectiveSlug = toSlug(created.slug) || toSlug(title) || `event-${Date.now()}`
         // .select() so an RLS-filtered update (0 rows, no error) is detectable
         let { data: updated, error: updateError } = await supabase.from('events')
             .update(buildEventPayload(effectiveSlug)).eq('id', created.id).select('id')
@@ -404,7 +408,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             return
         }
 
-        let effectiveSlug = created.slug || toSlug(title) || `event-${Date.now()}`
+        let effectiveSlug = toSlug(created.slug) || toSlug(title) || `event-${Date.now()}`
         // .select() so an RLS-filtered update (0 rows, no error) is detectable
         let { data: updated, error: updateError } = await supabase.from('events')
             .update({ ...buildEventPayload(effectiveSlug), status: 'published' })
@@ -672,7 +676,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                             </div>
                             <div>
                                 <label className={labelClass}>Event Slug</label>
-                                <input type="text" value={slug} onChange={e => setSlug(e.target.value)} className={inputClass} placeholder="your-event-slug" />
+                                <input type="text" value={slug} onChange={e => setSlug(e.target.value)} onBlur={e => setSlug(toSlug(e.target.value))} className={inputClass} placeholder="your-event-slug" />
                             </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Venue Name *</label>
