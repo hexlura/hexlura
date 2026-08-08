@@ -48,8 +48,9 @@ const NAV_SECTIONS: { title: string; links: NavLink[] }[] = [
     {
         title: 'SUPPORT',
         links: [
-            { href: '/admin/support', label: 'Support', exact: false, badge: 'openSupportTickets' },
+            { href: '/admin/support/enquiries', label: 'Enquiries', exact: false },
             { href: '/admin/notifications', label: 'Notifications', exact: false, badge: 'unreadNotifications' },
+            { href: '/admin/support', label: 'Support', exact: true, badge: 'openSupportTickets' },
         ],
     },
     {
@@ -76,7 +77,7 @@ export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupport
             fetch('/api/notifications')
                 .then(r => r.ok ? r.json() : { unreadCount: 0 })
                 .then(d => { if (!cancelled) setUnreadNotifications(d.unreadCount || 0) })
-                .catch(() => {})
+                .catch(() => { })
         }
         refresh()
         // Live-update when the inbox page mutates notifications.
@@ -218,13 +219,12 @@ export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupport
                                             key={link.href}
                                             href={link.href}
                                             onClick={() => handleNavClick(link.href)}
-                                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
-                                                active
-                                                    ? 'text-text bg-card font-medium'
-                                                    : loading
+                                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${active
+                                                ? 'text-text bg-card font-medium'
+                                                : loading
                                                     ? 'text-muted'
                                                     : 'text-muted hover:text-text hover:bg-card'
-                                            }`}
+                                                }`}
                                         >
                                             {active && (
                                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent" />

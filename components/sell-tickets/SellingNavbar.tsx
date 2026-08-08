@@ -9,6 +9,7 @@ const sectionLinks = [
     { label: 'How it works', href: '#how-it-works' },
     { label: 'Features', href: '#features' },
     { label: 'FAQ', href: '#faq' },
+    { label: 'Contact', href: '/contact' }
 ]
 
 export default function SellingNavbar({ ctaHref }: { ctaHref: string }) {

@@ -49,10 +49,10 @@ export default function SellingFooter({ ctaHref }: { ctaHref: string }) {
                                 Create your free account
                             </Link>
                             <Link
-                                href="/auth/login"
+                                href="/contact"
                                 className={`${styles.btnGhost} bg-transparent text-white font-bold py-4 px-8 rounded-full border-2 border-white hover:border-gray-400 hover:text-gray-400 text-center uppercase tracking-wider text-sm`}
                             >
-                                Sign in
+                                Get in touch
                             </Link>
                         </div>
                     </>
