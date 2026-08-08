@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import styles from './selling.module.css'
+import Image from 'next/image'
 import { Reveal } from './Reveal'
 import VideoModal from './VideoModal'
 
@@ -50,8 +51,10 @@ function VideoCard({
                 if (e.key === 'Enter' || e.key === ' ') onOpen(video.id)
             }}
         >
-            <img
+            <Image
                 src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                width={1280}
+                height={720}
                 alt={video.title}
                 className="absolute inset-0 w-full h-full object-cover opacity-80 transition-opacity duration-300"
             />

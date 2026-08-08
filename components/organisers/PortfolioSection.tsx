@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 interface PortfolioItem {
     id: string
@@ -93,7 +94,7 @@ export default function PortfolioSection({ items }: { items: PortfolioItem[] }) 
                             className="portfolio-item-hover"
                         >
                             {item.type === 'photo' ? (
-                                <img
+                                <Image
                                     src={item.url}
                                     alt={item.caption || ''}
                                     style={{
@@ -108,7 +109,7 @@ export default function PortfolioSection({ items }: { items: PortfolioItem[] }) 
                             ) : (
                                 <>
                                     {item.thumbnail_url && (
-                                        <img
+                                        <Image
                                             src={item.thumbnail_url}
                                             alt={item.caption || ''}
                                             style={{
@@ -165,7 +166,7 @@ export default function PortfolioSection({ items }: { items: PortfolioItem[] }) 
                     }}
                 >
                     <div onClick={e => e.stopPropagation()} style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
-                        <img
+                        <Image
                             src={currentPhoto.url}
                             alt={currentPhoto.caption || ''}
                             style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain', display: 'block' }}

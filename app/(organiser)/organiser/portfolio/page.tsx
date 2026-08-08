@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { compressImage } from '@/lib/compress-image'
 
@@ -402,7 +403,7 @@ export default function PortfolioPage() {
 
                         {videoThumbnail && (
                             <div style={{ marginBottom: 12 }}>
-                                <img
+                                <Image
                                     src={videoThumbnail}
                                     alt="Video thumbnail"
                                     style={{
@@ -494,7 +495,7 @@ export default function PortfolioPage() {
                                 >
                                     {/* Image/Thumbnail */}
                                     {item.type === 'photo' ? (
-                                        <img
+                                        <Image
                                             src={item.url}
                                             alt={item.caption || ''}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
@@ -502,7 +503,7 @@ export default function PortfolioPage() {
                                     ) : (
                                         <>
                                             {item.thumbnail_url && (
-                                                <img
+                                                <Image
                                                     src={item.thumbnail_url}
                                                     alt={item.caption || ''}
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}

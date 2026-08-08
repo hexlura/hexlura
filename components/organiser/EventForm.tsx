@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { compressImage } from '@/lib/compress-image'
 import { Button } from '@/components/ui/Button'
@@ -494,7 +495,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             const arr = [...prev]
             const j = i + dir
             if (j < 0 || j >= arr.length) return arr
-            ;[arr[i], arr[j]] = [arr[j], arr[i]]
+                ;[arr[i], arr[j]] = [arr[j], arr[i]]
             return arr
         })
     }
@@ -599,7 +600,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
                                         {bannerImages.map((url, i) => (
                                             <div key={url} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                                                <img src={url} alt={`Banner ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '2px', border: '1px solid #E0E0E8' }} />
+                                                <Image src={url} alt={`Banner ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '2px', border: '1px solid #E0E0E8' }} />
                                                 {i === 0 && (
                                                     <span style={{ position: 'absolute', bottom: '3px', left: '3px', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '9px', padding: '1px 4px', borderRadius: '3px' }}>MAIN</span>
                                                 )}

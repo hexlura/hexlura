@@ -11,7 +11,7 @@ import ComparisonSection from '@/components/sell-tickets/ComparisonSection'
 import CalculatorSection from '@/components/sell-tickets/CalculatorSection'
 import ProcessSection from '@/components/sell-tickets/ProcessSection'
 import FeaturesSection from '@/components/sell-tickets/FeaturesSection'
-import PricingSection from '@/components/sell-tickets/PricingSection'
+// import PricingSection from '@/components/sell-tickets/PricingSection'
 import FAQSection from '@/components/sell-tickets/FAQSection'
 import SellingFooter from '@/components/sell-tickets/SellingFooter'
 
