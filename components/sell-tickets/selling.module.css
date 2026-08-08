@@ -1,0 +1,235 @@
+/* ---------- Reveal system ---------- */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(6px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+        filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+}
+.revealScale {
+    opacity: 0;
+    transform: scale(0.94);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.revealScale.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ---------- Ambient gradient mesh ---------- */
+.meshBg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+.blob {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(70px);
+    opacity: 0.35;
+    will-change: transform;
+}
+.blobDrift {
+    animation: drift 22s ease-in-out infinite alternate;
+}
+.blobDriftSlow {
+    animation: drift 30s ease-in-out infinite alternate-reverse;
+}
+@keyframes drift {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -25px) scale(1.08); }
+    100% { transform: translate(-20px, 20px) scale(0.96); }
+}
+
+/* ---------- Floating decorative chips ---------- */
+.floatChip { animation: bob 6s ease-in-out infinite; }
+.floatChip2 { animation: bob 7.5s ease-in-out infinite; animation-delay: -2s; }
+.floatChip3 { animation: bob 5.2s ease-in-out infinite; animation-delay: -3.4s; }
+@keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-14px) rotate(calc(var(--r, 0deg) + 2deg)); }
+}
+
+/* ---------- Ticket card 3D tilt ---------- */
+.ticketTiltWrap { perspective: 1400px; }
+.ticketCard {
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+.ticketCardBob {
+    animation: bob 8s ease-in-out infinite;
+}
+
+.spinStamp {
+    animation: spinStamp 10s linear infinite alternate;
+}
+@keyframes spinStamp {
+    from { transform: rotate(60deg); }
+    to { transform: rotate(0deg); }
+}
+
+/* ---------- Buttery buttons ---------- */
+.btnPrimary {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 0.45s cubic-bezier(0.16, 1, 0.3, 1), color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btnPrimary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-120%);
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btnPrimary:hover::before { transform: translateX(120%); }
+.btnPrimary:hover {
+    transform: translateY(-3px) scale(1.015);
+    box-shadow: 0 14px 34px -8px rgba(234, 40, 69, 0.55);
+}
+.btnPrimary:active { transform: translateY(-1px) scale(0.99); }
+
+.btnGhost {
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.4s ease, color 0.4s ease, background-color 0.4s ease;
+}
+.btnGhost:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px -10px rgba(15, 15, 15, 0.25);
+}
+
+/* ---------- Video hover cards ---------- */
+.vidCard {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), z-index 0s;
+    will-change: transform;
+}
+.vidCard:hover {
+    transform: scale(1.15) translateY(-10px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    z-index: 40;
+}
+.vidPlayOverlay { transition: opacity 0.3s ease; }
+.vidCard:hover .vidPlayOverlay { opacity: 0; }
+
+.hideScrollbars::-webkit-scrollbar { display: none; }
+.hideScrollbars { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---------- Video modal ---------- */
+.videoModal {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+.videoModal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.modalContent {
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.videoModal.active .modalContent {
+    transform: scale(1) translateY(0);
+}
+
+/* ---------- Glow / lift hover cards ---------- */
+.glowHover {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+.glowHover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -18px rgba(234, 40, 69, 0.35);
+    border-color: #ea2845;
+}
+.glowHoverDark {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+.glowHoverDark:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -18px rgba(234, 40, 69, 0.5);
+    border-color: #ea2845;
+}
+.liftHover {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+.liftHover:hover {
+    transform: translateY(-8px) scale(1.015);
+}
+.pricingCard {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+.pricingCard:hover {
+    transform: translateY(-8px);
+}
+
+/* ---------- Gradient text ---------- */
+.gradText {
+    background: linear-gradient(90deg, #ea2845 0%, #ff4d67 45%, #7c5cff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.countUp { font-variant-numeric: tabular-nums; }
+
+/* ---------- FAQ accordion ---------- */
+.faqItem {
+    transition: border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease;
+}
+.faqAnswer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.faqItem.open .faqAnswer { grid-template-rows: 1fr; }
+.faqAnswerInner { overflow: hidden; min-height: 0; }
+.faqIcon { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: inline-block; }
+.faqItem.open .faqIcon { transform: rotate(135deg); }
+
+/* ---------- Connector line draw ---------- */
+.drawLine {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    transition: stroke-dashoffset 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.drawLine.active { stroke-dashoffset: 0; }
+
+/* ---------- Marquee ---------- */
+.marqueeTrack {
+    display: flex;
+    width: max-content;
+    animation: marquee 26s linear infinite;
+}
+@keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+.videoMarqueeTrack {
+    display: flex;
+    width: max-content;
+    animation: videoMarquee 45s linear infinite;
+}
+.videoMarqueeTrack.paused { animation-play-state: paused; }
+@keyframes videoMarquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal, .revealScale { transition-duration: 0.01ms !important; }
+    .blobDrift, .blobDriftSlow, .floatChip, .floatChip2, .floatChip3,
+    .marqueeTrack, .videoMarqueeTrack, .ticketCardBob {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

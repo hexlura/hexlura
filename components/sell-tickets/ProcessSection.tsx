@@ -1,315 +1,123 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import SectionHeader from './SectionHeader'
+import styles from './selling.module.css'
+import { Reveal, useInView } from './Reveal'
+import TutorialCarousel from './TutorialCarousel'
 
-type Step = {
-  num: string
-  label: string
-  heading: string
-  body: string
-  glyph: string
-  doodlePath: string
-  reverse: boolean
-}
-
-const STEPS: Step[] = [
-  {
-    num: '01',
-    label: 'STEP 01 · SIGN UP',
-    heading: 'Create your account',
-    body: 'Sign up free in seconds. No credit card, no waiting on approval.',
-    glyph: '◎',
-    doodlePath: 'M2 14 Q10 2 18 12 T34 8',
-    reverse: false,
-  },
-  {
-    num: '02',
-    label: 'STEP 02 · PAYOUTS',
-    heading: 'Connect your payouts',
-    body: 'Link your bank via Stripe. Secure, and it only takes about two minutes.',
-    glyph: '£',
-    doodlePath: 'M2 8 Q10 18 18 8 T34 12',
-    reverse: true,
-  },
-  {
-    num: '03',
-    label: 'STEP 03 · BUILD',
-    heading: 'Build your event',
-    body: 'Add details, ticket types, prices and a banner. Go live the instant you hit publish.',
-    glyph: '▤',
-    doodlePath: 'M2 14 Q10 2 18 12 T34 8',
-    reverse: false,
-  },
-  {
-    num: '04',
-    label: 'STEP 04 · GET PAID',
-    heading: 'Get paid in full',
-    body: 'We handle the sales and the fans. You receive 100% of face value, 2 days after doors close.',
-    glyph: '✓',
-    doodlePath: 'M2 8 Q10 18 18 8 T34 12',
-    reverse: true,
-  },
+const steps = [
+    {
+        num: '01',
+        label: 'Step 01 - Sign Up',
+        title: 'Create your account',
+        desc: 'Sign up free in seconds. No credit card required.',
+        icon: (
+            <div className="w-8 h-8 rounded-full border-2 border-hexred flex items-center justify-center mb-2">
+                <div className="w-2 h-2 rounded-full bg-hexred" />
+            </div>
+        ),
+    },
+    {
+        num: '02',
+        label: 'Step 02 - Payouts',
+        title: 'Connect payouts',
+        desc: 'Link your bank securely to receive your funds.',
+        icon: <div className="text-3xl text-hexred font-mono">£</div>,
+    },
+    {
+        num: '03',
+        label: 'Step 03 - Build',
+        title: 'Build your event',
+        desc: 'Add details, tickets, and go live instantly.',
+        icon: (
+            <div className="w-6 h-6 border border-hexdark flex flex-col justify-evenly p-1">
+                <div className="w-full h-0.5 bg-hexred" />
+                <div className="w-full h-0.5 bg-hexred" />
+                <div className="w-full h-0.5 bg-hexred" />
+            </div>
+        ),
+    },
+    {
+        num: '04',
+        label: 'Step 04 - Get Paid',
+        title: 'Get paid in full',
+        desc: 'Receive 100% of face value after your event.',
+        icon: (
+            <svg className="w-8 h-8 text-hexred" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+            </svg>
+        ),
+    },
 ]
 
-function TrailStep({ step }: { step: Step }) {
-  return (
-    <div
-      className={`st-trail-step${step.reverse ? ' st-trail-step--reverse' : ''}`}
-    >
-      {/* Visual card */}
-      <div
-        className="st-trail-visual"
-        data-step-visual
-      >
-        <span className="st-trail-ghost" aria-hidden="true">
-          {step.num}
-        </span>
-        <svg
-          className={`st-trail-doodle${step.reverse ? ' st-trail-doodle--reverse' : ''}`}
-          viewBox="0 0 40 20"
-          fill="none"
-          stroke="var(--text)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          aria-hidden="true"
-        >
-          <path d={step.doodlePath} />
-        </svg>
-        <div className="st-trail-glyph" aria-hidden="true">
-          {step.glyph}
+function ConnectorLine() {
+    const { ref, active } = useInView<HTMLDivElement>(0.4)
+    return (
+        <div ref={ref}>
+            <svg className="hidden md:block absolute top-16 left-0 w-full h-2 -z-10" viewBox="0 0 800 4" preserveAspectRatio="none">
+                <line x1="0" y1="2" x2="800" y2="2" stroke="#e5e7eb" strokeWidth="2" strokeDasharray="6 8" />
+                <line
+                    className={`${styles.drawLine} ${active ? styles.active : ''}`}
+                    x1="0"
+                    y1="2"
+                    x2="800"
+                    y2="2"
+                    stroke="#ea2845"
+                    strokeWidth="2"
+                    strokeDasharray="1000"
+                />
+            </svg>
         </div>
-      </div>
-
-      {/* Content */}
-      <div className={`st-trail-content${step.reverse ? ' st-trail-content--reverse' : ''}`}>
-        <span
-          style={{
-            fontFamily: 'var(--font-mono), monospace',
-            fontSize: 13,
-            color: 'var(--muted)',
-            marginBottom: 8,
-            letterSpacing: '0.04em',
-          }}
-        >
-          {step.label}
-        </span>
-        <h3
-          style={{
-            fontSize: 'clamp(22px, 2.6vw, 30px)',
-            lineHeight: 1.16,
-            marginBottom: 14,
-            color: 'var(--text)',
-            fontFamily: 'var(--font-heading), sans-serif',
-            textTransform: 'uppercase',
-          }}
-        >
-          {step.heading}
-        </h3>
-        <p
-          style={{
-            fontSize: 15,
-            color: 'var(--muted)',
-            lineHeight: 1.65,
-            maxWidth: 420,
-          }}
-        >
-          {step.body}
-        </p>
-      </div>
-    </div>
-  )
+    )
 }
 
-export default function ProcessSection() {
-  const trailRef = useRef<HTMLDivElement>(null)
-  const svgRef = useRef<SVGSVGElement>(null)
+export default function ProcessSection({ downloadSlot }: { downloadSlot?: React.ReactNode }) {
+    return (
+        <section id="how-it-works" className="py-24 bg-white relative overflow-hidden scroll-mt-28">
+            <div className="max-w-7xl mx-auto px-6">
+                <Reveal className="mb-20 text-center">
+                    <>
+                        <div className="inline-block border border-hexred text-hexred px-3 py-1 rounded-full font-mono text-xs mb-4">
+                            FOUR STEPS
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">
+                            UP AND RUNNING BEFORE <span className={styles.gradText}>THE KETTLE BOILS.</span>
+                        </h2>
+                        <p className="text-gray-500 max-w-2xl mx-auto">
+                            No approval queue. No sales call. Create your account and start selling the same day.
+                        </p>
+                    </>
+                </Reveal>
 
-  useEffect(() => {
-    function drawTrail() {
-      const trail = trailRef.current
-      const svg = svgRef.current
-      if (!trail || !svg) return
+                <div className="relative max-w-4xl mx-auto mb-24">
+                    <ConnectorLine />
 
-      const cards = Array.from(trail.querySelectorAll('[data-step-visual]'))
-      if (cards.length < 2) return
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-6">
+                        {steps.map((step, i) => (
+                            <Reveal key={step.num} delayMs={i * 100} className="relative group text-center md:text-left">
+                                <>
+                                    <div
+                                        className={`bg-white border-2 border-gray-200 p-6 rounded-2xl shadow-sm ${styles.liftHover} group-hover:border-hexred relative z-10 mx-auto md:mx-0 w-48 h-32 flex flex-col justify-center items-center md:items-start mb-6`}
+                                    >
+                                        <div className="absolute top-4 right-4 text-4xl font-black text-gray-100 font-mono">{step.num}</div>
+                                        {step.icon}
+                                    </div>
+                                    <p className="font-mono text-xs text-gray-400 mb-1 uppercase tracking-wider">{step.label}</p>
+                                    <h4 className="font-bold text-lg mb-2">{step.title}</h4>
+                                    <p className="text-sm text-gray-500">{step.desc}</p>
+                                </>
+                            </Reveal>
+                        ))}
+                    </div>
+                </div>
 
-      const trailRect = trail.getBoundingClientRect()
-      svg.setAttribute('viewBox', `0 0 ${trailRect.width} ${trailRect.height}`)
+                {downloadSlot && (
+                    <Reveal className="mt-16 text-center">
+                        <>{downloadSlot}</>
+                    </Reveal>
+                )}
 
-      let markup = ''
-      for (let i = 0; i < cards.length - 1; i++) {
-        const a = cards[i].getBoundingClientRect()
-        const b = cards[i + 1].getBoundingClientRect()
-        const start = { x: a.left + a.width / 2 - trailRect.left, y: a.bottom - trailRect.top }
-        const end = { x: b.left + b.width / 2 - trailRect.left, y: b.top - trailRect.top }
-        const midY = (start.y + end.y) / 2
-        const d = `M ${start.x} ${start.y} C ${start.x} ${midY}, ${end.x} ${midY}, ${end.x} ${end.y}`
-        const dotColor = i % 2 === 0 ? 'var(--accent)' : 'var(--gold)'
-        markup += `<path d="${d}" fill="none" stroke="var(--border)" stroke-width="2.5" stroke-dasharray="2 12" stroke-linecap="round"/>`
-        markup += `<circle cx="${start.x}" cy="${start.y}" r="6" fill="${dotColor}"/>`
-        markup += `<circle cx="${end.x}" cy="${end.y}" r="6" fill="${dotColor}"/>`
-      }
-      svg.innerHTML = markup
-    }
-
-    drawTrail()
-    window.addEventListener('load', drawTrail)
-    let resizeTimer: ReturnType<typeof setTimeout>
-    const onResize = () => {
-      clearTimeout(resizeTimer)
-      resizeTimer = setTimeout(drawTrail, 120)
-    }
-    window.addEventListener('resize', onResize)
-    if (document.fonts?.ready) document.fonts.ready.then(drawTrail)
-    const t = setTimeout(drawTrail, 250)
-
-    return () => {
-      window.removeEventListener('load', drawTrail)
-      window.removeEventListener('resize', onResize)
-      clearTimeout(t)
-      clearTimeout(resizeTimer)
-    }
-  }, [])
-
-  return (
-    <section id="how-it-works" style={{ padding: '88px 0' }}>
-      <div
-        style={{
-          maxWidth: 1180,
-          margin: '0 auto',
-          padding: '0 32px',
-        }}
-      >
-        <SectionHeader
-          tag="Four steps"
-          heading={
-            <>
-              Up and running before{' '}
-              <span style={{ color: 'var(--accent)' }}>the kettle boils.</span>
-            </>
-          }
-          subheading="No approval queue. No sales call. Create your account and start selling the same day."
-        />
-
-        <div
-          ref={trailRef}
-          style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
-        >
-          <svg
-            ref={svgRef}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-              zIndex: 0,
-              overflow: 'visible',
-            }}
-            aria-hidden="true"
-          />
-
-          {STEPS.map((step) => (
-            <TrailStep key={step.num} step={step} />
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        .st-trail-step {
-          display: flex;
-          align-items: center;
-          gap: 56px;
-          position: relative;
-          z-index: 2;
-          margin-bottom: 110px;
-        }
-        .st-trail-step:last-child {
-          margin-bottom: 0;
-        }
-        .st-trail-step--reverse {
-          flex-direction: row-reverse;
-          text-align: right;
-        }
-        .st-trail-visual {
-          flex: 0 0 320px;
-          width: 320px;
-          height: 230px;
-          border: 2px solid var(--text);
-          border-radius: 10px;
-          background: linear-gradient(135deg, var(--card), var(--surface));
-          position: relative;
-          overflow: hidden;
-          box-shadow: 7px 7px 0 var(--border);
-        }
-        .st-trail-ghost {
-          position: absolute;
-          right: -16px;
-          bottom: -46px;
-          font-family: var(--font-heading), sans-serif;
-          font-size: 170px;
-          line-height: 1;
-          color: transparent;
-          -webkit-text-stroke: 2px var(--border);
-          z-index: 0;
-        }
-        .st-trail-glyph {
-          position: relative;
-          z-index: 1;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 60px;
-          color: var(--accent);
-        }
-        .st-trail-doodle {
-          position: absolute;
-          top: 12px;
-          right: 14px;
-          width: 38px;
-          z-index: 2;
-          opacity: 0.75;
-        }
-        .st-trail-doodle--reverse {
-          right: auto;
-          left: 14px;
-        }
-        .st-trail-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .st-trail-content--reverse {
-          align-items: flex-end;
-        }
-        @media (max-width: 820px) {
-          .st-trail-step,
-          .st-trail-step--reverse {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            text-align: left !important;
-            gap: 22px;
-            margin-bottom: 80px;
-          }
-          .st-trail-content--reverse {
-            align-items: flex-start !important;
-          }
-          .st-trail-visual {
-            width: 100% !important;
-            flex: none !important;
-          }
-          .st-trail-content h3,
-          .st-trail-content p {
-            max-width: 100% !important;
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .st-trail-step { transition: none !important; }
-        }
-      `}</style>
-    </section>
-  )
+                <TutorialCarousel />
+            </div>
+        </section>
+    )
 }

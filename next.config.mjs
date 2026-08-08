@@ -23,8 +23,8 @@ const nextConfig = {
                             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://maps.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com https://client.crisp.chat",
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://client.crisp.chat",
                             "font-src 'self' https://fonts.gstatic.com https://client.crisp.chat",
-                            "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.stripe.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://client.crisp.chat https://image.crisp.chat",
-                            "frame-src https://js.stripe.com https://hooks.stripe.com https://www.youtube.com https://game.crisp.chat",
+                            "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.stripe.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://client.crisp.chat https://image.crisp.chat https://img.youtube.com",
+                            "frame-src https://js.stripe.com https://hooks.stripe.com https://www.youtube.com https://www.youtube-nocookie.com https://game.crisp.chat",
                             "connect-src 'self' https://*.supabase.co https://api.stripe.com https://api.postcodes.io https://api.resend.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://client.crisp.chat wss://client.relay.crisp.chat",
                         ].join('; ')
                     },
