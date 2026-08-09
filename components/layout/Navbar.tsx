@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LeftMenu from './LeftMenu'
+import { LoginMenu } from './LoginMenu'
 import { NotificationBell } from './NotificationBell'
 import type { User } from '@supabase/supabase-js'
 
@@ -85,12 +86,6 @@ export function Navbar() {
         }
     }
 
-    const sellTicketsHref = !user
-        ? '/auth/register?next=/organiser/apply'
-        : (role === 'organiser' || role === 'admin')
-            ? '/organiser'
-            : '/organiser/apply'
-
     const isActive = (href: string) => pathname === href
 
     const linkClass = (href: string) =>
@@ -142,10 +137,10 @@ export function Navbar() {
                     </div>
                 </form>
 
-                {/* Right: notification bell + hamburger */}
+                {/* Right: for business + login + notification bell + hamburger */}
                 <div className="flex items-center gap-6">
-                    <Link href={sellTicketsHref} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
-                    <Link href="/how-it-works" className={linkClass('/how-it-works')}>How It Works</Link>
+                    <Link href="/sell-tickets" className={linkClass('/sell-tickets')}>For Business</Link>
+                    <LoginMenu variant="button" />
                     {user && <NotificationBell userId={user.id} />}
                     <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} isPromoter={isPromoter} />
                 </div>
@@ -206,8 +201,18 @@ export function Navbar() {
                             </Link>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href={sellTicketsHref} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
-                            <Link href="/how-it-works" className={linkClass('/how-it-works')}>How It Works</Link>
+                            <Link
+                                href="/sell-tickets"
+                                aria-label="For Business"
+                                className="text-[#0A0A0F] p-1 hover:opacity-70 transition-opacity"
+                            >
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" />
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                                    <line x1="2" y1="13" x2="22" y2="13" />
+                                </svg>
+                            </Link>
+                            <LoginMenu variant="icon" />
                             {user && <NotificationBell userId={user.id} />}
                             <button
                                 onClick={() => setMobileSearchOpen(true)}
