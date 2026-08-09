@@ -146,8 +146,10 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
     async function handleStatusChange() {
         if (!statusModal || !selectedStatus) return
         const transitioningToPaid = selectedStatus === 'paid' && statusModal.status !== 'paid'
+        const transitioningToRequested = selectedStatus === 'requested' && statusModal.status !== 'requested'
+        const requiresIdentityGate = transitioningToPaid || transitioningToRequested
         const isVerified = !!statusModal.organiser_profiles?.identity_verified_at
-        if (transitioningToPaid && !isVerified && !overrideReason.trim()) {
+        if (requiresIdentityGate && !isVerified && !overrideReason.trim()) {
             showToast('Override reason required for unverified organisers')
             return
         }
@@ -156,7 +158,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
         if (selectedStatus === 'paid') {
             body.reference = referenceInput.trim() || deriveReference(statusModal.id)
         }
-        if (transitioningToPaid && !isVerified) {
+        if (requiresIdentityGate && !isVerified) {
             body.force = true
             body.override_reason = overrideReason.trim()
         }
@@ -497,7 +499,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. Sent to the organiser in their payout email.</p>
                             </div>
                         )}
-                        {selectedStatus === 'paid' && statusModal.status !== 'paid' && !statusModal.organiser_profiles?.identity_verified_at && (
+                        {((selectedStatus === 'paid' && statusModal.status !== 'paid') || (selectedStatus === 'requested' && statusModal.status !== 'requested')) && !statusModal.organiser_profiles?.identity_verified_at && (
                             <div className="mb-4 bg-accent/5 border border-accent/30 p-3 rounded-sm">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
                                 <label className="text-[11px] text-muted block mb-1.5">Override reason (audit-logged, required)</label>
