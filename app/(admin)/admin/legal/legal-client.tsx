@@ -22,6 +22,7 @@ const PUBLIC_URLS: Record<LegalDocType, string> = {
     terms: '/terms',
     privacy: '/privacy',
     cookies: '/cookie-policy',
+    refund: '/refund-policy',
 }
 
 function fmtDateTime(iso: string) {
@@ -39,7 +40,7 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
 
     const versionsByType = useMemo(() => {
-        const map: Record<LegalDocType, DocVersion[]> = { terms: [], privacy: [], cookies: [] }
+        const map: Record<LegalDocType, DocVersion[]> = { terms: [], privacy: [], cookies: [], refund: [] }
         for (const d of documents) map[d.doc_type]?.push(d)
         return map
     }, [documents])
