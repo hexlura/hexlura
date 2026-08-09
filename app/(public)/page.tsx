@@ -359,6 +359,47 @@ export default async function HomePage() {
             {/* ── RECOMMENDED EVENTS (personalised, client-rendered) ── */}
             <RecommendedEvents />
 
+            {/* ── PAST EVENTS ── */}
+            {pastEvents.length > 0 && (
+                <section style={{ marginTop: '60px', paddingBottom: '48px' }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        borderBottom: '2px solid #F0F0F0',
+                        paddingBottom: '12px',
+                    }}>
+                        <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
+                            PAST EVENTS
+                        </h2>
+                        <Link
+                            href="/events?tab=past"
+                            style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                        >
+                            See All &rarr;
+                        </Link>
+                    </div>
+                    <div
+                        className="past-scroll"
+                        style={{
+                            display: 'flex',
+                            gap: '16px',
+                            overflowX: 'auto',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            padding: '4px 4px 16px',
+                        }}
+                    >
+                        {pastEvents.map((event) => (
+                            <div key={event.id} style={{ width: '160px', flexShrink: 0 }}>
+                                <EventCard event={event} compact />
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* ── SECTION 3: ORGANISER CTA — full bleed ── */}
             <section
                 className=""
@@ -411,47 +452,6 @@ export default async function HomePage() {
                     Already have an account? Sign in &rarr;
                 </Link>
             </section>
-
-            {/* ── PAST EVENTS ── */}
-            {pastEvents.length > 0 && (
-                <section style={{ marginTop: '60px', paddingBottom: '48px' }}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        borderBottom: '2px solid #F0F0F0',
-                        paddingBottom: '12px',
-                    }}>
-                        <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                            PAST EVENTS
-                        </h2>
-                        <Link
-                            href="/events?tab=past"
-                            style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
-                        >
-                            See All &rarr;
-                        </Link>
-                    </div>
-                    <div
-                        className="past-scroll"
-                        style={{
-                            display: 'flex',
-                            gap: '16px',
-                            overflowX: 'auto',
-                            scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch',
-                            padding: '4px 4px 16px',
-                        }}
-                    >
-                        {pastEvents.map((event) => (
-                            <div key={event.id} style={{ width: '160px', flexShrink: 0 }}>
-                                <EventCard event={event} compact />
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
 
             {/* ── TRUSTED PARTNERS ── */}
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 pb-10 sm:py-10">

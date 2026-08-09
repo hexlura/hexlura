@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
-    CONTACT_TOPICS, ENQUIRY_PRIORITIES, topicLabel, priorityLabel,
+    CONTACT_TOPICS, ENQUIRY_PRIORITIES, ENQUIRIES_UPDATED_EVENT, topicLabel, priorityLabel,
     type ContactEnquiryRow, type EnquirySortColumn,
 } from '@/lib/contact'
 
@@ -211,6 +211,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                 return
             }
             showToast('Saved successfully')
+            window.dispatchEvent(new Event(ENQUIRIES_UPDATED_EVENT))
             router.refresh()
         } catch (err) {
             console.error(err)
@@ -414,7 +415,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
             {detail && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setDetailId(null)}>
                     <div
-                        className="bg-card border border-border rounded-none p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                        className="bg-card border border-border rounded-none p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                         role="dialog"
                         aria-modal="true"

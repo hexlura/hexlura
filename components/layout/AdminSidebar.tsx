@@ -6,8 +6,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminBottomNav } from '@/components/layout/AdminBottomNav'
 import { NOTIFICATIONS_UPDATED_EVENT } from '@/components/notifications/NotificationsInbox'
+import { ENQUIRIES_UPDATED_EVENT } from '@/lib/contact'
 
-type BadgeKey = 'pendingOrganisers' | 'openSupportTickets' | 'unreadNotifications'
+type BadgeKey = 'pendingOrganisers' | 'openSupportTickets' | 'unreadNotifications' | 'unreadEnquiries'
 
 interface AdminSidebarProps {
     adminName: string
@@ -48,7 +49,7 @@ const NAV_SECTIONS: { title: string; links: NavLink[] }[] = [
     {
         title: 'SUPPORT',
         links: [
-            { href: '/admin/support/enquiries', label: 'Enquiries', exact: false },
+            { href: '/admin/support/enquiries', label: 'Enquiries', exact: false, badge: 'unreadEnquiries' },
             { href: '/admin/notifications', label: 'Notifications', exact: false, badge: 'unreadNotifications' },
             { href: '/admin/support', label: 'Support', exact: true, badge: 'openSupportTickets' },
         ],
@@ -69,6 +70,7 @@ const NAV_SECTIONS: { title: string; links: NavLink[] }[] = [
 
 export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupportTickets }: AdminSidebarProps) {
     const [unreadNotifications, setUnreadNotifications] = useState(0)
+    const [unreadEnquiries, setUnreadEnquiries] = useState(0)
 
     useEffect(() => {
         if (!userId) return
@@ -88,10 +90,29 @@ export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupport
         }
     }, [userId])
 
+    useEffect(() => {
+        if (!userId) return
+        let cancelled = false
+        const refresh = () => {
+            fetch('/api/admin/contact-enquiries')
+                .then(r => r.ok ? r.json() : { unreadCount: 0 })
+                .then(d => { if (!cancelled) setUnreadEnquiries(d.unreadCount || 0) })
+                .catch(() => { })
+        }
+        refresh()
+        // Live-update when the enquiries page marks an enquiry read/unread.
+        window.addEventListener(ENQUIRIES_UPDATED_EVENT, refresh)
+        return () => {
+            cancelled = true
+            window.removeEventListener(ENQUIRIES_UPDATED_EVENT, refresh)
+        }
+    }, [userId])
+
     const badgeCounts: Record<BadgeKey, number> = {
         pendingOrganisers,
         openSupportTickets,
         unreadNotifications,
+        unreadEnquiries,
     }
     const pathname = usePathname()
     const router = useRouter()

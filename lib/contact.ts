@@ -56,6 +56,10 @@ export const ENQUIRY_SORTABLE_COLUMNS = [
 ] as const
 export type EnquirySortColumn = typeof ENQUIRY_SORTABLE_COLUMNS[number]
 
+// Dispatched client-side whenever an enquiry's read state changes, so the
+// admin sidebar's unread badge can refresh without a full page reload.
+export const ENQUIRIES_UPDATED_EVENT = 'enquiries:updated'
+
 export type ContactEnquiryRow = {
     id: string
     name: string

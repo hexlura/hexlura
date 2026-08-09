@@ -85,6 +85,17 @@ export function Navbar() {
         }
     }
 
+    const sellTicketsHref = !user
+        ? '/auth/register?next=/organiser/apply'
+        : (role === 'organiser' || role === 'admin')
+            ? '/organiser'
+            : '/organiser/apply'
+
+    const isActive = (href: string) => pathname === href
+
+    const linkClass = (href: string) =>
+        `block text-[15px] py-2.5 transition-colors ${isActive(href) ? 'text-[#E63950]' : 'text-[#0A0A0F] hover:text-[#E63950]'}`
+
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
             {/* ── DESKTOP layout (≥768px) ── */}
@@ -132,7 +143,9 @@ export function Navbar() {
                 </form>
 
                 {/* Right: notification bell + hamburger */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-6">
+                    <Link href={sellTicketsHref} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
+                    <Link href="/how-it-works" className={linkClass('/how-it-works')}>How It Works</Link>
                     {user && <NotificationBell userId={user.id} />}
                     <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} isPromoter={isPromoter} />
                 </div>
@@ -193,6 +206,8 @@ export function Navbar() {
                             </Link>
                         </div>
                         <div className="flex items-center gap-3">
+                            <Link href={sellTicketsHref} className={linkClass(sellTicketsHref)}>Sell Tickets</Link>
+                            <Link href="/how-it-works" className={linkClass('/how-it-works')}>How It Works</Link>
                             {user && <NotificationBell userId={user.id} />}
                             <button
                                 onClick={() => setMobileSearchOpen(true)}
