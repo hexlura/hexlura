@@ -49,10 +49,16 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
     const p = payout as unknown as PayoutWithOrg
 
-    // Gate C: identity required only on the → paid transition
+    // Gate C: identity required on the → paid and → requested transitions.
+    // Requested must be gated too — it's the same protection the organiser's
+    // own self-service withdrawal route already enforces (identity_status
+    // !== 'verified' is blocked there); this admin dropdown was the one path
+    // that let an unverified organiser's payout reach 'requested' unchecked.
     const transitioningToPaid = status === 'paid' && p.status !== 'paid'
+    const transitioningToRequested = status === 'requested' && p.status !== 'requested'
+    const requiresIdentityGate = transitioningToPaid || transitioningToRequested
     const identityVerified = p.organiser_profiles?.identity_verified_at != null
-    if (transitioningToPaid && !identityVerified) {
+    if (requiresIdentityGate && !identityVerified) {
         if (!force) {
             return NextResponse.json(
                 { error: 'Organiser identity not verified', requires_override: true },
@@ -95,7 +101,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             from: p.status,
             to: status,
             reference: reference || undefined,
-            identity_override: transitioningToPaid && !identityVerified ? { reason: overrideReason } : undefined,
+            identity_override: requiresIdentityGate && !identityVerified ? { reason: overrideReason } : undefined,
         },
     })
 
