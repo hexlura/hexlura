@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { Booking } from '@/types'
 import { aggregateBookingItems, type RawBookingItem } from '@/lib/booking-aggregation'
+import { isRefundWindowOpen } from '@/lib/refund-policy'
 import RefundButton from './refund-button'
 
 export default async function BookingDetailPage({ params }: { params: { ref: string } }) {
@@ -69,10 +70,8 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
     const canRefund =
         booking.status === 'confirmed' &&
         event &&
-        refundPolicy !== 'no_refunds' &&
         hoursUntilEvent > 0 &&
-        (refundPolicy !== '48_hours' || hoursUntilEvent > 48) &&
-        (refundPolicy !== '7_days' || hoursUntilEvent > 168) &&
+        isRefundWindowOpen(refundPolicy, hoursUntilEvent) &&
         !activeRefund
 
     type ExtendedItem = { quantity: number; ticket_type?: { is_group?: boolean; group_size?: number } | null }
