@@ -197,14 +197,20 @@ export async function updatePassword(formData: FormData) {
     return { success: 'Password updated successfully.' }
 }
 
-export async function resendVerificationEmail(email: string) {
+export async function resendVerificationEmail(email: string, next?: string) {
     const supabase = createClient()
+
+    // Safe relative-path check to prevent open redirect
+    const safeNext = next && next.startsWith('/') ? next : ''
+    const callbackUrl = safeNext
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(safeNext)}`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
 
     const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            emailRedirectTo: callbackUrl,
         },
     })
 
