@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { formatPence } from '@/lib/fees'
+import { isRefundWindowOpen } from '@/lib/refund-policy'
 
 const REASONS = [
     'Changed plans',
@@ -55,12 +56,12 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
 
             if (alreadyCheckedIn) {
                 ineligibleReason = 'This ticket has already been used'
-            } else if (refundPolicy === 'no_refunds') {
-                ineligibleReason = 'This event does not offer refunds'
-            } else if (refundPolicy === '48_hours' && hoursUntilEvent < 48) {
-                ineligibleReason = 'Refund window has closed (48 hours before event)'
-            } else if (refundPolicy === '7_days' && hoursUntilEvent < 168) {
-                ineligibleReason = 'Refund window has closed (7 days before event)'
+            } else if (!isRefundWindowOpen(refundPolicy, hoursUntilEvent)) {
+                ineligibleReason = refundPolicy === 'Refunds up to 48 hours before event'
+                    ? 'Refund window has closed (48 hours before event)'
+                    : refundPolicy === 'Refunds up to 7 days before event'
+                        ? 'Refund window has closed (7 days before event)'
+                        : 'This event does not offer refunds'
             } else if (now > eventDate) {
                 ineligibleReason = 'Event has already taken place'
             } else if (ticketSubtotal === 0) {

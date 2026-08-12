@@ -1,13 +1,14 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const LEGAL_DOC_TYPES = ['terms', 'privacy', 'cookies'] as const
+export const LEGAL_DOC_TYPES = ['terms', 'privacy', 'cookies', 'refund'] as const
 export type LegalDocType = (typeof LEGAL_DOC_TYPES)[number]
 
 export const LEGAL_DOC_LABELS: Record<LegalDocType, string> = {
     terms: 'Terms & Conditions',
     privacy: 'Privacy Policy',
     cookies: 'Cookie Policy',
+    refund: 'Refund Policy',
 }
 
 export interface LegalDocument {
@@ -37,6 +38,7 @@ const LEGAL_PUBLIC_URLS: Record<LegalDocType, string> = {
     terms: '/terms',
     privacy: '/privacy',
     cookies: '/cookie-policy',
+    refund: '/refund-policy',
 }
 
 // In-app notification to every user when a legal document is published.

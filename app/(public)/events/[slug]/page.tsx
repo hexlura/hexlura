@@ -282,11 +282,13 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
                             {/* Refund policy badge */}
                             {event.refund_policy && (() => {
+                                // Keyed on the exact sentence EventForm saves (components/organiser/EventForm.tsx's
+                                // REFUND_POLICIES) — refund_policy is stored as that literal readable string, not a code.
                                 const policyMap: Record<string, { label: string; bg: string; color: string; border: string }> = {
-                                    no_refunds: { label: 'No Refunds', bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950' },
-                                    '48_hours': { label: 'Refunds up to 48hrs before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
-                                    '7_days': { label: 'Refunds up to 7 days before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
-                                    full_refunds: { label: 'Full Refunds Available', bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0' },
+                                    'No refunds': { label: 'No Refunds', bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950' },
+                                    'Refunds up to 48 hours before event': { label: 'Refunds up to 48hrs before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
+                                    'Refunds up to 7 days before event': { label: 'Refunds up to 7 days before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
+                                    'Full refunds always available': { label: 'Full Refunds Available', bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0' },
                                 }
                                 const policy = policyMap[event.refund_policy]
                                 if (!policy) return null

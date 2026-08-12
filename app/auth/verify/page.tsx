@@ -8,6 +8,7 @@ import { resendVerificationEmail } from '../actions'
 function VerifyContent() {
     const searchParams = useSearchParams()
     const email = searchParams.get('email') || ''
+    const next = searchParams.get('next') || ''
 
     const [cooldown, setCooldown] = useState(0)
     const [message, setMessage] = useState('')
@@ -29,7 +30,7 @@ function VerifyContent() {
         setMessage('')
         setCooldown(60)
 
-        const result = await resendVerificationEmail(email)
+        const result = await resendVerificationEmail(email, next)
         if (result?.error) {
             setError(result.error)
         } else if (result?.success) {
@@ -75,7 +76,7 @@ function VerifyContent() {
             </button>
 
             <p className="text-sm text-muted">
-                <Link href="/auth/login" className="text-accent hover:underline font-medium">
+                <Link href={next ? `/auth/login?next=${encodeURIComponent(next)}` : '/auth/login'} className="text-accent hover:underline font-medium">
                     Back to sign in
                 </Link>
             </p>

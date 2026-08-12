@@ -24,6 +24,7 @@ const PUBLIC_URLS: Record<LegalDocType, string> = {
     terms: '/terms',
     privacy: '/privacy',
     cookies: '/cookie-policy',
+    refund: '/refund-policy',
 }
 
 const TOAST_DURATION_MS = 4000
@@ -60,10 +61,7 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
     }, [])
 
     const versionsByType = useMemo(() => {
-        const map = LEGAL_DOC_TYPES.reduce((acc, t) => {
-            acc[t] = []
-            return acc
-        }, {} as Record<LegalDocType, DocVersion[]>)
+        const map: Record<LegalDocType, DocVersion[]> = { terms: [], privacy: [], cookies: [], refund: [] }
         for (const d of documents) map[d.doc_type]?.push(d)
         // Newest first, so `[0]` is guaranteed to be the live version regardless of
         // the order the documents arrived in.
