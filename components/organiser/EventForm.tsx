@@ -15,7 +15,7 @@ import { DateTimePicker } from '@/components/organiser/DateTimePicker'
 import { GuestListSection } from '@/components/organiser/GuestListSection'
 
 const RichTextEditor = dynamic(
-    () => import('@/components/organiser/RichTextEditor').then(m => m.RichTextEditor),
+    () => import('@/components/organiser/editor/RichTextEditor').then(m => m.RichTextEditor),
     { ssr: false, loading: () => <div className="h-48 bg-surface border border-border animate-pulse" /> }
 )
 const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']

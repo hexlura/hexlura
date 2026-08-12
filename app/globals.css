@@ -53,3 +53,52 @@
 
 
 .maps-link-btn:hover { border-color: #E63950 !important; }
+
+/* Tiptap / ProseMirror editor chrome — interaction affordances that only exist inside
+   the live editor (not the sanitized Preview HTML), so they live outside Tailwind's
+   scanned content and are kept as plain CSS. */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.ProseMirror .tableWrapper {
+  overflow-x: auto;
+}
+
+.ProseMirror table {
+  table-layout: fixed;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  position: relative;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+
+.ProseMirror .selectedCell {
+  background-color: rgba(230, 57, 80, 0.08);
+}
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--accent);
+  pointer-events: none;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
