@@ -9,6 +9,8 @@ import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
 import EventCard from '@/components/events/EventCard'
 import RecommendedEvents from '@/components/home/RecommendedEvents';
 import TrustedPartners from '@/components/home/TrustedPartners';
+import { getPageControls, isSectionVisible } from '@/lib/page-controls/get-page-controls';
+import { PAGE_KEYS, HOME_SECTION_KEYS } from '@/lib/page-controls/constants';
 // import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
 
 
@@ -41,7 +43,7 @@ export default async function HomePage() {
 
     const now = new Date().toISOString();
 
-    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }] = await Promise.all([
+    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls] = await Promise.all([
         supabase
             .from('events')
             .select('*, ticket_types(*)')
@@ -77,7 +79,10 @@ export default async function HomePage() {
             .select('name, image_url')
             .eq('is_active', true)
             .order('display_order', { ascending: true }),
+        getPageControls(PAGE_KEYS.HOME),
     ]);
+
+    const upcomingEventsVisible = isSectionVisible(pageControls, HOME_SECTION_KEYS.UPCOMING_EVENTS);
 
     const events = (eventsRaw || []) as Event[];
     const pastEvents = (pastEventsRaw || []) as Event[];
@@ -323,38 +328,40 @@ export default async function HomePage() {
             </section>
 
             {/* ── UPCOMING EVENTS ── */}
-            <section style={{ marginTop: '48px', paddingBottom: '48px' }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '16px',
-                    borderBottom: '2px solid #F0F0F0',
-                    paddingBottom: '12px',
-                }}>
-                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                        UPCOMING EVENTS
-                    </h2>
-                    <Link
-                        href="/events"
-                        style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
-                    >
-                        See All &rarr;
-                    </Link>
-                </div>
+            {upcomingEventsVisible && (
+                <section style={{ marginTop: '48px', paddingBottom: '48px' }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        borderBottom: '2px solid #F0F0F0',
+                        paddingBottom: '12px',
+                    }}>
+                        <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
+                            UPCOMING EVENTS
+                        </h2>
+                        <Link
+                            href="/events"
+                            style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                        >
+                            See All &rarr;
+                        </Link>
+                    </div>
 
-                {events.length === 0 ? (
-                    <div style={{ padding: '40px 0', textAlign: 'center', color: '#8888AA' }}>
-                        No upcoming events yet. Check back soon!
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {events.map((event, i) => (
-                            <EventCard key={event.id} event={event} priority={i < 4} />
-                        ))}
-                    </div>
-                )}
-            </section>
+                    {events.length === 0 ? (
+                        <div style={{ padding: '40px 0', textAlign: 'center', color: '#8888AA' }}>
+                            No upcoming events yet. Check back soon!
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            {events.map((event, i) => (
+                                <EventCard key={event.id} event={event} priority={i < 4} />
+                            ))}
+                        </div>
+                    )}
+                </section>
+            )}
 
             {/* ── RECOMMENDED EVENTS (personalised, client-rendered) ── */}
             <RecommendedEvents />

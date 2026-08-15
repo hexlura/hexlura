@@ -374,7 +374,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
             <Section title="Cover Photo">
                 <div style={{ width: '100%', height: 160, marginBottom: 12, border: '1px solid #E0E0E0', overflow: 'hidden', position: 'relative' }}>
                     {coverUrl ? (
-                        <Image src={coverUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Image src={coverUrl} alt="Cover" width={100} height={100} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                         <div style={{
                             width: '100%', height: '100%',
@@ -438,7 +438,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                     <div>
                         <label className="text-xs text-muted block mb-1.5">Logo</label>
                         <div className="flex items-center gap-4">
-                            {logoUrl && <Image src={logoUrl} alt="Logo" className="w-16 h-16 rounded-sm object-cover border border-border" />}
+                            {logoUrl && <Image src={logoUrl} alt="Logo" width={64} height={64} className="w-16 h-16 rounded-sm object-cover border border-border" />}
                             <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors">
                                 {logoUploading ? 'Uploading...' : 'Upload Logo'}
                                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadLogo} className="hidden" />
