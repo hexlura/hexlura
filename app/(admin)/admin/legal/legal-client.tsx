@@ -8,7 +8,7 @@ import { LEGAL_DOC_TYPES, LEGAL_DOC_LABELS, type LegalDocType } from '@/lib/lega
 import { LEGAL_CONTENT_CLASSES } from '@/lib/legal-content-styles'
 
 const RichTextEditor = dynamic(
-    () => import('@/components/organiser/editor/RichTextEditor').then(m => m.RichTextEditor),
+    () => import('@/components/editor/RichTextEditor').then(m => m.RichTextEditor),
     { ssr: false, loading: () => <div className="h-64 bg-surface border border-border animate-pulse" /> }
 )
 

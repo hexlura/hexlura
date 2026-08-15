@@ -406,6 +406,8 @@ export default function PortfolioPage() {
                                 <Image
                                     src={videoThumbnail}
                                     alt="Video thumbnail"
+                                    width={200}
+                                    height={112}
                                     style={{
                                         width: 200,
                                         height: 112,
@@ -498,6 +500,8 @@ export default function PortfolioPage() {
                                         <Image
                                             src={item.url}
                                             alt={item.caption || ''}
+                                            width={200}
+                                            height={200}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                         />
                                     ) : (
@@ -506,6 +510,8 @@ export default function PortfolioPage() {
                                                 <Image
                                                     src={item.thumbnail_url}
                                                     alt={item.caption || ''}
+                                                    width={200}
+                                                    height={200}
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                                 />
                                             )}

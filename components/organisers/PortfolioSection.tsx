@@ -97,6 +97,9 @@ export default function PortfolioSection({ items }: { items: PortfolioItem[] }) 
                                 <Image
                                     src={item.url}
                                     alt={item.caption || ''}
+                                    width={320}
+                                    height={480}
+                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                     style={{
                                         width: '100%',
                                         height: '100%',
