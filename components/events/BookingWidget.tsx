@@ -158,7 +158,8 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
         const supabase = createClient();
         const { error } = await supabase.auth.signInAnonymously();
         if (error) {
-            setReservationError('Unable to continue as guest. Please try again or log in.');
+            console.error('signInAnonymously failed:', error.status, error.message, error);
+            setReservationError(`Unable to continue as guest (${error.status ?? '?'}: ${error.message}).`);
             setCheckoutLoading(false);
             return;
         }

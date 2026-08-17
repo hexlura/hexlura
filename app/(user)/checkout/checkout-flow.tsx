@@ -207,7 +207,8 @@ export default function CheckoutFlow() {
         const supabase = createClient()
         const { error: signInError } = await supabase.auth.signInAnonymously()
         if (signInError) {
-            setError('Unable to start checkout. Please try again or log in.')
+            console.error('signInAnonymously failed:', signInError.status, signInError.message, signInError)
+            setError(`Unable to start checkout (${signInError.status ?? '?'}: ${signInError.message}).`)
             setStartingGuest(false)
             return
         }
