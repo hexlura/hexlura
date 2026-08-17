@@ -25,6 +25,9 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
     const [countdown, setCountdown] = useState('');
     const [reservationError, setReservationError] = useState('');
     const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'checking' | 'loading' | 'joined' | 'error'>('idle');
+    // Shown in place of the CTA when the visitor has no session — choose to continue as
+    // guest (silent Supabase anonymous auth) or log in before the ticket hold is reserved.
+    const [showAuthChoice, setShowAuthChoice] = useState(false);
     const widgetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -130,18 +133,40 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session) {
-            const returnUrl = window.location.pathname;
-            const eventSlug = returnUrl.split('/events/')[1];
-            localStorage.setItem('hexlura_pending_checkout', JSON.stringify({
-                eventSlug,
-                eventId: event.id,
-                tickets: selectedTickets,
-                returnUrl,
-            }));
-            router.push(`/auth/login?next=${encodeURIComponent(returnUrl)}`);
+            setCheckoutLoading(false);
+            setShowAuthChoice(true);
             return;
         }
 
+        await reserveAndGoToCheckout();
+    }
+
+    function logInInstead() {
+        const returnUrl = window.location.pathname;
+        const eventSlug = returnUrl.split('/events/')[1];
+        localStorage.setItem('hexlura_pending_checkout', JSON.stringify({
+            eventSlug,
+            eventId: event.id,
+            tickets: selectedTickets,
+            returnUrl,
+        }));
+        router.push(`/auth/login?next=${encodeURIComponent(returnUrl)}`);
+    }
+
+    async function continueAsGuest() {
+        setCheckoutLoading(true);
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInAnonymously();
+        if (error) {
+            setReservationError('Unable to continue as guest. Please try again or log in.');
+            setCheckoutLoading(false);
+            return;
+        }
+        setShowAuthChoice(false);
+        await reserveAndGoToCheckout();
+    }
+
+    async function reserveAndGoToCheckout() {
         const selectedItems = ticketTypes
             .map(ticket => ({ id: ticket.id, qty: effectiveQty(ticket) }))
             .filter(({ qty }) => qty > 0);
@@ -366,19 +391,40 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                 </div>
             )}
 
-            <Button
-                className="w-full h-14 text-lg font-bold mt-2 bg-[#0A0A0F] text-white hover:bg-[#2a2a3f]"
-                disabled={!hasSelectedTickets || checkoutLoading}
-                onClick={handleCheckout}
-            >
-                {checkoutLoading && (
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                )}
-                {checkoutLoading ? 'Loading...' : isFreeSelection ? 'Reserve My Spot' : 'Proceed to Checkout'}
-            </Button>
+            {showAuthChoice ? (
+                <div className="flex flex-col gap-2 mt-2">
+                    <p style={{ fontSize: 13, color: '#666677', textAlign: 'center' }}>How would you like to continue?</p>
+                    <Button
+                        className="w-full h-12 text-base font-bold bg-[#0A0A0F] text-white hover:bg-[#2a2a3f]"
+                        disabled={checkoutLoading}
+                        onClick={continueAsGuest}
+                    >
+                        {checkoutLoading ? 'Starting...' : 'Continue as Guest'}
+                    </Button>
+                    <Button
+                        className="w-full h-12 text-base font-bold"
+                        variant="outline"
+                        disabled={checkoutLoading}
+                        onClick={logInInstead}
+                    >
+                        Log In to My Account
+                    </Button>
+                </div>
+            ) : (
+                <Button
+                    className="w-full h-14 text-lg font-bold mt-2 bg-[#0A0A0F] text-white hover:bg-[#2a2a3f]"
+                    disabled={!hasSelectedTickets || checkoutLoading}
+                    onClick={handleCheckout}
+                >
+                    {checkoutLoading && (
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                    )}
+                    {checkoutLoading ? 'Loading...' : isFreeSelection ? 'Reserve My Spot' : 'Proceed to Checkout'}
+                </Button>
+            )}
             {isFreeSelection && (
                 <p style={{ fontSize: 12, color: '#00C48A', textAlign: 'center', margin: '4px 0 0' }}>
                     No payment required
