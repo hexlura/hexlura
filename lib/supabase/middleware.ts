@@ -43,7 +43,9 @@ export async function updateSession(request: NextRequest) {
     const isAdminRoute = pathname.startsWith('/admin')
     const isOrganiserRoute = pathname.startsWith('/organiser/')
     const isPromoterRoute = pathname.startsWith('/promoter') && !pathname.startsWith('/promoter/apply') && !pathname.startsWith('/promoter/invite/accept')
-    const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings') || pathname.startsWith('/checkout')
+    // /checkout is intentionally excluded from isAccountRoute — it handles its own
+    // guest-vs-login choice client-side (silent Supabase anonymous auth for guests).
+    const isAccountRoute = pathname.startsWith('/account') || pathname.startsWith('/bookings')
     const isAuthRoute = (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register'))
     // /checkin routes (excludes /checkin/login which is public)
     const isCheckinRoute = pathname.startsWith('/checkin') && !pathname.startsWith('/checkin/login')
@@ -86,6 +88,12 @@ export async function updateSession(request: NextRequest) {
         .single()
 
     const role = profile?.role || 'user'
+
+    // Guest (anonymous auth) users get a real session but no profile data — /account would
+    // render a broken-looking empty page for them, so send them to /bookings instead.
+    if (user.is_anonymous && pathname.startsWith('/account')) {
+        return redirectTo('/bookings')
+    }
 
     // For 'user' role, check organiser_team privilege once for all relevant route types
     let teamPrivilege: string | null = null

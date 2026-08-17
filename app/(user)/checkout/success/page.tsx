@@ -18,15 +18,89 @@ interface BookingData {
     items: { ticket_type: { name: string; is_group: boolean | null; group_size: number | null } | null; quantity: number }[]
 }
 
+function SaveBookingPanel() {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+    const [done, setDone] = useState(false)
+    const [saveError, setSaveError] = useState('')
+
+    async function handleSave(e: React.FormEvent) {
+        e.preventDefault()
+        setSubmitting(true)
+        setSaveError('')
+        const supabase = createClient()
+        const { error: updateError } = await supabase.auth.updateUser(
+            { email, password },
+            { emailRedirectTo: `${window.location.origin}/auth/callback?next=/bookings` }
+        )
+        if (updateError) {
+            setSaveError(updateError.message || 'Could not save your account. Please try again.')
+            setSubmitting(false)
+            return
+        }
+        setDone(true)
+        setSubmitting(false)
+    }
+
+    if (done) {
+        return (
+            <div className="bg-surface border border-border rounded-none p-6 text-sm text-text">
+                Check your email to confirm and finish setting up your account.
+            </div>
+        )
+    }
+
+    return (
+        <form onSubmit={handleSave} className="bg-surface border border-border rounded-none p-6 space-y-4 text-left">
+            <div>
+                <p className="text-sm font-semibold text-text">Save this booking to an account</p>
+                <p className="text-xs text-muted mt-1">Create a password so you can manage this booking anytime.</p>
+            </div>
+            <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Email address"
+                className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+            />
+            <input
+                type="password"
+                required
+                minLength={8}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Create a password"
+                className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+            />
+            {saveError && (
+                <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{saveError}</p>
+            )}
+            <button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50"
+            >
+                {submitting ? 'Saving...' : 'Save Account'}
+            </button>
+        </form>
+    )
+}
+
 function SuccessContent() {
     const searchParams = useSearchParams()
     const [booking, setBooking] = useState<BookingData | null>(null)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
+    const [isGuest, setIsGuest] = useState(false)
 
     useEffect(() => {
         async function verifyPayment() {
             const supabase = createClient()
+
+            const { data: { user } } = await supabase.auth.getUser()
+            setIsGuest(!!user?.is_anonymous)
 
             // Free booking path — booking_ref passed directly
             const bookingRef = searchParams.get('booking_ref')
@@ -226,6 +300,8 @@ function SuccessContent() {
                     <p className="text-muted text-sm">Your booking is being processed. Check your email for confirmation details.</p>
                 </div>
             )}
+
+            {isGuest && <SaveBookingPanel />}
 
             <Link href="/events" className="text-accent hover:underline text-sm font-medium inline-block">
                 Browse More Events
