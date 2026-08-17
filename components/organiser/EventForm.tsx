@@ -16,7 +16,7 @@ import { GuestListSection } from '@/components/organiser/GuestListSection'
 import { REFUND_POLICIES } from '@/lib/refund-policy'
 
 const RichTextEditor = dynamic(
-    () => import('@/components/organiser/RichTextEditor').then(m => m.RichTextEditor),
+    () => import('@/components/editor/RichTextEditor').then(m => m.RichTextEditor),
     { ssr: false, loading: () => <div className="h-48 bg-surface border border-border animate-pulse" /> }
 )
 const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']

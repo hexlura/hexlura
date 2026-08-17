@@ -73,8 +73,9 @@ export default function EventCard({ event, compact = false, priority = false }: 
                     <Image
                         src={event.banner_url}
                         alt={event.title}
-                        fill
                         priority={priority}
+                        width={320}
+                        height={480}
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
                     />
