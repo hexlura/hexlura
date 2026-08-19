@@ -2,6 +2,7 @@
 
 import { ContactForm } from '@/components/contact/ContactForm'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 
 const CONTACT_INFO = [
     {
@@ -71,6 +72,9 @@ const SOCIAL_LINKS = [
 ]
 
 export default function ContactPageClient() {
+    const searchParams = useSearchParams()
+    const isSponsor = searchParams.get('sponsor') !== null
+
     return (
         <div className="relative bg-background overflow-hidden">
             {/* Soft ambient background lighting — brand accent, low opacity, static */}
@@ -86,16 +90,16 @@ export default function ContactPageClient() {
                         {/* Image with smooth continuous bounce animation */}
                         <div className="smooth-bounce will-change-transform">
                             <Image
-                                src="/assets/images/3D_Metal_Chat.png"
-                                width={200}
-                                height={200}
-                                alt="Chat"
+                                src={isSponsor ? '/assets/images/Hexlura_desk.png' : '/assets/images/3D_Metal_Chat.png'}
+                                width={isSponsor ? 500 : 200}
+                                height={isSponsor ? 500 : 200}
+                                alt={isSponsor ? 'Sponsor' : 'Chat'}
                             />
                         </div>
                     </div>
                     <div className="contact-hero-2 inline-block mb-5">
                         <span className="text-xs font-semibold tracking-widest uppercase text-accent border border-accent/30 bg-accent/5 rounded-full px-3 py-1">
-                            Contact
+                            {isSponsor ? 'For Sponsors' : 'Contact'}
                         </span>
                     </div>
                     <h1 className="contact-hero-3 font-heading text-5xl sm:text-6xl text-text mb-4">
@@ -160,7 +164,7 @@ export default function ContactPageClient() {
 
                     {/* Right: form */}
                     <div className="contact-form-enter">
-                        <ContactForm />
+                        <ContactForm lockedTopic={isSponsor ? 'partnership' : undefined} />
                     </div>
                 </div>
             </div>

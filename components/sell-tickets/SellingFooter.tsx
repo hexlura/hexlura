@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import styles from './selling.module.css'
 import { Reveal } from './Reveal'
+import KineticWords from './KineticWords'
 
 const discoverLinks = [
     { label: 'Find Events', href: '/events' },
@@ -9,7 +10,7 @@ const discoverLinks = [
 ]
 
 const businessLinks = [
-    { label: 'Sell Tickets', href: '/sell-tickets' },
+    { label: 'For Business', href: '/business' },
     { label: 'Become a Promoter', href: '/promoter/apply' },
 ]
 
@@ -33,10 +34,10 @@ export default function SellingFooter({ ctaHref }: { ctaHref: string }) {
                             <div className="w-2 h-2 rounded-full bg-hexyellow" />
                             <span className="font-mono text-xs text-gray-400 uppercase tracking-widest">Join Hexlura</span>
                         </div>
-                        <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">
-                            CREATE YOUR EVENT.
+                        <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-white">
+                            THIS IS SOMETHING.
                             <br />
-                            <span className="text-hexred">KEEP EVERYTHING.</span>
+                            <KineticWords className="text-5xl md:text-7xl font-black tracking-tighter" direction='random' />
                         </h2>
                         <p className="text-gray-400 max-w-xl mx-auto mb-8 font-mono text-sm">
                             No setup fees. No monthly fees. No contracts. Just your event, and your money.

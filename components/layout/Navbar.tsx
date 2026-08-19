@@ -139,7 +139,7 @@ export function Navbar() {
 
                 {/* Right: for business + login + notification bell + hamburger */}
                 <div className="flex items-center gap-6">
-                    <Link href="/sell-tickets" className={linkClass('/sell-tickets')}>For Business</Link>
+                    <Link href="/business" className={linkClass('/business')}>For Business</Link>
                     <LoginMenu variant="button" />
                     {user && <NotificationBell userId={user.id} />}
                     <LeftMenu isLoggedIn={!!user} role={role} fullName={fullName} isPromoter={isPromoter} />
@@ -202,7 +202,7 @@ export function Navbar() {
                         </div>
                         <div className="flex items-center gap-3">
                             <Link
-                                href="/sell-tickets"
+                                href="/business"
                                 aria-label="For Business"
                                 className="text-[#0A0A0F] p-1 hover:opacity-70 transition-opacity"
                             >

@@ -48,7 +48,7 @@ export default function UserWelcome({ fullName, appUrl }: UserWelcomeProps) {
             </Text>
 
             <div style={buttonWrapStyle}>
-                <Link href={`${appUrl}/sell-tickets`} style={secondaryButtonStyle}>
+                <Link href={`${appUrl}/business`} style={secondaryButtonStyle}>
                     Become an Organiser
                 </Link>
             </div>

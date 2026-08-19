@@ -1,6 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Image from "next/image";
+import React from "react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,6 +23,78 @@ export default function TrustedPartners({ partners }: TrustedPartnersProps) {
 
   // Duplicate the list so the marquee loops seamlessly
   const doubled = [...partners, ...partners];
+
+  const SlideInText = ({
+    text = "Our partners powering Hexlura.",
+    highlight,
+    highlightColor = "#E63950",
+    splitWord,
+  }: {
+    text?: string;
+    /** Substring within `text` that should be rendered in `highlightColor` */
+    highlight?: string;
+    /** Color applied to the `highlight` substring */
+    highlightColor?: string;
+    /** Split the text by this word */
+    splitWord?: string;
+  }) => {
+    const highlightStart = highlight ? text.indexOf(highlight) : -1;
+    const highlightEnd =
+      highlightStart >= 0 ? highlightStart + (highlight as string).length : -1;
+
+    const container = {
+      hidden: {},
+      visible: {
+        transition: { staggerChildren: 0.03 },
+      },
+    };
+
+    const charVariant = {
+      hidden: { transform: "translateX(-50px)", opacity: 0 },
+      visible: {
+        transform: "translateX(0px)",
+        opacity: 1,
+        transition: { duration: 0.25, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] },
+      },
+    };
+
+    return (
+      <motion.h2
+        className="text-left font-bold"
+        style={{
+          fontSize: "clamp(22px, 5.5vw, 90px)",
+          lineHeight: 1.08,
+          letterSpacing: "-0.03em",
+        }}
+        variants={container}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.6 }}
+      >
+        {text.split("").map((char, i) => {
+          const isHighlighted =
+            highlightStart >= 0 && i >= highlightStart && i < highlightEnd;
+          const isSplit =
+            splitWord && i > 0 && text.slice(i, i + splitWord.length) === splitWord;
+
+          return (
+            <React.Fragment key={i}>
+              {isSplit && <br />}
+              <motion.span
+                variants={charVariant}
+                className="inline-block"
+                style={isHighlighted ? { color: highlightColor } : undefined}
+                whileHover={{ scale: 1.1, color: highlightColor }}
+              >
+                {char === " " ? "\u00A0" : char}
+              </motion.span>
+            </React.Fragment>
+          );
+        })}
+      </motion.h2>
+    );
+  };
+
 
   return (
     <section
@@ -47,75 +121,24 @@ export default function TrustedPartners({ partners }: TrustedPartnersProps) {
 
       {/* ── Header ── */}
       <div
+        className="trusted-partners-header"
         style={{
-          textAlign: "center",
+          textAlign: "left",
           position: "relative",
           zIndex: 1,
           padding: "0 24px 48px",
+          marginBottom: "60px",
         }}
       >
-        {/* Pill badge */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "7px",
-            marginBottom: "20px",
-          }}
-        >
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "6px 14px",
-              borderRadius: "9999px",
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase" as const,
-              color: "#0A0A0F",
-              background: "rgba(255,255,255,0.80)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(10,10,15,0.10)",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-              fontFamily: "DM Sans, sans-serif",
-            }}
-          >
-            {/* Building / business icon */}
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Trusted By
-          </span>
-        </div>
 
         {/* Main heading */}
-        <h2
-          style={{
-            margin: 0,
-            fontFamily: "DM Sans, sans-serif",
-            fontWeight: 800,
-            lineHeight: 1.05,
-            letterSpacing: "-0.03em",
-            fontSize: "clamp(32px, 5vw, 52px)",
-            color: "#0A0A0F",
-          }}
-        >
-          Our{" "}
-          <span
-            style={{
-              background: "#E63950",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Partners
-          </span>
-        </h2>
+        <div style={{ color: "#0A0A0F", fontFamily: "DM Sans, sans-serif" }}>
+          <SlideInText text="Our partners powering Hexlura."
+            highlight="Hexlura"
+            highlightColor="#E63950"
+            splitWord="Hexlura"
+          />
+        </div>
       </div>
 
       {/* ── Marquee wrapper with edge fades ── */}
@@ -202,6 +225,10 @@ export default function TrustedPartners({ partners }: TrustedPartnersProps) {
                 @media (max-width: 768px) {
                     .trusted-partners-section {
                         padding: 48px 0 56px !important;
+                    }
+                    .trusted-partners-header {
+                        padding: 0 16px 20px !important;
+                        margin-bottom: 24px !important;
                     }
                     .marquee-track {
                         height: 48px !important;
