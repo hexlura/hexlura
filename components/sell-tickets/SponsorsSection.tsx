@@ -4,16 +4,24 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
 
 // ─── Frame sequence config ──────────────────────────────────────────────────
-// Frames live in public/assets/images/Heclura_Desk_Frames/, 1-based & zero-padded
-// to 3 digits (frame_001.png ... frame_240.png).
-const FRAME_COUNT = 240
+// Frames live in public/assets/images/Heclura_Desk_Frames_v2/, 1-based &
+// zero-padded to 3 digits (frame_001.jpg ... frame_120.jpg). Opaque JPEGs
+// converted from the original 240 RGBA PNGs via scripts/convert-sponsor-frames.sh
+// (alpha dropped — canvas always paints an opaque background first — and every
+// other source frame kept, since 120 frames over a 400vh scrub reads as smooth
+// as 240 while cutting the network payload roughly 30x).
+const FRAME_COUNT = 120
 const NATIVE_WIDTH = 1280
 const NATIVE_HEIGHT = 720
-// Sponsor content reveals once the scrub reaches the last 5 frames.
-const REVEAL_FRAME_START = FRAME_COUNT - 80
+// Sponsor content reveals once the scrub reaches the last third of frames.
+const REVEAL_FRAME_START = FRAME_COUNT - 40
+// Frames loaded eagerly/with priority before the stage is marked ready.
+const PRIORITY_WINDOW = 20
+// Max simultaneous in-flight requests once background-filling the rest.
+const BACKGROUND_CONCURRENCY = 5
 
 function framePath(index: number) {
-    return `/assets/images/Heclura_Desk_Frames/frame_${String(index).padStart(3, '0')}.png`
+    return `/assets/images/Heclura_Desk_Frames_v2/frame_${String(index).padStart(3, '0')}.jpg`
 }
 
 // Per-character float-in reveal — replays every time `play` toggles back on.
@@ -86,6 +94,25 @@ export default function SponsorsSection() {
     const contentOpacity = useTransform(scrollYProgress, [revealStart, 1], [0, 1])
     const contentY = useTransform(scrollYProgress, [revealStart, 1], [24, 0])
 
+    function isLoaded(index: number) {
+        const img = framesRef.current[index]
+        return !!img && img.complete && img.naturalWidth > 0
+    }
+
+    // Finds the nearest frame to `index` that has actually finished loading,
+    // so a fast scrub into an unloaded region draws the closest available
+    // frame instead of freezing on whatever was drawn last.
+    function nearestLoaded(index: number) {
+        if (isLoaded(index)) return index
+        for (let d = 1; d < FRAME_COUNT; d++) {
+            const lo = index - d
+            const hi = index + d
+            if (lo >= 0 && isLoaded(lo)) return lo
+            if (hi < FRAME_COUNT && isLoaded(hi)) return hi
+        }
+        return -1
+    }
+
     function drawFrame(index: number, force = false) {
         const canvas = canvasRef.current
         const pin = pinRef.current
@@ -93,10 +120,11 @@ export default function SponsorsSection() {
 
         const clamped = Math.max(0, Math.min(FRAME_COUNT - 1, index))
         if (!force && clamped === currentIndexRef.current) return
-
-        const img = framesRef.current[clamped]
-        if (!img || !img.complete || img.naturalWidth === 0) return
         currentIndexRef.current = clamped
+
+        const drawIndex = nearestLoaded(clamped)
+        if (drawIndex === -1) return
+        const img = framesRef.current[drawIndex]
 
         const ctx = canvas.getContext('2d', { alpha: false })
         if (!ctx) return
@@ -156,37 +184,102 @@ export default function SponsorsSection() {
         return () => mq.removeEventListener('change', handler)
     }, [])
 
-    // Preload every frame. Draw frame 1 as soon as it lands so the stage never
-    // shows a blank canvas, then keep the loader up until everything has decoded.
+    // Preload the frame sequence once the stage nears the viewport (skip
+    // spending bandwidth on it if the user never scrolls this far). A small
+    // priority window loads first — as soon as it lands the stage is marked
+    // ready, so the loader doesn't block on the full sequence. The remainder
+    // background-fills through a limited-concurrency queue that always grabs
+    // whichever pending frame is nearest to the current scrub position.
     useEffect(() => {
-        let cancelled = false
-        let settled = 0
-        resizeCanvas()
+        const stage = stageRef.current
+        if (!stage) return
 
-        for (let i = 0; i < FRAME_COUNT; i++) {
-            const img = new Image()
-            img.decoding = 'async'
-            const onSettle = () => {
-                if (cancelled) return
-                settled += 1
-                setLoadProgress(Math.round((settled / FRAME_COUNT) * 100))
-                if (settled === 1) {
-                    resizeCanvas()
-                    drawFrame(0, true)
-                }
-                if (settled >= FRAME_COUNT) setReady(true)
+        let cancelled = false
+
+        function startLoading() {
+            resizeCanvas()
+
+            const reduceMotionNow = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            const windowSize = Math.min(PRIORITY_WINDOW, FRAME_COUNT)
+            const priorityIndices = reduceMotionNow
+                ? Array.from({ length: windowSize }, (_, i) => FRAME_COUNT - 1 - i)
+                : Array.from({ length: windowSize }, (_, i) => i)
+            const prioritySet = new Set(priorityIndices)
+            const pending = new Set<number>()
+            for (let i = 0; i < FRAME_COUNT; i++) {
+                if (!prioritySet.has(i)) pending.add(i)
             }
-            img.onload = onSettle
-            img.onerror = onSettle // don't let one missing frame stall the whole sequence
-            img.src = framePath(i + 1)
-            framesRef.current[i] = img
+
+            let settledTotal = 0
+            let prioritySettled = 0
+            let inFlight = 0
+
+            function pumpQueue() {
+                while (inFlight < BACKGROUND_CONCURRENCY && pending.size > 0) {
+                    let best = -1
+                    let bestDist = Infinity
+                    pending.forEach((idx) => {
+                        const dist = Math.abs(idx - currentIndexRef.current)
+                        if (dist < bestDist) {
+                            bestDist = dist
+                            best = idx
+                        }
+                    })
+                    if (best === -1) break
+                    pending.delete(best)
+                    inFlight += 1
+                    loadFrame(best, false)
+                }
+            }
+
+            function loadFrame(index: number, isPriority: boolean) {
+                const img = new Image()
+                img.decoding = 'async'
+                const onSettle = () => {
+                    if (cancelled) return
+                    settledTotal += 1
+                    setLoadProgress(Math.round((settledTotal / FRAME_COUNT) * 100))
+                    if (isPriority) {
+                        prioritySettled += 1
+                        if (prioritySettled === 1) {
+                            resizeCanvas()
+                            drawFrame(reduceMotionNow ? FRAME_COUNT - 1 : 0, true)
+                        }
+                        if (prioritySettled >= windowSize) {
+                            setReady(true)
+                            pumpQueue()
+                        }
+                    } else {
+                        inFlight -= 1
+                        pumpQueue()
+                    }
+                }
+                img.onload = onSettle
+                img.onerror = onSettle // don't let one missing frame stall the whole sequence
+                img.src = framePath(index + 1)
+                framesRef.current[index] = img
+            }
+
+            priorityIndices.forEach((idx) => loadFrame(idx, true))
         }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    startLoading()
+                    observer.disconnect()
+                }
+            },
+            { rootMargin: '1200px 0px' }
+        )
+        observer.observe(stage)
 
         const onResize = () => resizeCanvas()
         window.addEventListener('resize', onResize)
 
         return () => {
             cancelled = true
+            observer.disconnect()
             window.removeEventListener('resize', onResize)
         }
     }, [])

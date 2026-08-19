@@ -17,6 +17,14 @@ const nextConfig = {
                 ],
             },
             {
+                // Directory suffix (_v2) is the cache-busting mechanism — any future
+                // re-encode should ship under a new suffix rather than overwrite in place.
+                source: '/assets/images/Heclura_Desk_Frames_v2/:path*',
+                headers: [
+                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                ],
+            },
+            {
                 source: '/(.*)',
                 headers: [
                     { key: 'X-Frame-Options', value: 'DENY' },
