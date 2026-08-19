@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import styles from './selling.module.css'
+import BackgroundVideo from './BackgroundVideo'
 import { Reveal } from './Reveal'
 
 export default function PricingSection({ ctaHref }: { ctaHref: string }) {
@@ -11,19 +12,12 @@ export default function PricingSection({ ctaHref }: { ctaHref: string }) {
             </div>
 
             <div>
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
+                <BackgroundVideo
+                    webmSrc="/assets/videos/pricing_section.webm"
+                    mp4Src="/assets/videos/pricing_section.mp4"
+                    poster="/assets/videos/pricing_section-poster.jpg"
                     className="absolute inset-0 w-full h-full object-cover z-0"
-                >
-                    <source
-                        src="/assets/videos/pricing_section.mp4"
-                        type="video/mp4"
-                    />
-                </video>
+                />
 
                 {/* Dark overlay for text readability */}
                 <div className="absolute inset-0 bg-black/55" />

@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { motion, AnimatePresence } from 'framer-motion'
 import styles from '@/components/sell-tickets/selling.module.css'
 import SellingNavbar from '@/components/sell-tickets/SellingNavbar'
 import HeroSection from '@/components/sell-tickets/HeroSection'
@@ -20,6 +21,247 @@ import FAQSection from '@/components/sell-tickets/FAQSection'
 import SellingFooter from '@/components/sell-tickets/SellingFooter'
 
 import TrustedPartners from '@/components/home/TrustedPartners';
+import { GooeyText } from '@/components/animations/MorphingText'
+
+type OrderedText = { order: number; text: string }
+
+function toOrderedStrings(items: OrderedText[]): string[] {
+  return [...items].sort((a, b) => a.order - b.order).map((t) => t.text)
+}
+
+const WELCOME_TEXTS_ORDERED: OrderedText[] = [
+  { order: 1, text: 'Hey there!' },
+  { order: 2, text: 'Welcome to' },
+  { order: 3, text: 'Hexlura Business' },
+  { order: 4, text: 'List it' },
+  { order: 5, text: 'Sell it' },
+  { order: 6, text: 'Grow it' },
+  { order: 7, text: 'Optimizing your experience...' },
+  { order: 8, text: 'Hang tight!' },
+]
+
+const TIP_TEXTS_ORDERED: OrderedText[] = [
+  { order: 1, text: 'Connecting to secure servers...' },
+  { order: 2, text: 'Almost there!' },
+  { order: 3, text: 'Pro-tip: Events with early-bird discounts sell tickets 30% faster.' },
+  { order: 4, text: 'Did you know? Adding a countdown timer on your checkout page can boost urgency and cut cart abandonment by 15%.' },
+  { order: 5, text: 'Pro-tip: QR-based contactless scanning handles up to 600 attendee check-ins per hour per gate.' },
+  { order: 6, text: 'Pro-tip: Selling add-ons like merchandise, parking, or drink vouchers during ticket checkout increases average order value.' },
+  { order: 7, text: 'Preparing your event dashboard...' },
+  { order: 8, text: 'Polishing up the final details...' },
+  { order: 9, text: 'Fetching the latest event trends...' },
+  { order: 10, text: 'Syncing your dashboard...' },
+  { order: 11, text: 'Pro-tip: Organisers keep 100% of their ticket price — our fee is added on top for the buyer.' },
+  { order: 12, text: 'Did you know? You can assign door staff per event, scoped to check-in only.' },
+  { order: 13, text: 'Pro-tip: Promo codes can be scoped per event or platform-wide.' },
+  { order: 14, text: 'Loading your analytics...' },
+  { order: 15, text: 'Did you know? Payouts land via Stripe Connect straight to your bank account.' },
+  { order: 16, text: 'Pro-tip: Waitlists let you capture demand even after an event sells out.' },
+  { order: 17, text: 'Warming up the ticket engine...' },
+  { order: 18, text: 'Did you know? Every ticket gets its own unique QR code, scanned in seconds at the door.' },
+  { order: 19, text: 'Pro-tip: Promoters can run referral links with their own commission rate per event.' },
+  { order: 20, text: 'Fine-tuning your setup...' },
+  { order: 21, text: 'Did you know? You can invite co-organisers and door staff straight from your team page.' },
+  { order: 22, text: 'Pro-tip: Reviews and ratings help build trust with future ticket buyers.' },
+  { order: 23, text: 'Just a moment more...' },
+]
+
+const FINAL_WORDS_ORDERED: OrderedText[] = [
+  { order: 1, text: 'Get ready!' },
+  { order: 2, text: "Let's go!" },
+]
+
+const WELCOME_TEXTS = toOrderedStrings(WELCOME_TEXTS_ORDERED)
+const TIP_TEXTS = toOrderedStrings(TIP_TEXTS_ORDERED)
+const FINAL_WORDS = toOrderedStrings(FINAL_WORDS_ORDERED)
+
+// Order is strict and deterministic: the `order` field above defines display
+// order. The first two tips always show; the rest cycle in that exact order
+// (no shuffling) only while the browser is still actually loading (see
+// BusinessLoadingScreen's readiness check).
+const TOP_TIPS = TIP_TEXTS.slice(0, 2)
+const EXTRA_TIPS = TIP_TEXTS.slice(2)
+
+// Short welcome phrases get room to be read; tips are full sentences so they get
+// the most reading time; final words morph a little quicker for a snappy handoff.
+const WELCOME_MORPH = 0.6
+const WELCOME_COOLDOWN = 1.4
+const TIP_MORPH = 0.6
+const TIP_COOLDOWN = 2.6
+const FINAL_MORPH = 0.3
+const FINAL_COOLDOWN = 1.0
+
+// GooeyText holds texts[0] for cooldownTime alone (no preceding morph), then
+// morphs+holds each subsequent text — so a full pass through `count` texts
+// takes cooldownTime*count + morphTime*(count-1), not count*(morph+cooldown).
+// Using the naive count*(morph+cooldown) formula leaves one extra morphTime
+// of slack, which is exactly enough time for GooeyText's internal loop to
+// start morphing back into texts[0] before the phase timer swaps it out.
+function phaseDurationMs(count: number, morphTime: number, cooldownTime: number) {
+  return (count * cooldownTime + Math.max(count - 1, 0) * morphTime) * 1000
+}
+
+const WELCOME_DURATION_MS = phaseDurationMs(WELCOME_TEXTS.length, WELCOME_MORPH, WELCOME_COOLDOWN)
+const TOP_TIPS_DURATION_MS = phaseDurationMs(TOP_TIPS.length, TIP_MORPH, TIP_COOLDOWN)
+const EXTRA_TIPS_DURATION_MS = phaseDurationMs(EXTRA_TIPS.length, TIP_MORPH, TIP_COOLDOWN)
+const FINAL_DURATION_MS = phaseDurationMs(FINAL_WORDS.length, FINAL_MORPH, FINAL_COOLDOWN)
+
+type LoadingPhase = 'welcome' | 'tips-top' | 'tips-extra' | 'final'
+
+function BusinessLoadingScreen({ onDone }: { onDone: () => void }) {
+  const [phase, setPhase] = useState<LoadingPhase>('welcome')
+  const [fadeOut, setFadeOut] = useState(false)
+  // EXTRA_TIPS is a fixed, ordered array; GooeyText loops through it
+  // internally. extraTipsTick just re-runs the phase-timer effect below to
+  // periodically re-check page readiness, without remounting GooeyText.
+  const [extraTipsTick, setExtraTipsTick] = useState(0)
+  const pageReadyRef = useRef(false)
+
+  // Track real page load state so extra/random tips only appear while the
+  // browser is genuinely still loading.
+  useEffect(() => {
+    if (document.readyState === 'complete') {
+      pageReadyRef.current = true
+      return
+    }
+    const onLoad = () => {
+      pageReadyRef.current = true
+    }
+    window.addEventListener('load', onLoad)
+    return () => window.removeEventListener('load', onLoad)
+  }, [pageReadyRef])
+
+  // Advance welcome -> tips-top -> (tips-extra loop while still loading) -> final.
+  useEffect(() => {
+    if (phase === 'welcome') {
+      const t = setTimeout(() => setPhase('tips-top'), WELCOME_DURATION_MS)
+      return () => clearTimeout(t)
+    }
+    if (phase === 'tips-top') {
+      const t = setTimeout(() => {
+        setPhase(pageReadyRef.current ? 'final' : 'tips-extra')
+      }, TOP_TIPS_DURATION_MS)
+      return () => clearTimeout(t)
+    }
+    if (phase === 'tips-extra') {
+      const t = setTimeout(() => {
+        if (pageReadyRef.current) {
+          setPhase('final')
+          return
+        }
+        // Same fixed EXTRA_TIPS order loops again; only re-check readiness.
+        setExtraTipsTick((tick) => tick + 1)
+      }, EXTRA_TIPS_DURATION_MS)
+      return () => clearTimeout(t)
+    }
+    if (phase === 'final') {
+      const t = setTimeout(() => setFadeOut(true), FINAL_DURATION_MS)
+      return () => clearTimeout(t)
+    }
+  }, [phase, extraTipsTick, pageReadyRef])
+
+  useEffect(() => {
+    if (!fadeOut) return
+    const removeTimer = setTimeout(onDone, 500)
+    return () => clearTimeout(removeTimer)
+  }, [fadeOut, onDone])
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-12 bg-[#f6f5f3] px-6 transition-opacity duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
+      style={{ opacity: fadeOut ? 0 : 1, pointerEvents: fadeOut ? 'none' : 'auto' }}
+      aria-hidden={fadeOut}
+    >
+      {/* Single, quiet announcement instead of screen readers re-announcing the
+          constantly-mutating GooeyText spans. */}
+      <span className="sr-only" role="status" aria-live="polite">
+        Loading Hexlura Business…
+      </span>
+
+      <div className="flex w-full max-w-3xl items-center justify-center px-4 py-6 min-h-[6rem] md:min-h-[7rem]">
+        <AnimatePresence mode="wait">
+          {phase === 'welcome' && (
+            <motion.div
+              key="welcome"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
+              transition={{ duration: 0.6 }}
+              className="flex w-full items-center justify-center"
+            >
+              <GooeyText
+                texts={WELCOME_TEXTS}
+                morphTime={WELCOME_MORPH}
+                cooldownTime={WELCOME_COOLDOWN}
+                highlightWord="Hexlura"
+                highlightClassName="text-hexred"
+                className="h-16 w-full md:h-24"
+                textClassName="w-full text-[clamp(1.5rem,6vw,4.5rem)] font-bold tracking-[-0.03em] text-hexdark text-center whitespace-nowrap"
+              />
+            </motion.div>
+          )}
+
+          {phase === 'tips-top' && (
+            <motion.div
+              key="tips-top"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
+              transition={{ duration: 0.6 }}
+              className="flex w-full items-center justify-center"
+            >
+              <GooeyText
+                texts={TOP_TIPS}
+                morphTime={TIP_MORPH}
+                cooldownTime={TIP_COOLDOWN}
+                className="h-24 w-full md:h-28"
+                textClassName="w-full text-xl md:text-3xl font-bold tracking-[-0.02em] text-hexdark/80 text-center whitespace-normal"
+              />
+            </motion.div>
+          )}
+
+          {phase === 'tips-extra' && (
+            <motion.div
+              key="tips-extra"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
+              transition={{ duration: 0.6 }}
+              className="flex w-full items-center justify-center"
+            >
+              <GooeyText
+                texts={EXTRA_TIPS}
+                morphTime={TIP_MORPH}
+                cooldownTime={TIP_COOLDOWN}
+                className="h-24 w-full md:h-28"
+                textClassName="w-full text-xl md:text-3xl font-bold tracking-[-0.02em] text-hexdark/80 text-center whitespace-normal"
+              />
+            </motion.div>
+          )}
+
+          {phase === 'final' && (
+            <motion.div
+              key="final"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
+              transition={{ duration: 0.6 }}
+              className="flex w-full items-center justify-center"
+            >
+              <GooeyText
+                texts={FINAL_WORDS}
+                morphTime={FINAL_MORPH}
+                cooldownTime={FINAL_COOLDOWN}
+                className="h-16 w-full md:h-24"
+                textClassName="w-full text-[clamp(1.5rem,6vw,4.5rem)] font-bold tracking-[-0.03em] text-hexdark text-center whitespace-nowrap"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
 
 function SpinnerIcon() {
   return (
@@ -158,8 +400,21 @@ export default function BusinessClient({
     }
   }, [])
 
+  const [showLoading, setShowLoading] = useState(true)
+
+  useEffect(() => {
+    if (!showLoading) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [showLoading])
+
   return (
     <div className="bg-[#f6f5f3] text-hexdark antialiased selection:bg-hexred selection:text-white overflow-x-clip">
+      {showLoading && <BusinessLoadingScreen onDone={() => setShowLoading(false)} />}
+
       {/* <IntroSequence> */}
       <SellingNavbar ctaHref={ctaHref} />
 

@@ -9,6 +9,14 @@ const nextConfig = {
                 ],
             },
             {
+                // Filenames are reused across re-encodes, so only mark immutable
+                // if a future video swap also changes the filename (cache-busting).
+                source: '/assets/videos/:path*',
+                headers: [
+                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                ],
+            },
+            {
                 source: '/(.*)',
                 headers: [
                     { key: 'X-Frame-Options', value: 'DENY' },

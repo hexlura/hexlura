@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import styles from './selling.module.css'
 import HeroTicket from './HeroTicket'
+import BackgroundVideo from './BackgroundVideo'
 import { Reveal } from './Reveal'
 import { ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -39,19 +40,12 @@ export default function HeroSection({ ctaHref }: { ctaHref: string }) {
 
       {/* BACKGROUND VIDEO */}
       <div>
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
+        <BackgroundVideo
+          webmSrc="/assets/videos/hero_card.webm"
+          mp4Src="/assets/videos/hero_card.mp4"
+          poster="/assets/videos/hero_card-poster.jpg"
           className="absolute inset-0 w-full h-full object-cover z-0"
-        >
-          <source
-            src="/assets/videos/hero_card.mov"
-            type="video/mp4"
-          />
-        </video>
+        />
 
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-black/55" />
