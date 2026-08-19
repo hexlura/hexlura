@@ -137,7 +137,7 @@ export default function CalculatorSection({ ctaHref }: { ctaHref: string }) {
             <div className="absolute bottom-0 left-0 w-full h-8 bg-barcode opacity-20" />
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 text-center">
             <Link
               href={ctaHref}
               className={`${styles.btnPrimary} inline-block bg-hexred text-white font-bold py-4 px-8 rounded-full text-center uppercase tracking-wider text-sm shadow-lg`}

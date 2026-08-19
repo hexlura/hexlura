@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import styles from './selling.module.css'
 import { Reveal, useInView } from './Reveal'
 import { tweenValue } from './tween'
+import AmbientParticles from './AmbientParticles'
 
 function Counter({
     target,
@@ -39,6 +40,7 @@ export default function StatsSection() {
                 <div className={`${styles.blob} ${styles.blobDrift} w-96 h-96 bg-hexviolet/40 top-0 left-0`} />
                 <div className={`${styles.blob} ${styles.blobDriftSlow} w-96 h-96 bg-hexred/30 bottom-0 right-0`} />
             </div>
+            <AmbientParticles density={26} className="opacity-40" />
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <Reveal className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" as="div">
                     <>

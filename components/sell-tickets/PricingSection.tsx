@@ -9,6 +9,26 @@ export default function PricingSection({ ctaHref }: { ctaHref: string }) {
                 <div className={`${styles.blob} ${styles.blobDrift} w-[35rem] h-[35rem] bg-hexred/20 -top-20 -left-20`} />
                 <div className={`${styles.blob} ${styles.blobDriftSlow} w-[25rem] h-[25rem] bg-hexviolet/20 bottom-10 right-10`} />
             </div>
+
+            <div>
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    className="absolute inset-0 w-full h-full object-cover z-0"
+                >
+                    <source
+                        src="/assets/videos/pricing_section.mp4"
+                        type="video/mp4"
+                    />
+                </video>
+
+                {/* Dark overlay for text readability */}
+                <div className="absolute inset-0 bg-black/55" />
+            </div>
+
             <Reveal className="max-w-7xl mx-auto px-6 relative z-10">
                 <>
                     <div className="text-center mb-20">

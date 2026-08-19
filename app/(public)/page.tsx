@@ -430,7 +430,7 @@ export default async function HomePage() {
                     Free to start. No monthly fees. You keep 100% of ticket face value.
                 </p>
                 <Link
-                    href="/sell-tickets"
+                    href="/business"
                     style={{
                         display: 'inline-block',
                         background: '#E63950',
