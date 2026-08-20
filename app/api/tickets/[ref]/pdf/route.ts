@@ -24,7 +24,8 @@ export async function GET(
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+        const nextPath = `/api/tickets/${ref}/pdf${indexParam ? `?index=${indexParam}` : ''}`
+        return NextResponse.redirect(new URL(`/auth/login?next=${encodeURIComponent(nextPath)}`, request.url))
     }
 
     let { data: booking } = await supabase
