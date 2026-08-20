@@ -1,6 +1,9 @@
 import { Resend } from 'resend'
 import { render } from '@react-email/components'
 import BookingConfirmation from '@/emails/booking-confirmation'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { buildTicketDescriptors, type BookingItemRow } from '@/lib/tickets/descriptors'
+import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
 import UserWelcome from '@/emails/user-welcome'
 import OrganiserWelcome from '@/emails/organiser-welcome'
 import PromoterWelcome from '@/emails/promoter-welcome'
@@ -34,6 +37,8 @@ function getAppUrl() {
 interface BookingEmailData {
     to: string
     bookingRef: string
+    bookingId: string
+    organiserId?: string
     buyerName?: string
     eventName: string
     eventDate: string
@@ -61,6 +66,47 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
     const totalPaid = `£${(data.totalPence / 100).toFixed(2)}`
 
     try {
+        const adminClient = createAdminClient()
+
+        const { data: itemRows } = await adminClient
+            .from('booking_items')
+            .select('id, qr_code, quantity, ticket_type:ticket_types(name, is_group, group_size)')
+            .eq('booking_id', data.bookingId)
+
+        let organiserName: string | undefined
+        if (data.organiserId) {
+            const { data: org } = await adminClient
+                .from('organiser_profiles')
+                .select('org_name')
+                .eq('id', data.organiserId)
+                .single()
+            organiserName = (org as { org_name?: string } | null)?.org_name
+        }
+
+        const descriptors = buildTicketDescriptors((itemRows || []) as unknown as BookingItemRow[], data.bookingRef)
+
+        const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
+            const pdfBuffer = await generateTicketPdf({
+                eventName: data.eventName,
+                eventDate: data.eventDate,
+                eventTime: data.eventTime,
+                venueName: data.venueName || 'TBC',
+                venueAddress: data.venueAddress || '',
+                organiserName,
+                bookingRef: data.bookingRef,
+                holderName: data.buyerName || 'Ticket Holder',
+                ticketName: descriptor.ticketName,
+                token: descriptor.token,
+                isCancelled: false,
+                ticketIndex: i + 1,
+                ticketTotal: descriptors.length,
+            })
+            return {
+                filename: `${data.bookingRef}-ticket-${i + 1}-of-${descriptors.length}.pdf`,
+                content: pdfBuffer,
+            }
+        }))
+
         const html = await render(BookingConfirmation({
             buyerName: data.buyerName || 'Valued Customer',
             eventName: data.eventName,
@@ -80,6 +126,7 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
             to: data.to,
             subject: `Your tickets for ${data.eventName} are confirmed! 🎉`,
             html,
+            attachments,
         })
     } catch (err) {
         console.error('Failed to send confirmation email:', err)

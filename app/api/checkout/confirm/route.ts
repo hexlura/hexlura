@@ -281,6 +281,8 @@ export async function POST(request: Request) {
                 to: attendeeEmail,
                 buyerName: attendeeName,
                 bookingRef: booking.booking_ref,
+                bookingId: booking.id,
+                organiserId: eventData.organiser_id,
                 eventName: eventData.title,
                 eventDate,
                 eventTime,
