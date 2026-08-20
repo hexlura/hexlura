@@ -56,6 +56,28 @@ export async function GET(
         }
     }
 
+    // Tertiary check: admins can access any ticket
+    if (!booking) {
+        const adminClient = createAdminClient()
+        const { data: profile } = await adminClient
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role === 'admin') {
+            const { data: anyBooking } = await adminClient
+                .from('bookings')
+                .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
+                .eq('booking_ref', ref)
+                .single()
+
+            if (anyBooking) {
+                booking = anyBooking
+            }
+        }
+    }
+
     if (!booking) {
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
