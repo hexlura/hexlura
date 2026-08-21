@@ -29,7 +29,7 @@ export default async function OrganiserEventsPage() {
     const { data: allBookings } = eventIds.length
         ? await serviceClient
             .from('bookings')
-            .select('id, event_id, ticket_subtotal_pence')
+            .select('id, event_id, ticket_subtotal_pence, discount_pence')
             .in('event_id', eventIds)
             .eq('status', 'confirmed')
         : { data: [] }
@@ -47,9 +47,9 @@ export default async function OrganiserEventsPage() {
         if (!salesByEvent[eventId]) salesByEvent[eventId] = { tickets: 0, revenue: 0 }
         salesByEvent[eventId].tickets += item.quantity
     }
-    for (const b of (allBookings || []) as { event_id: string; ticket_subtotal_pence: number | null }[]) {
+    for (const b of (allBookings || []) as { event_id: string; ticket_subtotal_pence: number | null; discount_pence: number | null }[]) {
         if (!salesByEvent[b.event_id]) salesByEvent[b.event_id] = { tickets: 0, revenue: 0 }
-        salesByEvent[b.event_id].revenue += b.ticket_subtotal_pence || 0
+        salesByEvent[b.event_id].revenue += (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0)
     }
 
     const rows = (eventsData || []).map((e: { id: string; title: string; slug: string; start_at: string; status: string }) => ({

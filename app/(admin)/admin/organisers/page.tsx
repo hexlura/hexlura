@@ -61,18 +61,18 @@ export default async function AdminOrganisersPage({
 
         const { data: bookingsData } = await adminClient
             .from('bookings')
-            .select('ticket_subtotal_pence, event:events(organiser_id)')
+            .select('ticket_subtotal_pence, discount_pence, event:events(organiser_id)')
             .eq('status', 'confirmed')
 
         for (const e of (eventsData || []) as { id: string; organiser_id: string }[]) {
             if (!orgStats[e.organiser_id]) orgStats[e.organiser_id] = { events: 0, revenue: 0 }
             orgStats[e.organiser_id].events++
         }
-        type BkgWithOrg = { ticket_subtotal_pence: number | null; event: { organiser_id: string } | null }
+        type BkgWithOrg = { ticket_subtotal_pence: number | null; discount_pence: number | null; event: { organiser_id: string } | null }
         for (const b of (bookingsData || []) as unknown as BkgWithOrg[]) {
             const oid = b.event?.organiser_id
             if (oid && orgStats[oid]) {
-                orgStats[oid].revenue += b.ticket_subtotal_pence || 0
+                orgStats[oid].revenue += (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0)
             }
         }
     }

@@ -30,7 +30,7 @@ export default async function AttendeesPage({ params }: PageProps) {
     // Get all confirmed bookings for this event
     const { data: bookings } = await serviceClient
         .from('bookings')
-        .select('id, booking_ref, ticket_subtotal_pence, created_at')
+        .select('id, booking_ref, ticket_subtotal_pence, discount_pence, created_at')
         .eq('event_id', params.id)
         .eq('status', 'confirmed')
 
@@ -87,7 +87,7 @@ export default async function AttendeesPage({ params }: PageProps) {
     // Summary stats — after expansion each element is exactly 1 physical ticket
     const totalTickets = attendees.length
     const checkedIn = attendees.filter(a => a.checkedIn).length
-    const totalRevenue = (bookings || []).reduce((s, b) => s + (b.ticket_subtotal_pence || 0), 0)
+    const totalRevenue = (bookings || []).reduce((s, b) => s + (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0), 0)
 
     const eventDate = new Date(event.start_at).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'long', year: 'numeric'
