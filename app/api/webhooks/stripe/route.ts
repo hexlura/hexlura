@@ -402,7 +402,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             promoter_commission_percent: promoterCommissionPercent,
             promoter_commission_pence: promoterCommissionPence,
         })
-        .select('id, booking_ref')
+        .select('id, booking_ref, ticket_access_token')
         .single()
 
     if (bookingError || !booking) {
@@ -659,7 +659,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 processingFeePence: orderProcessingFeePence,
                 discountPence,
                 totalPaid: `£${(totalPence / 100).toFixed(2)}`,
-                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
             }))
 
             await getResend().emails.send({

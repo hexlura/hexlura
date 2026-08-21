@@ -117,6 +117,7 @@ export interface Booking {
     user_id: string | null;
     event_id: string;
     booking_ref: string;
+    ticket_access_token: string;
     status: 'pending' | 'confirmed' | 'cancelled' | 'refunded';
     ticket_subtotal_pence: number | null;
     booking_fee_pence: number | null;

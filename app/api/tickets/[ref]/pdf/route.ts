@@ -19,62 +19,88 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const indexParam = searchParams.get('index')
     const requestedIndex = indexParam ? parseInt(indexParam, 10) : null
+    const accessToken = searchParams.get('token')
 
-    const supabase = createClient()
+    const BOOKING_SELECT = '*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))'
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        const nextPath = `/api/tickets/${ref}/pdf${indexParam ? `?index=${indexParam}` : ''}`
-        return NextResponse.redirect(new URL(`/auth/login?next=${encodeURIComponent(nextPath)}`, request.url))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let booking: any = null
+
+    // Token path — the link in the confirmation email carries a long, unguessable
+    // per-booking token, so it works without any login (guests included), while a bare
+    // booking_ref (6 characters, sometimes visible in browser history/screenshots) alone
+    // still isn't enough to get in.
+    if (accessToken) {
+        const tokenClient = createAdminClient()
+        const { data: tokenBooking } = await tokenClient
+            .from('bookings')
+            .select(BOOKING_SELECT)
+            .eq('booking_ref', ref)
+            .eq('ticket_access_token', accessToken)
+            .single()
+        booking = tokenBooking
     }
 
-    let { data: booking } = await supabase
-        .from('bookings')
-        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
-        .eq('booking_ref', ref)
-        .eq('user_id', user.id)
-        .single()
-
-    // Secondary check: allow organisers to download tickets for their own events
+    // No valid token — fall back to the existing session-based access checks.
+    let user: { id: string; email?: string } | null = null
     if (!booking) {
-        const adminClient = createAdminClient()
-        const { data: organiser } = await adminClient
-            .from('organiser_profiles')
-            .select('id')
+        const supabase = createClient()
+        const { data: { user: sessionUser } } = await supabase.auth.getUser()
+        if (!sessionUser) {
+            const nextPath = `/api/tickets/${ref}/pdf${indexParam ? `?index=${indexParam}` : ''}`
+            return NextResponse.redirect(new URL(`/auth/login?next=${encodeURIComponent(nextPath)}`, request.url))
+        }
+        user = sessionUser
+
+        const { data: ownBooking } = await supabase
+            .from('bookings')
+            .select(BOOKING_SELECT)
+            .eq('booking_ref', ref)
             .eq('user_id', user.id)
             .single()
+        booking = ownBooking
 
-        if (organiser) {
-            const { data: orgBooking } = await adminClient
-                .from('bookings')
-                .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
-                .eq('booking_ref', ref)
+        // Secondary check: allow organisers to download tickets for their own events
+        if (!booking) {
+            const adminClient = createAdminClient()
+            const { data: organiser } = await adminClient
+                .from('organiser_profiles')
+                .select('id')
+                .eq('user_id', user.id)
                 .single()
 
-            if (orgBooking && (orgBooking.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
-                booking = orgBooking
+            if (organiser) {
+                const { data: orgBooking } = await adminClient
+                    .from('bookings')
+                    .select(BOOKING_SELECT)
+                    .eq('booking_ref', ref)
+                    .single()
+
+                if (orgBooking && (orgBooking.event as { organiser_id?: string } | null)?.organiser_id === organiser.id) {
+                    booking = orgBooking
+                }
             }
         }
-    }
 
-    // Tertiary check: admins can access any ticket
-    if (!booking) {
-        const adminClient = createAdminClient()
-        const { data: profile } = await adminClient
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.role === 'admin') {
-            const { data: anyBooking } = await adminClient
-                .from('bookings')
-                .select('*, event:events(title, start_at, end_at, venue_name, venue_address, category, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, is_group, group_size))')
-                .eq('booking_ref', ref)
+        // Tertiary check: admins can access any ticket
+        if (!booking) {
+            const adminClient = createAdminClient()
+            const { data: profile } = await adminClient
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
                 .single()
 
-            if (anyBooking) {
-                booking = anyBooking
+            if (profile?.role === 'admin') {
+                const { data: anyBooking } = await adminClient
+                    .from('bookings')
+                    .select(BOOKING_SELECT)
+                    .eq('booking_ref', ref)
+                    .single()
+
+                if (anyBooking) {
+                    booking = anyBooking
+                }
             }
         }
     }

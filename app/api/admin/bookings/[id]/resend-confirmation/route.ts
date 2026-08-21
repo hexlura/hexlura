@@ -37,6 +37,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         booking_ref: string
         status: string
         user_id: string | null
+        ticket_access_token: string
         ticket_subtotal_pence: number | null
         booking_fee_pence: number | null
         discount_pence: number | null
@@ -154,7 +155,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         bookingRef: booking.booking_ref,
         ticketItems,
         totalPaid,
-        downloadUrl: `${appUrl}/api/tickets/${booking.booking_ref}/pdf`,
+        downloadUrl: `${appUrl}/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
     }))
 
     await getResend().emails.send({

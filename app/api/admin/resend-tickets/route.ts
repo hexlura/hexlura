@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
         booking_ref: string
         status: string
         user_id: string | null
+        ticket_access_token: string
         ticket_subtotal_pence: number | null
         booking_fee_pence: number | null
         discount_pence: number | null
@@ -169,7 +170,7 @@ export async function GET(req: NextRequest) {
         bookingRef: booking.booking_ref,
         ticketItems,
         totalPaid,
-        downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+        downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
     }))
 
     await getResend().emails.send({

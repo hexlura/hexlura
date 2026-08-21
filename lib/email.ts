@@ -68,6 +68,13 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
     try {
         const adminClient = createAdminClient()
 
+        const { data: bookingRow } = await adminClient
+            .from('bookings')
+            .select('ticket_access_token')
+            .eq('id', data.bookingId)
+            .single()
+        const accessToken = (bookingRow as { ticket_access_token?: string } | null)?.ticket_access_token
+
         const { data: itemRows } = await adminClient
             .from('booking_items')
             .select('id, qr_code, quantity, ticket_type:ticket_types(name, is_group, group_size)')
@@ -117,7 +124,7 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
             bookingRef: data.bookingRef,
             ticketItems,
             totalPaid,
-            downloadUrl: `${appUrl}/api/tickets/${data.bookingRef}/pdf`,
+            downloadUrl: `${appUrl}/api/tickets/${data.bookingRef}/pdf${accessToken ? `?token=${accessToken}` : ''}`,
         }))
 
         await getResend().emails.send({

@@ -105,7 +105,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
             promoter_commission_percent: promoterCommissionPercent,
             promoter_commission_pence: promoterCommissionPence,
         })
-        .select('id, booking_ref, event_id')
+        .select('id, booking_ref, event_id, ticket_access_token')
         .single()
 
     if (bookingError || !booking) {
@@ -371,7 +371,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                 processingFeePence: orderProcessingFeePence,
                 discountPence,
                 totalPaid: `£${(totalPence / 100).toFixed(2)}`,
-                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
             }))
 
             await getResend().emails.send({
