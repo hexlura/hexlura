@@ -55,16 +55,22 @@ export async function generatePayoutsForOrganiser(organiserId: string) {
     for (const event of eligibleEvents) {
         if (existingEventIds.has(event.id)) continue
 
-        // Sum confirmed bookings for this event
+        // Sum confirmed bookings for this event. Net of any promo-code discount — the
+        // organiser is only owed what was actually collected for tickets, not the
+        // pre-discount face value (ticket_subtotal_pence is always the face value,
+        // regardless of how much of it was waived by discount_pence).
         const { data: bookings } = await supabase
             .from('bookings')
-            .select('ticket_subtotal_pence')
+            .select('ticket_subtotal_pence, discount_pence')
             .eq('event_id', event.id)
             .eq('status', 'confirmed')
 
         if (!bookings || bookings.length === 0) continue
 
-        const grossPence = bookings.reduce((sum, b) => sum + (b.ticket_subtotal_pence || 0), 0)
+        const grossPence = bookings.reduce(
+            (sum, b) => sum + (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0),
+            0
+        )
 
         if (grossPence <= 0) continue
 

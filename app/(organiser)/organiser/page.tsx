@@ -61,14 +61,14 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
     const eventIds = events.map(e => e.id)
 
     let bookings: {
-        id: string; booking_ref: string; ticket_subtotal_pence: number | null; event_id: string;
+        id: string; booking_ref: string; ticket_subtotal_pence: number | null; discount_pence: number | null; event_id: string;
         created_at: string; event: { title?: string } | null
     }[] = []
     try {
         if (eventIds.length > 0) {
             const { data } = await serviceClient
                 .from('bookings')
-                .select('id, booking_ref, ticket_subtotal_pence, event_id, created_at, event:events(title)')
+                .select('id, booking_ref, ticket_subtotal_pence, discount_pence, event_id, created_at, event:events(title)')
                 .in('event_id', eventIds)
                 .eq('status', 'confirmed')
                 .order('created_at', { ascending: false })
@@ -118,7 +118,13 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
         console.error('[OrganiserDashboard] payouts fetch failed:', e)
     }
 
-    const totalRevenuePence = bookings.reduce((s, b) => s + (b.ticket_subtotal_pence || 0), 0)
+    // Net of any promo-code discount — ticket_subtotal_pence is always the pre-discount
+    // face value, so revenue/payout figures must subtract discount_pence to reflect what
+    // was actually collected (and what the organiser is actually owed).
+    const netTicketPence = (b: { ticket_subtotal_pence: number | null; discount_pence: number | null }) =>
+        (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0)
+
+    const totalRevenuePence = bookings.reduce((s, b) => s + netTicketPence(b), 0)
     const totalTicketsSold = items.reduce((s, i) => s + i.quantity, 0)
 
     // Current Balance = everything earned minus what has already been paid out to the organiser
@@ -151,7 +157,7 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
     const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30)
     for (const b of bookings.filter(b => new Date(b.created_at) >= cutoff)) {
         const k = new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-        if (k in chartMap) chartMap[k] += (b.ticket_subtotal_pence || 0) / 100
+        if (k in chartMap) chartMap[k] += netTicketPence(b) / 100
     }
     const chartData = Object.entries(chartMap).map(([date, revenue]) => ({ date, revenue }))
 
@@ -258,7 +264,7 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
                                     </td>
                                     <td className="py-2.5 pl-3 text-text text-xs">{buyerByBooking[b.id] || 'Guest'}</td>
                                     <td className="py-2.5 pl-3 text-text text-xs max-w-[120px] truncate">{b.event?.title || '—'}</td>
-                                    <td className="py-2.5 pl-3 text-right text-text text-xs">{formatPence(b.ticket_subtotal_pence || 0)}</td>
+                                    <td className="py-2.5 pl-3 text-right text-text text-xs">{formatPence(netTicketPence(b))}</td>
                                     <td className="py-2.5 pl-3 text-right text-muted text-xs">{fmtShort(b.created_at)}</td>
                                 </tr>
                             ))}
