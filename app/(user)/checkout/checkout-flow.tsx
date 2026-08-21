@@ -292,7 +292,10 @@ export default function CheckoutFlow() {
             {/* Pre-payment: comp code entry. StepPayment only mounts after proceedToPayment. */}
             {state.step === 1 && !proceedToPayment && (
                 <div className="space-y-6">
-                    {/* Mini order summary */}
+                    {/* Order summary — includes promo code entry inline, no separate box.
+                        Covers both partial discounts and 100%-off codes: when a code fully
+                        covers the ticket subtotal, create-intent bypasses Stripe entirely and
+                        confirms the booking directly. */}
                     <div className="bg-surface border border-border rounded-none p-5 text-sm space-y-2">
                         <p className="font-bold text-text text-base">{state.eventTitle}</p>
                         <p className="text-muted text-xs">{state.eventDate} · {state.venueName}</p>
@@ -322,6 +325,42 @@ export default function CheckoutFlow() {
                                 </div>
                             )}
                         </div>
+
+                        <div className="border-t border-border pt-3">
+                            {state.promo ? (
+                                <div className="bg-success/10 border border-success/20 rounded-none px-3 py-2 text-xs text-success flex items-center justify-between gap-3">
+                                    <span>
+                                        Code <span className="font-mono font-bold">{state.promo.code}</span> applied
+                                    </span>
+                                    <button type="button" onClick={removePromoCode} className="underline shrink-0">
+                                        Remove
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={promoInput}
+                                        onChange={e => setPromoInput(e.target.value.toUpperCase())}
+                                        onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
+                                        placeholder="Promo code"
+                                        className="flex-1 bg-surface border border-border rounded-none px-3 py-2 text-xs text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={applyPromoCode}
+                                        disabled={promoValidating || !promoInput.trim()}
+                                        className="px-4 border border-border text-xs text-muted hover:text-text hover:border-accent transition disabled:opacity-50"
+                                    >
+                                        {promoValidating ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                            )}
+                            {promoError && (
+                                <p className="text-xs text-accent mt-2">{promoError}</p>
+                            )}
+                        </div>
+
                         <div className="border-t border-border pt-2 flex justify-between font-bold">
                             <span className="text-text">Total</span>
                             <span className="text-text">
@@ -365,51 +404,9 @@ export default function CheckoutFlow() {
                         </div>
                     )}
 
-                    {/* Promo code — covers both partial discounts and 100%-off codes. When a
-                        code fully covers the ticket subtotal, create-intent bypasses Stripe
-                        entirely and confirms the booking directly. */}
-                    <div className="bg-surface border border-border rounded-none p-5 space-y-4">
-                        <div>
-                            <p className="text-sm font-semibold text-text mb-1">Have a promo code?</p>
-                            <p className="text-xs text-muted">Enter it here for a discount. Leave blank to proceed to payment.</p>
-                        </div>
-
-                        {state.promo ? (
-                            <div className="space-y-3">
-                                <div className="bg-success/10 border border-success/20 rounded-none px-4 py-3 text-sm text-success flex items-center justify-between gap-3">
-                                    <span>
-                                        Code <span className="font-mono font-bold">{state.promo.code}</span> applied
-                                    </span>
-                                    <button type="button" onClick={removePromoCode} className="text-xs underline shrink-0">
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={promoInput}
-                                    onChange={e => setPromoInput(e.target.value.toUpperCase())}
-                                    onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
-                                    placeholder="e.g. SUMMER10"
-                                    className="flex-1 bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={applyPromoCode}
-                                    disabled={promoValidating || !promoInput.trim()}
-                                    className="px-4 border border-border text-sm text-muted hover:text-text hover:border-accent transition disabled:opacity-50"
-                                >
-                                    {promoValidating ? '...' : 'Apply'}
-                                </button>
-                            </div>
-                        )}
-                        {promoError && (
-                            <p className="text-sm text-accent">{promoError}</p>
-                        )}
+                    <div className="space-y-2">
                         {needsDetailsForm && !detailsValid && (
-                            <p className="text-xs text-muted">Please fill in your name and a valid email above to continue.</p>
+                            <p className="text-xs text-muted text-center">Please fill in your name and a valid email above to continue.</p>
                         )}
                         <button
                             type="button"
