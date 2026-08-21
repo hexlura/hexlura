@@ -83,14 +83,18 @@ export async function GET(
         return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    // Get buyer name — use booking.user_id (not user.id) so organisers see the correct holder
+    // Fallback holder name if a ticket has no attendee_name/attendee_email of its own —
+    // uses the BOOKING OWNER's own profile (booking.user_id), never the currently
+    // authenticated viewer (an organiser/admin downloading someone else's ticket).
     const profileAdminClient = createAdminClient()
     const { data: profile } = await profileAdminClient
         .from('profiles')
-        .select('full_name')
+        .select('full_name, email')
         .eq('id', booking.user_id)
         .single()
-    const holderName = (profile as { full_name?: string } | null)?.full_name || user.email || 'Ticket Holder'
+    const bookingOwnerFallback = (profile as { full_name?: string; email?: string } | null)?.full_name
+        || (profile as { full_name?: string; email?: string } | null)?.email
+        || 'Ticket Holder'
 
     // Get organiser name (RLS blocks anon access to organiser_profiles, so use admin client)
     const organiserId = (booking.event as { organiser_id?: string } | null)?.organiser_id ?? null
@@ -131,6 +135,8 @@ export async function GET(
         qr_code: string | null
         quantity: number
         unit_price_pence: number
+        attendee_name: string | null
+        attendee_email: string | null
         ticket_type?: { name: string; is_group?: boolean; group_size?: number } | null
     }
 
@@ -144,12 +150,17 @@ export async function GET(
         token: string        // qr_code value — used as QR data and shown on ticket
         ticketName: string
         isGroup: boolean
+        holderName: string
     }
     const descriptors: TicketDescriptor[] = []
 
     for (const item of allItems) {
         const isGroup = item.ticket_type?.is_group === true
         const ticketName = item.ticket_type?.name ?? 'Ticket'
+        // Per-ticket attendee info (set at checkout) takes priority over the booking
+        // owner's account profile — correct even when someone books on another
+        // person's behalf, or for group tickets with multiple named attendees.
+        const holderName = item.attendee_name || item.attendee_email || bookingOwnerFallback
 
         if (isGroup) {
             // Group tickets already had one-row-per-member inserted by webhook
@@ -157,6 +168,7 @@ export async function GET(
                 token: item.qr_code || booking.booking_ref,
                 ticketName,
                 isGroup: true,
+                holderName,
             })
         } else {
             // Standard tickets: each row is one physical ticket with its own qr_code
@@ -167,6 +179,7 @@ export async function GET(
                     token: item.qr_code || booking.booking_ref,
                     ticketName,
                     isGroup: false,
+                    holderName,
                 })
             }
         }
@@ -264,7 +277,7 @@ export async function GET(
         const venueAddress = esc(booking.event?.venue_address || '')
         const organiser = esc(organiserName)
         const ticketTypeName = esc(descriptor.ticketName)
-        const holder = esc(holderName)
+        const holder = esc(descriptor.holderName)
         const bookingRef = esc(booking.booking_ref)
         const token = esc(descriptor.token)
 
