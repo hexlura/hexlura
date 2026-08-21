@@ -572,7 +572,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     // Send confirmation email
     const { data: eventData } = await supabase
         .from('events')
-        .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
+        .select('title, category, start_at, end_at, venue_name, venue_address, organiser_id')
         .eq('id', eventId)
         .single()
 
@@ -627,6 +627,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
                 const pdfBuffer = await generateTicketPdf({
                     eventName: eventData.title,
+                    eventCategory: eventData.category || undefined,
                     eventDate,
                     eventTime,
                     venueName: eventData.venue_name || 'TBC',

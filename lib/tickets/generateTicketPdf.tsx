@@ -4,6 +4,7 @@ import QRCode from 'qrcode'
 
 export interface TicketPdfData {
     eventName: string
+    eventCategory?: string
     eventDate: string
     eventTime: string
     venueName: string
@@ -46,6 +47,14 @@ const styles = StyleSheet.create({
         fontSize: 8,
         color: '#8888AA',
         letterSpacing: 1,
+    },
+    eventCategory: {
+        fontSize: 8,
+        fontWeight: 700,
+        color: '#E63950',
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+        marginBottom: 6,
     },
     eventName: {
         fontSize: 20,
@@ -152,6 +161,7 @@ function TicketPage({ data, qrDataUrl }: { data: TicketPdfData; qrDataUrl: strin
                     <Text style={styles.ticketLabel}>{ticketLabel}</Text>
                 </View>
 
+                {data.eventCategory ? <Text style={styles.eventCategory}>{data.eventCategory}</Text> : null}
                 <Text style={styles.eventName}>{data.eventName}</Text>
 
                 <View style={styles.detailRow}>

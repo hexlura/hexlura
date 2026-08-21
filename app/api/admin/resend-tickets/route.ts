@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     // Fetch the booking with full event + items
     const { data: bookingRaw, error: bookingErr } = await supabase
         .from('bookings')
-        .select('*, event:events(title, start_at, end_at, venue_name, venue_address, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, price_pence, is_group, group_size))')
+        .select('*, event:events(title, category, start_at, end_at, venue_name, venue_address, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, price_pence, is_group, group_size))')
         .eq('booking_ref', bookingRef)
         .single()
 
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
         discount_pence: number | null
         total_pence: number | null
         is_complimentary: boolean | null
-        event: { title: string; start_at: string; end_at: string | null; venue_name: string | null; venue_address: string | null; organiser_id: string } | null
+        event: { title: string; category: string | null; start_at: string; end_at: string | null; venue_name: string | null; venue_address: string | null; organiser_id: string } | null
         items: { id: string; quantity: number; qr_code: string | null; unit_price_pence: number | null; attendee_name: string | null; attendee_email: string | null; ticket_type: { name: string; price_pence: number; is_group?: boolean; group_size?: number } | null }[]
     }
 
@@ -141,6 +141,7 @@ export async function GET(req: NextRequest) {
     const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
         const pdfBuffer = await generateTicketPdf({
             eventName: booking.event!.title,
+            eventCategory: booking.event!.category || undefined,
             eventDate,
             eventTime,
             venueName: booking.event!.venue_name || 'TBC',

@@ -218,7 +218,7 @@ export async function POST(request: Request) {
         // Send confirmation email asynchronously
         const { data: eventData } = await supabase
             .from('events')
-            .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
+            .select('title, category, start_at, end_at, venue_name, venue_address, organiser_id')
             .eq('id', eventId)
             .single()
 
@@ -284,6 +284,7 @@ export async function POST(request: Request) {
                 bookingId: booking.id,
                 organiserId: eventData.organiser_id,
                 eventName: eventData.title,
+                eventCategory: eventData.category || undefined,
                 eventDate,
                 eventTime,
                 venueName: eventData.venue_name || 'TBC',

@@ -41,6 +41,7 @@ interface BookingEmailData {
     organiserId?: string
     buyerName?: string
     eventName: string
+    eventCategory?: string
     eventDate: string
     eventTime: string
     venueName: string
@@ -95,6 +96,7 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
         const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
             const pdfBuffer = await generateTicketPdf({
                 eventName: data.eventName,
+                eventCategory: data.eventCategory,
                 eventDate: data.eventDate,
                 eventTime: data.eventTime,
                 venueName: data.venueName || 'TBC',

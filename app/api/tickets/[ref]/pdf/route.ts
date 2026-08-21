@@ -218,6 +218,7 @@ export async function GET(
 
     const pdfDataList: TicketPdfData[] = toRender.map(({ descriptor, globalIndex }) => ({
         eventName: booking.event?.title || 'Event',
+        eventCategory: (booking.event as { category?: string } | null)?.category || undefined,
         eventDate,
         eventTime: timeDisplay,
         venueName: booking.event?.venue_name || 'TBC',

@@ -299,7 +299,7 @@ export async function POST(request: NextRequest) {
         // Send confirmation email
         const { data: eventInfo } = await adminClient
             .from('events')
-            .select('title, start_at, venue_name, venue_address, organiser_id')
+            .select('title, category, start_at, venue_name, venue_address, organiser_id')
             .eq('id', event_id)
             .single()
 
@@ -328,6 +328,7 @@ export async function POST(request: NextRequest) {
                 bookingId: booking.id,
                 organiserId: eventInfo.organiser_id,
                 eventName: eventInfo.title,
+                eventCategory: eventInfo.category || undefined,
                 eventDate,
                 eventTime,
                 venueName: eventInfo.venue_name || 'TBC',
