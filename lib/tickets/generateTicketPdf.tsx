@@ -138,13 +138,12 @@ const styles = StyleSheet.create({
     },
 })
 
-function TicketDocument({ data, qrDataUrl }: { data: TicketPdfData; qrDataUrl: string }) {
+function TicketPage({ data, qrDataUrl }: { data: TicketPdfData; qrDataUrl: string }) {
     const ticketLabel = data.ticketTotal > 1
         ? `E-TICKET ${data.ticketIndex} OF ${data.ticketTotal}`
         : 'E-TICKET'
 
     return (
-        <Document>
             <Page size={[320, 560]} style={styles.page}>
                 <View style={styles.topBar} />
 
@@ -217,11 +216,26 @@ function TicketDocument({ data, qrDataUrl }: { data: TicketPdfData; qrDataUrl: s
 
                 <Text style={styles.footer}>Valid for 1 person - Non-transferable</Text>
             </Page>
+    )
+}
+
+// Multi-page PDF — one page per physical ticket, all in a single downloadable file.
+export async function generateTicketsPdf(dataList: TicketPdfData[]): Promise<Buffer> {
+    const items = await Promise.all(dataList.map(async (data) => ({
+        data,
+        qrDataUrl: await QRCode.toDataURL(data.token, { width: 320, margin: 1 }),
+    })))
+
+    return renderToBuffer(
+        <Document>
+            {items.map((item, i) => (
+                <TicketPage key={i} data={item.data} qrDataUrl={item.qrDataUrl} />
+            ))}
         </Document>
     )
 }
 
+// Single-ticket convenience wrapper — used for individual email attachments.
 export async function generateTicketPdf(data: TicketPdfData): Promise<Buffer> {
-    const qrDataUrl = await QRCode.toDataURL(data.token, { width: 320, margin: 1 })
-    return renderToBuffer(<TicketDocument data={data} qrDataUrl={qrDataUrl} />)
+    return generateTicketsPdf([data])
 }
