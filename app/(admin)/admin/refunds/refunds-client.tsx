@@ -19,6 +19,7 @@ interface RefundItem {
         id: string
         booking_ref: string
         ticket_subtotal_pence: number | null
+        discount_pence: number | null
         booking_fee_pence: number | null
         stripe_payment_intent_id: string | null
         user_id: string | null
@@ -33,6 +34,13 @@ interface RefundItem {
 function fmt(pence: number | null): string {
     if (!pence && pence !== 0) return '£0.00'
     return `£${(pence / 100).toFixed(2)}`
+}
+
+// Net of any promo-code discount — used as the fallback estimate when refund_amount_pence
+// isn't set, so it matches the actual refundable amount rather than the pre-discount face value.
+function netTicketPence(booking: RefundItem['booking']): number {
+    if (!booking) return 0
+    return (booking.ticket_subtotal_pence ?? 0) - (booking.discount_pence ?? 0)
 }
 
 function fmtDate(d: string): string {
@@ -90,7 +98,7 @@ export function AdminRefundsClient({
     // Stats (always from full list)
     const awaitingCount = items.filter(r => r.status === 'organiser_approved').length
     const pendingOrgCount = items.filter(r => r.status === 'pending').length
-    const totalRefunded = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.refund_amount_pence ?? r.booking?.ticket_subtotal_pence ?? 0), 0)
+    const totalRefunded = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.refund_amount_pence ?? netTicketPence(r.booking) ?? 0), 0)
     const totalFeesKept = items.filter(r => r.status === 'admin_approved').reduce((s, r) => s + (r.booking?.booking_fee_pence ?? 0), 0)
     const rejectedCount = items.filter(r => r.status === 'admin_rejected' || r.status === 'organiser_rejected').length
 
@@ -227,7 +235,7 @@ export function AdminRefundsClient({
                             const badge = STATUS_BADGE[r.status]
                             const isLoading = loadingId === r.id
                             const err = errors[r.id]
-                            const refundPence = r.refund_amount_pence ?? r.booking?.ticket_subtotal_pence ?? 0
+                            const refundPence = r.refund_amount_pence ?? netTicketPence(r.booking)
                             const isAwaitingAdmin = r.status === 'organiser_approved'
                             const isPendingOrganiser = r.status === 'pending'
                             return (

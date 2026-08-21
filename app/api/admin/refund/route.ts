@@ -108,14 +108,18 @@ export async function POST(request: NextRequest) {
     // action === 'confirm'
     const { data: booking } = await adminClient
         .from('bookings')
-        .select('id, booking_ref, total_pence, stripe_payment_intent_id, status')
+        .select('id, booking_ref, ticket_subtotal_pence, discount_pence, total_pence, stripe_payment_intent_id, status')
         .eq('id', booking_id)
         .single()
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
-    // Use refund_amount_pence from the request (ticket subtotal only, not booking fee)
-    const refundAmount = amount_pence ?? refundReq.refund_amount_pence ?? 0
+    // Use refund_amount_pence from the request (ticket subtotal only, not booking fee), but
+    // never trust the client-supplied amount beyond what was actually paid for tickets — caps
+    // against a real overpayment via Stripe if the request/UI-computed amount is ever wrong.
+    const maxRefundablePence = Math.max(0, (booking.ticket_subtotal_pence || 0) - (booking.discount_pence || 0))
+    const requestedAmount = amount_pence ?? refundReq.refund_amount_pence ?? 0
+    const refundAmount = Math.min(requestedAmount, maxRefundablePence)
 
     // Stripe partial refund for refund_amount_pence only
     if (booking.stripe_payment_intent_id && refundAmount > 0) {

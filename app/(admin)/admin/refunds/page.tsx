@@ -31,7 +31,7 @@ export default async function AdminRefundsPage({
         .select(`
             id, status, reason, message, refund_amount_pence, organiser_note, created_at, resolved_at,
             booking:bookings (
-                id, booking_ref, ticket_subtotal_pence, booking_fee_pence,
+                id, booking_ref, ticket_subtotal_pence, discount_pence, booking_fee_pence,
                 stripe_payment_intent_id, user_id,
                 event:events (
                     id, title,
@@ -75,6 +75,7 @@ export default async function AdminRefundsPage({
             id: string
             booking_ref: string
             ticket_subtotal_pence: number | null
+            discount_pence: number | null
             booking_fee_pence: number | null
             stripe_payment_intent_id: string | null
             user_id: string | null

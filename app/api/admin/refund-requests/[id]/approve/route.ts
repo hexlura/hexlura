@@ -30,13 +30,17 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
 
     const { data: booking } = await adminClient
         .from('bookings')
-        .select('id, booking_ref, total_pence, stripe_payment_intent_id')
+        .select('id, booking_ref, ticket_subtotal_pence, discount_pence, total_pence, stripe_payment_intent_id')
         .eq('id', refundReq.booking_id)
         .single()
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
-    const refundAmount = (refundReq.refund_amount_pence ?? booking.total_pence ?? 0) as number
+    // Never refund more than was actually paid for tickets (excludes the non-refundable
+    // booking fee, and never exceeds face value minus any promo-code discount).
+    const maxRefundablePence = Math.max(0, (booking.ticket_subtotal_pence || 0) - (booking.discount_pence || 0))
+    const requestedAmount = (refundReq.refund_amount_pence ?? booking.total_pence ?? 0) as number
+    const refundAmount = Math.min(requestedAmount, maxRefundablePence)
 
     // Issue Stripe refund only if paid and has a real amount
     if (booking.stripe_payment_intent_id && refundAmount > 0) {
