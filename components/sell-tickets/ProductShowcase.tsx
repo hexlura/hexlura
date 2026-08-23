@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useRef } from 'react'
 import styles from './selling.module.css'
+import HeroTicket from './HeroTicket'
 import { Reveal } from './Reveal'
 
 const highlights = [
@@ -85,7 +86,7 @@ export default function ProductShowcase() {
                 </Reveal>
 
                 <Reveal scale className="order-1 lg:order-2 flex justify-center">
-                    <div ref={wrapRef} className={`${styles.ticketTiltWrap} relative`}>
+                    {/* <div ref={wrapRef} className={`${styles.ticketTiltWrap} relative`}>
                         <div className="absolute -inset-16 bg-hexred/10 blur-3xl rounded-full" aria-hidden="true" />
                         <div
                             ref={frameRef}
@@ -101,7 +102,9 @@ export default function ProductShowcase() {
                                 priority={false}
                             />
                         </div>
-                    </div>
+                    </div> */}
+
+                    <HeroTicket />
                 </Reveal>
             </div>
         </section>

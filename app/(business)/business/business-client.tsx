@@ -8,7 +8,7 @@ import SellingNavbar from '@/components/sell-tickets/SellingNavbar'
 import HeroSection from '@/components/sell-tickets/HeroSection'
 import SellingMarquee from '@/components/sell-tickets/SellingMarquee'
 import StatsSection from '@/components/sell-tickets/StatsSection'
-import SponsorsSection from '@/components/sell-tickets/SponsorsSection'
+import HexluraTableCanvas from '@/components/sell-tickets/HexluraTableCanvas'
 import ProductShowcase from '@/components/sell-tickets/ProductShowcase'
 import StickyStackCards from '@/components/sell-tickets/StickyStackCards'
 import ComparisonSection from '@/components/sell-tickets/ComparisonSection'
@@ -31,13 +31,13 @@ function toOrderedStrings(items: OrderedText[]): string[] {
 
 const WELCOME_TEXTS_ORDERED: OrderedText[] = [
   { order: 1, text: 'Hey there!' },
-  { order: 2, text: 'Welcome to' },
+  { order: 2, text: 'Welcome to ' },
   { order: 3, text: 'Hexlura Business' },
   // { order: 4, text: 'List it' },
   // { order: 5, text: 'Sell it' },
   // { order: 6, text: 'Grow it' },
-  { order: 7, text: 'Optimizing your experience...' },
-  { order: 8, text: 'Hang tight!' },
+  // { order: 7, text: 'Optimizing your experience...' },
+  // { order: 8, text: 'Hang tight!' },
 ]
 
 const TIP_TEXTS_ORDERED: OrderedText[] = [
@@ -84,8 +84,8 @@ const EXTRA_TIPS = TIP_TEXTS.slice(2)
 
 // Short welcome phrases get room to be read; tips are full sentences so they get
 // the most reading time; final words morph a little quicker for a snappy handoff.
-const WELCOME_MORPH = 0.6
-const WELCOME_COOLDOWN = 1.4
+const WELCOME_MORPH = 0.4
+const WELCOME_COOLDOWN = 0.8
 const TIP_MORPH = 0.6
 const TIP_COOLDOWN = 2.6
 const FINAL_MORPH = 0.3
@@ -430,8 +430,6 @@ export default function BusinessClient({
 
       <ComparisonSection />
 
-      <SponsorsSection />
-
       <MidBanner ctaHref={ctaHref} />
 
       <CalculatorSection ctaHref={ctaHref} />
@@ -443,6 +441,8 @@ export default function BusinessClient({
       <FeaturesSection />
 
       <PricingSection ctaHref={ctaHref} />
+
+      <HexluraTableCanvas />
 
       <FAQSection />
 

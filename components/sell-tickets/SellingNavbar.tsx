@@ -40,17 +40,17 @@ export default function SellingNavbar({ ctaHref }: { ctaHref: string }) {
     return (
         <div className="fixed w-full z-50 top-0 px-4 sm:px-6 pt-4">
             <nav
-                className={`max-w-6xl mx-auto flex justify-between items-center border rounded-full transition-all duration-500 ${scrolled
-                    ? 'backdrop-blur-lg bg-transparent border-black/5 px-4 py-2 sm:px-5 sm:py-3'
-                    : 'backdrop-blur-xl bg-white/75 border-black/5 px-5 py-3'
+                className={`max-w-6xl mx-auto flex justify-between items-center rounded-full transition-all duration-500 ${scrolled
+                    ? 'backdrop-blur-lg bg-transparent border border-black/5 px-4 py-2 sm:px-5 sm:py-3'
+                    : 'border-none px-5 py-3'
                     }`}
                 style={{
-                    boxShadow: scrolled ? '0 8px 30px -12px rgba(234,40,69,0.2)' : '0 8px 30px -12px rgba(15,15,15,0.15)',
+                    boxShadow: scrolled ? '0 8px 30px -12px rgba(234,40,69,0.2)' : '',
                     transform: scrolled ? 'scale(0.98)' : 'scale(1)',
                 }}
             >
                 <Link href="/" className="flex items-center space-x-2">
-                    <span className={`font-black text-hexred tracking-tighter transition-all duration-500 ${scrolled ? 'text-base sm:text-xl' : 'text-xl'}`}>HEXLURA®</span>
+                    <span className={`font-black text-hexred tracking-tighter transition-all duration-500 ${scrolled ? 'text-base sm:text-lg' : 'text-xl'}`}>HEXLURA®</span>
                 </Link>
 
                 <div className="hidden md:flex items-center gap-8 mx-8">
@@ -59,7 +59,7 @@ export default function SellingNavbar({ ctaHref }: { ctaHref: string }) {
                             key={link.href}
                             href={link.href}
                             onClick={(e) => handleSectionClick(e, link.href)}
-                            className="text-sm font-medium text-gray-500 hover:text-hexred transition-colors whitespace-nowrap"
+                            className={`text-sm font-medium hover:text-hexred transition-colors whitespace-nowrap ${scrolled ? "text-gray-900" : "text-white"}`}
                         >
                             {link.label}
                         </a>

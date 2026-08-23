@@ -51,8 +51,8 @@ export default function HeroSection({ ctaHref }: { ctaHref: string }) {
         <div className="absolute inset-0 bg-black/55" />
       </div>
 
-      <div className="flex-1 flex items-center max-w-7xl mx-auto px-6 w-full relative z-10 pt-4">
-        <Reveal className="w-full grid lg:grid-cols-2 gap-12 items-center" delayMs={0}>
+      <div className="flex-1 flex items-center px-6 w-full relative z-10 pt-4">
+        <Reveal className="w-full flex flex-col md:flex-row sm:items-center justify-between" delayMs={0}>
           <div>
             <div className="inline-flex items-center space-x-2 border border-gray-300/70 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1 mb-6">
               <span className="w-2 h-2 rounded-full bg-hexred animate-pulse" />
@@ -62,13 +62,17 @@ export default function HeroSection({ ctaHref }: { ctaHref: string }) {
             <h1 className="text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-6">
               LIST IT.
               <br />
-              SELL IT. <span className="text-hexred">GROW IT.</span>
+              SELL IT.
+              <br />
+              <span className="text-hexred">GROW IT.</span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-lg leading-relaxed">
+          </div>
+          <div>
+            <p className="text-base text-gray-200 mb-8 max-w-sm leading-relaxed">
               FROM PLANNING TO FINAL CHECK-IN, MANAGE YOUR EVENTS WITH CONFIDENCE.
               Zero monthly fees, zero setup costs, and 100% of your ticket face value stays yours.
             </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            {/* <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
                 href={ctaHref}
                 className={`${styles.btnPrimary} bg-hexred text-white font-bold py-4 px-8 rounded-full text-center uppercase tracking-wider text-sm shadow-[0_10px_30px_-8px_rgba(234,40,69,0.55)]`}
@@ -81,7 +85,7 @@ export default function HeroSection({ ctaHref }: { ctaHref: string }) {
               >
                 See the real numbers
               </a>
-            </div>
+            </div> */}
             <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-mono text-gray-400">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-hexyellow" />NO SETUP FEE
@@ -95,7 +99,7 @@ export default function HeroSection({ ctaHref }: { ctaHref: string }) {
             </div>
           </div>
 
-          <HeroTicket />
+          {/* <HeroTicket /> */}
         </Reveal>
       </div>
 

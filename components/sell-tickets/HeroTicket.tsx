@@ -37,7 +37,7 @@ export default function HeroTicket() {
                     dates=""
                     stubText="Admit one"
                     watermark="2026"
-                    width={741}
+                    width={600}
                 />
             </div>
         </div>

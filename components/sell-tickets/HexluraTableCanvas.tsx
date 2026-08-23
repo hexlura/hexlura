@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 
 // ─── Frame sequence config ──────────────────────────────────────────────────
 // Frames live in public/assets/images/Heclura_Desk_Frames_v2/, 1-based &
@@ -13,7 +14,7 @@ import { motion, useMotionValueEvent, useScroll, useTransform } from 'framer-mot
 const FRAME_COUNT = 120
 const NATIVE_WIDTH = 1280
 const NATIVE_HEIGHT = 720
-// Sponsor content reveals once the scrub reaches the last third of frames.
+// Content reveals once the scrub reaches the last third of frames.
 const REVEAL_FRAME_START = FRAME_COUNT - 40
 // Frames loaded eagerly/with priority before the stage is marked ready.
 const PRIORITY_WINDOW = 20
@@ -24,56 +25,7 @@ function framePath(index: number) {
     return `/assets/images/Heclura_Desk_Frames_v2/frame_${String(index).padStart(3, '0')}.jpg`
 }
 
-// Per-character float-in reveal — replays every time `play` toggles back on.
-// Driven by the parent's own reveal state rather than its own IntersectionObserver,
-// since this title sits inside a sticky-pinned stage that's on-screen long before
-// it's actually visible (opacity fades in only near the end of the scroll scrub).
-function FloatInTitle({
-    text,
-    play,
-    reduceMotion,
-    className = '',
-}: {
-    text: string
-    play: boolean
-    reduceMotion: boolean
-    className?: string
-}) {
-    const chars = useMemo(() => text.split(''), [text])
-
-    if (reduceMotion) {
-        return <h2 className={className}>{text}</h2>
-    }
-
-    return (
-        <h2 className={className}>
-            <span className="sr-only">{text}</span>
-            <span aria-hidden="true" className="inline-block overflow-hidden py-[0.12em]">
-                {chars.map((char, i) => (
-                    <motion.span
-                        key={i}
-                        className="inline-block"
-                        style={{ transformOrigin: '50% 100%' }}
-                        animate={
-                            play
-                                ? { opacity: 1, y: '0%', scaleY: 1, scaleX: 1 }
-                                : { opacity: 0, y: '115%', scaleY: 2.1, scaleX: 0.75 }
-                        }
-                        transition={{
-                            duration: 0.65,
-                            ease: [0.23, 1, 0.32, 1],
-                            delay: play ? i * 0.026 : 0,
-                        }}
-                    >
-                        {char === ' ' ? ' ' : char}
-                    </motion.span>
-                ))}
-            </span>
-        </h2>
-    )
-}
-
-export default function SponsorsSection() {
+export default function HexluraTableCanvas() {
     const stageRef = useRef<HTMLDivElement>(null)
     const pinRef = useRef<HTMLDivElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -301,10 +253,27 @@ export default function SponsorsSection() {
         setRevealed(value > 0.05)
     })
 
+    const handleScrollDown = () => {
+        const hero = document.getElementById('hero-section')
+        if (hero) {
+            window.scrollTo({
+                top: hero.offsetTop + hero.offsetHeight,
+                behavior: 'smooth',
+            })
+        } else {
+            const nextSection = document.getElementById('why-hexlura')
+            if (nextSection) {
+                nextSection.scrollIntoView({ behavior: 'smooth' })
+            } else {
+                window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+            }
+        }
+    }
+
     return (
         <section
             ref={stageRef}
-            className="relative bg-[#0a0a0a]"
+            className="relative hidden md:block bg-[#0a0a0a]"
             style={{ height: reduceMotion ? '100dvh' : '400vh' }}
         >
             <div
@@ -325,101 +294,40 @@ export default function SponsorsSection() {
                                 style={{ width: `${loadProgress}%` }}
                             />
                         </div>
-                        <div className="font-mono text-xs tracking-wide text-white/50">
-                            Loading {loadProgress}%
-                        </div>
                     </div>
                 )}
 
-                {/* Dark overlay for text readability */}
+                {/* Dark overlay for readability */}
                 <div className="absolute inset-0 bg-black/55" />
 
-                {/* Sponsor content sits above the canvas and reveals over the final 5 frames of the scrub */}
+                {/* Reveals over the final frames of the scrub */}
                 <motion.div
                     className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center ${revealed ? 'pointer-events-auto' : 'pointer-events-none'
                         }`}
                     style={reduceMotion ? undefined : { opacity: contentOpacity, y: contentY }}
-                >
-                    <div className="w-full max-w-5xl">
-                        <div>
-                            {/* <div className="mx-auto mb-7 h-px w-11 bg-[#b9944c]" aria-hidden="true" /> */}
-                            <FloatInTitle
-                                text="Our Sponsors"
-                                play={revealed}
-                                reduceMotion={reduceMotion}
-                                className="font-heading text-5xl md:text-7xl lg:text-8xl font-bold uppercase leading-[0.96] text-[#f5f5f5]"
-                            />
-                            <motion.p
-                                className="mx-auto mb-12 text-lg md:text-xl text-gray-400 max-w-2xl mb-12 leading-relaxed text-white/60"
-                                initial={false}
-                                animate={revealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-                                transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1], delay: revealed ? 0.3 : 0 }}
-                            >
-                                We are proud to be partnered with these incredible brands that help us
-                                bring the essence of Kerala to the UK.
-                            </motion.p>
-                        </div>
+                />
 
-                        {/* <div
-                            className="group relative overflow-hidden border-y border-white/[0.14]"
-                            style={{
-                                WebkitMaskImage:
-                                    'linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)',
-                                maskImage:
-                                    'linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)',
-                            }}
+                <AnimatePresence>
+                    <motion.button
+                        type="button"
+                        onClick={handleScrollDown}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute bottom-10 left-[45%] translate-x-1/2 z-20 flex flex-col items-center gap-2 text-hexred hover:text-white transition-colors font-mono cursor-pointer group focus:outline-none"
+                        aria-label="Scroll to explore"
+                    >
+                        <span className="text-xs tracking-[0.3em] uppercase opacity-80 group-hover:opacity-100 transition-opacity">
+                            Scroll to Explore
+                        </span>
+                        <motion.div
+                            animate={{ y: [0, 8, 0] }}
+                            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
                         >
-                            <div className={`${styles.marqueeTrack} group-hover:[animation-play-state:paused]`}>
-                                {[0, 1].map((copy) => (
-                                    <ul
-                                        key={copy}
-                                        className="m-0 flex list-none items-center p-0"
-                                        aria-hidden={copy === 1 || undefined}
-                                    >
-                                        {SPONSOR_SLOTS.map((label) => (
-                                            <li
-                                                key={`${copy}-${label}`}
-                                                className="group/slot flex w-[clamp(150px,18vw,200px)] flex-shrink-0 flex-col items-center gap-3.5 px-5 py-[clamp(28px,4vw,40px)]"
-                                            >
-                                                <div className="relative flex h-14 w-full items-center justify-center">
-                                                    <span className="pointer-events-none absolute left-0 top-0 h-3.5 w-3.5 border-l border-t border-white/20 transition-all duration-300 group-hover/slot:h-5 group-hover/slot:w-5 group-hover/slot:border-[#b9944c66]" />
-                                                    <span className="pointer-events-none absolute bottom-0 right-0 h-3.5 w-3.5 border-b border-r border-white/20 transition-all duration-300 group-hover/slot:h-5 group-hover/slot:w-5 group-hover/slot:border-[#b9944c66]" />
-                                                    <span className="text-[11px] text-white/30">LOGO</span>
-                                                </div>
-                                                <span className="text-[11px] uppercase tracking-[0.14em] text-white/30">
-                                                    {label}
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ))}
-                            </div>
-                        </div> */}
-
-                        <div className="mt-60">
-                            {/* <div className="mx-auto mb-7 h-px w-11 bg-[#b9944c]" aria-hidden="true" /> */}
-                            <h3 className="mb-4 text-[clamp(1.5rem,3.6vw,2.25rem)] font-bold leading-tight tracking-tight text-[#f5f5f5]">
-                                For Business Inquiries &amp; Collabs
-                            </h3>
-                            <p className="mx-auto mb-8 max-w-[42ch] text-base leading-relaxed text-white/60">
-                                Interested in working together? Reach out to us for sponsorships,
-                                brand partnerships, and exciting collaborations.
-                            </p>
-                            <a
-                                href="/contact?sponsor=true"
-                                className="group/cta inline-flex items-center gap-2.5 rounded-full border border-white/30 px-7 py-4 text-[12.5px] font-semibold uppercase tracking-[0.12em] text-[#f5f5f5] transition-colors duration-300 hover:border-[#e63950] hover:text-[#e63950]"
-                            >
-                                <span>Get In Touch</span>
-                                <span
-                                    className="inline-block transition-transform duration-300 group-hover/cta:translate-x-1"
-                                    aria-hidden="true"
-                                >
-                                    &#8594;
-                                </span>
-                            </a>
-                        </div>
-                    </div>
-                </motion.div>
+                            <ChevronDown size={28} className="drop-shadow-[0_0_8px_rgba(234,40,69,0.8)]" />
+                        </motion.div>
+                    </motion.button>
+                </AnimatePresence>
             </div>
         </section>
     )
