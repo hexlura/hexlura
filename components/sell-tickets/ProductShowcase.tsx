@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useRef } from 'react'
 import styles from './selling.module.css'
 import HeroTicket from './HeroTicket'

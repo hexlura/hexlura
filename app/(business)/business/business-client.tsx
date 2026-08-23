@@ -418,7 +418,7 @@ export default function BusinessClient({
       {/* <IntroSequence> */}
       <SellingNavbar ctaHref={ctaHref} />
 
-      <HeroSection ctaHref={ctaHref} />
+      <HeroSection />
 
       <SellingMarquee />
 

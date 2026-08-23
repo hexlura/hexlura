@@ -5,7 +5,7 @@ import { Reveal } from './Reveal'
 import { ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function HeroSection({ ctaHref }: { ctaHref: string }) {
+export default function HeroSection() {
   const handleScrollDown = () => {
     const hero = document.getElementById('hero-section')
     if (hero) {
