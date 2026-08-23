@@ -1,8 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import styles from './selling.module.css'
-import HeroTicket from './HeroTicket'
 import BackgroundVideo from './BackgroundVideo'
 import { Reveal } from './Reveal'
 import { ChevronDown } from 'lucide-react'
