@@ -13,7 +13,7 @@ const KNOWN_PAGES = [
     { path: '/contact', label: 'Contact' },
     { path: '/privacy', label: 'Privacy Policy' },
     { path: '/terms', label: 'Terms & Conditions' },
-    { path: '/sell-tickets', label: 'Sell Tickets' },
+    { path: '/business', label: 'For Business' },
     { path: '/events', label: 'Events (Browse)' },
     { path: '/browse', label: 'Browse' },
     { path: '/cookies', label: 'Cookies' },

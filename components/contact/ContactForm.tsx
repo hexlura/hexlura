@@ -8,13 +8,13 @@ type Status = 'idle' | 'loading' | 'success' | 'error'
 
 const MAX_DETAILS = 2000
 
-export function ContactForm() {
+export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
     const pathname = usePathname()
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [organizationName, setOrganizationName] = useState('')
     const [phone, setPhone] = useState('')
-    const [topic, setTopic] = useState<ContactTopic | ''>('')
+    const [topic, setTopic] = useState<ContactTopic | ''>(lockedTopic ?? '')
     const [eventDetails, setEventDetails] = useState('')
     const [website, setWebsite] = useState('') // honeypot — must stay empty
     const [status, setStatus] = useState<Status>('idle')
@@ -81,7 +81,7 @@ export function ContactForm() {
         setEmail('')
         setOrganizationName('')
         setPhone('')
-        setTopic('')
+        setTopic(lockedTopic ?? '')
         setEventDetails('')
         setStatus('idle')
         setError('')
@@ -217,9 +217,10 @@ export function ContactForm() {
                     id="contact-topic"
                     name="topic"
                     required
+                    disabled={!!lockedTopic}
                     value={topic}
                     onChange={e => setTopic(e.target.value as ContactTopic)}
-                    className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition"
+                    className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     <option value="" disabled>Select a topic</option>
                     {CONTACT_TOPICS.map(t => (

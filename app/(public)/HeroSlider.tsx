@@ -201,7 +201,7 @@ function OrganiserSlide() {
                     ))}
                 </div>
                 <Link
-                    href="/sell-tickets"
+                    href="/business"
                     className="hero-org-btn"
                     style={{
                         display: 'inline-block',

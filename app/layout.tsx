@@ -56,7 +56,7 @@ export default async function RootLayout({
       <body
         className={`${fontBody.variable} ${fontHeading.variable} ${fontMono.variable} font-sans antialiased pb-16 md:pb-0`}
       >
-        <div className="overflow-x-hidden">
+        <div className="overflow-x-clip">
           <NextTopLoader
             color="#E63950"
             height={3}

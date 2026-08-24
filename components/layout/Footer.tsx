@@ -7,7 +7,7 @@ const discoverLinks = [
 ]
 
 const organiserLinks = [
-    { label: 'Sell Tickets', href: '/sell-tickets' },
+    { label: 'For Business', href: '/business' },
     { label: 'Become a Promoter', href: '/promoter/apply' },
 ]
 

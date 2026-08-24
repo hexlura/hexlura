@@ -1,13 +1,13 @@
 import { getStaticPageMetadata } from '@/lib/seo'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
-import SellTicketsClient from './sell-tickets-client'
+import BusinessClient from './business-client'
 
 export async function generateMetadata(): Promise<Metadata> {
-    return getStaticPageMetadata('/sell-tickets')
+    return getStaticPageMetadata('/business')
 }
 
-export default async function SellTicketsPage() {
+export default async function BusinessPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -33,5 +33,24 @@ export default async function SellTicketsPage() {
     const bucketName = asset?.bucket_name || 'terms-and-guidelines'
     const storagePath = asset?.storage_path || 'terms-and-guidelines/organiser/guidelines/hexlura-organiser-guide.pdf'
 
-    return <SellTicketsClient ctaHref={ctaHref} bucketName={bucketName} storagePath={storagePath} />
+    // Fetch trusted partners
+    const { data: partnersRaw } = await supabase
+        .from('trusted_parterns')
+        .select('name, image_url')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+
+    const partners = (partnersRaw || []).filter((p) => !!p.image_url) as Array<{
+        name: string
+        image_url: string
+    }>
+
+    return (
+        <BusinessClient
+            ctaHref={ctaHref}
+            bucketName={bucketName}
+            storagePath={storagePath}
+            partners={partners}
+        />
+    )
 }

@@ -172,6 +172,16 @@
     transform: translateY(-8px);
 }
 
+/* ---------- Sticky stack cards ---------- */
+.stackCardInner {
+    transform-origin: top center;
+    will-change: transform, filter;
+    transition: transform 0.15s linear, filter 0.15s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+    .stackCardInner { transition: none !important; }
+}
+
 /* ---------- Gradient text ---------- */
 .gradText {
     background: linear-gradient(90deg, #ea2845 0%, #ff4d67 45%, #7c5cff 100%);
@@ -195,6 +205,27 @@
 .faqAnswerInner { overflow: hidden; min-height: 0; }
 .faqIcon { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: inline-block; }
 .faqItem.open .faqIcon { transform: rotate(135deg); }
+
+/* ---------- Process pinned carousel ---------- */
+.stepCard {
+    transform: scale(0.94);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.5);
+    will-change: transform;
+}
+.stepCardActive {
+    transform: scale(1);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55);
+}
+.stepCardIcon {
+    opacity: 0.65;
+    transform: translateY(6px);
+    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.stepCardActive .stepCardIcon {
+    opacity: 1;
+    transform: translateY(0);
+}
 
 /* ---------- Connector line draw ---------- */
 .drawLine {
