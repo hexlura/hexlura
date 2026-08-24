@@ -7,6 +7,8 @@ import NewBookingOrganiser from '@/emails/new-booking-organiser'
 import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
 import { autoFollowOrganiser } from '@/lib/auto-follow'
+import { buildTicketDescriptors, type BookingItemRow } from '@/lib/tickets/descriptors'
+import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -103,7 +105,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
             promoter_commission_percent: promoterCommissionPercent,
             promoter_commission_pence: promoterCommissionPence,
         })
-        .select('id, booking_ref, event_id')
+        .select('id, booking_ref, event_id, ticket_access_token')
         .single()
 
     if (bookingError || !booking) {
@@ -277,7 +279,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
     // Send confirmation email
     const { data: eventData } = await supabase
         .from('events')
-        .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
+        .select('title, category, start_at, end_at, venue_name, venue_address, organiser_id')
         .eq('id', eventId)
         .single()
 
@@ -317,8 +319,46 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
         // Silently follow the organiser on the buyer's behalf
         void autoFollowOrganiser(userId, eventData.organiser_id)
 
-        // Buyer confirmation email
+        // Buyer confirmation email — one PDF ticket attached per physical ticket,
+        // so guests (anonymous-auth, single-browser session) can access their QR
+        // codes straight from the email with no login required.
         try {
+            const { data: itemRows } = await supabase
+                .from('booking_items')
+                .select('id, qr_code, quantity, ticket_type:ticket_types(name, is_group, group_size)')
+                .eq('booking_id', booking.id)
+
+            const { data: orgProfileForPdf } = await supabase
+                .from('organiser_profiles')
+                .select('org_name')
+                .eq('id', eventData.organiser_id)
+                .single()
+
+            const descriptors = buildTicketDescriptors((itemRows || []) as unknown as BookingItemRow[], booking.booking_ref)
+
+            const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
+                const pdfBuffer = await generateTicketPdf({
+                    eventName: eventData.title,
+                    eventCategory: eventData.category || undefined,
+                    eventDate,
+                    eventTime,
+                    venueName: eventData.venue_name || 'TBC',
+                    venueAddress: eventData.venue_address || '',
+                    organiserName: orgProfileForPdf?.org_name,
+                    bookingRef: booking.booking_ref,
+                    holderName: attendeeName || 'Ticket Holder',
+                    ticketName: descriptor.ticketName,
+                    token: descriptor.token,
+                    isCancelled: false,
+                    ticketIndex: i + 1,
+                    ticketTotal: descriptors.length,
+                })
+                return {
+                    filename: `${booking.booking_ref}-ticket-${i + 1}-of-${descriptors.length}.pdf`,
+                    content: pdfBuffer,
+                }
+            }))
+
             const html = await render(BookingConfirmation({
                 buyerName: attendeeName || 'Valued Customer',
                 eventName: eventData.title,
@@ -332,7 +372,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                 processingFeePence: orderProcessingFeePence,
                 discountPence,
                 totalPaid: `£${(totalPence / 100).toFixed(2)}`,
-                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
             }))
 
             await getResend().emails.send({
@@ -340,6 +380,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                 to: attendeeEmail,
                 subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
                 html,
+                attachments,
             })
         } catch (err) {
             console.error('Failed to send booking confirmation email:', err)

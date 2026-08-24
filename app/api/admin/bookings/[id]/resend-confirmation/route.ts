@@ -5,6 +5,8 @@ import { logAuditAction } from '@/lib/audit'
 import { render } from '@react-email/components'
 import BookingConfirmation from '@/emails/booking-confirmation'
 import { Resend } from 'resend'
+import { buildTicketDescriptors } from '@/lib/tickets/descriptors'
+import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -22,7 +24,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
 
     const { data: bookingRaw, error: bookingErr } = await adminClient
         .from('bookings')
-        .select('*, event:events(title, start_at, end_at, venue_name, venue_address), items:booking_items(*, ticket_type:ticket_types(name, price_pence))')
+        .select('*, event:events(title, category, start_at, end_at, venue_name, venue_address, organiser_id), items:booking_items(*, ticket_type:ticket_types(name, price_pence, is_group, group_size))')
         .eq('id', params.id)
         .single()
 
@@ -35,13 +37,14 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         booking_ref: string
         status: string
         user_id: string | null
+        ticket_access_token: string
         ticket_subtotal_pence: number | null
         booking_fee_pence: number | null
         discount_pence: number | null
         total_pence: number | null
         is_complimentary: boolean | null
-        event: { title: string; start_at: string; end_at: string | null; venue_name: string | null; venue_address: string | null } | null
-        items: { id: string; quantity: number; unit_price_pence: number | null; attendee_name: string | null; attendee_email: string | null; ticket_type: { name: string; price_pence: number } | null }[]
+        event: { title: string; category: string | null; start_at: string; end_at: string | null; venue_name: string | null; venue_address: string | null; organiser_id: string } | null
+        items: { id: string; quantity: number; qr_code: string | null; unit_price_pence: number | null; attendee_name: string | null; attendee_email: string | null; ticket_type: { name: string; price_pence: number; is_group?: boolean; group_size?: number } | null }[]
     }
 
     const booking = bookingRaw as unknown as Booking
@@ -111,6 +114,38 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.hexlura.com'
 
+    const { data: orgProfileForPdf } = await adminClient
+        .from('organiser_profiles')
+        .select('org_name')
+        .eq('id', booking.event.organiser_id)
+        .single()
+
+    const descriptors = buildTicketDescriptors(booking.items, booking.booking_ref)
+    const isCancelled = booking.status === 'refunded' || booking.status === 'cancelled'
+
+    const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
+        const pdfBuffer = await generateTicketPdf({
+            eventName: booking.event!.title,
+            eventCategory: booking.event!.category || undefined,
+            eventDate,
+            eventTime,
+            venueName: booking.event!.venue_name || 'TBC',
+            venueAddress: booking.event!.venue_address || '',
+            organiserName: orgProfileForPdf?.org_name,
+            bookingRef: booking.booking_ref,
+            holderName: buyerName,
+            ticketName: descriptor.ticketName,
+            token: descriptor.token,
+            isCancelled,
+            ticketIndex: i + 1,
+            ticketTotal: descriptors.length,
+        })
+        return {
+            filename: `${booking.booking_ref}-ticket-${i + 1}-of-${descriptors.length}.pdf`,
+            content: pdfBuffer,
+        }
+    }))
+
     const html = await render(BookingConfirmation({
         buyerName,
         eventName: booking.event.title,
@@ -121,7 +156,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         bookingRef: booking.booking_ref,
         ticketItems,
         totalPaid,
-        downloadUrl: `${appUrl}/api/tickets/${booking.booking_ref}/pdf`,
+        downloadUrl: `${appUrl}/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
     }))
 
     await getResend().emails.send({
@@ -130,6 +165,7 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         to: buyerEmail,
         subject: `Your tickets for ${booking.event.title} — ${booking.booking_ref} (resent)`,
         html,
+        attachments,
     })
 
     await logAuditAction({

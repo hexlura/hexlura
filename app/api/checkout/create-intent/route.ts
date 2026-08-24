@@ -203,8 +203,10 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    // Free booking — bypass Stripe entirely
-    if (ticketSubtotalPence === 0) {
+    // Free booking — bypass Stripe entirely. Covers both genuinely £0 ticket types and a
+    // promo code that discounts the ticket subtotal down to nothing (discountPence is already
+    // capped at ticketSubtotalPence above, so this is never negative).
+    if (ticketSubtotalPence - discountPence === 0) {
         const adminClient = createAdminClient()
 
         const { data: booking, error: bookingError } = await adminClient
@@ -213,9 +215,9 @@ export async function POST(request: NextRequest) {
                 user_id: user.id,
                 event_id,
                 status: 'confirmed',
-                ticket_subtotal_pence: 0,
+                ticket_subtotal_pence: ticketSubtotalPence,
                 booking_fee_pence: 0,
-                discount_pence: 0,
+                discount_pence: discountPence,
                 total_pence: 0,
                 promo_code_id: promoCodeId,
                 stripe_payment_intent_id: `free-${randomUUID()}`,
@@ -232,6 +234,18 @@ export async function POST(request: NextRequest) {
 
         if (bookingError || !booking) {
             return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
+        }
+
+        // Record redemption so max_uses is enforced on future checkouts
+        if (promoCodeId) {
+            const { data: promo } = await adminClient
+                .from('promo_codes').select('uses_count').eq('id', promoCodeId).single()
+            if (promo) {
+                await adminClient
+                    .from('promo_codes')
+                    .update({ uses_count: promo.uses_count + 1 })
+                    .eq('id', promoCodeId)
+            }
         }
 
         // Silently follow the organiser on the buyer's behalf
@@ -285,7 +299,7 @@ export async function POST(request: NextRequest) {
         // Send confirmation email
         const { data: eventInfo } = await adminClient
             .from('events')
-            .select('title, start_at, venue_name, venue_address')
+            .select('title, category, start_at, venue_name, venue_address, organiser_id')
             .eq('id', event_id)
             .single()
 
@@ -311,7 +325,10 @@ export async function POST(request: NextRequest) {
                 to: attendee_details.email,
                 buyerName: attendee_details.full_name,
                 bookingRef: booking.booking_ref,
+                bookingId: booking.id,
+                organiserId: eventInfo.organiser_id,
                 eventName: eventInfo.title,
+                eventCategory: eventInfo.category || undefined,
                 eventDate,
                 eventTime,
                 venueName: eventInfo.venue_name || 'TBC',

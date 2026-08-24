@@ -22,7 +22,6 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
     const [restoredToast, setRestoredToast] = useState(false);
     const [reservationExpiry, setReservationExpiry] = useState<Date | null>(null);
-    const [countdown, setCountdown] = useState('');
     const [reservationError, setReservationError] = useState('');
     const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'checking' | 'loading' | 'joined' | 'error'>('idle');
     // Shown in place of the CTA when the visitor has no session — choose to continue as
@@ -51,22 +50,13 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
 
     useEffect(() => {
         if (!reservationExpiry) return;
-        const tick = () => {
-            const diff = reservationExpiry.getTime() - Date.now();
-            if (diff <= 0) {
-                setCountdown('');
-                setReservationExpiry(null);
-                setReservationError('Reservation expired — please try again');
-                setCheckoutLoading(false);
-            } else {
-                const m = Math.floor(diff / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                setCountdown(`${m}:${s.toString().padStart(2, '0')}`);
-            }
-        };
-        tick();
-        const interval = setInterval(tick, 1000);
-        return () => clearInterval(interval);
+        const diff = reservationExpiry.getTime() - Date.now();
+        const timeout = setTimeout(() => {
+            setReservationExpiry(null);
+            setReservationError('Reservation expired — please try again');
+            setCheckoutLoading(false);
+        }, Math.max(0, diff));
+        return () => clearTimeout(timeout);
     }, [reservationExpiry]);
 
     const handleQuantityChange = (ticketId: string, value: number) => {
@@ -431,12 +421,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                     No payment required
                 </p>
             )}
-            {countdown && (
-                <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', margin: '4px 0 0' }}>
-                    Tickets held for {countdown}
-                </p>
-            )}
-            {!countdown && reservationError && (
+            {reservationError && (
                 <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', margin: '4px 0 0' }}>
                     {reservationError}
                 </p>

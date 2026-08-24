@@ -9,8 +9,14 @@ import { formatPence } from '@/lib/fees'
 
 interface AnalyticsClientProps {
     events: { id: string; title: string; category: string; start_at: string; status: string }[]
-    bookings: { id: string; event_id: string; ticket_subtotal_pence: number | null; created_at: string }[]
+    bookings: { id: string; event_id: string; ticket_subtotal_pence: number | null; discount_pence: number | null; created_at: string }[]
     items: { booking_id: string; quantity: number; ticket_type_id: string | null; ticket_type: { name?: string; event_id?: string } | null }[]
+}
+
+// ticket_subtotal_pence is always the pre-discount face value — net of any promo-code
+// discount is what was actually attributable to the organiser as revenue.
+function netTicketPence(b: { ticket_subtotal_pence: number | null; discount_pence: number | null }): number {
+    return (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0)
 }
 
 const ACCENT = '#E63950'
@@ -62,7 +68,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
         }
         for (const b of filteredBookings) {
             const k = new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-            if (k in map) map[k] += (b.ticket_subtotal_pence || 0) / 100
+            if (k in map) map[k] += netTicketPence(b) / 100
         }
         return Object.entries(map).map(([date, revenue]) => ({ date, 'Revenue (£)': Number(revenue.toFixed(2)) }))
     }, [filteredBookings, range])
@@ -86,7 +92,7 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
         for (const b of filteredBookings) {
             const ev = events.find(e => e.id === b.event_id)
             if (!ev) continue
-            map[ev.category] = (map[ev.category] || 0) + (b.ticket_subtotal_pence || 0) / 100
+            map[ev.category] = (map[ev.category] || 0) + netTicketPence(b) / 100
         }
         return Object.entries(map).map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
     }, [filteredBookings, events])
@@ -97,13 +103,13 @@ export function AnalyticsClient({ events, bookings, items }: AnalyticsClientProp
         const map: Record<string, number> = Object.fromEntries(days.map(d => [d, 0]))
         for (const b of filteredBookings) {
             const day = days[new Date(b.created_at).getDay()]
-            map[day] += (b.ticket_subtotal_pence || 0) / 100
+            map[day] += netTicketPence(b) / 100
         }
         return days.map(d => ({ day: d, 'Revenue (£)': Number(map[d].toFixed(2)) }))
     }, [filteredBookings])
 
     // Summary stats
-    const totalRevenue = filteredBookings.reduce((s, b) => s + (b.ticket_subtotal_pence || 0), 0)
+    const totalRevenue = filteredBookings.reduce((s, b) => s + netTicketPence(b), 0)
     const totalTickets = filteredItemsForBookings.reduce((s, i) => s + i.quantity, 0)
     const avgOrder = filteredBookings.length > 0 ? totalRevenue / filteredBookings.length : 0
     const topEvent = ticketsByEvent[0]?.event || 'N/A'

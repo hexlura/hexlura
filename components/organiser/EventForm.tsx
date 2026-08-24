@@ -12,7 +12,6 @@ import type { Event, TicketType } from '@/types'
 import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
 import { DateTimePicker } from '@/components/organiser/DateTimePicker'
-import { GuestListSection } from '@/components/organiser/GuestListSection'
 import { REFUND_POLICIES } from '@/lib/refund-policy'
 
 const RichTextEditor = dynamic(
@@ -892,21 +891,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                     </div>
                 )}
             </div>
-
-            {/* Section 5 — Guest List / Comp Tickets (only for existing events) */}
-            {event?.id && (
-                <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
-                    <SectionHeader num="05" title="Guest List / Comp Tickets" open={openSections.has(5)} onToggle={() => toggleSection(5)} />
-                    {openSections.has(5) && (
-                        <div className="pb-6">
-                            <GuestListSection
-                                eventId={event.id}
-                                ticketTypes={tickets.filter(t => t.id).map(t => ({ id: t.id!, name: t.name }))}
-                            />
-                        </div>
-                    )}
-                </div>
-            )}
 
             {/* Action bar */}
             <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 28 }}>

@@ -8,6 +8,8 @@ import NewBookingOrganiser from '@/emails/new-booking-organiser'
 import PayoutFailedAdmin from '@/emails/payout-failed-admin'
 import { sendOrganiserIdentityVerifiedEmail } from '@/lib/email'
 import { processPaymentIntentSucceeded } from '@/lib/process-payment-success'
+import { buildTicketDescriptors, type BookingItemRow } from '@/lib/tickets/descriptors'
+import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
 import { Resend } from 'resend'
 import { randomUUID } from 'crypto'
 
@@ -400,7 +402,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             promoter_commission_percent: promoterCommissionPercent,
             promoter_commission_pence: promoterCommissionPence,
         })
-        .select('id, booking_ref')
+        .select('id, booking_ref, ticket_access_token')
         .single()
 
     if (bookingError || !booking) {
@@ -570,7 +572,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     // Send confirmation email
     const { data: eventData } = await supabase
         .from('events')
-        .select('title, start_at, end_at, venue_name, venue_address, organiser_id')
+        .select('title, category, start_at, end_at, venue_name, venue_address, organiser_id')
         .eq('id', eventId)
         .single()
 
@@ -607,8 +609,44 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
             }
         }
 
-        // Buyer confirmation email
+        // Buyer confirmation email — one PDF ticket attached per physical ticket
         try {
+            const { data: itemRows } = await supabase
+                .from('booking_items')
+                .select('id, qr_code, quantity, ticket_type:ticket_types(name, is_group, group_size)')
+                .eq('booking_id', booking.id)
+
+            const { data: orgProfileForPdf } = await supabase
+                .from('organiser_profiles')
+                .select('org_name')
+                .eq('id', eventData.organiser_id)
+                .single()
+
+            const descriptors = buildTicketDescriptors((itemRows || []) as unknown as BookingItemRow[], booking.booking_ref)
+
+            const attachments = await Promise.all(descriptors.map(async (descriptor, i) => {
+                const pdfBuffer = await generateTicketPdf({
+                    eventName: eventData.title,
+                    eventCategory: eventData.category || undefined,
+                    eventDate,
+                    eventTime,
+                    venueName: eventData.venue_name || 'TBC',
+                    venueAddress: eventData.venue_address || '',
+                    organiserName: orgProfileForPdf?.org_name,
+                    bookingRef: booking.booking_ref,
+                    holderName: attendeeName || 'Ticket Holder',
+                    ticketName: descriptor.ticketName,
+                    token: descriptor.token,
+                    isCancelled: false,
+                    ticketIndex: i + 1,
+                    ticketTotal: descriptors.length,
+                })
+                return {
+                    filename: `${booking.booking_ref}-ticket-${i + 1}-of-${descriptors.length}.pdf`,
+                    content: pdfBuffer,
+                }
+            }))
+
             const html = await render(BookingConfirmation({
                 buyerName: attendeeName || 'Valued Customer',
                 eventName: eventData.title,
@@ -622,7 +660,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 processingFeePence: orderProcessingFeePence,
                 discountPence,
                 totalPaid: `£${(totalPence / 100).toFixed(2)}`,
-                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf`,
+                downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
             }))
 
             await getResend().emails.send({
@@ -630,6 +668,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
                 to: attendeeEmail,
                 subject: `Your tickets for ${eventData.title} are confirmed! 🎉`,
                 html,
+                attachments,
             })
         } catch (err) {
             console.error('Failed to send booking confirmation email:', err)

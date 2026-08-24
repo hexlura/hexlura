@@ -9,6 +9,7 @@ import { MetaPixelPurchase } from '@/components/analytics/MetaPixelEvents'
 
 interface BookingData {
     booking_ref: string
+    ticket_access_token: string | null
     total_pence: number | null
     event: {
         title: string
@@ -107,7 +108,7 @@ function SuccessContent() {
             if (bookingRef) {
                 const { data } = await supabase
                     .from('bookings')
-                    .select('booking_ref, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
+                    .select('booking_ref, ticket_access_token, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
                     .eq('booking_ref', bookingRef)
                     .eq('status', 'confirmed')
                     .single()
@@ -144,7 +145,7 @@ function SuccessContent() {
             while (attempts < maxAttempts) {
                 const { data } = await supabase
                     .from('bookings')
-                    .select('booking_ref, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
+                    .select('booking_ref, ticket_access_token, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
                     .eq('stripe_payment_intent_id', paymentIntent)
                     .eq('status', 'confirmed')
                     .single()
@@ -270,7 +271,7 @@ function SuccessContent() {
                             <div className="flex flex-col gap-2">
                                 {totalTickets <= 1 ? (
                                     <a
-                                        href={`/api/tickets/${booking.booking_ref}/pdf`}
+                                        href={`/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`}
                                         target="_blank"
                                         className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center gap-2"
                                     >
@@ -280,7 +281,7 @@ function SuccessContent() {
                                     Array.from({ length: totalTickets }, (_, i) => (
                                         <a
                                             key={i}
-                                            href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`}
+                                            href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}&token=${booking.ticket_access_token}`}
                                             target="_blank"
                                             className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
                                         >

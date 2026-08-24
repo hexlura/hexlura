@@ -25,7 +25,7 @@ export default async function AnalyticsPage() {
     const { data: bookings } = eventIds.length
         ? await serviceClient
             .from('bookings')
-            .select('id, event_id, ticket_subtotal_pence, created_at')
+            .select('id, event_id, ticket_subtotal_pence, discount_pence, created_at')
             .in('event_id', eventIds)
             .eq('status', 'confirmed')
         : { data: [] }
@@ -47,7 +47,7 @@ export default async function AnalyticsPage() {
             </div>
             <AnalyticsClient
                 events={(events || []) as { id: string; title: string; category: string; start_at: string; status: string }[]}
-                bookings={(bookings || []) as { id: string; event_id: string; ticket_subtotal_pence: number | null; created_at: string }[]}
+                bookings={(bookings || []) as { id: string; event_id: string; ticket_subtotal_pence: number | null; discount_pence: number | null; created_at: string }[]}
                 items={(items || []) as { booking_id: string; quantity: number; ticket_type_id: string | null; ticket_type: { name?: string; event_id?: string } | null }[]}
             />
         </div>

@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export default function CheckoutFlow() {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const { state, setItems, setEventInfo, setAttendeeDetails, setStep, ticketSubtotalPence, bookingFeePence, processingFeePence, totalPence } = useCheckout()
+    const { state, setItems, setEventInfo, setAttendeeDetails, setPromo, setStep, ticketSubtotalPence, discountPence, bookingFeePence, processingFeePence, totalPence } = useCheckout()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     // Shown when the visitor has no session at all — choose to continue as guest
@@ -27,65 +27,51 @@ export default function CheckoutFlow() {
     // as the guest starts typing their email, so this is captured once at load time.
     const [needsDetailsForm, setNeedsDetailsForm] = useState(false)
 
-    // Pre-payment comp code state — StepPayment does not mount until proceedToPayment is true
+    // StepPayment does not mount until proceedToPayment is true
     const [proceedToPayment, setProceedToPayment] = useState(false)
-    const [compCodeInput, setCompCodeInput] = useState('')
-    const [compApplied, setCompApplied] = useState<{ code: string; codeId: string } | null>(null)
-    const [compError, setCompError] = useState('')
-    const [compValidating, setCompValidating] = useState(false)
-    const [compAgreed, setCompAgreed] = useState(false)
-    const [confirmingComp, setConfirmingComp] = useState(false)
+    const [promoInput, setPromoInput] = useState('')
+    const [promoError, setPromoError] = useState('')
+    const [promoValidating, setPromoValidating] = useState(false)
 
-    async function applyCompCode() {
-        const trimmed = compCodeInput.trim()
+    async function applyPromoCode() {
+        const trimmed = promoInput.trim()
         if (!trimmed) return
-        setCompError('')
-        setCompValidating(true)
+        setPromoError('')
+        setPromoValidating(true)
         try {
-            const res = await fetch('/api/checkout/validate-comp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: trimmed, event_id: state.eventId }),
-            })
-            const data = await res.json()
-            if (data.valid) {
-                setCompApplied({ code: trimmed.toUpperCase(), codeId: data.code_id })
-                setCompError('')
-            } else {
-                setCompError(data.error || 'Invalid or expired code')
-            }
-        } catch {
-            setCompError('Network error. Please try again.')
-        }
-        setCompValidating(false)
-    }
-
-    async function handleCompBooking() {
-        if (!compApplied || !compAgreed) return
-        setConfirmingComp(true)
-        setCompError('')
-        try {
-            const res = await fetch('/api/bookings/complimentary', {
+            const res = await fetch('/api/promo/validate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    code: trimmed,
                     event_id: state.eventId,
-                    comp_code_id: compApplied.codeId,
-                    items: state.items.map(i => ({ ticket_type_id: i.ticket_type_id, quantity: i.quantity })),
-                    attendee_details: state.attendeeDetails,
+                    ticket_subtotal_pence: ticketSubtotalPence,
                 }),
             })
             const data = await res.json()
-            if (res.ok && data.booking_ref) {
-                window.location.href = `/checkout/success?booking_ref=${data.booking_ref}`
+            if (data.valid) {
+                setPromo({
+                    code: trimmed.toUpperCase(),
+                    code_id: data.code_id,
+                    discount_pence: data.discount_pence,
+                    discount_type: data.discount_type,
+                    discount_value: data.discount_value,
+                })
+                setPromoError('')
             } else {
-                setCompError(data.error || 'Booking failed. Please try again.')
-                setConfirmingComp(false)
+                setPromoError(data.error || 'Invalid or expired code')
+                setPromo(null)
             }
         } catch {
-            setCompError('Network error. Please try again.')
-            setConfirmingComp(false)
+            setPromoError('Network error. Please try again.')
         }
+        setPromoValidating(false)
+    }
+
+    function removePromoCode() {
+        setPromo(null)
+        setPromoInput('')
+        setPromoError('')
     }
 
     async function loadEventData() {
@@ -306,7 +292,10 @@ export default function CheckoutFlow() {
             {/* Pre-payment: comp code entry. StepPayment only mounts after proceedToPayment. */}
             {state.step === 1 && !proceedToPayment && (
                 <div className="space-y-6">
-                    {/* Mini order summary */}
+                    {/* Order summary — includes promo code entry inline, no separate box.
+                        Covers both partial discounts and 100%-off codes: when a code fully
+                        covers the ticket subtotal, create-intent bypasses Stripe entirely and
+                        confirms the booking directly. */}
                     <div className="bg-surface border border-border rounded-none p-5 text-sm space-y-2">
                         <p className="font-bold text-text text-base">{state.eventTitle}</p>
                         <p className="text-muted text-xs">{state.eventDate} · {state.venueName}</p>
@@ -329,10 +318,54 @@ export default function CheckoutFlow() {
                                     <span>{formatPence(processingFeePence)}</span>
                                 </div>
                             )}
+                            {discountPence > 0 && (
+                                <div className="flex justify-between text-success">
+                                    <span>Discount ({state.promo?.code})</span>
+                                    <span>-{formatPence(discountPence)}</span>
+                                </div>
+                            )}
                         </div>
+
+                        <div className="border-t border-border pt-3">
+                            {state.promo ? (
+                                <div className="bg-success/10 border border-success/20 rounded-none px-3 py-2 text-xs text-success flex items-center justify-between gap-3">
+                                    <span>
+                                        Code <span className="font-mono font-bold">{state.promo.code}</span> applied
+                                    </span>
+                                    <button type="button" onClick={removePromoCode} className="underline shrink-0">
+                                        Remove
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={promoInput}
+                                        onChange={e => setPromoInput(e.target.value.toUpperCase())}
+                                        onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
+                                        placeholder="Promo code"
+                                        className="flex-1 bg-surface border border-border rounded-none px-3 py-2 text-xs text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={applyPromoCode}
+                                        disabled={promoValidating || !promoInput.trim()}
+                                        className="px-4 border border-border text-xs text-muted hover:text-text hover:border-accent transition disabled:opacity-50"
+                                    >
+                                        {promoValidating ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                            )}
+                            {promoError && (
+                                <p className="text-xs text-accent mt-2">{promoError}</p>
+                            )}
+                        </div>
+
                         <div className="border-t border-border pt-2 flex justify-between font-bold">
                             <span className="text-text">Total</span>
-                            <span className="text-text">{formatPence(ticketSubtotalPence > 0 ? totalPence : ticketSubtotalPence)}</span>
+                            <span className="text-text">
+                                {formatPence(ticketSubtotalPence - discountPence <= 0 ? 0 : (ticketSubtotalPence > 0 ? totalPence : ticketSubtotalPence))}
+                            </span>
                         </div>
                     </div>
 
@@ -371,94 +404,18 @@ export default function CheckoutFlow() {
                         </div>
                     )}
 
-                    {/* Guest list code input */}
-                    <div className="bg-surface border border-border rounded-none p-5 space-y-4">
-                        <div>
-                            <p className="text-sm font-semibold text-text mb-1">Have a guest list code?</p>
-                            <p className="text-xs text-muted">Enter it here to receive a complimentary ticket. Leave blank to proceed to payment.</p>
-                        </div>
-
-                        {compApplied ? (
-                            <div className="space-y-4">
-                                <div className="bg-success/10 border border-success/20 rounded-none px-4 py-3 text-sm text-success">
-                                    Complimentary ticket applied — <span className="font-mono font-bold">{compApplied.code}</span>
-                                </div>
-                                <label className="flex items-start gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={compAgreed}
-                                        onChange={e => setCompAgreed(e.target.checked)}
-                                        className="mt-1 h-4 w-4 rounded border-border accent-accent"
-                                    />
-                                    <span className="text-sm text-muted">
-                                        I agree to the{' '}
-                                        <a href="/terms" className="text-accent hover:underline">Terms of Service</a> and{' '}
-                                        <a href="/refund-policy" className="text-accent hover:underline">Refund Policy</a>
-                                    </span>
-                                </label>
-                                {compError && (
-                                    <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{compError}</p>
-                                )}
-                                {needsDetailsForm && !detailsValid && (
-                                    <p className="text-xs text-muted">Please fill in your name and a valid email above to continue.</p>
-                                )}
-                                <button
-                                    onClick={handleCompBooking}
-                                    disabled={confirmingComp || !compAgreed || !detailsValid}
-                                    className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {confirmingComp && (
-                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                        </svg>
-                                    )}
-                                    {confirmingComp ? 'Confirming...' : 'Confirm Booking'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setCompApplied(null); setCompCodeInput(''); setCompAgreed(false) }}
-                                    className="text-xs text-muted hover:text-text w-full text-center"
-                                >
-                                    Remove code
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={compCodeInput}
-                                        onChange={e => setCompCodeInput(e.target.value.toUpperCase())}
-                                        onKeyDown={e => e.key === 'Enter' && applyCompCode()}
-                                        placeholder="e.g. GUEST-ABC123"
-                                        className="flex-1 bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={applyCompCode}
-                                        disabled={compValidating || !compCodeInput.trim()}
-                                        className="px-4 border border-border text-sm text-muted hover:text-text hover:border-accent transition disabled:opacity-50"
-                                    >
-                                        {compValidating ? '...' : 'Apply'}
-                                    </button>
-                                </div>
-                                {compError && (
-                                    <p className="text-sm text-accent">{compError}</p>
-                                )}
-                                {needsDetailsForm && !detailsValid && (
-                                    <p className="text-xs text-muted">Please fill in your name and a valid email above to continue.</p>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => setProceedToPayment(true)}
-                                    disabled={!detailsValid}
-                                    className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Continue to Payment →
-                                </button>
-                            </div>
+                    <div className="space-y-2">
+                        {needsDetailsForm && !detailsValid && (
+                            <p className="text-xs text-muted text-center">Please fill in your name and a valid email above to continue.</p>
                         )}
+                        <button
+                            type="button"
+                            onClick={() => setProceedToPayment(true)}
+                            disabled={!detailsValid}
+                            className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Continue to Payment →
+                        </button>
                     </div>
                 </div>
             )}
