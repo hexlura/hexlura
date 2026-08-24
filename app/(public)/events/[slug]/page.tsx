@@ -1,5 +1,5 @@
 import React from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { Badge } from '@/components/ui/Badge';
@@ -66,6 +66,19 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
     ]);
 
     if (error || !eventData) {
+        // Slug may have been changed since this URL was last shared — check
+        // whether it matches a previous slug before giving up with a 404.
+        const { data: historyRow } = await serviceClient
+            .from('event_slug_history')
+            .select('events(slug)')
+            .eq('old_slug', slug)
+            .maybeSingle();
+
+        const currentSlug = (historyRow?.events as { slug?: string } | null)?.slug;
+        if (currentSlug) {
+            permanentRedirect(`/events/${currentSlug}`);
+        }
+
         notFound();
     }
 

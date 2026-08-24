@@ -105,6 +105,11 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const router = useRouter()
     const feeConfig = useFeeConfig()
     const isEdit = !!event
+    // Once an event has left draft, its slug may already be shared publicly
+    // (social posts, flyers). Lock it so a save can't silently break those
+    // links — old links are also caught by a slug-history redirect as a
+    // second line of defence, but preventing the change at the source is better.
+    const slugLocked = isEdit && event?.status !== 'draft'
 
     // Section 01
     const [title, setTitle] = useState(event?.title || '')
@@ -262,7 +267,12 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         // input that's only auto-sanitized while creating a brand-new event — once
         // editing, nothing else cleans it, so a manually retyped value with spaces/
         // caps/punctuation would otherwise reach the DB (and the public URL) as-is.
-        if (existingId) return { id: existingId, slug: toSlug(slug || event?.slug || '') || event?.slug || '' }
+        // slugLocked events always use the original slug, ignoring form state, so
+        // a locked (disabled) field can never reach the DB as a changed value.
+        if (existingId) {
+            if (slugLocked) return { id: existingId, slug: event?.slug || '' }
+            return { id: existingId, slug: toSlug(slug || event?.slug || '') || event?.slug || '' }
+        }
 
         const baseSlug = toSlug(slug) || toSlug(title) || `event-${Date.now()}`
         let candidate = baseSlug
@@ -671,7 +681,21 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                             </div>
                             <div>
                                 <label className={labelClass}>Event Slug</label>
-                                <input type="text" value={slug} onChange={e => setSlug(e.target.value)} onBlur={e => setSlug(toSlug(e.target.value))} className={inputClass} placeholder="your-event-slug" />
+                                <input
+                                    type="text"
+                                    value={slug}
+                                    onChange={e => setSlug(e.target.value)}
+                                    onBlur={e => setSlug(toSlug(e.target.value))}
+                                    className={slugLocked ? `${inputClass} opacity-60 cursor-not-allowed` : inputClass}
+                                    placeholder="your-event-slug"
+                                    disabled={slugLocked}
+                                    readOnly={slugLocked}
+                                />
+                                {slugLocked && (
+                                    <p className="text-muted text-xs mt-1">
+                                        Locked once published — changing it would break any links already shared. Contact support if you need it changed.
+                                    </p>
+                                )}
                             </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Venue Name *</label>
