@@ -107,7 +107,7 @@ export async function GET(request: Request) {
 
     const { data: codes, error: codesError } = await adminClient
         .from('promo_codes')
-        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence, ticket_type:ticket_types(name)')
+        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence, ticket_type:ticket_types!ticket_type_id(name)')
         .eq('event_id', eventId)
         .eq('is_complimentary', false)
         .order('created_at', { ascending: false })
