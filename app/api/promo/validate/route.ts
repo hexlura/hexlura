@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { promoLimiter, getIP } from '@/lib/rate-limit'
 
 interface ValidateRequest {
@@ -77,14 +78,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (promo.max_uses_per_customer !== null && (user?.id || email)) {
-        const filters = [user?.id ? `user_id.eq.${user.id}` : null, email ? `email.eq.${email}` : null]
-            .filter(Boolean).join(',')
-        const { count } = await supabase
-            .from('promo_code_redemptions')
-            .select('id', { count: 'exact', head: true })
-            .eq('promo_code_id', promo.id)
-            .or(filters)
-        if ((count || 0) >= promo.max_uses_per_customer) {
+        // Admin client — the RLS policies on promo_code_redemptions only grant
+        // SELECT to organisers (their own codes) and admins, so a buyer's own
+        // session can never see their own redemption rows here otherwise,
+        // which would make this check silently pass for everyone.
+        const adminForCheck = createAdminClient()
+        // Two separate .eq() queries instead of a single .or() filter string —
+        // avoids interpolating a raw email into a PostgREST filter expression.
+        const [byUser, byEmail] = await Promise.all([
+            user?.id
+                ? adminForCheck.from('promo_code_redemptions').select('id', { count: 'exact', head: true })
+                    .eq('promo_code_id', promo.id).eq('user_id', user.id)
+                : Promise.resolve({ count: 0 }),
+            email
+                ? adminForCheck.from('promo_code_redemptions').select('id', { count: 'exact', head: true })
+                    .eq('promo_code_id', promo.id).eq('email', email)
+                : Promise.resolve({ count: 0 }),
+        ])
+        const usesSoFar = Math.max(byUser.count || 0, byEmail.count || 0)
+        if (usesSoFar >= promo.max_uses_per_customer) {
             return NextResponse.json({ valid: false, error: 'You\'ve already used this code' })
         }
     }

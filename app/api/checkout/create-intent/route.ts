@@ -168,12 +168,21 @@ export async function POST(request: NextRequest) {
             let customerUsesOk = true
             if (promo.max_uses_per_customer !== null) {
                 const adminForCheck = createAdminClient()
-                const { count } = await adminForCheck
-                    .from('promo_code_redemptions')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('promo_code_id', promo.id)
-                    .or(`user_id.eq.${user.id},email.eq.${attendee_details.email}`)
-                customerUsesOk = (count || 0) < promo.max_uses_per_customer
+                // Two separate .eq() queries instead of building a single .or() filter
+                // string — avoids interpolating a raw email into a PostgREST filter
+                // expression, where an unescaped comma/parenthesis could break the
+                // query or manipulate its logic. max() rather than sum() so a single
+                // redemption matching both identities isn't double-counted.
+                const [byUser, byEmail] = await Promise.all([
+                    adminForCheck.from('promo_code_redemptions').select('id', { count: 'exact', head: true })
+                        .eq('promo_code_id', promo.id).eq('user_id', user.id),
+                    attendee_details.email
+                        ? adminForCheck.from('promo_code_redemptions').select('id', { count: 'exact', head: true })
+                            .eq('promo_code_id', promo.id).eq('email', attendee_details.email)
+                        : Promise.resolve({ count: 0 }),
+                ])
+                const usesSoFar = Math.max(byUser.count || 0, byEmail.count || 0)
+                customerUsesOk = usesSoFar < promo.max_uses_per_customer
             }
 
             const now = new Date().toISOString()

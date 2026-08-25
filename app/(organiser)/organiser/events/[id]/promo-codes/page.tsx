@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { createClient } from '@/lib/supabase/client'
 
@@ -50,7 +50,6 @@ function discountLabel(code: PromoCode): string {
 
 export default function PromoCodesPage() {
     const params = useParams<{ id: string }>()
-    const searchParams = useSearchParams()
     const eventId = params.id
 
     const [codes, setCodes] = useState<PromoCode[]>([])
@@ -108,11 +107,6 @@ export default function PromoCodesPage() {
         })
     }, [eventId])
 
-    // Pre-select scope when arriving from the Promo Codes sidebar picker flow
-    useEffect(() => {
-        const preselect = searchParams.get('ticket_type_id')
-        if (preselect) setTicketTypeId(preselect)
-    }, [searchParams])
 
     async function toggleUsage(codeId: string) {
         if (openUsageId === codeId) {
