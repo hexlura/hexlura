@@ -91,7 +91,13 @@ export default function PromoCodesPage() {
         setLoading(true)
         const res = await fetch(`/api/organiser/promo-codes?event_id=${eventId}`)
         const json = await res.json()
-        setCodes(json.codes || [])
+        if (!res.ok) {
+            setError(json.error || 'Failed to load promo codes.')
+            setCodes([])
+        } else {
+            setError('')
+            setCodes(json.codes || [])
+        }
         setLoading(false)
     }, [eventId])
 

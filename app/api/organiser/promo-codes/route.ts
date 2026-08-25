@@ -105,12 +105,17 @@ export async function GET(request: Request) {
         .from('events').select('id').eq('id', eventId).eq('organiser_id', organiser.id).single()
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
 
-    const { data: codes } = await adminClient
+    const { data: codes, error: codesError } = await adminClient
         .from('promo_codes')
         .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence, ticket_type:ticket_types(name)')
         .eq('event_id', eventId)
         .eq('is_complimentary', false)
         .order('created_at', { ascending: false })
+
+    if (codesError) {
+        console.error('promo-codes GET query failed:', codesError.message)
+        return NextResponse.json({ error: codesError.message }, { status: 500 })
+    }
 
     return NextResponse.json({ codes: codes || [] })
 }
