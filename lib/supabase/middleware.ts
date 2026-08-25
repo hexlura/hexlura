@@ -74,20 +74,21 @@ export async function updateSession(request: NextRequest) {
         return supabaseResponse
     }
 
-    // Step 3: Authenticated user — fetch role
+    // Step 3: Authenticated user — fetch role + team privilege + promoter status
+    // in a single round-trip (get_middleware_context RPC, migration 071) instead
+    // of up to 3 sequential queries — same data, same downstream decisions below,
+    // just fetched once instead of conditionally three times.
     const serviceClient = createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
         { auth: { persistSession: false } }
     )
 
-    const { data: profile } = await serviceClient
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+    const { data: ctx } = await serviceClient
+        .rpc('get_middleware_context', { p_user_id: user.id })
+        .single() as { data: { role: string; team_privilege: string | null; has_promoter_row: boolean } | null }
 
-    const role = profile?.role || 'user'
+    const role = ctx?.role || 'user'
 
     // Guest (anonymous auth) users get a real session but no profile data — /account would
     // render a broken-looking empty page for them, so send them to /bookings instead.
@@ -95,30 +96,8 @@ export async function updateSession(request: NextRequest) {
         return redirectTo('/bookings')
     }
 
-    // For 'user' role, check organiser_team privilege once for all relevant route types
-    let teamPrivilege: string | null = null
-    if (role === 'user' && (isAuthRoute || isCheckinRoute || isOrganiserCheckinPath || isOrganiserRoute)) {
-        const { data: teamRows } = await serviceClient
-            .from('organiser_team')
-            .select('privilege')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .limit(1)
-        teamPrivilege = Array.isArray(teamRows) && teamRows[0] ? teamRows[0].privilege : null
-    }
-
-    const isTeamDoorStaff = teamPrivilege === 'door_staff'
-
-    // Check promoter status when relevant (auth-route redirect or promoter-route gating)
-    let hasPromoterRow = false
-    if (isPromoterRoute || isAuthRoute) {
-        const { data: promoterRow } = await serviceClient
-            .from('promoter_profiles')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle()
-        hasPromoterRow = !!promoterRow
-    }
+    const isTeamDoorStaff = ctx?.team_privilege === 'door_staff'
+    const hasPromoterRow = !!ctx?.has_promoter_row
 
     // Authenticated user on auth pages → redirect to their dashboard
     if (isAuthRoute) {
