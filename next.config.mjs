@@ -1,5 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // pdfkit (used by @react-pdf/renderer for ticket PDFs) requires its standard
+    // font files at runtime via a resolution path Next.js's output file tracing
+    // doesn't statically detect, so they get silently dropped from the deployed
+    // serverless bundle — breaking every route that generates a ticket PDF
+    // (booking confirmation emails, admin resend, direct ticket download) with
+    // "Cannot find module '.../pdfkit/js/standard-fonts/Helvetica.cjs'" in prod
+    // while working fine locally. Force-include them explicitly.
+    experimental: {
+        outputFileTracingIncludes: {
+            '/api/**/*': ['./node_modules/pdfkit/js/standard-fonts/**/*', './node_modules/pdfkit/js/data/**/*'],
+        },
+    },
     async headers() {
         return [
             {
