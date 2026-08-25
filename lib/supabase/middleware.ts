@@ -84,9 +84,16 @@ export async function updateSession(request: NextRequest) {
         { auth: { persistSession: false } }
     )
 
-    const { data: ctx } = await serviceClient
+    const { data: ctx, error: ctxError } = await serviceClient
         .rpc('get_middleware_context', { p_user_id: user.id })
-        .single() as { data: { role: string; team_privilege: string | null; has_promoter_row: boolean } | null }
+        .single() as { data: { role: string; team_privilege: string | null; has_promoter_row: boolean } | null; error: { message?: string } | null }
+
+    // A silent fallback here reads as a routing bug (everyone bounced to '/')
+    // rather than the missing-function/permissions issue it actually is — log
+    // it loudly so it's obvious in Vercel logs instead of looking like broken RBAC.
+    if (ctxError) {
+        console.error('get_middleware_context RPC failed — falling back to role "user":', ctxError.message)
+    }
 
     const role = ctx?.role || 'user'
 
