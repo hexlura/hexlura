@@ -6,6 +6,8 @@ interface ValidateRequest {
     code: string
     event_id: string
     ticket_subtotal_pence: number
+    items?: { ticket_type_id: string; price_pence: number; quantity: number }[]
+    email?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -19,13 +21,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json()) as ValidateRequest
-    const { code, event_id, ticket_subtotal_pence } = body
+    const { code, event_id, ticket_subtotal_pence, items, email } = body
 
     if (!code) {
         return NextResponse.json({ valid: false, error: 'No code provided' }, { status: 400 })
     }
 
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
     const { data: promo } = await supabase
         .from('promo_codes')
@@ -60,15 +63,44 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ valid: false, error: 'Minimum order not met' })
     }
 
+    // A ticket_type_id-scoped code only counts against that ticket type's portion
+    // of the cart — not the whole order — and doesn't apply if that ticket type
+    // isn't in the cart at all.
+    let eligiblePence = ticket_subtotal_pence
+    if (promo.ticket_type_id) {
+        eligiblePence = (items || [])
+            .filter(i => i.ticket_type_id === promo.ticket_type_id)
+            .reduce((sum, i) => sum + i.price_pence * i.quantity, 0)
+        if (eligiblePence <= 0) {
+            return NextResponse.json({ valid: false, error: 'This code doesn\'t apply to any ticket in your cart' })
+        }
+    }
+
+    if (promo.max_uses_per_customer !== null && (user?.id || email)) {
+        const filters = [user?.id ? `user_id.eq.${user.id}` : null, email ? `email.eq.${email}` : null]
+            .filter(Boolean).join(',')
+        const { count } = await supabase
+            .from('promo_code_redemptions')
+            .select('id', { count: 'exact', head: true })
+            .eq('promo_code_id', promo.id)
+            .or(filters)
+        if ((count || 0) >= promo.max_uses_per_customer) {
+            return NextResponse.json({ valid: false, error: 'You\'ve already used this code' })
+        }
+    }
+
     let discount_pence: number
     if (promo.discount_type === 'percent') {
-        discount_pence = Math.round(ticket_subtotal_pence * promo.discount_value / 100)
+        discount_pence = Math.round(eligiblePence * promo.discount_value / 100)
+        if (promo.max_discount_pence !== null) {
+            discount_pence = Math.min(discount_pence, promo.max_discount_pence)
+        }
     } else {
         discount_pence = promo.discount_value
     }
 
-    // Cap discount at ticket subtotal
-    discount_pence = Math.min(discount_pence, ticket_subtotal_pence)
+    // Cap discount at the eligible (scoped) subtotal
+    discount_pence = Math.min(discount_pence, eligiblePence)
 
     return NextResponse.json({
         valid: true,

@@ -46,6 +46,8 @@ export default function CheckoutFlow() {
                     code: trimmed,
                     event_id: state.eventId,
                     ticket_subtotal_pence: ticketSubtotalPence,
+                    items: state.items.map(i => ({ ticket_type_id: i.ticket_type_id, price_pence: i.price_pence, quantity: i.quantity })),
+                    email: state.attendeeDetails.email || undefined,
                 }),
             })
             const data = await res.json()

@@ -93,6 +93,9 @@ export async function POST(request: NextRequest) {
     // Verify ticket types and calculate prices server-side
     let ticketSubtotalPence = 0
     let totalBookingFeePence = 0
+    // Per-ticket-type subtotal, so a promo code scoped to one ticket type can
+    // be validated against only that portion of the cart, not the whole order.
+    const subtotalByTicketType: Record<string, number> = {}
 
     for (const item of items) {
         const { data: ticketType } = await supabase
@@ -137,7 +140,9 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        ticketSubtotalPence += ticketType.price_pence * item.quantity
+        const linePence = ticketType.price_pence * item.quantity
+        ticketSubtotalPence += linePence
+        subtotalByTicketType[item.ticket_type_id] = (subtotalByTicketType[item.ticket_type_id] || 0) + linePence
         totalBookingFeePence += calculateBookingFee(ticketType.price_pence, item.quantity, feeConfig)
     }
 
@@ -153,21 +158,44 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (promo) {
+            // A ticket_type_id-scoped code only counts against that ticket type's
+            // portion of the cart — not the whole order — and doesn't apply at all
+            // if that ticket type isn't in the cart.
+            const eligiblePence = promo.ticket_type_id
+                ? (subtotalByTicketType[promo.ticket_type_id] || 0)
+                : ticketSubtotalPence
+
+            let customerUsesOk = true
+            if (promo.max_uses_per_customer !== null) {
+                const adminForCheck = createAdminClient()
+                const { count } = await adminForCheck
+                    .from('promo_code_redemptions')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('promo_code_id', promo.id)
+                    .or(`user_id.eq.${user.id},email.eq.${attendee_details.email}`)
+                customerUsesOk = (count || 0) < promo.max_uses_per_customer
+            }
+
             const now = new Date().toISOString()
             const isValid =
                 (!promo.valid_from || now >= promo.valid_from) &&
                 (!promo.valid_to || now <= promo.valid_to) &&
                 (promo.max_uses === null || promo.uses_count < promo.max_uses) &&
                 (!promo.event_id || promo.event_id === event_id) &&
-                ticketSubtotalPence >= (promo.min_order_pence || 0)
+                eligiblePence > 0 &&
+                ticketSubtotalPence >= (promo.min_order_pence || 0) &&
+                customerUsesOk
 
             if (isValid) {
                 if (promo.discount_type === 'percent') {
-                    discountPence = Math.round(ticketSubtotalPence * promo.discount_value / 100)
+                    discountPence = Math.round(eligiblePence * promo.discount_value / 100)
+                    if (promo.max_discount_pence !== null) {
+                        discountPence = Math.min(discountPence, promo.max_discount_pence)
+                    }
                 } else {
                     discountPence = promo.discount_value
                 }
-                discountPence = Math.min(discountPence, ticketSubtotalPence)
+                discountPence = Math.min(discountPence, eligiblePence)
                 promoCodeId = promo.id
             }
         }
@@ -236,7 +264,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
         }
 
-        // Record redemption so max_uses is enforced on future checkouts
+        // Record redemption so max_uses (and max_uses_per_customer) are enforced on future checkouts
         if (promoCodeId) {
             const { data: promo } = await adminClient
                 .from('promo_codes').select('uses_count').eq('id', promoCodeId).single()
@@ -246,6 +274,13 @@ export async function POST(request: NextRequest) {
                     .update({ uses_count: promo.uses_count + 1 })
                     .eq('id', promoCodeId)
             }
+            await adminClient.from('promo_code_redemptions').insert({
+                promo_code_id: promoCodeId,
+                booking_id: booking.id,
+                user_id: user.id,
+                email: attendee_details.email,
+                discount_pence: discountPence,
+            })
         }
 
         // Silently follow the organiser on the buyer's behalf

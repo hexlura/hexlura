@@ -46,6 +46,25 @@ function validateFields(body: Record<string, unknown>) {
         }
     }
 
+    let max_uses_per_customer: number | null = null
+    if (body.max_uses_per_customer !== undefined && body.max_uses_per_customer !== null && body.max_uses_per_customer !== '') {
+        max_uses_per_customer = Number(body.max_uses_per_customer)
+        if (!Number.isInteger(max_uses_per_customer) || max_uses_per_customer < 1) {
+            return { error: 'max_uses_per_customer must be a positive whole number' }
+        }
+    }
+
+    let max_discount_pence: number | null = null
+    if (body.max_discount_pence !== undefined && body.max_discount_pence !== null && body.max_discount_pence !== '') {
+        max_discount_pence = Number(body.max_discount_pence)
+        if (!Number.isInteger(max_discount_pence) || max_discount_pence < 1) {
+            return { error: 'max_discount_pence must be a positive whole number' }
+        }
+        if (discount_type === 'fixed') {
+            return { error: 'max_discount_pence only applies to percent-off codes' }
+        }
+    }
+
     let valid_from: string | null = null
     if (body.valid_from) {
         const d = new Date(body.valid_from as string)
@@ -64,7 +83,7 @@ function validateFields(body: Record<string, unknown>) {
         return { error: 'valid_to must be after valid_from' }
     }
 
-    return { discount_type, discount_value, min_order_pence, max_uses, valid_from, valid_to }
+    return { discount_type, discount_value, min_order_pence, max_uses, max_uses_per_customer, max_discount_pence, valid_from, valid_to }
 }
 
 export async function GET(request: Request) {
@@ -88,7 +107,7 @@ export async function GET(request: Request) {
 
     const { data: codes } = await adminClient
         .from('promo_codes')
-        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at')
+        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence, ticket_type:ticket_types(name)')
         .eq('event_id', eventId)
         .eq('is_complimentary', false)
         .order('created_at', { ascending: false })
@@ -102,7 +121,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { event_id, code } = body
+    const { event_id, code, ticket_type_id } = body
 
     if (!event_id) return NextResponse.json({ error: 'event_id required' }, { status: 400 })
 
@@ -119,6 +138,14 @@ export async function POST(request: Request) {
         .from('events').select('id').eq('id', event_id).eq('organiser_id', organiser.id).single()
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
 
+    let ticketTypeId: string | null = null
+    if (ticket_type_id) {
+        const { data: ticketType } = await adminClient
+            .from('ticket_types').select('id').eq('id', ticket_type_id).eq('event_id', event_id).single()
+        if (!ticketType) return NextResponse.json({ error: 'Ticket type not found for this event' }, { status: 400 })
+        ticketTypeId = ticketType.id
+    }
+
     const rawCode = typeof code === 'string' ? code.trim() : ''
     if (rawCode && !/^[A-Z0-9-]{3,30}$/i.test(rawCode)) {
         return NextResponse.json({ error: 'Code must be 3-30 letters, numbers, or hyphens' }, { status: 400 })
@@ -132,15 +159,18 @@ export async function POST(request: Request) {
             organiser_id: organiser.id,
             code: finalCode,
             is_complimentary: false,
+            ticket_type_id: ticketTypeId,
             discount_type: validated.discount_type,
             discount_value: validated.discount_value,
             min_order_pence: validated.min_order_pence,
             max_uses: validated.max_uses,
+            max_uses_per_customer: validated.max_uses_per_customer,
+            max_discount_pence: validated.max_discount_pence,
             uses_count: 0,
             valid_from: validated.valid_from,
             valid_to: validated.valid_to,
         })
-        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at')
+        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence')
         .single()
 
     if (error) {

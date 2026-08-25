@@ -236,7 +236,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
         }
     }
 
-    // Increment promo code usage
+    // Increment promo code usage + record the redemption (max_uses_per_customer enforcement)
     if (promoCodeId) {
         const { data: promo } = await supabase
             .from('promo_codes')
@@ -250,6 +250,13 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                 .update({ uses_count: promo.uses_count + 1 })
                 .eq('id', promoCodeId)
         }
+        await supabase.from('promo_code_redemptions').insert({
+            promo_code_id: promoCodeId,
+            booking_id: booking.id,
+            user_id: userId,
+            email: attendeeEmail,
+            discount_pence: discountPence,
+        })
     }
 
     // Platform model: if use_destination_charge (or a direct charge), Stripe already

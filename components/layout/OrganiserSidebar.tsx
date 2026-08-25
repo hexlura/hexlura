@@ -139,6 +139,16 @@ const navLinks = [
         ),
     },
     {
+        href: '/organiser/promo-codes',
+        label: 'Promo Codes',
+        exact: false,
+        icon: (
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                <path fillRule="evenodd" d="M17.707 9.293l-7-7A1 1 0 0010 2H4a2 2 0 00-2 2v6a1 1 0 00.293.707l7 7a1 1 0 001.414 0l7-7a1 1 0 000-1.414zM6 6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+            </svg>
+        ),
+    },
+    {
         href: '/organiser/settings',
         label: 'Settings',
         exact: false,

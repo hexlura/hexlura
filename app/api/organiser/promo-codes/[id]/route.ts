@@ -15,14 +15,14 @@ async function resolveOwnedCode(adminClient: ReturnType<typeof createAdminClient
 
     const { data: existing } = await adminClient
         .from('promo_codes')
-        .select('id, organiser_id, is_complimentary')
+        .select('id, organiser_id, is_complimentary, event_id, discount_type')
         .eq('id', codeId)
         .eq('organiser_id', organiser.id)
         .eq('is_complimentary', false)
         .single()
     if (!existing) return { error: 'Promo code not found', status: 404 } as const
 
-    return { organiserId: organiser.id } as const
+    return { organiserId: organiser.id, eventId: existing.event_id as string, discountType: existing.discount_type as string } as const
 }
 
 export async function PATCH(request: Request, { params }: RouteParams) {
@@ -46,7 +46,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     if (body.discount_value !== undefined) {
         const discount_value = Number(body.discount_value)
-        const type = (updates.discount_type as string) || undefined
+        // Fall back to the code's actual stored discount_type when this request
+        // doesn't also change it — otherwise editing only the value on an
+        // existing code skips this check entirely.
+        const type = (updates.discount_type as string) || owned.discountType
         if (!Number.isInteger(discount_value)) {
             return NextResponse.json({ error: 'discount_value must be a whole number' }, { status: 400 })
         }
@@ -76,6 +79,45 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 return NextResponse.json({ error: 'max_uses must be a positive whole number' }, { status: 400 })
             }
             updates.max_uses = max_uses
+        }
+    }
+
+    if (body.max_uses_per_customer !== undefined) {
+        if (body.max_uses_per_customer === null || body.max_uses_per_customer === '') {
+            updates.max_uses_per_customer = null
+        } else {
+            const max_uses_per_customer = Number(body.max_uses_per_customer)
+            if (!Number.isInteger(max_uses_per_customer) || max_uses_per_customer < 1) {
+                return NextResponse.json({ error: 'max_uses_per_customer must be a positive whole number' }, { status: 400 })
+            }
+            updates.max_uses_per_customer = max_uses_per_customer
+        }
+    }
+
+    if (body.max_discount_pence !== undefined) {
+        if (body.max_discount_pence === null || body.max_discount_pence === '') {
+            updates.max_discount_pence = null
+        } else {
+            const max_discount_pence = Number(body.max_discount_pence)
+            if (!Number.isInteger(max_discount_pence) || max_discount_pence < 1) {
+                return NextResponse.json({ error: 'max_discount_pence must be a positive whole number' }, { status: 400 })
+            }
+            const type = (updates.discount_type as string) || owned.discountType
+            if (type === 'fixed') {
+                return NextResponse.json({ error: 'max_discount_pence only applies to percent-off codes' }, { status: 400 })
+            }
+            updates.max_discount_pence = max_discount_pence
+        }
+    }
+
+    if (body.ticket_type_id !== undefined) {
+        if (body.ticket_type_id === null || body.ticket_type_id === '') {
+            updates.ticket_type_id = null
+        } else {
+            const { data: ticketType } = await adminClient
+                .from('ticket_types').select('id').eq('id', body.ticket_type_id).eq('event_id', owned.eventId).single()
+            if (!ticketType) return NextResponse.json({ error: 'Ticket type not found for this event' }, { status: 400 })
+            updates.ticket_type_id = ticketType.id
         }
     }
 
@@ -115,7 +157,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         .from('promo_codes')
         .update(updates)
         .eq('id', params.id)
-        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at')
+        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence')
         .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
