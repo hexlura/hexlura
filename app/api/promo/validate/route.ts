@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { promoLimiter, getIP } from '@/lib/rate-limit'
+import { computeEligiblePence } from '@/lib/promo-eligibility'
 
 interface ValidateRequest {
     code: string
@@ -66,12 +67,16 @@ export async function POST(request: NextRequest) {
 
     // A ticket_type_id-scoped code only counts against that ticket type's portion
     // of the cart — not the whole order — and doesn't apply if that ticket type
-    // isn't in the cart at all.
+    // isn't in the cart at all. max_tickets further caps how many individual
+    // tickets it covers. Same helper as create-intent so the discount quoted
+    // here matches the one actually charged.
     let eligiblePence = ticket_subtotal_pence
-    if (promo.ticket_type_id) {
-        eligiblePence = (items || [])
-            .filter(i => i.ticket_type_id === promo.ticket_type_id)
-            .reduce((sum, i) => sum + i.price_pence * i.quantity, 0)
+    if (promo.ticket_type_id || promo.max_tickets !== null) {
+        eligiblePence = computeEligiblePence(
+            items || [],
+            promo.ticket_type_id,
+            promo.max_tickets ?? null
+        )
         if (eligiblePence <= 0) {
             return NextResponse.json({ valid: false, error: 'This code doesn\'t apply to any ticket in your cart' })
         }

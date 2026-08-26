@@ -8,6 +8,7 @@ import { getPromoterByReferralCode } from '@/lib/promoter-access'
 import { randomUUID } from 'crypto'
 import { checkoutLimiter, getIP } from '@/lib/rate-limit'
 import { autoFollowOrganiser } from '@/lib/auto-follow'
+import { computeEligiblePence, type PromoCartLine } from '@/lib/promo-eligibility'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -93,9 +94,10 @@ export async function POST(request: NextRequest) {
     // Verify ticket types and calculate prices server-side
     let ticketSubtotalPence = 0
     let totalBookingFeePence = 0
-    // Per-ticket-type subtotal, so a promo code scoped to one ticket type can
-    // be validated against only that portion of the cart, not the whole order.
-    const subtotalByTicketType: Record<string, number> = {}
+    // Cart lines at server-verified prices, so a promo code scoped to one ticket
+    // type — or capped to a number of tickets — is applied against only the
+    // portion of the order it actually covers.
+    const promoCartLines: PromoCartLine[] = []
 
     for (const item of items) {
         const { data: ticketType } = await supabase
@@ -142,7 +144,11 @@ export async function POST(request: NextRequest) {
 
         const linePence = ticketType.price_pence * item.quantity
         ticketSubtotalPence += linePence
-        subtotalByTicketType[item.ticket_type_id] = (subtotalByTicketType[item.ticket_type_id] || 0) + linePence
+        promoCartLines.push({
+            ticket_type_id: item.ticket_type_id,
+            price_pence: ticketType.price_pence,
+            quantity: item.quantity,
+        })
         totalBookingFeePence += calculateBookingFee(ticketType.price_pence, item.quantity, feeConfig)
     }
 
@@ -160,10 +166,14 @@ export async function POST(request: NextRequest) {
         if (promo) {
             // A ticket_type_id-scoped code only counts against that ticket type's
             // portion of the cart — not the whole order — and doesn't apply at all
-            // if that ticket type isn't in the cart.
-            const eligiblePence = promo.ticket_type_id
-                ? (subtotalByTicketType[promo.ticket_type_id] || 0)
-                : ticketSubtotalPence
+            // if that ticket type isn't in the cart. max_tickets further caps how
+            // many individual tickets it covers, so a 100%-off code can't zero out
+            // an order of unlimited size.
+            const eligiblePence = computeEligiblePence(
+                promoCartLines,
+                promo.ticket_type_id,
+                promo.max_tickets ?? null
+            )
 
             let customerUsesOk = true
             if (promo.max_uses_per_customer !== null) {

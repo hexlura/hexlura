@@ -110,6 +110,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         }
     }
 
+    if (body.max_tickets !== undefined) {
+        if (body.max_tickets === null || body.max_tickets === '') {
+            updates.max_tickets = null
+        } else {
+            const max_tickets = Number(body.max_tickets)
+            if (!Number.isInteger(max_tickets) || max_tickets < 1) {
+                return NextResponse.json({ error: 'max_tickets must be a positive whole number' }, { status: 400 })
+            }
+            updates.max_tickets = max_tickets
+        }
+    }
+
     if (body.ticket_type_id !== undefined) {
         if (body.ticket_type_id === null || body.ticket_type_id === '') {
             updates.ticket_type_id = null
@@ -157,7 +169,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         .from('promo_codes')
         .update(updates)
         .eq('id', params.id)
-        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence')
+        .select('id, code, discount_type, discount_value, min_order_pence, max_uses, uses_count, valid_from, valid_to, created_at, ticket_type_id, max_uses_per_customer, max_discount_pence, max_tickets')
         .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
