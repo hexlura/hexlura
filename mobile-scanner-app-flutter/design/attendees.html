@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexlura Scanner — Attendees</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+    .filter-chip {
+        font-size: 12px; padding: 6px 12px; border-radius: 20px;
+        border: 1px solid var(--border); background: var(--card); color: var(--muted);
+        cursor: pointer; white-space: nowrap;
+    }
+    .filter-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .att-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .att-name { font-size: 14px; color: var(--text); font-weight: 600; margin: 0; }
+    .att-sub { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+    .att-ref { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); }
+    .checkin-btn {
+        font-size: 11px; font-weight: 600; padding: 6px 12px; background: var(--accent);
+        color: #fff; border: none; border-radius: 3px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .checked-badge { font-size: 11px; color: var(--success); font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="nav-strip">
+    <a href="login.html">1. Login</a>
+    <a href="events.html">2. Events</a>
+    <a href="scanner.html">3. Scanner</a>
+    <a href="attendees.html" class="active">4. Attendees</a>
+</div>
+
+<div class="device">
+  <div class="screen">
+    <div class="statusbar">
+        <span>9:41</span>
+        <span>●●●● 🔋</span>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <button class="icon-btn" onclick="window.location.href='scanner.html'" title="Back to scanner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <div class="header-title">
+            <p class="heading" style="font-size:16px;color:var(--text);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Neon Nights — Warehouse 24</p>
+            <p style="font-size:11px;color:var(--muted);margin:2px 0 0;">184 of 260 checked in</p>
+        </div>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="window.location.href='login.html'" title="Sign out">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="screen-body" style="padding:0;">
+
+        <!-- Search + filters -->
+        <div style="padding:14px 16px 10px;flex-shrink:0;">
+            <input class="input" placeholder="Search name or booking ref..." style="margin-bottom:10px;">
+            <div class="scroll-row" style="display:flex;gap:8px;overflow-x:auto;">
+                <button class="filter-chip active">All (260)</button>
+                <button class="filter-chip">Checked In (184)</button>
+                <button class="filter-chip">Not Checked In (76)</button>
+            </div>
+        </div>
+
+        <!-- Attendee list -->
+        <div style="flex:1;">
+
+            <div class="att-row">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Aisha Bello</p>
+                    <p class="att-sub">General Admission · <span class="att-ref">HXL-7F3K92</span></p>
+                </div>
+                <span class="checked-badge">✓ 10:42 PM</span>
+            </div>
+
+            <div class="att-row">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Marcus Reid</p>
+                    <p class="att-sub">VIP · <span class="att-ref">HXL-9K2M41</span></p>
+                </div>
+                <span class="checked-badge">✓ 10:41 PM</span>
+            </div>
+
+            <div class="att-row">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Tola Adeyemi <span style="color:var(--muted);font-weight:400;">(2/3)</span></p>
+                    <p class="att-sub">Group Ticket · <span class="att-ref">HXL-3D8P17</span></p>
+                </div>
+                <button class="checkin-btn">Check In</button>
+            </div>
+
+            <div class="att-row">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Chuka Nwosu</p>
+                    <p class="att-sub">General Admission · <span class="att-ref">HXL-5R1Q88</span></p>
+                </div>
+                <button class="checkin-btn">Check In</button>
+            </div>
+
+            <div class="att-row">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Sarah Whitfield</p>
+                    <p class="att-sub">Early Bird · <span class="att-ref">HXL-2N7T63</span></p>
+                </div>
+                <span class="checked-badge">✓ 10:38 PM</span>
+            </div>
+
+            <div class="att-row">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Femi Alade</p>
+                    <p class="att-sub">General Admission · <span class="att-ref">HXL-8H4W25</span></p>
+                </div>
+                <button class="checkin-btn">Check In</button>
+            </div>
+
+            <div class="att-row" style="border-bottom:none;">
+                <div style="min-width:0;flex:1;">
+                    <p class="att-name">Grace Owolabi</p>
+                    <p class="att-sub">VIP · <span class="att-ref">HXL-6Y9L74</span></p>
+                </div>
+                <span class="checked-badge">✓ 10:35 PM</span>
+            </div>
+
+        </div>
+
+        <p style="text-align:center;font-size:11px;color:#555570;padding:16px;">
+            Tap "Check In" to manually check someone in without scanning — same as the scanner, works offline and syncs later.
+        </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexlura Scanner — Login</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="nav-strip">
+    <a href="login.html" class="active">1. Login</a>
+    <a href="events.html">2. Events</a>
+    <a href="scanner.html">3. Scanner</a>
+    <a href="attendees.html">4. Attendees</a>
+</div>
+
+<div class="device">
+  <div class="screen">
+    <div class="statusbar">
+        <span>9:41</span>
+        <span>●●●● 🔋</span>
+    </div>
+    <div class="screen-body" style="justify-content:center; padding:24px;">
+
+        <div style="text-align:center; margin-bottom:28px;">
+            <div style="width:60px;height:60px;background:var(--accent);border-radius:14px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3a3 3 0 0 1 0-6V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v3z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2 2"/></svg>
+            </div>
+            <p class="heading" style="font-size:34px;color:var(--accent);margin:0 0 4px;">HEXLURA</p>
+            <p style="font-size:13px;color:var(--muted);margin:0;">Door Staff Scanner</p>
+        </div>
+
+        <!-- Card wrapper — matches the real app/checkin/login/login-form.tsx layout exactly -->
+        <div style="background:var(--surface);border:1px solid var(--border);padding:24px 20px;border-radius:2px;">
+            <form style="display:flex;flex-direction:column;gap:16px;" onsubmit="return false;">
+                <div>
+                    <label class="label">Email</label>
+                    <input class="input" type="email" placeholder="you@hexlura.com" autocomplete="email">
+                </div>
+                <div>
+                    <label class="label">Password</label>
+                    <input class="input" type="password" placeholder="••••••••" autocomplete="current-password">
+                </div>
+
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:2px;">
+                    <input type="checkbox" checked style="accent-color:var(--accent);">
+                    Keep me signed in on this device
+                </label>
+
+                <button class="btn" style="margin-top:8px;" onclick="window.location.href='events.html'">Sign In</button>
+            </form>
+        </div>
+
+        <p style="text-align:center;margin-top:24px;font-size:12px;color:#555570;line-height:1.6;">
+            Works offline once signed in.<br>Scans queue locally and sync when you're back online.
+        </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
