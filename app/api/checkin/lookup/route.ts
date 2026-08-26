@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestUser } from '@/lib/supabase/getRequestUser'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveDoorStaffContext, isEventAssigned } from '@/lib/checkin/authorize'
 
 export async function GET(req: NextRequest) {
     try {
@@ -12,31 +13,13 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'booking_ref is required' }, { status: 400 })
         }
 
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const user = await getRequestUser(req)
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         const adminClient = createAdminClient()
 
-        // Role check
-        const { data: checkerProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
-        const checkerRole = checkerProfile?.role as string | undefined
-        let isAuthorized = !!checkerRole && ['door_staff', 'organiser', 'admin'].includes(checkerRole)
-        let isOrgTeamDoorStaff = false
-
-        if (!isAuthorized) {
-            const { data: teamMember } = await adminClient
-                .from('organiser_team')
-                .select('privilege')
-                .eq('user_id', user.id)
-                .eq('privilege', 'door_staff')
-                .eq('status', 'active')
-                .maybeSingle()
-            isAuthorized = !!teamMember
-            isOrgTeamDoorStaff = !!teamMember
-        }
-
-        if (!isAuthorized) {
+        const ctx = await resolveDoorStaffContext(user.id)
+        if (!ctx.isAuthorized) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
@@ -58,7 +41,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Ownership check — verify the caller is authorised for this event's organiser
-        if (checkerRole !== 'admin') {
+        if (!ctx.isAdmin) {
             const { data: eventRow } = await adminClient
                 .from('events')
                 .select('organiser_id')
@@ -69,37 +52,7 @@ export async function GET(req: NextRequest) {
                 return NextResponse.json({ error: 'Event not found', code: 'INVALID' }, { status: 404 })
             }
 
-            let eventAssigned = false
-
-            if (checkerRole === 'organiser') {
-                const { data: orgProfile } = await adminClient
-                    .from('organiser_profiles')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('id', eventRow.organiser_id)
-                    .maybeSingle()
-                eventAssigned = !!orgProfile
-            } else if (isOrgTeamDoorStaff) {
-                const { data: teamAssignment } = await adminClient
-                    .from('organiser_team')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('organiser_id', eventRow.organiser_id)
-                    .eq('privilege', 'door_staff')
-                    .eq('status', 'active')
-                    .maybeSingle()
-                eventAssigned = !!teamAssignment
-            } else {
-                const { data: dsAssignment } = await adminClient
-                    .from('door_staff')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('organiser_id', eventRow.organiser_id)
-                    .maybeSingle()
-                eventAssigned = !!dsAssignment
-            }
-
-            if (!eventAssigned) {
+            if (!isEventAssigned(ctx, eventRow.organiser_id)) {
                 return NextResponse.json({ error: 'Not authorized for this event', code: 'INVALID' }, { status: 403 })
             }
         }
