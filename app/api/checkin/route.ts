@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestUser } from '@/lib/supabase/getRequestUser'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveDoorStaffContext, isEventAssigned } from '@/lib/checkin/authorize'
 import { checkinLimiter, getIP } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
@@ -21,39 +22,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: 'Invalid ticket — not found in system', code: 'INVALID' })
         }
 
-        // Auth check with anon client
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        // Auth check — Bearer token (mobile app) or cookie session (web app)
+        const user = await getRequestUser(req)
         if (!user) return NextResponse.json({ success: false, message: 'Unauthorized', code: 'INVALID' }, { status: 401 })
 
         const adminClient = createAdminClient()
 
-        // Role check — organiser, admin, door_staff (profile role), or organiser_team door_staff
-        const { data: checkerProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
-        const checkerRole = checkerProfile?.role as string | undefined
-
-        // needsEventCheck: all non-admin roles must be verified against the specific event after ticket lookup
-        let isAuthorized = !!checkerRole && ['door_staff', 'organiser', 'admin'].includes(checkerRole)
-        let needsEventCheck = checkerRole === 'door_staff' || checkerRole === 'organiser'
-        let isOrgTeamDoorStaff = false
-
-        if (!isAuthorized) {
-            // Check organiser_team for door_staff privilege (new team system)
-            const { data: teamMember } = await adminClient
-                .from('organiser_team')
-                .select('privilege')
-                .eq('user_id', user.id)
-                .eq('privilege', 'door_staff')
-                .eq('status', 'active')
-                .maybeSingle()
-            isAuthorized = !!teamMember
-            isOrgTeamDoorStaff = !!teamMember
-            needsEventCheck = !!teamMember
-        }
-
-        if (!isAuthorized) {
+        const ctx = await resolveDoorStaffContext(user.id)
+        if (!ctx.isAuthorized) {
             return NextResponse.json({ success: false, message: 'Unauthorized', code: 'INVALID' }, { status: 403 })
         }
+        const needsEventCheck = !ctx.isAdmin
 
         // Step 1 — Find the ticket
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,50 +118,13 @@ export async function POST(req: NextRequest) {
 
         // Step 1b — For door_staff roles, verify assignment to this specific event
         if (needsEventCheck) {
-            const resolvedEventId = bk.event_id
-            let eventAssigned = false
-
-            // Both systems need the event's organiser_id — fetch once, share between paths
             const { data: eventRow } = await adminClient
                 .from('events')
                 .select('organiser_id')
-                .eq('id', resolvedEventId)
+                .eq('id', bk.event_id)
                 .single()
 
-            if (eventRow) {
-                if (checkerRole === 'organiser') {
-                    // Organiser: verify this event belongs to their organiser profile
-                    const { data: orgProfile } = await adminClient
-                        .from('organiser_profiles')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .eq('id', eventRow.organiser_id)
-                        .maybeSingle()
-                    eventAssigned = !!orgProfile
-                } else if (isOrgTeamDoorStaff) {
-                    // New system: organiser_team is org-level — verify staff is on this event's org team
-                    const { data: teamAssignment } = await adminClient
-                        .from('organiser_team')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .eq('organiser_id', eventRow.organiser_id)
-                        .eq('privilege', 'door_staff')
-                        .eq('status', 'active')
-                        .maybeSingle()
-                    eventAssigned = !!teamAssignment
-                } else {
-                    // Legacy system: check door_staff table by organiser
-                    const { data: dsAssignment } = await adminClient
-                        .from('door_staff')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .eq('organiser_id', eventRow.organiser_id)
-                        .maybeSingle()
-                    eventAssigned = !!dsAssignment
-                }
-            }
-
-            if (!eventAssigned) {
+            if (!eventRow || !isEventAssigned(ctx, eventRow.organiser_id)) {
                 return NextResponse.json({ success: false, message: 'Not authorized for this event', code: 'INVALID' }, { status: 403 })
             }
         }
