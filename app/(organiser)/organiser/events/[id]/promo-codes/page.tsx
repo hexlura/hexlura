@@ -21,6 +21,7 @@ interface PromoCode {
     ticket_type_id: string | null
     max_uses_per_customer: number | null
     max_discount_pence: number | null
+    max_tickets: number | null
     ticket_type?: { name: string } | null
 }
 
@@ -67,6 +68,7 @@ export default function PromoCodesPage() {
     const [minOrder, setMinOrder] = useState('')
     const [maxUses, setMaxUses] = useState('')
     const [maxUsesPerCustomer, setMaxUsesPerCustomer] = useState('')
+    const [maxTickets, setMaxTickets] = useState('')
     const [validFrom, setValidFrom] = useState('')
     const [validTo, setValidTo] = useState('')
     const [creating, setCreating] = useState(false)
@@ -78,6 +80,7 @@ export default function PromoCodesPage() {
     const [editMinOrder, setEditMinOrder] = useState('')
     const [editMaxUses, setEditMaxUses] = useState('')
     const [editMaxUsesPerCustomer, setEditMaxUsesPerCustomer] = useState('')
+    const [editMaxTickets, setEditMaxTickets] = useState('')
     const [editValidFrom, setEditValidFrom] = useState('')
     const [editValidTo, setEditValidTo] = useState('')
     const [savingEdit, setSavingEdit] = useState(false)
@@ -144,6 +147,7 @@ export default function PromoCodesPage() {
                 min_order_pence: minOrder ? Math.round(parseFloat(minOrder) * 100) : undefined,
                 max_uses: maxUses || undefined,
                 max_uses_per_customer: maxUsesPerCustomer || undefined,
+                max_tickets: maxTickets || undefined,
                 valid_from: validFrom || undefined,
                 valid_to: validTo || undefined,
             }),
@@ -159,6 +163,7 @@ export default function PromoCodesPage() {
             setMinOrder('')
             setMaxUses('')
             setMaxUsesPerCustomer('')
+            setMaxTickets('')
             setValidFrom('')
             setValidTo('')
             fetchCodes()
@@ -179,6 +184,7 @@ export default function PromoCodesPage() {
         setEditMinOrder((c.min_order_pence / 100).toFixed(2))
         setEditMaxUses(c.max_uses ? String(c.max_uses) : '')
         setEditMaxUsesPerCustomer(c.max_uses_per_customer ? String(c.max_uses_per_customer) : '')
+        setEditMaxTickets(c.max_tickets ? String(c.max_tickets) : '')
         setEditValidFrom(toDateInputValue(c.valid_from))
         setEditValidTo(toDateInputValue(c.valid_to))
     }
@@ -198,6 +204,7 @@ export default function PromoCodesPage() {
                 min_order_pence: Math.round(parseFloat(editMinOrder || '0') * 100),
                 max_uses: editMaxUses || null,
                 max_uses_per_customer: editMaxUsesPerCustomer || null,
+                max_tickets: editMaxTickets || null,
                 valid_from: editValidFrom || null,
                 valid_to: editValidTo || null,
             }),
@@ -296,7 +303,7 @@ export default function PromoCodesPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-muted mb-1">Max total uses (optional)</label>
+                        <label className="block text-xs text-muted mb-1">Max total orders (optional)</label>
                         <input
                             type="number"
                             value={maxUses}
@@ -305,9 +312,12 @@ export default function PromoCodesPage() {
                             placeholder="Unlimited"
                             className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent"
                         />
+                        <p className="text-[11px] text-muted mt-1">
+                            Counts checkouts, not tickets — one order of 10 tickets counts as 1.
+                        </p>
                     </div>
                     <div>
-                        <label className="block text-xs text-muted mb-1">Max uses per customer (optional)</label>
+                        <label className="block text-xs text-muted mb-1">Max orders per customer (optional)</label>
                         <input
                             type="number"
                             value={maxUsesPerCustomer}
@@ -316,6 +326,22 @@ export default function PromoCodesPage() {
                             placeholder="Unlimited"
                             className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent"
                         />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-muted mb-1">Max tickets per order (optional)</label>
+                        <input
+                            type="number"
+                            value={maxTickets}
+                            onChange={e => setMaxTickets(e.target.value)}
+                            min={1}
+                            placeholder="Unlimited"
+                            className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent"
+                        />
+                        <p className="text-[11px] text-muted mt-1">
+                            How many tickets the discount covers in one order. Set this to stop a
+                            100%-off code zeroing out a large basket — extra tickets are charged
+                            as normal.
+                        </p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -393,7 +419,7 @@ export default function PromoCodesPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs text-muted mb-1">Max uses</label>
+                                            <label className="block text-xs text-muted mb-1">Max orders</label>
                                             <input
                                                 type="number"
                                                 value={editMaxUses}
@@ -408,6 +434,16 @@ export default function PromoCodesPage() {
                                                 type="number"
                                                 value={editMaxUsesPerCustomer}
                                                 onChange={e => setEditMaxUsesPerCustomer(e.target.value)}
+                                                placeholder="Unlimited"
+                                                className="w-full border border-border rounded-sm px-2 py-1.5 text-sm bg-background text-text outline-none focus:border-accent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-muted mb-1">Max tickets / order</label>
+                                            <input
+                                                type="number"
+                                                value={editMaxTickets}
+                                                onChange={e => setEditMaxTickets(e.target.value)}
                                                 placeholder="Unlimited"
                                                 className="w-full border border-border rounded-sm px-2 py-1.5 text-sm bg-background text-text outline-none focus:border-accent"
                                             />
@@ -467,8 +503,9 @@ export default function PromoCodesPage() {
                                                 {discountLabel(c)}
                                                 {c.max_discount_pence != null && ` (capped at ${formatPence(c.max_discount_pence)})`}
                                                 {c.min_order_pence > 0 && ` · min order ${formatPence(c.min_order_pence)}`}
-                                                {' · '}{c.uses_count} / {c.max_uses ?? '∞'} used
+                                                {' · '}{c.uses_count} / {c.max_uses ?? '∞'} orders
                                                 {c.max_uses_per_customer != null && ` · ${c.max_uses_per_customer} per customer`}
+                                                {c.max_tickets != null && ` · max ${c.max_tickets} ticket${c.max_tickets === 1 ? '' : 's'} per order`}
                                                 {c.valid_to && ` · expires ${new Date(c.valid_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
                                             </p>
                                         </div>
