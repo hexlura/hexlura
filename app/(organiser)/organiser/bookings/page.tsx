@@ -35,7 +35,7 @@ export default async function OrganiserBookingsPage({ searchParams }: PageProps)
     let bookingsQuery = eventIds.length
         ? serviceClient
             .from('bookings')
-            .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, total_pence, created_at, confirmed_at, event:events(id, title), booking_items(quantity)')
+            .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, created_at, confirmed_at, event:events(id, title), booking_items(quantity)')
             .order('created_at', { ascending: false })
             .limit(100)
         : null
@@ -50,7 +50,7 @@ export default async function OrganiserBookingsPage({ searchParams }: PageProps)
 
     const rows = (bookings || []) as unknown as {
         id: string; booking_ref: string; status: string; is_complimentary: boolean | null;
-        ticket_subtotal_pence: number | null; total_pence: number | null;
+        ticket_subtotal_pence: number | null;
         created_at: string; confirmed_at: string | null;
         event: { id: string; title: string } | null;
         booking_items: { quantity: number }[]
@@ -83,15 +83,14 @@ export default async function OrganiserBookingsPage({ searchParams }: PageProps)
                             <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Booking Ref</th>
                             <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Event</th>
                             <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Status</th>
-                            <th className="hidden md:table-cell text-left text-xs text-muted pb-3 font-normal pr-4">Subtotal</th>
                             <th className="hidden md:table-cell text-left text-xs text-muted pb-3 font-normal pr-4">Qty</th>
-                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Total</th>
+                            <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Amount</th>
                             <th className="text-left text-xs text-muted pb-3 font-normal pr-4">Date</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td colSpan={7} className="text-center text-muted text-xs py-12">No bookings yet</td></tr>
+                            <tr><td colSpan={6} className="text-center text-muted text-xs py-12">No bookings yet</td></tr>
                         )}
                         {rows.map(b => (
                             <tr key={b.id} className="border-b border-border/50 hover:bg-surface transition-colors">
@@ -106,12 +105,11 @@ export default async function OrganiserBookingsPage({ searchParams }: PageProps)
                                         {b.status}
                                     </span>
                                 </td>
-                                <td className="hidden md:table-cell py-3 pr-4 text-text text-xs">{b.is_complimentary ? '—' : formatPence(b.ticket_subtotal_pence || 0)}</td>
                                 <td className="hidden md:table-cell py-3 pr-4 text-text text-xs">{b.booking_items.reduce((sum, i) => sum + i.quantity, 0) || '—'}</td>
                                 <td className="py-3 pr-4 text-xs font-medium">
                                     {b.is_complimentary
                                         ? <span className="text-xs px-2 py-0.5 rounded-full border text-success bg-success/10 border-success/20">Complimentary</span>
-                                        : <span className="text-text">{formatPence(b.total_pence || 0)}</span>
+                                        : <span className="text-text">{formatPence(b.ticket_subtotal_pence || 0)}</span>
                                     }
                                 </td>
                                 <td className="py-3 text-muted text-xs">
@@ -141,7 +139,7 @@ export default async function OrganiserBookingsPage({ searchParams }: PageProps)
                                 <span>{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                 {b.is_complimentary
                                     ? <span className="text-xs px-2 py-0.5 rounded-full border text-success bg-success/10 border-success/20">Complimentary</span>
-                                    : <span className="text-text font-medium">{formatPence(b.total_pence || 0)}</span>
+                                    : <span className="text-text font-medium">{formatPence(b.ticket_subtotal_pence || 0)}</span>
                                 }
                             </div>
                         </div>

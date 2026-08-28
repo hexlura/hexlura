@@ -60,7 +60,7 @@ export default async function OrganiserRefundsPage() {
         .select(`
             id, status, reason, message, organiser_note, refund_amount_pence, created_at,
             booking:bookings (
-                id, booking_ref, ticket_subtotal_pence, discount_pence, booking_fee_pence, user_id,
+                id, booking_ref, ticket_subtotal_pence, discount_pence, user_id,
                 event:events ( title )
             )
         `)
@@ -101,7 +101,6 @@ export default async function OrganiserRefundsPage() {
             booking_ref: string
             ticket_subtotal_pence: number | null
             discount_pence: number | null
-            booking_fee_pence: number | null
             user_id: string | null
             event: { title: string } | null
         } | null

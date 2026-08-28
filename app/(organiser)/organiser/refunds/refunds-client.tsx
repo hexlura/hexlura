@@ -18,7 +18,6 @@ interface RefundItem {
         booking_ref: string
         ticket_subtotal_pence: number | null
         discount_pence: number | null
-        booking_fee_pence: number | null
         user_id: string | null
         event: { title: string } | null
     } | null
@@ -188,7 +187,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: '#FFFFFF', border: '1px solid #C0C0C8' }}>
                     <thead>
                         <tr>
-                            {['Buyer', 'Event', 'Booking Ref', 'Ticket Amount', 'Refund Amount', 'Fee Kept', 'Requested', 'Status', 'Action'].map(h => (
+                            {['Buyer', 'Event', 'Booking Ref', 'Ticket Amount', 'Refund Amount', 'Requested', 'Status', 'Action'].map(h => (
                                 <th key={h} style={thStyle}>{h}</th>
                             ))}
                         </tr>
@@ -196,7 +195,7 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                     <tbody>
                         {filtered.length === 0 ? (
                             <tr>
-                                <td colSpan={9} style={{ ...tdBase, textAlign: 'center', color: '#666677', padding: '48px 16px' }}>
+                                <td colSpan={8} style={{ ...tdBase, textAlign: 'center', color: '#666677', padding: '48px 16px' }}>
                                     No refund requests found
                                 </td>
                             </tr>
@@ -222,7 +221,6 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                         </td>
                                         <td style={tdBase}>{fmt(r.booking?.ticket_subtotal_pence ?? null)}</td>
                                         <td style={tdBase}>{fmt(r.refund_amount_pence)}</td>
-                                        <td style={{ ...tdBase, color: '#666677' }}>{fmt(r.booking?.booking_fee_pence ?? null)}</td>
                                         <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
                                         <td style={tdBase}>
                                             <span style={{
