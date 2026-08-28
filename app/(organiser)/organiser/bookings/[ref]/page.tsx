@@ -48,7 +48,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
 
     const { data: bookingRaw } = await adminClient
         .from('bookings')
-        .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, booking_fee_pence, total_pence, created_at, confirmed_at, user_id, event:events(id, title, start_at)')
+        .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, created_at, confirmed_at, user_id, event:events(id, title, start_at)')
         .eq('booking_ref', params.ref)
         .in('event_id', eventIds)
         .single()
@@ -61,8 +61,6 @@ export default async function BookingDetailPage({ params }: PageProps) {
         status: string
         is_complimentary: boolean | null
         ticket_subtotal_pence: number | null
-        booking_fee_pence: number | null
-        total_pence: number | null
         created_at: string
         confirmed_at: string | null
         user_id: string | null
@@ -263,17 +261,9 @@ export default async function BookingDetailPage({ params }: PageProps) {
                     {/* Totals */}
                     {!booking.is_complimentary && (
                         <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #E0E0E0' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#666677', marginBottom: 6 }}>
-                                <span>Ticket Subtotal</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, fontWeight: 700, color: '#0A0A0F' }}>
+                                <span>Amount</span>
                                 <span>{formatPence(booking.ticket_subtotal_pence || 0)}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#666677', marginBottom: 10 }}>
-                                <span>Booking Fee</span>
-                                <span>{formatPence(booking.booking_fee_pence || 0)}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, fontWeight: 700, color: '#0A0A0F', paddingTop: 10, borderTop: '1px solid #E0E0E0' }}>
-                                <span>Total Paid</span>
-                                <span>{formatPence(booking.total_pence || 0)}</span>
                             </div>
                         </div>
                     )}
