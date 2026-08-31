@@ -52,12 +52,18 @@ export async function GET(
 <head>
   <meta charset="UTF-8" />
   <title>Invoice ${invoiceNumber}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', Arial, sans-serif; color: #0A0A0F; background: #fff; padding: 48px; font-size: 14px; line-height: 1.5; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 48px; }
-    .brand { font-size: 32px; font-weight: 900; letter-spacing: 2px; color: #0A0A0F; }
-    .brand span { color: #E63950; }
+    /* Matches the site wordmark (components/layout/Navbar.tsx): Bebas Neue, all one
+       accent color, ® mark — this previously used the body font and split HEX/LURA
+       into two colors, which read as a different logo from the rest of the site. */
+    .brand { font-family: 'Bebas Neue', Arial, sans-serif; font-size: 32px; letter-spacing: 2px; color: #E63950; }
+    .brand sup { font-size: 0.45em; }
     .invoice-meta { text-align: right; }
     .invoice-meta h2 { font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #0A0A0F; margin-bottom: 4px; }
     .invoice-meta p { font-size: 13px; color: #666; }
@@ -85,7 +91,7 @@ export async function GET(
 </head>
 <body>
   <div class="header">
-    <div class="brand">HEX<span>LURA</span></div>
+    <div class="brand">HEXLURA<sup>&reg;</sup></div>
     <div class="invoice-meta">
       <h2>INVOICE</h2>
       <p>${invoiceNumber}</p>
@@ -99,7 +105,7 @@ export async function GET(
     <div>
       <h3>From</h3>
       <p><strong>Hexlura Ltd</strong></p>
-      <p>hello@hexlura.com</p>
+      <p>support@hexlura.com</p>
       <p>hexlura.com</p>
     </div>
     <div>
@@ -142,7 +148,7 @@ export async function GET(
   </table>
 
   <div class="footer">
-    <p>This invoice is generated automatically by Hexlura. Questions? Contact hello@hexlura.com</p>
+    <p>This invoice is generated automatically by Hexlura. Questions? Contact support@hexlura.com</p>
     <p style="margin-top:4px">Invoice ${invoiceNumber} · Generated ${new Date().toLocaleDateString('en-GB')}</p>
   </div>
 
