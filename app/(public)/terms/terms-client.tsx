@@ -188,7 +188,7 @@ export default function TermsClient() {
                         {[
                             'Payouts are initiated 2 business days after the Event end date',
                             'Payouts are made via Stripe Connect to the Organiser\'s connected bank account',
-                            'Hexlura deducts its booking fees prior to payout',
+                            'Booking fees are charged to ticket buyers in addition to the ticket price and are not deducted from Organiser proceeds. Organisers receive 100% of the ticket face value, less any discounts the Organiser has applied',
                             'Hexlura reserves the right to withhold or delay payouts where fraud is suspected or disputes are outstanding',
                         ].map(item => <li key={item} style={liStyle}>{item}</li>)}
                     </ul>
