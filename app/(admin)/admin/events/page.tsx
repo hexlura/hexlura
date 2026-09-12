@@ -3,10 +3,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { AdminEventsClient } from './events-client'
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
+
 export default async function AdminEventsPage({
     searchParams,
 }: {
-    searchParams: { q?: string; tab?: string; category?: string; status?: string; page?: string }
+    searchParams: { q?: string; tab?: string; category?: string; status?: string; page?: string; pageSize?: string }
 }) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -16,7 +18,10 @@ export default async function AdminEventsPage({
 
     const tab = searchParams.tab ?? 'all'
     const page = Math.max(1, parseInt(searchParams.page ?? '1'))
-    const pageSize = 25
+    const requestedPageSize = parseInt(searchParams.pageSize ?? '25')
+    const pageSize = PAGE_SIZE_OPTIONS.includes(requestedPageSize as typeof PAGE_SIZE_OPTIONS[number])
+        ? requestedPageSize
+        : 25
     const offset = (page - 1) * pageSize
 
     let query = adminClient
