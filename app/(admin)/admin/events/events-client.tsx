@@ -9,6 +9,8 @@ import { formatPence } from '@/lib/fees'
 
 type Tab = 'all' | 'featured' | 'cancelled'
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
+
 interface EventRow {
     id: string
     title: string
@@ -59,11 +61,14 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
         setTimeout(() => setToastMsg(null), 3000)
     }
 
+    // Filter/tab changes reset back to page 1 (a stale page number could land
+    // past the end of a now-smaller result set) — but changing the page itself
+    // must not immediately undo the very value it just set.
     function updateParam(key: string, value: string) {
         const params = new URLSearchParams(searchParams.toString())
         if (value) params.set(key, value)
         else params.delete(key)
-        params.delete('page')
+        if (key !== 'page') params.delete('page')
         router.push(`${pathname}?${params.toString()}`)
     }
 
@@ -175,8 +180,16 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                     <option value="">All Statuses</option>
                     <option value="published">Published</option>
                     <option value="draft">Draft</option>
+                    <option value="ended">Ended</option>
                     <option value="cancelled">Cancelled</option>
                     <option value="archived">Archived</option>
+                </select>
+                <select
+                    value={pageSize}
+                    onChange={e => updateParam('pageSize', e.target.value)}
+                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                >
+                    {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
                 </select>
             </div>
 
