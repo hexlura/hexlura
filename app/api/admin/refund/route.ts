@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 import { reversePromoterEarningsForBooking } from '@/lib/promoter-earnings'
 import { notifyWaitlistForEvent } from '@/lib/waitlist'
+import { notifyAdmins } from '@/lib/notify-admins'
 import { Resend } from 'resend'
 
 function getResend() {
@@ -121,7 +122,11 @@ export async function POST(request: NextRequest) {
     const requestedAmount = amount_pence ?? refundReq.refund_amount_pence ?? 0
     const refundAmount = Math.min(requestedAmount, maxRefundablePence)
 
-    // Stripe partial refund for refund_amount_pence only
+    // Stripe partial refund for refund_amount_pence only. A failed refund must
+    // never fall through to marking the booking refunded and telling the buyer
+    // their money is on its way — that leaves them out of pocket with voided
+    // tickets and no visible sign anything went wrong. Bail out here instead
+    // and leave the request as 'organiser_approved' so it stays actionable.
     if (booking.stripe_payment_intent_id && refundAmount > 0) {
         try {
             const stripe = (await import('stripe')).default
@@ -130,8 +135,22 @@ export async function POST(request: NextRequest) {
                 payment_intent: booking.stripe_payment_intent_id,
                 amount: refundAmount,
             })
-        } catch {
-            // Log but don't fail — in dev/test there may not be a real Stripe payment
+        } catch (err) {
+            console.error('Stripe refund failed:', err)
+            await logAuditAction({
+                actorId: user.id,
+                action: 'admin_confirm_refund_failed',
+                entityType: 'booking',
+                entityId: booking_id,
+                metadata: { refund_request_id, amount_pence: refundAmount, booking_ref: booking.booking_ref },
+            })
+            await notifyAdmins({
+                type: 'refund_failed',
+                title: 'Refund failed — manual action required',
+                body: `Stripe refund of £${(refundAmount / 100).toFixed(2)} for booking ${booking.booking_ref} failed. The booking was NOT marked refunded — check Stripe and retry.`,
+                link: '/admin/refunds',
+            })
+            return NextResponse.json({ error: 'Stripe refund failed. The booking was not marked as refunded — check Stripe and try again.' }, { status: 502 })
         }
     }
 
