@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Data-Dense Analyst v13)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FFFFFF', card: '#FFFFFF', border: '#E4E4E9', text: '#141417',
+          muted: '#84848F', accent: '#E63950', green: '#1FA35C', violet: '#6E5BD6',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #fff; font-size: 13px; }
+  .navlink.active { background: #141417; color: #fff; }
+  table td, table th { white-space: nowrap; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <aside class="w-52 shrink-0 border-r border-border py-4 hidden lg:flex flex-col sticky top-0 h-screen">
+    <p class="font-heading text-xl text-accent tracking-wider px-4 mb-6">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+    <nav class="flex flex-col text-xs">
+      <a class="navlink active px-4 py-2 font-semibold">Dashboard</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Events</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Bookings</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Attendees</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Promoters</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Analytics</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Payouts</a>
+      <a class="navlink px-4 py-2 text-muted hover:text-text transition-colors">Team</a>
+    </nav>
+    <div class="mt-auto mx-4 border border-border p-3">
+      <p class="text-[10px] font-bold uppercase tracking-wide text-muted">Free Plan</p>
+      <a class="text-[11px] text-accent font-semibold hover:underline">Upgrade to Pro →</a>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0 px-6 py-5">
+
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="font-heading text-3xl tracking-wide">Dashboard</h1>
+      <div class="flex items-center gap-3 text-xs text-muted">
+        <span>Updated 2 min ago</span>
+        <button class="bg-text text-white px-3 py-1.5 text-xs font-semibold">+ New Event</button>
+      </div>
+    </div>
+
+    <!-- Dense KPI row -->
+    <div class="grid grid-cols-6 gap-px bg-border border border-border mb-5">
+      <div class="bg-card p-3">
+        <p class="text-[10px] text-muted uppercase tracking-wide">Revenue</p>
+        <p class="font-heading text-xl">£12,450</p>
+        <svg viewBox="0 0 80 20" class="w-full h-4 mt-1"><polyline fill="none" stroke="#1FA35C" stroke-width="1.5" points="0,16 15,13 30,15 45,7 60,10 75,3"/></svg>
+      </div>
+      <div class="bg-card p-3">
+        <p class="text-[10px] text-muted uppercase tracking-wide">Tickets</p>
+        <p class="font-heading text-xl">1,204</p>
+        <svg viewBox="0 0 80 20" class="w-full h-4 mt-1"><polyline fill="none" stroke="#6E5BD6" stroke-width="1.5" points="0,14 15,16 30,10 45,11 60,6 75,2"/></svg>
+      </div>
+      <div class="bg-card p-3">
+        <p class="text-[10px] text-muted uppercase tracking-wide">Avg Order</p>
+        <p class="font-heading text-xl">£31.42</p>
+        <svg viewBox="0 0 80 20" class="w-full h-4 mt-1"><polyline fill="none" stroke="#E63950" stroke-width="1.5" points="0,10 15,12 30,8 45,9 60,7 75,8"/></svg>
+      </div>
+      <div class="bg-card p-3">
+        <p class="text-[10px] text-muted uppercase tracking-wide">Conv. Rate</p>
+        <p class="font-heading text-xl">3.8%</p>
+        <svg viewBox="0 0 80 20" class="w-full h-4 mt-1"><polyline fill="none" stroke="#1FA35C" stroke-width="1.5" points="0,15 15,12 30,13 45,8 60,9 75,4"/></svg>
+      </div>
+      <div class="bg-card p-3">
+        <p class="text-[10px] text-muted uppercase tracking-wide">Upcoming</p>
+        <p class="font-heading text-xl">6</p>
+        <p class="text-[10px] text-muted mt-2">Next: 14 Sep</p>
+      </div>
+      <div class="bg-card p-3">
+        <p class="text-[10px] text-muted uppercase tracking-wide">Payout</p>
+        <p class="font-heading text-xl text-accent">£3,120</p>
+        <p class="text-[10px] text-accent mt-2 font-semibold">Available →</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
+      <div class="lg:col-span-3 border border-border p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wide">Revenue — 30D</h2>
+          <div class="flex gap-3 text-[11px] text-muted"><span class="text-text font-semibold border-b border-text">30D</span><span>90D</span><span>1Y</span><span>ALL</span></div>
+        </div>
+        <svg viewBox="0 0 700 130" class="w-full h-32" preserveAspectRatio="none">
+          <g stroke="#E4E4E9" stroke-width="1"><line x1="0" y1="30" x2="700" y2="30"/><line x1="0" y1="65" x2="700" y2="65"/><line x1="0" y1="100" x2="700" y2="100"/></g>
+          <polyline fill="none" stroke="#141417" stroke-width="1.5" points="0,105 47,92 94,98 141,72 188,80 235,54 282,66 329,45 376,58 423,28 470,42 517,24 564,38 611,10 658,20 700,8"/>
+        </svg>
+      </div>
+      <div class="border border-border p-4">
+        <h2 class="text-xs font-bold uppercase tracking-wide mb-3">Sell-Through</h2>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between"><span>Neon Nights</span><span class="font-mono font-semibold">77%</span></div>
+          <div class="h-1 bg-border"><div class="h-full bg-text" style="width:77%"></div></div>
+          <div class="flex justify-between"><span>Warehouse</span><span class="font-mono font-semibold">40%</span></div>
+          <div class="h-1 bg-border"><div class="h-full bg-text" style="width:40%"></div></div>
+          <div class="flex justify-between"><span>Rooftop</span><span class="font-mono font-semibold">41%</span></div>
+          <div class="h-1 bg-border"><div class="h-full bg-text" style="width:41%"></div></div>
+          <div class="flex justify-between pt-1 border-t border-border mt-2"><span class="font-semibold">Average</span><span class="font-mono font-bold">74%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border border-border">
+      <div class="flex items-center justify-between px-4 py-2 border-b border-border">
+        <h2 class="text-xs font-bold uppercase tracking-wide">All Bookings (247)</h2>
+        <a class="text-[11px] text-accent font-semibold hover:underline">Export CSV →</a>
+      </div>
+      <table class="w-full text-xs">
+        <thead>
+          <tr class="text-left text-[10px] text-muted uppercase tracking-wide bg-bg border-b border-border">
+            <th class="px-4 py-2 font-semibold">Ref</th>
+            <th class="px-3 py-2 font-semibold">Buyer</th>
+            <th class="px-3 py-2 font-semibold">Event</th>
+            <th class="px-3 py-2 font-semibold text-right">Qty</th>
+            <th class="px-3 py-2 font-semibold text-right">Amount</th>
+            <th class="px-3 py-2 font-semibold text-right">Fee</th>
+            <th class="px-3 py-2 font-semibold text-right">Net</th>
+            <th class="px-3 py-2 font-semibold">Status</th>
+            <th class="px-4 py-2 font-semibold text-right">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-border hover:bg-bg">
+            <td class="px-4 py-2 font-mono text-accent">HXL-4F9K2A</td><td class="px-3 py-2">Jordan Blake</td><td class="px-3 py-2 text-muted">Neon Nights Festival</td>
+            <td class="px-3 py-2 text-right">2</td><td class="px-3 py-2 text-right font-medium">£84.00</td><td class="px-3 py-2 text-right text-muted">£4.20</td><td class="px-3 py-2 text-right font-semibold">£79.80</td>
+            <td class="px-3 py-2"><span class="text-green font-semibold">Confirmed</span></td><td class="px-4 py-2 text-right text-muted">12 Sep 09:14</td>
+          </tr>
+          <tr class="border-b border-border hover:bg-bg">
+            <td class="px-4 py-2 font-mono text-accent">HXL-9B2C7D</td><td class="px-3 py-2">Amara Osei</td><td class="px-3 py-2 text-muted">Warehouse Sessions</td>
+            <td class="px-3 py-2 text-right">1</td><td class="px-3 py-2 text-right font-medium">£42.00</td><td class="px-3 py-2 text-right text-muted">£2.10</td><td class="px-3 py-2 text-right font-semibold">£39.90</td>
+            <td class="px-3 py-2"><span class="text-green font-semibold">Confirmed</span></td><td class="px-4 py-2 text-right text-muted">11 Sep 22:03</td>
+          </tr>
+          <tr class="border-b border-border hover:bg-bg">
+            <td class="px-4 py-2 font-mono text-accent">HXL-2E8F41</td><td class="px-3 py-2">Priya Nair</td><td class="px-3 py-2 text-muted">Neon Nights Festival</td>
+            <td class="px-3 py-2 text-right">4</td><td class="px-3 py-2 text-right font-medium">£168.00</td><td class="px-3 py-2 text-right text-muted">£8.40</td><td class="px-3 py-2 text-right font-semibold">£159.60</td>
+            <td class="px-3 py-2"><span class="text-green font-semibold">Confirmed</span></td><td class="px-4 py-2 text-right text-muted">10 Sep 18:41</td>
+          </tr>
+          <tr class="hover:bg-bg">
+            <td class="px-4 py-2 font-mono text-accent">HXL-7A1D93</td><td class="px-3 py-2">Tom Whitfield</td><td class="px-3 py-2 text-muted">Rooftop Sessions</td>
+            <td class="px-3 py-2 text-right">1</td><td class="px-3 py-2 text-right font-medium">£56.00</td><td class="px-3 py-2 text-right text-muted">£2.80</td><td class="px-3 py-2 text-right font-semibold">£53.20</td>
+            <td class="px-3 py-2"><span class="text-muted font-semibold">Pending</span></td><td class="px-4 py-2 text-right text-muted">09 Sep 14:22</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

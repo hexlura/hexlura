@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Attendees</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  .navlink.active { background: #1A0E0C; color: #fff; box-shadow: 0 6px 18px -4px rgba(26,14,12,0.35); }
+  .navlink svg { flex-shrink: 0; }
+  .tab.active { color: #1A0E0C; border-color: #E63950; }
+  aside nav::-webkit-scrollbar { width: 5px; }
+  aside nav::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 shrink-0 bg-card/80 backdrop-blur border-r border-border hidden lg:flex flex-col sticky top-0 h-screen">
+    <div class="flex items-center gap-2.5 px-7 pt-5 pb-4 shrink-0">
+      <p class="font-heading text-2xl text-accent tracking-wider">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+    </div>
+
+    <nav class="flex flex-col gap-0.5 text-sm px-5 pb-4 flex-1 overflow-y-auto">
+      <a href="dashboard.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="events.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+        My Events
+      </a>
+      <a href="bookings.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+        Bookings
+      </a>
+      <a href="attendees.html" class="navlink active flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
+        Attendees
+      </a>
+      <a href="team.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+        Team
+      </a>
+      <a href="promoters.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        Promoters
+      </a>
+      <a href="email-lists.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        Email Lists
+      </a>
+      <a href="campaigns.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>
+        Promote via Email
+      </a>
+      <a href="portfolio.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Portfolio
+      </a>
+      <a href="analytics.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
+        Analytics
+      </a>
+      <a href="payouts.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+        Payouts
+      </a>
+      <a href="refunds.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 1 2.6 6.3"/><path d="M3 21v-5h5"/></svg>
+        Refunds
+      </a>
+      <a href="promo-codes.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 12.6 12.6 20.6a2 2 0 0 1-2.8 0l-7.4-7.4a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h6.8a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
+        Promo Codes
+      </a>
+      <a href="settings.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1z"/></svg>
+        Settings
+      </a>
+      <a href="support.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 4.8 1c0 1.5-2.3 1.8-2.3 3.5"/><path d="M12 17h.01"/></svg>
+        Help & Support
+      </a>
+      <a href="notifications.html" class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        Notifications
+      </a>
+    </nav>
+
+    <div class="shrink-0 p-5 pt-3 border-t border-border">
+      <div class="bg-gradient-to-br from-accent via-accent to-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
+        <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10"></div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
+        <p class="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
+        <button class="w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+
+    <!-- Top bar -->
+    <div class="sticky top-0 z-10 bg-bg/80 backdrop-blur border-b border-border px-6 lg:px-10 py-4 flex items-center justify-between gap-4">
+      <div class="relative hidden md:block w-72">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search events, bookings, attendees…" class="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25" />
+      </div>
+      <div class="flex items-center gap-3 ml-auto">
+        <div class="relative">
+          <button onclick="event.stopPropagation(); document.getElementById('notifDropdown').classList.toggle('hidden')" class="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-text transition-colors relative shadow-soft">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center">3</span>
+          </button>
+          <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-hover overflow-hidden z-20">
+            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+              <p class="text-sm font-semibold">Notifications</p>
+              <span class="text-[10px] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full">3 new</span>
+            </div>
+            <div class="max-h-72 overflow-y-auto divide-y divide-border">
+              <a href="notifications.html" class="flex items-start gap-3 p-4 hover:bg-bg transition-colors">
+                <span class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </span>
+                <div class="min-w-0">
+                  <p class="text-xs leading-snug"><span class="font-semibold">New booking</span> — Jordan Blake booked 2× Neon Nights</p>
+                  <p class="text-[10px] text-muted mt-1">12 minutes ago</p>
+                </div>
+              </a>
+              <a href="notifications.html" class="flex items-start gap-3 p-4 hover:bg-bg transition-colors">
+                <span class="w-8 h-8 rounded-lg bg-yellow/10 flex items-center justify-center text-yellowText shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 1 2.6 6.3"/><path d="M3 21v-5h5"/></svg>
+                </span>
+                <div class="min-w-0">
+                  <p class="text-xs leading-snug"><span class="font-semibold">Refund requested</span> — Rooftop Sessions</p>
+                  <p class="text-[10px] text-muted mt-1">3 hours ago</p>
+                </div>
+              </a>
+              <a href="notifications.html" class="flex items-start gap-3 p-4 hover:bg-bg transition-colors">
+                <span class="w-8 h-8 rounded-lg bg-green/10 flex items-center justify-center text-green shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+                </span>
+                <div class="min-w-0">
+                  <p class="text-xs leading-snug"><span class="font-semibold">Payout sent</span> — £4,807.00</p>
+                  <p class="text-[10px] text-muted mt-1">Yesterday</p>
+                </div>
+              </a>
+            </div>
+            <a href="notifications.html" class="block text-center text-xs font-semibold text-accent py-3 border-t border-border hover:bg-bg transition-colors">View all notifications →</a>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 bg-card border border-border rounded-xl pl-1.5 pr-3.5 py-1.5 shadow-soft">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange to-accent flex items-center justify-center text-white text-xs font-bold">NE</div>
+          <div class="leading-tight">
+            <p class="text-xs font-semibold">Nightshade Events</p>
+            <p class="text-[10px] text-muted">Organiser</p>
+          </div>
+        </div>
+        <button title="Log out" class="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-accent hover:border-accent/30 transition-colors shadow-soft">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+<div class="p-6 lg:p-10 max-w-7xl">
+
+      <div class="mb-6">
+        <h1 class="font-heading text-4xl tracking-wide">ATTENDEES</h1>
+        <p class="text-muted text-sm mt-1">Select an event to view and manage its attendees</p>
+      </div>
+
+      <div class="grid gap-3 mb-10">
+        <div class="bg-card rounded-2xl shadow-card p-5 flex items-center justify-between hover:shadow-hover transition-shadow">
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-accent to-orange shrink-0"></div>
+            <div>
+              <p class="font-medium">Neon Nights Festival</p>
+              <p class="text-muted text-xs mt-0.5">14 Sep 2026 · 384 attendees</p>
+            </div>
+          </div>
+          <a href="#attendee-list" class="px-4 py-2 bg-accent/10 text-accent text-sm font-semibold rounded-xl hover:bg-accent/20 transition-colors">View Attendees →</a>
+        </div>
+        <div class="bg-card rounded-2xl shadow-card p-5 flex items-center justify-between hover:shadow-hover transition-shadow">
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-yellow to-orange shrink-0"></div>
+            <div>
+              <p class="font-medium">Warehouse Sessions</p>
+              <p class="text-muted text-xs mt-0.5">21 Sep 2026 · 120 attendees</p>
+            </div>
+          </div>
+          <a href="#attendee-list" class="px-4 py-2 bg-accent/10 text-accent text-sm font-semibold rounded-xl hover:bg-accent/20 transition-colors">View Attendees →</a>
+        </div>
+        <div class="bg-card rounded-2xl shadow-card p-5 flex items-center justify-between hover:shadow-hover transition-shadow">
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-orange to-accent shrink-0"></div>
+            <div>
+              <p class="font-medium">Rooftop Sessions</p>
+              <p class="text-muted text-xs mt-0.5">28 Sep 2026 · 62 attendees</p>
+            </div>
+          </div>
+          <a href="#attendee-list" class="px-4 py-2 bg-accent/10 text-accent text-sm font-semibold rounded-xl hover:bg-accent/20 transition-colors">View Attendees →</a>
+        </div>
+      </div>
+
+      <!-- Preview: attendee list for selected event -->
+      <div id="attendee-list" class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold">Neon Nights Festival — Attendee List</h2>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-4 mb-5">
+        <div class="bg-card rounded-2xl shadow-card p-4">
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Total Tickets</p>
+          <p class="font-heading text-2xl">384</p>
+        </div>
+        <div class="bg-card rounded-2xl shadow-card p-4">
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Checked In</p>
+          <p class="font-heading text-2xl text-green">2</p>
+        </div>
+        <div class="bg-card rounded-2xl shadow-card p-4">
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Revenue</p>
+          <p class="font-heading text-2xl">£8,214</p>
+        </div>
+      </div>
+
+      <!-- Search + filters -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Search name or email..." class="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/25" />
+        </div>
+        <select class="bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+          <option>All Ticket Types</option>
+          <option>General Admission</option>
+          <option>VIP</option>
+        </select>
+        <select class="bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+          <option>All</option>
+          <option>Checked In</option>
+          <option>Not Checked In</option>
+        </select>
+        <button class="bg-card border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-bg transition-colors whitespace-nowrap">Export CSV</button>
+        <button onclick="document.getElementById('sendAnnouncementModal').classList.remove('hidden')" class="bg-text text-white px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap">Send Announcement</button>
+      </div>
+
+      <div class="bg-card rounded-2xl shadow-card overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+              <th class="font-medium py-3.5 px-6">Attendee</th>
+              <th class="font-medium py-3.5 px-4">Email</th>
+              <th class="font-medium py-3.5 px-4">Ticket Type</th>
+              <th class="font-medium py-3.5 px-4">Booking Ref</th>
+              <th class="font-medium py-3.5 px-4 text-right">Check-in</th>
+              <th class="font-medium py-3.5 px-6 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-border hover:bg-bg/60 transition-colors">
+              <td class="py-3.5 px-6 font-medium">Jordan Blake</td>
+              <td class="py-3.5 px-4 text-muted text-xs">jordan.blake@email.com</td>
+              <td class="py-3.5 px-4">General Admission</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-4F9K2A</td>
+              <td class="py-3.5 px-4 text-right"><span class="text-xs font-semibold text-green bg-green/10 px-2.5 py-1 rounded-full">Checked in</span></td>
+              <td class="py-3.5 px-6 text-right text-xs text-muted">—</td>
+            </tr>
+            <tr class="border-b border-border hover:bg-bg/60 transition-colors">
+              <td class="py-3.5 px-6 font-medium">Priya Nair</td>
+              <td class="py-3.5 px-4 text-muted text-xs">priya.nair@email.com</td>
+              <td class="py-3.5 px-4">VIP</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-2E8F41</td>
+              <td class="py-3.5 px-4 text-right"><span class="text-xs font-semibold text-green bg-green/10 px-2.5 py-1 rounded-full">Checked in</span></td>
+              <td class="py-3.5 px-6 text-right text-xs text-muted">—</td>
+            </tr>
+            <tr class="hover:bg-bg/60 transition-colors">
+              <td class="py-3.5 px-6 font-medium">Sam Delacroix</td>
+              <td class="py-3.5 px-4 text-muted text-xs">sam.d@email.com</td>
+              <td class="py-3.5 px-4">General Admission</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-6C3B02</td>
+              <td class="py-3.5 px-4 text-right"><span class="text-xs font-semibold text-muted bg-border px-2.5 py-1 rounded-full">Not arrived</span></td>
+              <td class="py-3.5 px-6 text-right"><button class="text-xs text-accent font-semibold hover:underline">Check In</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Send Announcement modal -->
+    <div id="sendAnnouncementModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div onclick="document.getElementById('sendAnnouncementModal').classList.add('hidden')" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="relative bg-card rounded-2xl shadow-hover w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-border">
+          <div>
+            <h2 class="font-heading text-2xl tracking-wide">SEND ANNOUNCEMENT</h2>
+            <p class="text-muted text-xs mt-0.5">Sending to 3 attendees</p>
+          </div>
+          <button onclick="document.getElementById('sendAnnouncementModal').classList.add('hidden')" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-bg hover:text-text transition-colors shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+          <div>
+            <label class="text-xs text-muted block mb-1.5">Subject</label>
+            <input placeholder="Email subject..." class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/25" />
+          </div>
+          <div>
+            <label class="text-xs text-muted block mb-1.5">Message</label>
+            <textarea rows="5" placeholder="Your message..." class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/25"></textarea>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-6 py-5 border-t border-border">
+          <button onclick="document.getElementById('sendAnnouncementModal').classList.add('hidden')" class="bg-bg border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-border/40 transition-colors">Cancel</button>
+          <button class="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold">Send to 3 attendees</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+<script>
+  // app-modal-escape-handler
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('[id$="Modal"]').forEach(function (m) { m.classList.add('hidden'); });
+    }
+  });
+</script>
+<script>
+  document.addEventListener('click', function (e) {
+    var dropdown = document.getElementById('notifDropdown');
+    if (dropdown && !dropdown.classList.contains('hidden') && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+</script>
+</body>
+</html>

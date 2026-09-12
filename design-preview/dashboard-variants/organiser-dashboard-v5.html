@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Minimal Premium v5)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FFFFFF', card: '#FFFFFF', border: '#EAEAEA', text: '#111111',
+          muted: '#9A9A9A', accent: '#E63950', subtle: '#FAFAFA',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #FFFFFF; }
+  .navlink.active { color: #111; }
+  .navlink.active .dot { opacity: 1; }
+  .dot { opacity: 0; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #EAEAEA; border-radius: 8px; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-60 shrink-0 border-r border-border px-6 py-8 hidden lg:flex flex-col sticky top-0 h-screen">
+    <p class="font-heading text-xl text-accent tracking-wider mb-14">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+
+    <p class="text-[10px] font-medium uppercase tracking-[0.18em] text-muted mb-4">Overview</p>
+    <nav class="flex flex-col gap-0.5 text-sm mb-10">
+      <a class="navlink active flex items-center gap-2.5 py-2 font-semibold">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Dashboard
+      </a>
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Events
+      </a>
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Bookings
+      </a>
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Attendees
+      </a>
+    </nav>
+
+    <p class="text-[10px] font-medium uppercase tracking-[0.18em] text-muted mb-4">Growth</p>
+    <nav class="flex flex-col gap-0.5 text-sm mb-10">
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Promoters
+      </a>
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Analytics
+      </a>
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Payouts
+      </a>
+      <a class="navlink flex items-center gap-2.5 py-2 text-muted hover:text-text transition-colors">
+        <span class="dot w-1 h-1 rounded-full bg-accent"></span> Team
+      </a>
+    </nav>
+
+    <div class="mt-auto pt-6 border-t border-border">
+      <p class="text-[10px] font-medium uppercase tracking-[0.18em] text-muted mb-2">Free Plan</p>
+      <p class="text-xs text-muted leading-relaxed mb-3">Unlock lower fees, team seats and promoter tools.</p>
+      <a class="text-xs font-semibold text-accent hover:underline">Upgrade to Pro →</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+
+    <!-- Top bar -->
+    <div class="border-b border-border px-8 lg:px-14 py-5 flex items-center justify-between gap-4">
+      <div class="relative hidden md:block w-80">
+        <svg class="absolute left-0 top-1/2 -translate-y-1/2 text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search events, bookings, attendees…" class="w-full bg-transparent pl-6 pr-4 py-1.5 text-sm placeholder:text-muted focus:outline-none border-b border-transparent focus:border-text transition-colors" />
+      </div>
+      <div class="flex items-center gap-5 ml-auto">
+        <button class="text-muted hover:text-text transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full border border-border flex items-center justify-center text-xs font-semibold">NE</div>
+          <div class="leading-tight hidden sm:block">
+            <p class="text-xs font-semibold">Nightshade Events</p>
+            <p class="text-[10px] text-muted">Organiser</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-8 lg:px-14 py-10 max-w-6xl">
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 gap-4">
+        <div>
+          <h1 class="font-heading text-4xl tracking-wide">Dashboard</h1>
+          <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+        </div>
+        <button class="border border-text px-5 py-2.5 text-sm font-medium hover:bg-text hover:text-white transition-colors">
+          + New Event
+        </button>
+      </div>
+
+      <!-- KPIs — plain, numerals-forward -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-0 border-t border-l border-border mb-14">
+        <div class="border-r border-b border-border p-6">
+          <p class="text-xs text-muted uppercase tracking-wider mb-3">Total Revenue</p>
+          <p class="font-heading text-4xl">£12,450</p>
+          <p class="text-xs text-muted mt-2">↑ 18% vs last month</p>
+        </div>
+        <div class="border-r border-b border-border p-6">
+          <p class="text-xs text-muted uppercase tracking-wider mb-3">Tickets Sold</p>
+          <p class="font-heading text-4xl">1,204</p>
+          <p class="text-xs text-muted mt-2">3,410 all-time</p>
+        </div>
+        <div class="border-r border-b border-border p-6">
+          <p class="text-xs text-muted uppercase tracking-wider mb-3">Upcoming Events</p>
+          <p class="font-heading text-4xl">6</p>
+          <p class="text-xs text-muted mt-2">Next: 14 Sep 2026</p>
+        </div>
+        <div class="border-r border-b border-border p-6">
+          <p class="text-xs text-muted uppercase tracking-wider mb-3">Payout Balance</p>
+          <p class="font-heading text-4xl text-accent">£3,120</p>
+          <p class="text-xs text-accent mt-2 font-medium">Available now →</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-14 mb-14">
+        <!-- Revenue chart -->
+        <div class="lg:col-span-2">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-sm font-semibold">Revenue Overview</h2>
+              <p class="text-xs text-muted mt-0.5">Last 30 days</p>
+            </div>
+            <div class="flex gap-4 text-xs text-muted">
+              <span class="text-text font-medium border-b border-text pb-1">30D</span>
+              <span class="pb-1">90D</span>
+              <span class="pb-1">1Y</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 600 180" class="w-full h-44" preserveAspectRatio="none">
+            <g stroke="#EAEAEA" stroke-width="1">
+              <line x1="0" y1="45" x2="600" y2="45"/><line x1="0" y1="90" x2="600" y2="90"/>
+              <line x1="0" y1="135" x2="600" y2="135"/><line x1="0" y1="178" x2="600" y2="178"/>
+            </g>
+            <polyline fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              points="0,145 40,125 80,135 120,95 160,105 200,72 240,85 280,58 320,73 360,38 400,54 440,34 480,50 520,18 560,30 600,14" />
+            <circle cx="600" cy="14" r="4" fill="#E63950"/>
+          </svg>
+        </div>
+
+        <!-- Sell-through -->
+        <div>
+          <h2 class="text-sm font-semibold mb-6">Avg. Sell-Through</h2>
+          <p class="font-heading text-6xl">74<span class="text-2xl text-muted">%</span></p>
+          <div class="h-px bg-border mt-5 mb-2 relative">
+            <div class="h-px bg-text absolute top-0 left-0" style="width:74%"></div>
+          </div>
+          <p class="text-xs text-muted">Across 6 upcoming events</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-14">
+        <!-- Recent bookings -->
+        <div class="lg:col-span-2">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-sm font-semibold">Recent Bookings</h2>
+            <a class="text-xs text-muted hover:text-text transition-colors">View all →</a>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                <th class="pb-3 font-medium">Ref</th>
+                <th class="pb-3 font-medium">Buyer</th>
+                <th class="pb-3 font-medium">Event</th>
+                <th class="pb-3 font-medium text-right">Amount</th>
+                <th class="pb-3 font-medium text-right">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border">
+                <td class="py-3.5 font-mono text-xs text-muted">HXL-4F9K2A</td>
+                <td class="py-3.5">Jordan Blake</td>
+                <td class="py-3.5 text-muted truncate max-w-[120px]">Neon Nights Festival</td>
+                <td class="py-3.5 text-right font-medium">£84.00</td>
+                <td class="py-3.5 text-right text-muted text-xs">12 Sep</td>
+              </tr>
+              <tr class="border-b border-border">
+                <td class="py-3.5 font-mono text-xs text-muted">HXL-9B2C7D</td>
+                <td class="py-3.5">Amara Osei</td>
+                <td class="py-3.5 text-muted truncate max-w-[120px]">Warehouse Sessions</td>
+                <td class="py-3.5 text-right font-medium">£42.00</td>
+                <td class="py-3.5 text-right text-muted text-xs">11 Sep</td>
+              </tr>
+              <tr class="border-b border-border">
+                <td class="py-3.5 font-mono text-xs text-muted">HXL-2E8F41</td>
+                <td class="py-3.5">Priya Nair</td>
+                <td class="py-3.5 text-muted truncate max-w-[120px]">Neon Nights Festival</td>
+                <td class="py-3.5 text-right font-medium">£168.00</td>
+                <td class="py-3.5 text-right text-muted text-xs">10 Sep</td>
+              </tr>
+              <tr>
+                <td class="py-3.5 font-mono text-xs text-muted">HXL-7A1D93</td>
+                <td class="py-3.5">Tom Whitfield</td>
+                <td class="py-3.5 text-muted truncate max-w-[120px]">Rooftop Sessions</td>
+                <td class="py-3.5 text-right font-medium">£56.00</td>
+                <td class="py-3.5 text-right text-muted text-xs">09 Sep</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Upcoming events -->
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-sm font-semibold">Upcoming Events</h2>
+            <a class="text-xs text-muted hover:text-text transition-colors">View all →</a>
+          </div>
+          <div class="flex flex-col gap-6">
+            <div class="pb-6 border-b border-border">
+              <p class="text-sm font-medium">Neon Nights Festival</p>
+              <p class="text-xs text-muted mt-0.5">14 Sep 2026 · Manchester</p>
+              <div class="flex items-center gap-3 mt-3">
+                <div class="h-px bg-border flex-1 relative">
+                  <div class="h-px bg-text absolute top-0 left-0" style="width:77%"></div>
+                </div>
+                <span class="text-xs text-muted shrink-0">77%</span>
+              </div>
+            </div>
+            <div class="pb-6 border-b border-border">
+              <p class="text-sm font-medium">Warehouse Sessions</p>
+              <p class="text-xs text-muted mt-0.5">21 Sep 2026 · Leeds</p>
+              <div class="flex items-center gap-3 mt-3">
+                <div class="h-px bg-border flex-1 relative">
+                  <div class="h-px bg-text absolute top-0 left-0" style="width:40%"></div>
+                </div>
+                <span class="text-xs text-muted shrink-0">40%</span>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm font-medium">Rooftop Sessions</p>
+              <p class="text-xs text-muted mt-0.5">28 Sep 2026 · Bristol</p>
+              <div class="flex items-center gap-3 mt-3">
+                <div class="h-px bg-border flex-1 relative">
+                  <div class="h-px bg-text absolute top-0 left-0" style="width:41%"></div>
+                </div>
+                <span class="text-xs text-muted shrink-0">41%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

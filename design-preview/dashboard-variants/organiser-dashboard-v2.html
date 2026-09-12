@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Warm Direction v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  .navlink.active { background: #1A0E0C; color: #fff; box-shadow: 0 6px 18px -4px rgba(26,14,12,0.35); }
+  .navlink svg { flex-shrink: 0; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 shrink-0 bg-card/80 backdrop-blur border-r border-border p-5 hidden lg:flex flex-col sticky top-0 h-screen">
+    <div class="flex items-center gap-2.5 mb-9 px-2">
+      <p class="font-heading text-2xl text-accent tracking-wider">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+    </div>
+
+    <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted px-3 mb-2">Overview</p>
+    <nav class="flex flex-col gap-1 text-sm mb-6">
+      <a class="navlink active flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+        Events
+      </a>
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+        Bookings
+      </a>
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
+        Attendees
+      </a>
+    </nav>
+
+    <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted px-3 mb-2">Growth</p>
+    <nav class="flex flex-col gap-1 text-sm mb-6">
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        Promoters
+      </a>
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
+        Analytics
+      </a>
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+        Payouts
+      </a>
+      <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+        Team
+      </a>
+    </nav>
+
+    <div class="mt-auto bg-gradient-to-br from-accent via-accent to-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
+      <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10"></div>
+      <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
+      <p class="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
+      <button class="w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+
+    <!-- Top bar -->
+    <div class="sticky top-0 z-10 bg-bg/80 backdrop-blur border-b border-border px-6 lg:px-10 py-4 flex items-center justify-between gap-4">
+      <div class="relative hidden md:block w-72">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search events, bookings, attendees…" class="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25" />
+      </div>
+      <div class="flex items-center gap-3 ml-auto">
+        <button class="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-text transition-colors relative shadow-soft">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full bg-accent"></span>
+        </button>
+        <div class="flex items-center gap-3 bg-card border border-border rounded-xl pl-1.5 pr-3.5 py-1.5 shadow-soft">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange to-accent flex items-center justify-center text-white text-xs font-bold">NE</div>
+          <div class="leading-tight">
+            <p class="text-xs font-semibold">Nightshade Events</p>
+            <p class="text-[10px] text-muted">Organiser</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 lg:p-10 max-w-7xl">
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+        <div>
+          <h1 class="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+          <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+        </div>
+        <button class="bg-text text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all flex items-center gap-2">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          New Event
+        </button>
+      </div>
+
+      <!-- KPIs with sparklines -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <span class="text-xs font-semibold text-green bg-green/10 px-2 py-1 rounded-full">▲ 18%</span>
+          </div>
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Total Revenue</p>
+          <p class="font-heading text-3xl mb-3">£12,450</p>
+          <svg viewBox="0 0 100 28" class="w-full h-7"><polyline fill="none" stroke="#E63950" stroke-width="2" points="0,22 15,18 30,20 45,10 60,14 75,6 100,4"/></svg>
+        </div>
+
+        <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-orange/10 flex items-center justify-center text-orangeText">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg>
+            </span>
+            <span class="text-xs font-semibold text-muted bg-bg px-2 py-1 rounded-full">3,410 total</span>
+          </div>
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Tickets Sold</p>
+          <p class="font-heading text-3xl mb-3">1,204</p>
+          <svg viewBox="0 0 100 28" class="w-full h-7"><polyline fill="none" stroke="#FF7A3D" stroke-width="2" points="0,20 15,22 30,14 45,16 60,8 75,12 100,3"/></svg>
+        </div>
+
+        <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-yellow/10 flex items-center justify-center text-yellowText">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+            </span>
+            <span class="text-xs font-semibold text-muted bg-bg px-2 py-1 rounded-full">6 live</span>
+          </div>
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Upcoming Events</p>
+          <p class="font-heading text-3xl mb-3">6</p>
+          <p class="text-xs text-muted">Next: <span class="text-text font-medium">14 Sep · Neon Nights</span></p>
+        </div>
+
+        <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center text-amberText">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v13M6 9l6 6 6-6"/><path d="M4 19h16"/></svg>
+            </span>
+            <span class="text-xs font-semibold text-green bg-green/10 px-2 py-1 rounded-full">Ready</span>
+          </div>
+          <p class="text-xs text-muted uppercase tracking-wider mb-1">Payout Balance</p>
+          <p class="font-heading text-3xl mb-3">£3,120</p>
+          <button class="text-xs text-accent font-semibold hover:underline">Withdraw now →</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Revenue chart -->
+        <div class="lg:col-span-2 bg-card rounded-2xl shadow-card p-6">
+          <div class="flex items-center justify-between mb-1">
+            <div>
+              <h2 class="text-sm font-semibold">Revenue Overview</h2>
+              <p class="text-xs text-muted mt-0.5">Last 30 days · Daily ticket revenue</p>
+            </div>
+            <div class="flex gap-1 bg-bg rounded-lg p-1">
+              <span class="px-3 py-1 rounded-md text-xs font-medium bg-card shadow-soft">30D</span>
+              <span class="px-3 py-1 rounded-md text-xs font-medium text-muted">90D</span>
+              <span class="px-3 py-1 rounded-md text-xs font-medium text-muted">1Y</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 600 200" class="w-full h-52 mt-2" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#E63950" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#FF7A3D" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#E63950"/><stop offset="100%" stop-color="#FF7A3D"/>
+              </linearGradient>
+            </defs>
+            <g stroke="#F1E7E2" stroke-width="1">
+              <line x1="0" y1="30" x2="600" y2="30"/><line x1="0" y1="80" x2="600" y2="80"/>
+              <line x1="0" y1="130" x2="600" y2="130"/><line x1="0" y1="180" x2="600" y2="180"/>
+            </g>
+            <polyline fill="none" stroke="url(#line)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
+              points="0,160 40,140 80,150 120,105 160,115 200,80 240,95 280,65 320,82 360,42 400,60 440,38 480,55 520,20 560,32 600,15" />
+            <polygon fill="url(#rev)" points="0,160 40,140 80,150 120,105 160,115 200,80 240,95 280,65 320,82 360,42 400,60 440,38 480,55 520,20 560,32 600,15 600,200 0,200" />
+            <circle cx="600" cy="15" r="5" fill="#FF7A3D" stroke="white" stroke-width="2"/>
+          </svg>
+        </div>
+
+        <!-- Sell-through gauge -->
+        <div class="bg-card rounded-2xl shadow-card p-6 flex flex-col items-center justify-center text-center">
+          <h2 class="text-sm font-semibold self-start mb-2">Avg. Sell-Through</h2>
+          <svg width="150" height="150" viewBox="0 0 120 120" class="my-1">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#F1E7E2" stroke-width="14"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round"
+              stroke-dasharray="314" stroke-dashoffset="82" transform="rotate(-90 60 60)"/>
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#E63950"/><stop offset="100%" stop-color="#F5A623"/>
+              </linearGradient>
+            </defs>
+            <text x="60" y="56" text-anchor="middle" font-family="Bebas Neue" font-size="30" fill="#1A0E0C">74%</text>
+            <text x="60" y="74" text-anchor="middle" font-family="DM Sans" font-size="9" fill="#6B5D56">capacity</text>
+          </svg>
+          <p class="text-xs text-muted mt-2">Across 6 upcoming events</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent bookings -->
+        <div class="lg:col-span-2 bg-card rounded-2xl shadow-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold">Recent Bookings</h2>
+            <a class="text-xs text-accent font-medium hover:underline">View all →</a>
+          </div>
+          <div class="flex flex-col divide-y divide-border">
+            <div class="flex items-center gap-3 py-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">JB</div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium truncate">Jordan Blake</p>
+                <p class="text-xs text-muted truncate">Neon Nights Festival · <span class="font-mono">HXL-4F9K2A</span></p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-sm font-semibold">£84.00</p>
+                <p class="text-[11px] text-muted">12 Sep</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 py-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-yellow to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">AO</div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium truncate">Amara Osei</p>
+                <p class="text-xs text-muted truncate">Warehouse Sessions · <span class="font-mono">HXL-9B2C7D</span></p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-sm font-semibold">£42.00</p>
+                <p class="text-[11px] text-muted">11 Sep</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 py-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-orange to-accent flex items-center justify-center text-white text-xs font-bold shrink-0">PN</div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium truncate">Priya Nair</p>
+                <p class="text-xs text-muted truncate">Neon Nights Festival · <span class="font-mono">HXL-2E8F41</span></p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-sm font-semibold">£168.00</p>
+                <p class="text-[11px] text-muted">10 Sep</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 py-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-green to-amber flex items-center justify-center text-white text-xs font-bold shrink-0">TW</div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium truncate">Tom Whitfield</p>
+                <p class="text-xs text-muted truncate">Rooftop Sessions · <span class="font-mono">HXL-7A1D93</span></p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-sm font-semibold">£56.00</p>
+                <p class="text-[11px] text-muted">09 Sep</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming events -->
+        <div class="bg-card rounded-2xl shadow-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold">Upcoming Events</h2>
+            <a class="text-xs text-accent font-medium hover:underline">View all →</a>
+          </div>
+          <div class="flex flex-col gap-5">
+            <div class="pb-5 border-b border-border">
+              <div class="flex items-start justify-between gap-2">
+                <p class="text-sm font-semibold truncate">Neon Nights Festival</p>
+                <span class="text-[10px] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full shrink-0">77%</span>
+              </div>
+              <p class="text-xs text-muted mt-0.5">14 Sep 2026 · Manchester</p>
+              <div class="h-2 bg-bg rounded-full overflow-hidden mt-3">
+                <div class="h-full bg-gradient-to-r from-accent to-orange rounded-full" style="width:77%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-muted mt-1"><span>384 sold</span><span>500 cap</span></div>
+            </div>
+            <div class="pb-5 border-b border-border">
+              <div class="flex items-start justify-between gap-2">
+                <p class="text-sm font-semibold truncate">Warehouse Sessions</p>
+                <span class="text-[10px] font-semibold text-orangeText bg-orange/10 px-2 py-0.5 rounded-full shrink-0">40%</span>
+              </div>
+              <p class="text-xs text-muted mt-0.5">21 Sep 2026 · Leeds</p>
+              <div class="h-2 bg-bg rounded-full overflow-hidden mt-3">
+                <div class="h-full bg-gradient-to-r from-accent to-orange rounded-full" style="width:40%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-muted mt-1"><span>120 sold</span><span>300 cap</span></div>
+            </div>
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <p class="text-sm font-semibold truncate">Rooftop Sessions</p>
+                <span class="text-[10px] font-semibold text-amberText bg-amber/10 px-2 py-0.5 rounded-full shrink-0">41%</span>
+              </div>
+              <p class="text-xs text-muted mt-0.5">28 Sep 2026 · Bristol</p>
+              <div class="h-2 bg-bg rounded-full overflow-hidden mt-3">
+                <div class="h-full bg-gradient-to-r from-accent to-orange rounded-full" style="width:41%"></div>
+              </div>
+              <div class="flex justify-between text-[11px] text-muted mt-1"><span>62 sold</span><span>150 cap</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

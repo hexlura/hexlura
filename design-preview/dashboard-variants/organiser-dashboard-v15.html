@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Editorial Imagery v15)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAFAF8', card: '#FFFFFF', border: '#EDEDE9', text: '#161613',
+          muted: '#8C8C82', accent: '#E63950', yellow: '#F5C518', green: '#1FA35C',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: { card: '0 8px 30px -8px rgba(20,20,15,0.10)' },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #FAFAF8; }
+  .navlink.active { background: #161613; color: #fff; }
+  .hero1 { background: linear-gradient(135deg, #E63950, #7C3AED 60%, #22D3EE); }
+  .hero2 { background: linear-gradient(135deg, #F5C518, #E63950); }
+  .hero3 { background: linear-gradient(135deg, #1FA35C, #22D3EE); }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <aside class="w-64 shrink-0 bg-card border-r border-border p-5 hidden lg:flex flex-col sticky top-0 h-screen">
+    <p class="font-heading text-2xl text-accent tracking-wider mb-10 px-1">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+    <nav class="flex flex-col gap-1 text-sm mb-8">
+      <a class="navlink active px-3.5 py-2.5 rounded-xl font-medium">Dashboard</a>
+      <a class="navlink px-3.5 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">Events</a>
+      <a class="navlink px-3.5 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">Bookings</a>
+      <a class="navlink px-3.5 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">Attendees</a>
+      <a class="navlink px-3.5 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">Promoters</a>
+      <a class="navlink px-3.5 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">Analytics</a>
+      <a class="navlink px-3.5 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">Payouts</a>
+    </nav>
+    <div class="mt-auto bg-bg rounded-2xl p-4">
+      <p class="text-[10px] font-bold uppercase tracking-wide text-muted">Free Plan</p>
+      <p class="text-xs mt-2 mb-3">Unlock Pro for lower fees &amp; team seats</p>
+      <button class="w-full bg-text text-white text-xs font-bold py-2.5 rounded-xl">Upgrade →</button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0 p-6 lg:p-10 max-w-7xl">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+      <div>
+        <h1 class="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+        <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+      </div>
+      <button class="bg-text text-white px-5 py-3 rounded-xl text-sm font-semibold">+ New Event</button>
+    </div>
+
+    <!-- Featured event hero cards, magazine-style -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+      <div class="hero1 rounded-3xl shadow-card p-6 text-white relative overflow-hidden h-56 flex flex-col justify-end">
+        <p class="text-xs uppercase tracking-wider opacity-80 font-semibold">Featured Event</p>
+        <p class="font-heading text-3xl mt-1">Neon Nights Festival</p>
+        <p class="text-xs opacity-80 mt-1">14 Sep · Manchester</p>
+        <div class="flex items-center gap-4 mt-4">
+          <div><p class="font-heading text-2xl">77%</p><p class="text-[10px] opacity-70 uppercase">Sold</p></div>
+          <div><p class="font-heading text-2xl">£8.2k</p><p class="text-[10px] opacity-70 uppercase">Revenue</p></div>
+        </div>
+      </div>
+      <div class="hero2 rounded-3xl shadow-card p-6 text-white relative overflow-hidden h-56 flex flex-col justify-end">
+        <p class="text-xs uppercase tracking-wider opacity-80 font-semibold">Upcoming</p>
+        <p class="font-heading text-3xl mt-1">Warehouse Sessions</p>
+        <p class="text-xs opacity-80 mt-1">21 Sep · Leeds</p>
+        <div class="flex items-center gap-4 mt-4">
+          <div><p class="font-heading text-2xl">40%</p><p class="text-[10px] opacity-70 uppercase">Sold</p></div>
+          <div><p class="font-heading text-2xl">£2.9k</p><p class="text-[10px] opacity-70 uppercase">Revenue</p></div>
+        </div>
+      </div>
+      <div class="hero3 rounded-3xl shadow-card p-6 text-white relative overflow-hidden h-56 flex flex-col justify-end">
+        <p class="text-xs uppercase tracking-wider opacity-80 font-semibold">Upcoming</p>
+        <p class="font-heading text-3xl mt-1">Rooftop Sessions</p>
+        <p class="text-xs opacity-80 mt-1">28 Sep · Bristol</p>
+        <div class="flex items-center gap-4 mt-4">
+          <div><p class="font-heading text-2xl">41%</p><p class="text-[10px] opacity-70 uppercase">Sold</p></div>
+          <div><p class="font-heading text-2xl">£1.7k</p><p class="text-[10px] opacity-70 uppercase">Revenue</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pull-quote style KPIs -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10 py-8 border-y border-border">
+      <div>
+        <p class="font-heading text-5xl">£12,450</p>
+        <p class="text-xs text-muted uppercase tracking-wider mt-1">Total Revenue</p>
+      </div>
+      <div>
+        <p class="font-heading text-5xl">1,204</p>
+        <p class="text-xs text-muted uppercase tracking-wider mt-1">Tickets Sold</p>
+      </div>
+      <div>
+        <p class="font-heading text-5xl">6</p>
+        <p class="text-xs text-muted uppercase tracking-wider mt-1">Upcoming Events</p>
+      </div>
+      <div>
+        <p class="font-heading text-5xl text-accent">£3,120</p>
+        <p class="text-xs text-muted uppercase tracking-wider mt-1">Payout Balance</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-card rounded-2xl shadow-card p-6">
+        <h2 class="text-sm font-semibold mb-4">Recent Bookings</h2>
+        <div class="flex flex-col divide-y divide-border">
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-9 h-9 rounded-full hero1 flex items-center justify-center text-white text-xs font-bold shrink-0">JB</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">Jordan Blake</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-semibold shrink-0">£84.00</p>
+          </div>
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-9 h-9 rounded-full hero2 flex items-center justify-center text-white text-xs font-bold shrink-0">AO</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">Amara Osei</p><p class="text-xs text-muted truncate">Warehouse Sessions</p></div>
+            <p class="text-sm font-semibold shrink-0">£42.00</p>
+          </div>
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-9 h-9 rounded-full hero3 flex items-center justify-center text-white text-xs font-bold shrink-0">PN</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">Priya Nair</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-semibold shrink-0">£168.00</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6">
+        <h2 class="text-sm font-semibold mb-4">Revenue Overview</h2>
+        <svg viewBox="0 0 300 130" class="w-full h-32" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#E63950" stroke-width="3" stroke-linecap="round" points="0,100 30,90 60,95 90,68 120,75 150,50 180,60 210,38 240,50 270,20 300,30"/>
+        </svg>
+        <p class="text-xs text-muted mt-2">Last 30 days</p>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

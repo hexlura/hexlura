@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Glassmorphism v7)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          text: '#151221', muted: 'rgba(21,18,33,0.55)', accent: '#E63950',
+          violet: '#8B6CFF', cyan: '#3FE1D6', yellow: '#F5C518', green: '#22C55E',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          glass: '0 8px 32px rgba(31,20,60,0.12)',
+          glassHover: '0 16px 48px rgba(31,20,60,0.18)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body {
+    background:
+      radial-gradient(60% 50% at 15% 0%, #FFD9A0 0%, transparent 60%),
+      radial-gradient(55% 55% at 85% 10%, #8B6CFF 0%, transparent 60%),
+      radial-gradient(70% 60% at 50% 100%, #3FE1D6 0%, transparent 55%),
+      radial-gradient(70% 60% at 90% 90%, #FF8DA1 0%, transparent 55%),
+      #EFE9FB;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .glass { background: rgba(255,255,255,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.6); }
+  .glass-dark { background: rgba(21,18,33,0.85); backdrop-filter: blur(20px); }
+  .navlink.active { background: rgba(21,18,33,0.9); color: #fff; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.6); border-radius: 8px; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 shrink-0 p-5 hidden lg:flex flex-col sticky top-0 h-screen">
+    <div class="glass rounded-3xl shadow-glass p-5 flex flex-col h-full">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-10 px-1">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+
+      <nav class="flex flex-col gap-1 text-sm mb-6">
+        <a class="navlink active flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-medium">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          Events
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+          Bookings
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
+          Attendees
+        </a>
+      </nav>
+
+      <nav class="flex flex-col gap-1 text-sm mb-6">
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Promoters
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
+          Analytics
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+          Payouts
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-white/40 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+          Team
+        </a>
+      </nav>
+
+      <div class="mt-auto glass-dark rounded-2xl p-4 text-white">
+        <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-80">Free Plan</p>
+        <p class="text-xs mt-2 mb-3 leading-snug">Unlock Pro for lower fees &amp; team seats</p>
+        <button class="w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl">Upgrade →</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0 p-5 lg:p-8">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4 px-1">
+      <div>
+        <h1 class="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+        <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+      </div>
+      <button class="glass-dark text-white px-5 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New Event
+      </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      <div class="glass rounded-3xl shadow-glass p-5 hover:shadow-glassHover transition-shadow">
+        <p class="text-xs text-muted uppercase tracking-wider mb-2">Total Revenue</p>
+        <p class="font-heading text-3xl">£12,450</p>
+        <p class="text-xs text-green mt-2 font-medium">▲ 18%</p>
+      </div>
+      <div class="glass rounded-3xl shadow-glass p-5 hover:shadow-glassHover transition-shadow">
+        <p class="text-xs text-muted uppercase tracking-wider mb-2">Tickets Sold</p>
+        <p class="font-heading text-3xl">1,204</p>
+        <p class="text-xs text-muted mt-2">3,410 total</p>
+      </div>
+      <div class="glass rounded-3xl shadow-glass p-5 hover:shadow-glassHover transition-shadow">
+        <p class="text-xs text-muted uppercase tracking-wider mb-2">Upcoming</p>
+        <p class="font-heading text-3xl">6</p>
+        <p class="text-xs text-muted mt-2">Next: 14 Sep</p>
+      </div>
+      <div class="glass rounded-3xl shadow-glass p-5 hover:shadow-glassHover transition-shadow">
+        <p class="text-xs text-muted uppercase tracking-wider mb-2">Payout</p>
+        <p class="font-heading text-3xl">£3,120</p>
+        <p class="text-xs text-accent mt-2 font-medium">Withdraw →</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div class="lg:col-span-2 glass rounded-3xl shadow-glass p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold">Revenue Overview</h2>
+          <span class="text-xs text-muted">Last 30 days</span>
+        </div>
+        <svg viewBox="0 0 600 190" class="w-full h-48" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#8B6CFF" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#3FE1D6" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#E63950"/><stop offset="100%" stop-color="#8B6CFF"/>
+            </linearGradient>
+          </defs>
+          <polyline fill="none" stroke="url(#line)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+            points="0,150 40,130 80,140 120,100 160,110 200,75 240,90 280,60 320,77 360,38 400,55 440,32 480,50 520,15 560,28 600,10" />
+          <polygon fill="url(#rev)" points="0,150 40,130 80,140 120,100 160,110 200,75 240,90 280,60 320,77 360,38 400,55 440,32 480,50 520,15 560,28 600,10 600,190 0,190" />
+        </svg>
+      </div>
+      <div class="glass rounded-3xl shadow-glass p-6 flex flex-col items-center justify-center text-center">
+        <h2 class="text-sm font-semibold self-start mb-2">Sell-Through</h2>
+        <svg width="140" height="140" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(21,18,33,0.08)" stroke-width="12"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="314" stroke-dashoffset="82" transform="rotate(-90 60 60)"/>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#E63950"/><stop offset="100%" stop-color="#8B6CFF"/></linearGradient></defs>
+          <text x="60" y="66" text-anchor="middle" font-family="Bebas Neue" font-size="26" fill="#151221">74%</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 glass rounded-3xl shadow-glass p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold">Recent Bookings</h2>
+          <a class="text-xs text-accent font-medium hover:underline">View all →</a>
+        </div>
+        <div class="flex flex-col divide-y divide-white/50">
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-violet to-accent flex items-center justify-center text-white text-xs font-bold shrink-0">JB</div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">Jordan Blake</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-semibold shrink-0">£84.00</p>
+          </div>
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyan to-violet flex items-center justify-center text-white text-xs font-bold shrink-0">AO</div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">Amara Osei</p><p class="text-xs text-muted truncate">Warehouse Sessions</p></div>
+            <p class="text-sm font-semibold shrink-0">£42.00</p>
+          </div>
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-yellow to-accent flex items-center justify-center text-white text-xs font-bold shrink-0">PN</div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">Priya Nair</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-semibold shrink-0">£168.00</p>
+          </div>
+        </div>
+      </div>
+      <div class="glass rounded-3xl shadow-glass p-6">
+        <h2 class="text-sm font-semibold mb-4">Upcoming Events</h2>
+        <div class="flex flex-col gap-4">
+          <div>
+            <div class="flex justify-between text-sm"><span class="font-medium">Neon Nights</span><span class="text-muted text-xs">77%</span></div>
+            <div class="h-1.5 bg-white/50 rounded-full overflow-hidden mt-1.5"><div class="h-full bg-gradient-to-r from-accent to-violet rounded-full" style="width:77%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span class="font-medium">Warehouse</span><span class="text-muted text-xs">40%</span></div>
+            <div class="h-1.5 bg-white/50 rounded-full overflow-hidden mt-1.5"><div class="h-full bg-gradient-to-r from-accent to-violet rounded-full" style="width:40%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span class="font-medium">Rooftop</span><span class="text-muted text-xs">41%</span></div>
+            <div class="h-1.5 bg-white/50 rounded-full overflow-hidden mt-1.5"><div class="h-full bg-gradient-to-r from-accent to-violet rounded-full" style="width:41%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

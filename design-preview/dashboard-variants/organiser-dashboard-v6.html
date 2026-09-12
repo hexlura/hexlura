@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Bento Grid v6)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#F6F5F1', card: '#FFFFFF', border: '#EDEBE4', text: '#151313',
+          muted: '#8D8A83', accent: '#E63950', peach: '#FFD8C2', mint: '#CFF3E4',
+          lilac: '#E6DFFB', butter: '#FBEBB5', green: '#1FB874',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 14px rgba(20,15,10,0.05)',
+          card: '0 6px 26px -6px rgba(20,15,10,0.08)',
+          hover: '0 14px 36px -8px rgba(20,15,10,0.14)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #F6F5F1; }
+  .navlink.active { background: #151313; color: #fff; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 shrink-0 p-5 hidden lg:flex flex-col sticky top-0 h-screen">
+    <div class="bg-card rounded-3xl shadow-card p-5 flex flex-col h-full">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-10 px-1">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+
+      <nav class="flex flex-col gap-1 text-sm mb-6">
+        <a class="navlink active flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-medium">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          Events
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+          Bookings
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
+          Attendees
+        </a>
+      </nav>
+
+      <nav class="flex flex-col gap-1 text-sm mb-6">
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          Promoters
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
+          Analytics
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+          Payouts
+        </a>
+        <a class="navlink flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-muted hover:bg-bg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+          Team
+        </a>
+      </nav>
+
+      <div class="mt-auto bg-butter rounded-2xl p-4">
+        <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-text/70">Free Plan</p>
+        <p class="text-xs mt-2 mb-3 leading-snug">Unlock Pro for lower fees &amp; team seats</p>
+        <button class="w-full bg-text text-white text-xs font-bold py-2.5 rounded-xl">Upgrade →</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0 p-5 lg:p-8">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4 px-1">
+      <div>
+        <h1 class="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+        <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+      </div>
+      <button class="bg-text text-white px-5 py-3 rounded-2xl text-sm font-semibold shadow-soft hover:shadow-hover transition-all flex items-center gap-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New Event
+      </button>
+    </div>
+
+    <!-- Bento grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-6 auto-rows-[minmax(120px,auto)] gap-4">
+
+      <!-- Revenue — big -->
+      <div class="col-span-2 lg:col-span-3 row-span-2 bg-card rounded-3xl shadow-card p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-1">
+          <div>
+            <p class="text-xs text-muted uppercase tracking-wider">Total Revenue</p>
+            <p class="font-heading text-5xl mt-1">£12,450</p>
+          </div>
+          <span class="text-xs font-bold text-green bg-green/10 px-2.5 py-1 rounded-full">▲ 18%</span>
+        </div>
+        <svg viewBox="0 0 500 160" class="w-full flex-1 mt-2" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E63950" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#E63950" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polyline fill="none" stroke="#E63950" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
+            points="0,130 35,115 70,122 105,90 140,98 175,68 210,80 245,55 280,68 315,35 350,50 385,28 420,45 455,15 500,25" />
+          <polygon fill="url(#rev)" points="0,130 35,115 70,122 105,90 140,98 175,68 210,80 245,55 280,68 315,35 350,50 385,28 420,45 455,15 500,25 500,160 0,160" />
+        </svg>
+      </div>
+
+      <!-- Tickets sold -->
+      <div class="col-span-1 lg:col-span-2 bg-mint rounded-3xl shadow-card p-5 flex flex-col justify-between">
+        <p class="text-xs text-text/60 uppercase tracking-wider font-semibold">Tickets Sold</p>
+        <p class="font-heading text-4xl">1,204</p>
+      </div>
+
+      <!-- Sell-through gauge -->
+      <div class="col-span-1 row-span-2 bg-text rounded-3xl shadow-card p-5 flex flex-col items-center justify-center text-center text-white">
+        <p class="text-[10px] uppercase tracking-wider text-white/60 font-semibold mb-2">Sell-Through</p>
+        <p class="font-heading text-5xl">74%</p>
+        <div class="w-full h-1.5 bg-white/15 rounded-full mt-4 overflow-hidden">
+          <div class="h-full bg-butter rounded-full" style="width:74%"></div>
+        </div>
+      </div>
+
+      <!-- Upcoming events count -->
+      <div class="col-span-1 lg:col-span-2 bg-lilac rounded-3xl shadow-card p-5 flex flex-col justify-between">
+        <p class="text-xs text-text/60 uppercase tracking-wider font-semibold">Upcoming</p>
+        <div>
+          <p class="font-heading text-4xl">6</p>
+          <p class="text-xs text-text/60 mt-1">Next: 14 Sep</p>
+        </div>
+      </div>
+
+      <!-- Payout balance -->
+      <div class="col-span-1 lg:col-span-1 bg-peach rounded-3xl shadow-card p-5 flex flex-col justify-between">
+        <p class="text-xs text-text/60 uppercase tracking-wider font-semibold">Payout</p>
+        <p class="font-heading text-3xl">£3,120</p>
+      </div>
+
+      <!-- Recent bookings — wide -->
+      <div class="col-span-2 lg:col-span-4 bg-card rounded-3xl shadow-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold">Recent Bookings</h2>
+          <a class="text-xs text-accent font-medium hover:underline">View all →</a>
+        </div>
+        <div class="flex flex-col divide-y divide-border">
+          <div class="flex items-center gap-3 py-2.5">
+            <div class="w-9 h-9 rounded-2xl bg-peach flex items-center justify-center text-xs font-bold shrink-0">JB</div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium truncate">Jordan Blake</p>
+              <p class="text-xs text-muted truncate">Neon Nights Festival</p>
+            </div>
+            <p class="text-sm font-semibold shrink-0">£84.00</p>
+          </div>
+          <div class="flex items-center gap-3 py-2.5">
+            <div class="w-9 h-9 rounded-2xl bg-mint flex items-center justify-center text-xs font-bold shrink-0">AO</div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium truncate">Amara Osei</p>
+              <p class="text-xs text-muted truncate">Warehouse Sessions</p>
+            </div>
+            <p class="text-sm font-semibold shrink-0">£42.00</p>
+          </div>
+          <div class="flex items-center gap-3 py-2.5">
+            <div class="w-9 h-9 rounded-2xl bg-lilac flex items-center justify-center text-xs font-bold shrink-0">PN</div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium truncate">Priya Nair</p>
+              <p class="text-xs text-muted truncate">Neon Nights Festival</p>
+            </div>
+            <p class="text-sm font-semibold shrink-0">£168.00</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming events list -->
+      <div class="col-span-2 bg-card rounded-3xl shadow-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold">Next Up</h2>
+          <a class="text-xs text-accent font-medium hover:underline">All →</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div>
+            <div class="flex justify-between items-center">
+              <p class="text-sm font-medium truncate">Neon Nights</p>
+              <span class="text-xs text-muted">77%</span>
+            </div>
+            <div class="h-1.5 bg-bg rounded-full overflow-hidden mt-1.5">
+              <div class="h-full bg-accent rounded-full" style="width:77%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center">
+              <p class="text-sm font-medium truncate">Warehouse Sessions</p>
+              <span class="text-xs text-muted">40%</span>
+            </div>
+            <div class="h-1.5 bg-bg rounded-full overflow-hidden mt-1.5">
+              <div class="h-full bg-accent rounded-full" style="width:40%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center">
+              <p class="text-sm font-medium truncate">Rooftop Sessions</p>
+              <span class="text-xs text-muted">41%</span>
+            </div>
+            <div class="h-1.5 bg-bg rounded-full overflow-hidden mt-1.5">
+              <div class="h-full bg-accent rounded-full" style="width:41%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Friendly Illustrated v12)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FFF9F2', card: '#FFFFFF', border: '#FBEADF', text: '#2E2A26',
+          muted: '#A69A8D', accent: '#E63950', peach: '#FFC9A8', mint: '#B9EFD4',
+          sky: '#BFE3F5', butter: '#FFE59A', green: '#3EBD79',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 4px 0 rgba(46,42,38,0.06)',
+          card: '0 10px 30px -8px rgba(46,42,38,0.12)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #FFF9F2; }
+  .navlink.active { background: #2E2A26; color: #fff; }
+  .blob { border-radius: 42% 58% 63% 37% / 45% 41% 59% 55%; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <aside class="w-64 shrink-0 bg-card border-r border-border p-5 hidden lg:flex flex-col sticky top-0 h-screen rounded-r-[2.5rem]">
+    <div class="flex items-center gap-2 mb-10 px-2">
+      <span class="w-8 h-8 blob bg-accent"></span>
+      <p class="font-heading text-2xl text-accent tracking-wider">HEXLURA</p>
+    </div>
+    <nav class="flex flex-col gap-2 text-sm mb-8">
+      <a class="navlink active flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold">🏠 Dashboard</a>
+      <a class="navlink flex items-center gap-3 px-4 py-3 rounded-2xl text-muted hover:bg-bg transition-colors font-medium">🎫 Events</a>
+      <a class="navlink flex items-center gap-3 px-4 py-3 rounded-2xl text-muted hover:bg-bg transition-colors font-medium">🧾 Bookings</a>
+      <a class="navlink flex items-center gap-3 px-4 py-3 rounded-2xl text-muted hover:bg-bg transition-colors font-medium">🙋 Attendees</a>
+      <a class="navlink flex items-center gap-3 px-4 py-3 rounded-2xl text-muted hover:bg-bg transition-colors font-medium">📣 Promoters</a>
+      <a class="navlink flex items-center gap-3 px-4 py-3 rounded-2xl text-muted hover:bg-bg transition-colors font-medium">📊 Analytics</a>
+      <a class="navlink flex items-center gap-3 px-4 py-3 rounded-2xl text-muted hover:bg-bg transition-colors font-medium">💸 Payouts</a>
+    </nav>
+    <div class="mt-auto bg-butter rounded-[2rem] p-5 relative overflow-hidden">
+      <span class="absolute -right-4 -bottom-6 w-20 h-20 blob bg-accent/20"></span>
+      <p class="text-xs font-bold uppercase tracking-wide text-text/70 relative">Free Plan</p>
+      <p class="text-sm mt-2 mb-4 leading-snug relative font-medium">Unlock Pro for lower fees &amp; team seats!</p>
+      <button class="w-full bg-text text-white text-xs font-bold py-3 rounded-2xl relative">Upgrade ✨</button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0 p-6 lg:p-10">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+      <div>
+        <h1 class="font-heading text-4xl tracking-wide">Hey Nightshade! 👋</h1>
+        <p class="text-muted text-sm mt-1">Here's how your events are doing today.</p>
+      </div>
+      <button class="bg-accent text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-soft hover:-translate-y-0.5 transition-transform">+ New Event</button>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div class="bg-mint rounded-[2rem] shadow-card p-6">
+        <p class="text-xs text-text/60 uppercase tracking-wider mb-2 font-bold">💰 Revenue</p>
+        <p class="font-heading text-4xl">£12,450</p>
+        <p class="text-xs text-green mt-2 font-bold">Up 18% — nice!</p>
+      </div>
+      <div class="bg-sky rounded-[2rem] shadow-card p-6">
+        <p class="text-xs text-text/60 uppercase tracking-wider mb-2 font-bold">🎟 Tickets</p>
+        <p class="font-heading text-4xl">1,204</p>
+        <p class="text-xs text-text/60 mt-2 font-medium">3,410 all-time</p>
+      </div>
+      <div class="bg-peach rounded-[2rem] shadow-card p-6">
+        <p class="text-xs text-text/60 uppercase tracking-wider mb-2 font-bold">📅 Upcoming</p>
+        <p class="font-heading text-4xl">6</p>
+        <p class="text-xs text-text/60 mt-2 font-medium">Next: 14 Sep</p>
+      </div>
+      <div class="bg-butter rounded-[2rem] shadow-card p-6">
+        <p class="text-xs text-text/60 uppercase tracking-wider mb-2 font-bold">💸 Payout</p>
+        <p class="font-heading text-4xl">£3,120</p>
+        <p class="text-xs text-accent mt-2 font-bold">Ready to withdraw!</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div class="lg:col-span-2 bg-card rounded-[2rem] shadow-card p-6">
+        <h2 class="text-sm font-bold mb-2">📈 Revenue Overview</h2>
+        <svg viewBox="0 0 500 150" class="w-full h-40" preserveAspectRatio="none">
+          <defs><linearGradient id="rev" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E63950" stop-opacity="0.2"/><stop offset="100%" stop-color="#E63950" stop-opacity="0"/></linearGradient></defs>
+          <polyline fill="none" stroke="#E63950" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="0,120 35,105 70,112 105,82 140,90 175,60 210,72 245,48 280,60 315,30 350,44 385,22 420,38 455,10 500,20"/>
+          <polygon fill="url(#rev)" points="0,120 35,105 70,112 105,82 140,90 175,60 210,72 245,48 280,60 315,30 350,44 385,22 420,38 455,10 500,20 500,150 0,150"/>
+        </svg>
+      </div>
+      <div class="bg-text text-white rounded-[2rem] shadow-card p-6 flex flex-col items-center justify-center text-center">
+        <p class="text-xs uppercase tracking-wider text-white/60 font-bold mb-2">🎯 Sell-Through</p>
+        <p class="font-heading text-6xl">74%</p>
+        <p class="text-xs text-white/60 mt-2 font-medium">Almost sold out!</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-card rounded-[2rem] shadow-card p-6">
+        <h2 class="text-sm font-bold mb-4">🧾 Recent Bookings</h2>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-3 bg-bg rounded-2xl px-4 py-3">
+            <div class="w-9 h-9 blob bg-peach flex items-center justify-center text-xs font-bold shrink-0">JB</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-semibold truncate">Jordan Blake</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-bold shrink-0">£84.00</p>
+          </div>
+          <div class="flex items-center gap-3 bg-bg rounded-2xl px-4 py-3">
+            <div class="w-9 h-9 blob bg-mint flex items-center justify-center text-xs font-bold shrink-0">AO</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-semibold truncate">Amara Osei</p><p class="text-xs text-muted truncate">Warehouse Sessions</p></div>
+            <p class="text-sm font-bold shrink-0">£42.00</p>
+          </div>
+          <div class="flex items-center gap-3 bg-bg rounded-2xl px-4 py-3">
+            <div class="w-9 h-9 blob bg-sky flex items-center justify-center text-xs font-bold shrink-0">PN</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-semibold truncate">Priya Nair</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-bold shrink-0">£168.00</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-card rounded-[2rem] shadow-card p-6">
+        <h2 class="text-sm font-bold mb-4">📅 Upcoming</h2>
+        <div class="flex flex-col gap-4">
+          <div><div class="flex justify-between text-sm mb-1"><span class="font-semibold">Neon Nights</span><span class="text-muted text-xs">77%</span></div><div class="h-2 bg-bg rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:77%"></div></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span class="font-semibold">Warehouse</span><span class="text-muted text-xs">40%</span></div><div class="h-2 bg-bg rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:40%"></div></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span class="font-semibold">Rooftop</span><span class="text-muted text-xs">41%</span></div><div class="h-2 bg-bg rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:41%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

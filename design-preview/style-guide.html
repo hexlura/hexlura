@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Style Guide (New Direction)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#F7F7FA',
+          card: '#FFFFFF',
+          border: '#ECECF2',
+          text: '#0A0A0F',
+          muted: '#8888AA',
+          accent: '#E63950',
+          violet: '#7C5CFF',
+          cyan: '#22D3EE',
+          yellow: '#F5C518',
+          green: '#22C55E',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 10px rgba(20, 20, 40, 0.05)',
+          card: '0 4px 20px rgba(20, 20, 40, 0.06)',
+          hover: '0 8px 30px rgba(20, 20, 40, 0.10)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #F7F7FA; }
+  .swatch { transition: transform .15s ease; }
+  .swatch:hover { transform: translateY(-2px); }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="max-w-6xl mx-auto px-6 py-12">
+
+  <div class="mb-14">
+    <p class="text-xs uppercase tracking-[0.2em] text-muted mb-2">Design Direction Proposal</p>
+    <h1 class="font-heading text-5xl tracking-wide">HEXLURA STYLE GUIDE</h1>
+    <p class="text-muted mt-2 max-w-xl">Soft-UI dashboard direction — rounded cards, layered shadows, colorful data accents. Same fonts and brand colors as the current site, new visual treatment. No functional changes.</p>
+  </div>
+
+  <!-- Logo -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Logo</h2>
+    <div class="bg-card rounded-2xl shadow-card p-8 flex flex-wrap items-center gap-10">
+      <div class="bg-white rounded-xl border border-border px-6 py-5">
+        <p class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">&reg;</sup></p>
+      </div>
+      <div class="bg-text rounded-xl px-6 py-5">
+        <p class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">&reg;</sup></p>
+      </div>
+      <p class="text-xs text-muted font-mono max-w-[220px]">Wordmark only, no icon mark. Bebas Neue, always in Accent (#E63950), on light or dark backgrounds.</p>
+    </div>
+  </section>
+
+  <!-- Typography -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Typography</h2>
+    <div class="bg-card rounded-2xl shadow-card p-8 space-y-6">
+      <div>
+        <p class="font-heading text-6xl tracking-wide">Bebas Neue — Headings</p>
+        <p class="text-xs text-muted mt-1 font-mono">font-heading · used for page titles, KPI values, section headers</p>
+      </div>
+      <div class="border-t border-border pt-6">
+        <p class="font-sans text-2xl font-semibold">DM Sans — Body &amp; UI text</p>
+        <p class="text-base mt-1">The quick brown fox jumps over the lazy dog. 0123456789</p>
+        <p class="text-xs text-muted mt-1 font-mono">font-sans · weights 400/500/600/700</p>
+      </div>
+      <div class="border-t border-border pt-6">
+        <p class="font-mono text-lg">HXL-4F9K2A · JetBrains Mono</p>
+        <p class="text-xs text-muted mt-1 font-mono">font-mono · booking refs, codes, technical values</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Colors -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Color Palette</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-accent mb-3"></div>
+        <p class="text-sm font-medium">Accent</p>
+        <p class="text-xs text-muted font-mono">#E63950</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-violet mb-3"></div>
+        <p class="text-sm font-medium">Violet</p>
+        <p class="text-xs text-muted font-mono">#7C5CFF</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-cyan mb-3"></div>
+        <p class="text-sm font-medium">Cyan</p>
+        <p class="text-xs text-muted font-mono">#22D3EE</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-yellow mb-3"></div>
+        <p class="text-sm font-medium">Yellow</p>
+        <p class="text-xs text-muted font-mono">#F5C518</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-green mb-3"></div>
+        <p class="text-sm font-medium">Green</p>
+        <p class="text-xs text-muted font-mono">#22C55E</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-text mb-3"></div>
+        <p class="text-sm font-medium">Text</p>
+        <p class="text-xs text-muted font-mono">#0A0A0F</p>
+      </div>
+    </div>
+    <p class="text-xs text-muted mt-3">Same brand colors as production — accent red stays primary CTA color. Violet/cyan/yellow/green become the data-viz accent set (charts, gauges, badges) instead of sitting unused.</p>
+  </section>
+
+  <!-- Buttons -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Buttons</h2>
+    <div class="bg-card rounded-2xl shadow-card p-8 flex flex-wrap items-center gap-4">
+      <button class="bg-accent text-white px-6 py-3 rounded-xl font-medium text-sm shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all">Primary Action</button>
+      <button class="bg-text text-white px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">Secondary</button>
+      <button class="bg-bg text-text border border-border px-6 py-3 rounded-xl font-medium text-sm hover:bg-border/30 transition-colors">Tertiary</button>
+      <button class="text-accent px-2 py-3 font-medium text-sm hover:underline">Text Link →</button>
+      <button disabled class="bg-border text-muted px-6 py-3 rounded-xl font-medium text-sm cursor-not-allowed">Disabled</button>
+    </div>
+  </section>
+
+  <!-- Cards & KPIs -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">KPI Cards</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs text-muted uppercase tracking-wider">Total Revenue</p>
+          <span class="w-8 h-8 rounded-lg bg-violet/10 flex items-center justify-center text-violet text-sm">£</span>
+        </div>
+        <p class="font-heading text-4xl">£12,450</p>
+        <p class="text-xs text-green mt-2">▲ 18% vs last month</p>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs text-muted uppercase tracking-wider">Tickets Sold</p>
+          <span class="w-8 h-8 rounded-lg bg-cyan/10 flex items-center justify-center text-cyan text-sm">🎟</span>
+        </div>
+        <p class="font-heading text-4xl">1,204</p>
+        <p class="text-xs text-muted mt-2">856 all-time total</p>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs text-muted uppercase tracking-wider">Upcoming Events</p>
+          <span class="w-8 h-8 rounded-lg bg-yellow/10 flex items-center justify-center text-yellow text-sm">📅</span>
+        </div>
+        <p class="font-heading text-4xl">6</p>
+        <p class="text-xs text-muted mt-2">Next: 14 Sep 2026</p>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs text-muted uppercase tracking-wider">Payout Balance</p>
+          <span class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent text-sm">↓</span>
+        </div>
+        <p class="font-heading text-4xl">£3,120</p>
+        <p class="text-xs text-muted mt-2">Available for withdrawal</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress / Gauge -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Progress &amp; Gauges</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bg-card rounded-2xl shadow-card p-6">
+        <p class="text-sm font-medium mb-4">Linear progress (ticket capacity)</p>
+        <div class="flex justify-between text-xs text-muted mb-1"><span>384 / 500 sold</span><span>77%</span></div>
+        <div class="h-2.5 bg-border rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-violet to-cyan rounded-full" style="width:77%"></div>
+        </div>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6 flex items-center gap-6">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle cx="48" cy="48" r="40" fill="none" stroke="#ECECF2" stroke-width="10"/>
+          <circle cx="48" cy="48" r="40" fill="none" stroke="#7C5CFF" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="251.2" stroke-dashoffset="62.8" transform="rotate(-90 48 48)"/>
+          <text x="48" y="54" text-anchor="middle" font-family="Bebas Neue" font-size="22" fill="#0A0A0F">75%</text>
+        </svg>
+        <div>
+          <p class="text-sm font-medium">Radial gauge</p>
+          <p class="text-xs text-muted mt-1">Sell-through rate, quota progress, check-in %</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Tables</h2>
+    <div class="bg-card rounded-2xl shadow-card p-6">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left text-xs text-muted uppercase tracking-wider">
+            <th class="pb-3 font-medium">Ref</th>
+            <th class="pb-3 font-medium">Buyer</th>
+            <th class="pb-3 font-medium">Event</th>
+            <th class="pb-3 font-medium text-right">Amount</th>
+            <th class="pb-3 font-medium text-right">Date</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm">
+          <tr class="hover:bg-bg rounded-xl transition-colors">
+            <td class="py-3 font-mono text-accent text-xs">HXL-4F9K2A</td>
+            <td class="py-3">Jordan Blake</td>
+            <td class="py-3 text-muted">Neon Nights Festival</td>
+            <td class="py-3 text-right font-medium">£84.00</td>
+            <td class="py-3 text-right text-muted text-xs">12 Sep</td>
+          </tr>
+          <tr class="hover:bg-bg rounded-xl transition-colors">
+            <td class="py-3 font-mono text-accent text-xs">HXL-9B2C7D</td>
+            <td class="py-3">Amara Osei</td>
+            <td class="py-3 text-muted">Warehouse Sessions</td>
+            <td class="py-3 text-right font-medium">£42.00</td>
+            <td class="py-3 text-right text-muted text-xs">11 Sep</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Badges -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Badges &amp; Status</h2>
+    <div class="bg-card rounded-2xl shadow-card p-8 flex flex-wrap gap-3">
+      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-green/10 text-green">Confirmed</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-yellow/10 text-yellow">Pending</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-accent/10 text-accent">Cancelled</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-violet/10 text-violet">Pro</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-cyan/10 text-cyan">Premium</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-border text-muted">Free</span>
+    </div>
+  </section>
+
+  <div class="text-center text-xs text-muted pt-6 border-t border-border">
+    Hexlura Design Direction — Preview Only — Not wired to production code
+  </div>
+
+</div>
+</body>
+</html>

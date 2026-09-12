@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Organiser Dashboard (Soft Neumorphism v10)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#E8EAF0', text: '#3D4257', muted: '#8189A3', accent: '#E63950',
+          violet: '#8C7CFF', cyan: '#3FC6D9', yellow: '#F0B93D', green: '#3FC97D',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #E8EAF0; }
+  .neu { background: #E8EAF0; border-radius: 24px; box-shadow: 8px 8px 16px #c8cad4, -8px -8px 16px #ffffff; }
+  .neu-inset { background: #E8EAF0; border-radius: 16px; box-shadow: inset 5px 5px 10px #c8cad4, inset -5px -5px 10px #ffffff; }
+  .neu-btn { background: #E8EAF0; border-radius: 14px; box-shadow: 5px 5px 10px #c8cad4, -5px -5px 10px #ffffff; transition: box-shadow .15s ease; }
+  .neu-btn:active, .neu-btn.active { box-shadow: inset 4px 4px 8px #c8cad4, inset -4px -4px 8px #ffffff; }
+  .neu-sm { border-radius: 14px; box-shadow: 4px 4px 8px #c8cad4, -4px -4px 8px #ffffff; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 shrink-0 p-6 hidden lg:flex flex-col sticky top-0 h-screen">
+    <p class="font-heading text-2xl text-accent tracking-wider mb-10 px-1">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+
+    <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted px-2 mb-3">Overview</p>
+    <nav class="flex flex-col gap-3 text-sm mb-8">
+      <a class="neu-btn active flex items-center gap-3 px-4 py-3 font-semibold text-accent">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+        Events
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+        Bookings
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
+        Attendees
+      </a>
+    </nav>
+
+    <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted px-2 mb-3">Growth</p>
+    <nav class="flex flex-col gap-3 text-sm mb-8">
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        Promoters
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
+        Analytics
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+        Payouts
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-muted hover:text-text transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+        Team
+      </a>
+    </nav>
+
+    <div class="mt-auto neu p-5">
+      <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-muted">Free Plan</p>
+      <p class="text-xs mt-2 mb-4 leading-snug text-text/80">Unlock lower fees &amp; team seats with Pro</p>
+      <button class="neu-btn w-full text-accent text-xs font-bold py-2.5">Upgrade to Pro →</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0 p-6 lg:p-10">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+      <div>
+        <h1 class="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+        <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+      </div>
+      <button class="neu-btn px-5 py-3 text-sm font-semibold text-accent flex items-center gap-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New Event
+      </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="neu p-6">
+        <div class="neu-inset w-10 h-10 flex items-center justify-center text-accent mb-4">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Total Revenue</p>
+        <p class="font-heading text-3xl">£12,450</p>
+        <p class="text-xs text-green mt-2 font-medium">▲ 18%</p>
+      </div>
+      <div class="neu p-6">
+        <div class="neu-inset w-10 h-10 flex items-center justify-center text-cyan mb-4">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg>
+        </div>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Tickets Sold</p>
+        <p class="font-heading text-3xl">1,204</p>
+        <p class="text-xs text-muted mt-2">3,410 total</p>
+      </div>
+      <div class="neu p-6">
+        <div class="neu-inset w-10 h-10 flex items-center justify-center text-yellow mb-4">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+        </div>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Upcoming</p>
+        <p class="font-heading text-3xl">6</p>
+        <p class="text-xs text-muted mt-2">Next: 14 Sep</p>
+      </div>
+      <div class="neu p-6">
+        <div class="neu-inset w-10 h-10 flex items-center justify-center text-violet mb-4">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v13M6 9l6 6 6-6"/><path d="M4 19h16"/></svg>
+        </div>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Payout</p>
+        <p class="font-heading text-3xl">£3,120</p>
+        <p class="text-xs text-accent mt-2 font-medium">Withdraw →</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="lg:col-span-2 neu p-6">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold">Revenue Overview</h2>
+          <div class="neu-inset flex gap-1 p-1 text-xs">
+            <span class="neu-sm px-3 py-1 font-medium text-accent">30D</span>
+            <span class="px-3 py-1 text-muted">90D</span>
+            <span class="px-3 py-1 text-muted">1Y</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 600 190" class="w-full h-48 mt-2" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#8C7CFF" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#8C7CFF" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polyline fill="none" stroke="#8C7CFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
+            points="0,150 40,130 80,140 120,100 160,110 200,75 240,90 280,60 320,77 360,38 400,55 440,32 480,50 520,15 560,28 600,10" />
+          <polygon fill="url(#rev)" points="0,150 40,130 80,140 120,100 160,110 200,75 240,90 280,60 320,77 360,38 400,55 440,32 480,50 520,15 560,28 600,10 600,190 0,190" />
+        </svg>
+      </div>
+      <div class="neu p-6 flex flex-col items-center justify-center text-center">
+        <h2 class="text-sm font-semibold self-start mb-2">Sell-Through</h2>
+        <div class="relative w-32 h-32 rounded-full neu-inset flex items-center justify-center">
+          <svg width="128" height="128" viewBox="0 0 120 120" class="absolute inset-0">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#8C7CFF" stroke-width="8" stroke-linecap="round"
+              stroke-dasharray="314" stroke-dashoffset="82" transform="rotate(-90 60 60)"/>
+          </svg>
+          <p class="font-heading text-3xl relative">74%</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 neu p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold">Recent Bookings</h2>
+          <a class="text-xs text-accent font-medium hover:underline">View all →</a>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="neu-inset flex items-center gap-3 px-4 py-3">
+            <div class="w-9 h-9 rounded-full neu flex items-center justify-center text-xs font-bold text-accent shrink-0">JB</div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">Jordan Blake</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-semibold shrink-0">£84.00</p>
+          </div>
+          <div class="neu-inset flex items-center gap-3 px-4 py-3">
+            <div class="w-9 h-9 rounded-full neu flex items-center justify-center text-xs font-bold text-cyan shrink-0">AO</div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">Amara Osei</p><p class="text-xs text-muted truncate">Warehouse Sessions</p></div>
+            <p class="text-sm font-semibold shrink-0">£42.00</p>
+          </div>
+          <div class="neu-inset flex items-center gap-3 px-4 py-3">
+            <div class="w-9 h-9 rounded-full neu flex items-center justify-center text-xs font-bold text-yellow shrink-0">PN</div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">Priya Nair</p><p class="text-xs text-muted truncate">Neon Nights Festival</p></div>
+            <p class="text-sm font-semibold shrink-0">£168.00</p>
+          </div>
+        </div>
+      </div>
+      <div class="neu p-6">
+        <h2 class="text-sm font-semibold mb-4">Upcoming Events</h2>
+        <div class="flex flex-col gap-4">
+          <div>
+            <div class="flex justify-between text-sm"><span class="font-medium">Neon Nights</span><span class="text-muted text-xs">77%</span></div>
+            <div class="neu-inset h-2.5 mt-1.5 overflow-hidden"><div class="h-full bg-violet rounded-full" style="width:77%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span class="font-medium">Warehouse</span><span class="text-muted text-xs">40%</span></div>
+            <div class="neu-inset h-2.5 mt-1.5 overflow-hidden"><div class="h-full bg-violet rounded-full" style="width:40%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span class="font-medium">Rooftop</span><span class="text-muted text-xs">41%</span></div>
+            <div class="neu-inset h-2.5 mt-1.5 overflow-hidden"><div class="h-full bg-violet rounded-full" style="width:41%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
