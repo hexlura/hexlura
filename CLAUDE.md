@@ -9,14 +9,15 @@ Hexlura is a full-stack event ticketing and booking platform with role-based acc
 - **Framework**: Next.js 14.2.35 (App Router)
 - **Language**: TypeScript 5
 - **Database**: Supabase (PostgreSQL with RLS)
-- **Auth**: Supabase Auth — email/password only (no OAuth, no magic links)
+- **Auth**: Supabase Auth — email/password **and Google OAuth** (`app/auth/actions.ts`). No magic links.
 - **Styling**: Tailwind CSS 3
 - **Fonts**: Bebas Neue (headings), DM Sans (body), JetBrains Mono (code)
 - **Payments**: Stripe (Elements + Connect + Identity — fully integrated)
-- **Email**: Resend + React Email (19 templates)
+- **Email**: Resend + React Email (28 templates in `emails/`)
 - **Charts**: Recharts
 - **Rich Text**: TipTap editor
-- **QR**: qrcode / qrcode.react (generate) + html5-qrcode (scan)
+- **QR**: qrcode / qrcode.react (generate) + html5-qrcode (web scan)
+- **Door scanner app**: Flutter (`mobile-scanner-app-flutter/`) — Android, talks to `/api/checkin/*`
 
 ## Key Architecture
 
@@ -25,30 +26,45 @@ All monetary values are stored as **integers in pence**. Conversion happens at d
 - Example: £10.50 = 1050 pence
 
 ### Platform Fee
-Fee is **paid by the buyer on top of the ticket price**. Organisers receive 100% of their ticket price.
-- Default: **5%** per ticket (admin-configurable)
-- Min fee per ticket: **£0.99** (99 pence, admin-configurable)
-- Max fee per ticket: **£5.00** (500 pence, admin-configurable)
-- Configured via `platform_settings` table keys: `booking_fee_percent`, `booking_fee_min_pence`, `booking_fee_max_pence`
-- Fee logic in `lib/fees.ts` — `getFeeConfig()` loads live values, falls back to `DEFAULT_FEE_CONFIG`
-- Calculation: `clamp(ticketPricePence * percent / 100, minPence, maxPence)`
+Fee is **paid by the buyer on top of the ticket price**. Organisers receive 100% of their ticket price —
+nothing is ever deducted from their proceeds.
+
+Two separate fees, both platform revenue:
+- **Booking fee** — per *ticket*: `clamp(price * percent / 100, min, max)`
+- **Order processing fee** — per *order*, flat (`order_processing_fee_pence`)
+
+⚠️ **Never quote `DEFAULT_FEE_CONFIG` as "the fee"** — it is all zeros, a fallback for when
+`platform_settings` can't be read. The real values are live in the DB and admin-editable.
+Read them with `getFeeConfig()` (`lib/fees.ts`) or query `platform_settings` — don't hardcode.
+
+Per-organiser exemptions: `organiser_profiles.booking_fee_exempt` / `.processing_fee_exempt`.
+
+**Fee visibility rule:** the platform fee is deliberately **hidden from organisers**. Organiser-facing
+pages show ticket revenue only, never the fee or the buyer's gross total (they'd otherwise derive the
+fee by subtraction). Admin pages show everything. Don't add a fee/gross column to organiser views.
 
 ### Admin-Configurable Platform Settings (`/admin/settings`)
-All stored in `platform_settings` table (key/value pairs):
+Key/value pairs in `platform_settings`. **Values below are illustrative, not authoritative** — they
+change in production without code edits. Always read live.
 
-| Key | Default | Purpose |
-|---|---|---|
-| `booking_fee_percent` | 5 | Platform fee % added to buyer's total |
-| `booking_fee_min_pence` | 99 | Min fee per ticket in pence |
-| `booking_fee_max_pence` | 500 | Max fee per ticket in pence |
-| `max_featured_slots` | 6 | Max events in homepage hero slider |
-| `maintenance_mode` | false | Shows maintenance page to public (admins bypass) |
-| `auto_approve_organisers` | false | Auto-approve organiser applications without manual review |
-| `stripe_connect_enabled` | false | Allow organisers to use Stripe Connect payouts |
-| `payout_cooldown_days` | 2 | Days after event ends before payout available for withdrawal |
-| `from_name` | Hexlura | Email sender name |
-| `from_email` | tickets@hexlura.com | Email sender address |
-| `support_email` | support@hexlura.com | Support contact email |
+| Key | Purpose |
+|---|---|
+| `booking_fee_percent` | Booking fee % per ticket |
+| `booking_fee_min_pence` / `booking_fee_max_pence` | Clamp bounds for the per-ticket fee |
+| `order_processing_fee_pence` | Flat per-order fee |
+| `max_featured_slots` | Max events in homepage hero slider |
+| `maintenance_mode` | Shows maintenance page to public (admins bypass) |
+| `auto_approve_organisers` | Auto-approve organiser applications |
+| `stripe_connect_enabled` | Allow organisers to use Stripe Connect payouts |
+| `payout_cooldown_days` | Days after event ends before payout is released |
+| `from_name` / `from_email` / `support_email` | Email sender + support contact |
+| `featured_cities` | Comma-separated homepage city list |
+| `meta_pixel_id` | Meta Pixel tracking ID |
+| `design_color_*` (10 keys), `design_font_heading`, `design_font_body` | Live theme tokens |
+| `seo_site_name`, `seo_default_description`, `seo_default_og_image`, `seo_twitter_handle` | SEO defaults |
+
+Writes must validate the key against an explicit allowlist (`VALID_SETTING_KEYS`) — never `upsert`
+an arbitrary key.
 
 ### Role-Based Access Control (RLS)
 
@@ -123,30 +139,62 @@ Both endpoints validate `Authorization: Bearer <CRON_SECRET>`.
 
 ---
 
+## Stripe Charge Routing
+
+Three charge shapes, decided per checkout in `app/api/checkout/create-intent/route.ts` and recorded in
+PaymentIntent metadata as `charge_type`:
+
+| `charge_type` | When | Money flow |
+|---|---|---|
+| `destination` | Connect onboarded + allowed + charges enabled | Platform charges; Stripe auto-transfers ticket revenue to the organiser and claws the fee back as an **application fee** |
+| `direct` | As above **and** both fees exempt | PaymentIntent created **on the connected account** (`stripeAccount` option) — nothing for the platform to collect |
+| `platform` | No Connect account | Money stays with the platform; paid out later via `payouts` |
+
+`bookings.needs_manual_payout` is set per booking at webhook time (`!organiserStripeAccountId`, flipped
+`true` if a per-booking transfer fails). `lib/generate-payouts.ts` keys off it: bookings already settled
+via Connect never generate a payable payout — otherwise processing one would send the money twice.
+
 ## Stripe Webhooks
 
-Handler: `app/api/webhooks/stripe/route.ts`
+**Two registered endpoints** (verify with `GET /v1/webhook_endpoints` — don't assume):
+
+`app/api/webhooks/stripe/route.ts` — platform account:
 
 | Event | Action |
 |---|---|
-| `payment_intent.succeeded` | Create booking, booking_items, send confirmation email, trigger Connect transfer |
+| `payment_intent.succeeded` | Create booking + items, email tickets, Connect transfer (via `lib/process-payment-success.ts`) |
 | `checkout.session.completed` | Fallback booking creation path |
-| `payment_intent.payment_failed` | Cancel booking, release ticket reservations |
-| `transfer.failed` | Mark payout failed, notify admin, send alert email |
-| `account.updated` | Log Stripe Connect account status changes |
-| `identity.verification_session.verified` | Update organiser identity status, send success email |
-| `identity.verification_session.requires_input` | Mark identity as requires_input |
-| `identity.verification_session.canceled` | Mark identity as canceled |
+| `payment_intent.payment_failed` | Cancel booking, release reservations |
+| `transfer.reversed` | Mark payout failed, notify admin, send alert email |
+| `identity.verification_session.{verified,requires_input,canceled}` | Update organiser identity status |
 
-Webhook also reads `promoter_id` and `promoter_commission_pence` from payment metadata to insert `promoter_earnings` ledger entries.
+`app/api/webhooks/stripe/connect/route.ts` — connected accounts (direct charges fire here, not on the
+platform): `payment_intent.succeeded`, `payment_intent.payment_failed`, `account.updated`.
+
+Both share `lib/process-payment-success.ts`, which is **idempotent** (skips if a booking already exists
+for the PaymentIntent). Any new booking-creation path must do the same.
+
+Webhooks also read `promoter_id` / `promoter_commission_pence` from metadata to write `promoter_earnings`.
+
+### Stripe gotcha: finding an application fee for a charge
+Application fees are keyed to the **connected-account** charge (`py_…`), not the platform charge
+(`ch_…`). `GET /v1/application_fees?charge=ch_…` returns an empty list even when the fee exists —
+which reads as "fee never collected" and is wrong. Match on `originating_transaction` instead.
 
 ---
 
-## Email Templates (19 total)
+## Email Templates (28)
 
-Located in `emails/` directory, rendered via React Email, sent via Resend:
+In `emails/`, rendered via React Email, sent via Resend. Run `ls emails/` for the current list rather
+than trusting this one — it grows often.
 
-`announcement`, `booking-confirmation`, `email-verification`, `event-cancelled`, `event-published`, `event-reminder`, `new-booking-organiser`, `organiser-identity-verified`, `organiser-welcome`, `password-reset`, `payout-failed-admin`, `payout-paid-organiser`, `payout-paid-promoter`, `promoter-invite`, `promoter-welcome`, `refund-admin-review`, `refund-request-organiser`, `user-welcome`, `waitlist-available`
+`account-deletion-approved`, `account-deletion-requested-admin`, `announcement`, `booking-confirmation`,
+`email-verification`, `event-cancelled`, `event-deletion-requested-admin`, `event-promo-campaign`,
+`event-published`, `event-reminder`, `new-booking-organiser`, `new-event-followers`,
+`organiser-identity-verified`, `organiser-welcome`, `password-reset`, `payout-failed-admin`,
+`payout-paid-organiser`, `payout-paid-promoter`, `payout-request-admin`, `payout-requested-organiser`,
+`promoter-invite`, `promoter-payout-request-admin`, `promoter-welcome`, `refund-admin-review`,
+`refund-request-organiser`, `stripe-connected`, `team-invite`, `user-welcome`, `waitlist-available`
 
 ---
 
@@ -161,15 +209,29 @@ auth/                     — login, register, verify, reset-password, update-pa
 (promoter-open)/          — promoter invite acceptance flow
 (promoter)/promoter/      — promoter dashboard (referrals, earnings, payouts)
 (admin)/admin/            — admin dashboard (users, organisers, bookings, events, payouts, financials, audit-log, settings)
-checkin/                  — QR code scanner for door staff
+checkin/                  — QR code scanner for door staff (web)
 api/                      — API routes (auth, checkout, stripe webhooks, cron, admin actions, tickets)
+api/checkin/              — JSON API for the Flutter scanner app (events, attendees, lookup, check-in)
 ```
+
+### Door check-in
+Three overlapping door-staff systems exist — legacy `profiles.role = 'door_staff'`, the legacy
+`door_staff` table, and `organiser_team` with `privilege = 'door_staff'`. **Never check these
+ad-hoc.** All four check-in endpoints go through `lib/checkin/authorize.ts`
+(`resolveDoorStaffContext()` + `isEventAssigned()`), which resolves all three and re-verifies
+assignment to the specific event on every request.
+
+The Flutter app (`mobile-scanner-app-flutter/`) authenticates with `Authorization: Bearer <token>`;
+the web scanner uses the cookie session. `lib/supabase/getRequestUser.ts` accepts either.
+`AppConfig.appUrl` must point at the **canonical `www` host** — the apex domain 301-redirects, and a
+cross-host redirect drops the Authorization header (and downgrades POST to GET), so every call
+silently 401s.
 
 ---
 
 ## Database Schema
 
-**31 tables** across 42 migration files in `supabase/migrations/`:
+**42 tables** across 76 migration files in `supabase/migrations/`:
 
 | Table | Purpose |
 |---|---|
@@ -204,8 +266,27 @@ api/                      — API routes (auth, checkout, stripe webhooks, cron,
 | `categories` | Event categories (12 types, admin-managed) |
 | `support_tickets` | Support ticket threads (all roles) |
 | `support_messages` | Messages within support tickets |
+| `promo_code_redemptions` | One row per redemption — enforces per-customer promo limits |
+| `event_slug_history` | Old event slugs → permanent redirects so shared links never 404 |
+| `legal_documents` | Admin-published Terms/Privacy (see below) |
+| `event_deletion_requests` | Organiser-requested event deletion workflow |
+| `organiser_account_deletion_requests` | Organiser account closure workflow |
+| `organiser_email_lists` / `_entries` | Organiser-owned marketing lists |
+| `organiser_email_campaigns` / `_sends` | Campaign records and per-recipient send log |
+| `contact_enquiries` | Public contact-form submissions |
+| `page_controls` | Admin toggles for public page sections |
 
 All tables have RLS enabled. Primary keys are UUIDs. Timestamps are `timestamptz`.
+
+### Legal documents & terms re-acceptance
+`/terms` and `/privacy` render the latest **published row in `legal_documents`**; the hardcoded
+`terms-client.tsx` is only a fallback used when no published row exists — editing that file alone
+changes nothing in production.
+
+`app/(organiser)/layout.tsx` force-redirects an organiser to `/organiser/terms-update` whenever their
+`organiser_profiles.terms_version` ≠ the latest published version. **Publishing a new version locks
+every organiser out until they re-accept** — so a wording correction that doesn't change obligations is
+usually edited in place on the existing row, keeping the version, rather than published as a new one.
 
 ---
 
@@ -226,7 +307,14 @@ All tables have RLS enabled. Primary keys are UUIDs. Timestamps are `timestamptz
 | `lib/supabase/middleware.ts` | Session refresh + role-based routing |
 | `middleware.ts` | Route matching, session refresh, redirects |
 | `app/auth/actions.ts` | Server actions for signin/signout/password-reset |
-| `app/api/webhooks/stripe/route.ts` | Stripe webhook handler (8 event types) |
+| `app/api/webhooks/stripe/route.ts` | Stripe webhook handler (platform account) |
+| `app/api/webhooks/stripe/connect/route.ts` | Stripe webhook handler (connected accounts) |
+| `lib/process-payment-success.ts` | Shared, idempotent booking creation from a PaymentIntent |
+| `lib/generate-payouts.ts` | Auto-generates payout rows after the cooldown |
+| `lib/checkin/authorize.ts` | Single source of truth for door-staff authorization |
+| `lib/supabase/getRequestUser.ts` | Resolves caller from Bearer token **or** cookie session |
+| `lib/notify-admins.ts` | In-app notification fan-out to all admins |
+| `lib/legal.ts` | Fetches the latest published Terms/Privacy document |
 | `app/api/cron/end-events/route.ts` | Cron: mark ended events |
 | `app/api/cron/event-reminders/route.ts` | Cron: send 24h reminder emails |
 | `app/api/tickets/[ref]/pdf/route.ts` | PDF ticket generation (HTML-to-print) |
@@ -278,19 +366,33 @@ npm run type-check
 
 ---
 
-## Recent Critical Fixes
+## Recurring Failure Modes
 
-### ✅ Admin Portal RLS Bug
-**Problem**: Admin portal showed empty data — pages used anon key which RLS blocked.
-**Solution**: Created `lib/supabase/admin.ts`, updated all 9 admin pages and 19 API routes under `/api/admin/*/` to use `createAdminClient()`.
+Bugs this codebase has produced more than once. Check for these first.
 
-### ✅ Organiser Sidebar Navigation Bug
-**Problem**: All organiser sub-pages redirected to `/organiser` — anon key returned null for `organiser_profiles`.
-**Solution**: Updated organiser sub-pages to use `createServiceClient()`.
+### Next.js Data Cache on server-side Supabase clients
+Server-side Supabase `fetch` calls get cached by Next.js's persistent Data Cache and can serve stale
+results across requests *and deployments* — including auth checks, where a rejected token stays
+rejected forever. Every server-side client must override fetch with `cache: 'no-store'`. Already done
+in `lib/supabase/admin.ts`, `server.ts`, `getRequestUser.ts` — copy the pattern in any new client.
 
-### ✅ Auth Middleware & Role-Based Redirects
-**Problem**: Redirect loops across login/organiser/admin routes.
-**Solution**: Rewrote `lib/supabase/middleware.ts` — 3-step flow (refresh → get user → role routing). See commit `5d8e28f`.
+### PostgREST schema cache after out-of-band DDL
+DDL applied outside the CLI migration flow leaves PostgREST's schema cache stale, so new columns and
+functions 404 at the API layer. Fix: `NOTIFY pgrst, 'reload schema';`
+
+### Ambiguous embeds (PGRST201)
+Two FKs to the same table make `alias:table(...)` ambiguous. Disambiguate with the column:
+`ticket_types!ticket_type_id(name)`. `promo_codes` has both `ticket_type_id` and `comp_ticket_type_id`.
+
+### Silent error swallowing
+Repeatedly the root cause of "looks broken but isn't" / "looks fine but isn't". Never
+`const { data } = await query` while dropping `error`, and never `catch {}` around a call whose
+failure changes what the code should do next. Surface it — a failed call must not fall through to the
+success path.
+
+### Group tickets distort per-ticket-type sums
+A group ticket writes the **full group price** onto every member row in `booking_items`, so summing
+`unit_price_pence` massively overcounts. Only `bookings.ticket_subtotal_pence` reconciles with Stripe.
 
 ---
 
@@ -321,6 +423,10 @@ Every API route, server action, and data mutation must pass this checklist befor
 | Organiser approval cancels tickets immediately | Only cancel booking/items after Stripe refund is confirmed |
 | `<strong>${eventName}</strong>` in email HTML | `<strong>${escHtml(eventName)}</strong>` |
 | Public OAuth callback with no session check | `getUser()` first, reject if `user.id !== state` |
+| `catch {}` around a Stripe refund, then mark refunded | On failure, leave state untouched, alert admin, return an error |
+| New booking-creation path without an idempotency check | Look up `stripe_payment_intent_id` first and bail if it exists |
+| Generating a payout for a Connect-settled booking | Gate on `bookings.needs_manual_payout` — they were already paid |
+| OAuth verified after a fixed delay | Gate on the actual `signedIn` event; `signInWithOAuth` returns when the browser opens, not when sign-in completes |
 
 ---
 
@@ -331,3 +437,19 @@ When taking over this project:
 2. Run `npm run build` to verify no errors
 3. Check `git log` for recent context
 4. Explore `types/index.ts` for the full data model
+
+### Workflow
+- **Live in production.** `main` auto-deploys to Vercel on push — there is no staging environment.
+- Work on a branch, `npm run build` **before** merging, then merge to `main` and push.
+- The owner previews on Vercel, not `localhost` — `npm run dev` is not part of the loop.
+- Other collaborators also push directly to `main`; pull before branching.
+
+### Verify, don't assume
+This codebase has burned several sessions on confident-but-wrong conclusions. Before reporting a bug
+or a number:
+- Check the thing is actually **reachable** — a scary-looking route may be dead code (e.g. a webhook
+  URL that isn't registered in Stripe). Confirm via the live API, not the file tree.
+- Validate a query against a **known-good case** before trusting a negative result. An empty result
+  often means the query is wrong, not that the data is missing.
+- Money figures must reconcile against Stripe (or the DB) from a second, independent angle before
+  being reported.
