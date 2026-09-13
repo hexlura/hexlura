@@ -137,7 +137,7 @@
         <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10"></div>
         <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
         <p class="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
-        <button class="w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</button>
+        <a href="billing.html" class="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</a>
       </div>
     </div>
   </aside>
@@ -360,15 +360,37 @@
           </div>
           <div class="sm:col-span-2">
             <label class="text-xs text-muted block mb-1.5">Refund Policy</label>
-            <textarea rows="2" class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none">Full refund up to 7 days before the event.</textarea>
+            <select class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              <option>No refunds</option>
+              <option>Refunds up to 48 hours before event</option>
+              <option selected>Refunds up to 7 days before event</option>
+              <option>Full refunds always available</option>
+            </select>
           </div>
+        </div>
+      </div>
+
+      <!-- Stripe not connected — blocks publish, drafts still allowed -->
+      <div class="flex items-start gap-3 bg-yellow/10 rounded-xl p-4 mb-4">
+        <span class="w-9 h-9 rounded-lg bg-yellow/20 flex items-center justify-center text-yellowText shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        </span>
+        <div>
+          <p class="text-sm font-medium">Connect Stripe to publish and start selling tickets.</p>
+          <p class="text-xs text-muted mt-1">You can still save this event as a draft. Publishing (and ticket sales) unlocks once Stripe Connect is set up.</p>
         </div>
       </div>
 
       <div class="flex items-center justify-end gap-3">
         <a href="events.html" class="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-bg transition-colors">Save as Draft</a>
+        <a href="settings.html" class="bg-bg text-muted border border-border px-5 py-3 rounded-xl text-sm font-semibold cursor-not-allowed" title="Connect Stripe to publish">Publish Event (Connect Stripe first)</a>
+      </div>
+      <!-- Once Stripe Connect is set up, the warning banner above is removed and Publish looks like this instead:
+      <div class="flex items-center justify-end gap-3">
+        <a href="events.html" class="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-bg transition-colors">Save as Draft</a>
         <a href="event-detail.html" class="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all">Publish Event</a>
       </div>
+      -->
 
     </div>
 

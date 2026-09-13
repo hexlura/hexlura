@@ -130,7 +130,7 @@
         <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10"></div>
         <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
         <p class="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
-        <button class="w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</button>
+        <a href="billing.html" class="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</a>
       </div>
     </div>
   </aside>
@@ -308,56 +308,54 @@
         </div>
       </div>
 
-      <!-- Identity Verification -->
-      <div class="bg-card rounded-2xl shadow-card p-6 mb-6">
-        <h2 class="text-sm font-semibold mb-4">Identity Verification</h2>
-        <div class="flex items-start gap-3 bg-yellow/10 rounded-xl p-4">
-          <span class="w-9 h-9 rounded-lg bg-yellow/20 flex items-center justify-center text-yellowText shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          </span>
-          <div>
-            <p class="text-sm font-medium">Before you can request a payout, we need to verify your identity.</p>
-            <p class="text-xs text-muted mt-1">This is a one-time check powered by Stripe Identity — selfie + a photo of a government ID. Your data goes directly to Stripe; we only receive a verified / not-verified result.</p>
-          </div>
-        </div>
-        <button class="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold mt-4">Verify Identity</button>
-      </div>
-
       <!-- Payout Method -->
-      <div class="bg-card rounded-2xl shadow-card p-6">
+      <div class="bg-card rounded-2xl shadow-card p-6 mb-6">
         <h2 class="text-sm font-semibold mb-4">Payout Method</h2>
-        <div class="flex flex-col gap-3 mb-4">
-          <label class="flex items-start gap-3 cursor-pointer">
-            <input type="radio" name="payoutMethod" checked class="mt-1 accent-accent" />
-            <div>
-              <p class="text-sm font-medium">Bank Transfer</p>
-              <p class="text-xs text-muted">Admin manually transfers earnings to your UK bank account</p>
-            </div>
-          </label>
-          <label class="flex items-start gap-3 cursor-pointer">
-            <input type="radio" name="payoutMethod" class="mt-1 accent-accent" />
+        <p class="text-xs text-muted mb-4">Hexlura pays organisers via Stripe Connect. As part of connecting, Stripe verifies your identity and handles transferring your earnings to your UK bank account automatically — no bank or ID details are stored with us.</p>
+
+        <!-- Connected & fully onboarded state -->
+        <div class="flex items-center justify-between p-4 bg-bg rounded-xl">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-lg bg-green/10 flex items-center justify-center text-green shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
             <div>
               <p class="text-sm font-medium">Stripe Connect</p>
-              <p class="text-xs text-muted">Automated payouts directly to your Stripe account</p>
-            </div>
-          </label>
-        </div>
-        <div class="border-t border-border pt-4">
-          <label class="text-xs text-muted uppercase tracking-wider mb-1.5 block">Account Holder Name</label>
-          <input placeholder="Full name or company name" class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/25 mb-3" />
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-xs text-muted uppercase tracking-wider mb-1.5 block">Sort Code</label>
-              <input placeholder="00-00-00" class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/25" />
-            </div>
-            <div>
-              <label class="text-xs text-muted uppercase tracking-wider mb-1.5 block">Account Number</label>
-              <input placeholder="12345678" class="w-full bg-bg border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/25" />
+              <p class="text-xs text-muted">Connected &amp; verified · Payouts active</p>
             </div>
           </div>
-          <p class="text-xs text-green mt-2">✓ Bank details on file — ending 4821</p>
+          <a href="https://dashboard.stripe.com" target="_blank" class="text-xs text-accent font-semibold hover:underline">Manage in Stripe →</a>
         </div>
-        <button class="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold mt-4">Save Payout Method</button>
+
+        <!-- Other onboarding states (for reference — shown instead of the block above) -->
+        <!--
+        Not started:
+        <div class="flex items-center justify-between p-4 bg-yellow/10 rounded-xl">
+          <div>
+            <p class="text-sm font-medium">Not connected yet</p>
+            <p class="text-xs text-muted mt-0.5">You'll be redirected to Stripe to verify your identity and set up payouts</p>
+          </div>
+          <button class="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap">Connect with Stripe</button>
+        </div>
+
+        In progress (Stripe still reviewing submitted info):
+        <div class="flex items-center justify-between p-4 bg-yellow/10 rounded-xl">
+          <div>
+            <p class="text-sm font-medium">Verification in progress</p>
+            <p class="text-xs text-muted mt-0.5">Stripe is reviewing your details — this usually takes a few minutes</p>
+          </div>
+          <button class="bg-card border border-border px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap">Refresh status</button>
+        </div>
+
+        More info needed:
+        <div class="flex items-center justify-between p-4 bg-accent/10 rounded-xl">
+          <div>
+            <p class="text-sm font-medium">Action needed</p>
+            <p class="text-xs text-muted mt-0.5">Stripe needs more information before payouts can be activated</p>
+          </div>
+          <button class="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap">Finish on Stripe</button>
+        </div>
+        -->
       </div>
 
       <!-- Analytics & Tracking -->

@@ -130,7 +130,7 @@
         <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10"></div>
         <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
         <p class="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
-        <button class="w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</button>
+        <a href="billing.html" class="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative">Upgrade to Pro →</a>
       </div>
     </div>
   </aside>
@@ -203,114 +203,84 @@
 
       <div class="mb-6">
         <h1 class="font-heading text-4xl tracking-wide">PAYOUTS</h1>
-        <p class="text-muted text-sm mt-1">Your earnings and payout history</p>
+        <p class="text-muted text-sm mt-1">Your earnings settle to your Stripe account the moment a ticket sells</p>
       </div>
 
-      <!-- Identity verification banner -->
+      <!-- Stripe Connect onboarding status banner -->
       <div class="bg-yellow/10 border border-yellow/30 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="flex items-center gap-3">
           <span class="w-9 h-9 rounded-xl bg-yellow/20 flex items-center justify-center text-yellowText shrink-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
           </span>
-          <p class="text-sm font-medium">Identity verification required before you can withdraw.</p>
+          <p class="text-sm font-medium">Finish setting up Stripe Connect before you can sell tickets.</p>
         </div>
-        <button class="bg-text text-white px-4 py-2 rounded-xl text-xs font-semibold shrink-0">Verify Identity →</button>
+        <a href="settings.html" class="bg-text text-white px-4 py-2 rounded-xl text-xs font-semibold shrink-0">Finish on Stripe →</a>
       </div>
 
-      <!-- Balance cards -->
+      <!-- Earnings cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         <div class="bg-card rounded-2xl shadow-card p-6">
-          <p class="text-xs text-muted uppercase tracking-wider mb-2">Available Balance</p>
+          <p class="text-xs text-muted uppercase tracking-wider mb-2">This Month</p>
           <p class="font-heading text-4xl">£3,120.00</p>
-          <p class="text-xs text-green mt-2 font-medium">Ready for withdrawal</p>
+          <p class="text-xs text-green mt-2 font-medium">Across 4 bookings</p>
         </div>
         <div class="bg-card rounded-2xl shadow-card p-6">
-          <p class="text-xs text-muted uppercase tracking-wider mb-2">Requested</p>
-          <p class="font-heading text-4xl">£860.00</p>
-          <p class="text-xs text-muted mt-2">Processing — 2–5 business days</p>
+          <p class="text-xs text-muted uppercase tracking-wider mb-2">Last 30 Days</p>
+          <p class="font-heading text-4xl">£8,214.00</p>
+          <p class="text-xs text-muted mt-2 font-medium">Across all events</p>
         </div>
         <div class="bg-gradient-to-br from-accent to-orange rounded-2xl shadow-glow p-6 text-white">
-          <p class="text-xs uppercase tracking-wider mb-2 opacity-90">Total Paid Out</p>
+          <p class="text-xs uppercase tracking-wider mb-2 opacity-90">Total Earned</p>
           <p class="font-heading text-4xl">£24,680.00</p>
-          <button class="text-xs font-semibold underline mt-2">View history</button>
+          <a href="https://dashboard.stripe.com" target="_blank" class="text-xs font-semibold underline mt-2 inline-block">View in Stripe →</a>
         </div>
       </div>
 
-      <!-- Payout history -->
+      <p class="text-xs text-muted mb-4">This is what Hexlura sends to your Stripe account per sale — Stripe pays it to your bank on its own schedule, and any card processing costs are handled directly between you and Stripe.</p>
+
+      <!-- Earnings history -->
       <div class="bg-card rounded-2xl shadow-card overflow-hidden">
         <div class="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 class="text-sm font-semibold">Payout History</h2>
-          <button onclick="document.getElementById('requestWithdrawalModal').classList.remove('hidden')" class="bg-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:brightness-105 transition-all">Request Withdrawal</button>
+          <h2 class="text-sm font-semibold">Earnings History</h2>
         </div>
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
               <th class="font-medium py-3 px-6">Event</th>
-              <th class="font-medium py-3 px-4">Reference</th>
-              <th class="font-medium py-3 px-4">Status</th>
+              <th class="font-medium py-3 px-4">Booking Ref</th>
               <th class="font-medium py-3 px-4 text-right">Amount</th>
               <th class="font-medium py-3 px-6 text-right">Date</th>
             </tr>
           </thead>
           <tbody>
             <tr class="border-b border-border hover:bg-bg/60 transition-colors">
-              <td class="py-3.5 px-6 font-medium">Summer Rooftop Party</td>
-              <td class="py-3.5 px-4 font-mono text-xs text-muted">PO-88213</td>
-              <td class="py-3.5 px-4"><span class="text-xs font-semibold text-green bg-green/10 px-2.5 py-1 rounded-full">Paid</span></td>
-              <td class="py-3.5 px-4 text-right font-medium">£4,807.00</td>
-              <td class="py-3.5 px-6 text-right text-muted text-xs">28 Aug 2026</td>
+              <td class="py-3.5 px-6 font-medium">Neon Nights Festival</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-4F9K2A</td>
+              <td class="py-3.5 px-4 text-right font-medium">£84.00</td>
+              <td class="py-3.5 px-6 text-right text-muted text-xs">12 Sep 2026</td>
             </tr>
             <tr class="border-b border-border hover:bg-bg/60 transition-colors">
-              <td class="py-3.5 px-6 font-medium">Spring Warehouse</td>
-              <td class="py-3.5 px-4 font-mono text-xs text-muted">PO-77190</td>
-              <td class="py-3.5 px-4"><span class="text-xs font-semibold text-green bg-green/10 px-2.5 py-1 rounded-full">Paid</span></td>
-              <td class="py-3.5 px-4 text-right font-medium">£3,215.00</td>
-              <td class="py-3.5 px-6 text-right text-muted text-xs">04 Jul 2026</td>
+              <td class="py-3.5 px-6 font-medium">Warehouse Sessions</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-9B2C7D</td>
+              <td class="py-3.5 px-4 text-right font-medium">£42.00</td>
+              <td class="py-3.5 px-6 text-right text-muted text-xs">11 Sep 2026</td>
+            </tr>
+            <tr class="border-b border-border hover:bg-bg/60 transition-colors">
+              <td class="py-3.5 px-6 font-medium">Neon Nights Festival</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-2E8F41</td>
+              <td class="py-3.5 px-4 text-right font-medium">£168.00</td>
+              <td class="py-3.5 px-6 text-right text-muted text-xs">10 Sep 2026</td>
             </tr>
             <tr class="hover:bg-bg/60 transition-colors">
               <td class="py-3.5 px-6 font-medium">Rooftop Sessions</td>
-              <td class="py-3.5 px-4 font-mono text-xs text-muted">PO-91004</td>
-              <td class="py-3.5 px-4"><span class="text-xs font-semibold text-yellowText bg-yellow/10 px-2.5 py-1 rounded-full">Requested</span></td>
-              <td class="py-3.5 px-4 text-right font-medium">£860.00</td>
-              <td class="py-3.5 px-6 text-right text-muted text-xs">10 Sep 2026</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-accent">HXL-7A1D93</td>
+              <td class="py-3.5 px-4 text-right font-medium">£56.00</td>
+              <td class="py-3.5 px-6 text-right text-muted text-xs">09 Sep 2026</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-    </div>
-  
-  
-  
-  
-  
-  
-
-    <!-- REQUEST WITHDRAWAL modal -->
-    <div id="requestWithdrawalModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div onclick="document.getElementById('requestWithdrawalModal').classList.add('hidden')" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-      <div class="relative bg-card rounded-2xl shadow-hover w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-border">
-          <div>
-            <h2 class="font-heading text-2xl tracking-wide">REQUEST WITHDRAWAL</h2>
-            <p class="text-muted text-xs mt-0.5">Withdraw your available balance</p>
-          </div>
-          <button onclick="document.getElementById('requestWithdrawalModal').classList.add('hidden')" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-bg hover:text-text transition-colors shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-        <div class="p-6 flex flex-col gap-4">
-          <div class="bg-bg rounded-xl p-4 flex items-center justify-between">
-            <span class="text-sm text-muted">Available balance</span>
-            <span class="font-heading text-2xl">£3,120.00</span>
-          </div>
-          <p class="text-xs text-muted">Funds will be sent to your connected Stripe account. This usually takes 2–5 business days.</p>
-        </div>
-        <div class="flex items-center justify-end gap-3 px-6 py-5 border-t border-border">
-          <button onclick="document.getElementById('requestWithdrawalModal').classList.add('hidden')" class="bg-bg border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-border/40 transition-colors">Cancel</button>
-          <button class="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold">Confirm Withdrawal</button>
-        </div>
-      </div>
     </div>
 
   </main>
