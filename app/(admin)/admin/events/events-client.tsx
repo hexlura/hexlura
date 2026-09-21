@@ -261,6 +261,8 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-2 flex-wrap text-xs">
                                         <Link href={`/events/${e.slug}`} target="_blank" className="text-muted hover:text-text">View</Link>
+                                        <span className="text-border">·</span>
+                                        <Link href={`/admin/events/${e.id}/settlement`} className="text-muted hover:text-text">Settlement</Link>
                                         {e.status !== 'archived' && e.status !== 'cancelled' && (
                                             <>
                                                 <span className="text-border">·</span>
