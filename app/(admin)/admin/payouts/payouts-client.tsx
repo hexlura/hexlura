@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { formatPence } from '@/lib/fees'
@@ -235,7 +236,13 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                             <span className="text-[10px] text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full">⚠ Unverified</span>
                                         )}
                                     </div>
-                                    <p className="text-xs text-muted">{p.events?.title ?? '—'}</p>
+                                    {p.event_id ? (
+                                        <Link href={`/admin/events/${p.event_id}/settlement`} className="text-xs text-muted hover:text-text underline decoration-dotted">
+                                            {p.events?.title ?? '—'}
+                                        </Link>
+                                    ) : (
+                                        <p className="text-xs text-muted">{p.events?.title ?? '—'}</p>
+                                    )}
                                     <p className="text-xs text-muted">Amount: {formatPence(p.net_pence || 0)}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -308,7 +315,15 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                         <div className="text-[10px] text-muted font-mono mt-0.5">Ref: {p.reference}</div>
                                     )}
                                 </td>
-                                <td className="py-3 px-4 text-muted text-xs max-w-[150px] truncate">{p.events?.title ?? '—'}</td>
+                                <td className="py-3 px-4 text-muted text-xs max-w-[150px] truncate">
+                                    {p.event_id ? (
+                                        <Link href={`/admin/events/${p.event_id}/settlement`} className="hover:text-text underline decoration-dotted">
+                                            {p.events?.title ?? '—'}
+                                        </Link>
+                                    ) : (
+                                        p.events?.title ?? '—'
+                                    )}
+                                </td>
                                 <td className="py-3 px-4 text-text text-xs font-medium">{formatPence(p.net_pence || 0)}</td>
                                 <td className="py-3 px-4">
                                     <span className="text-xs px-2 py-0.5 rounded-full border border-border text-muted">

@@ -51,14 +51,15 @@ export default async function AdminEventsPage({
     // Fetch confirmed booking totals per event
     const { data: salesData } = await adminClient
         .from('bookings')
-        .select('event_id, total_pence, booking_fee_pence')
+        .select('event_id, total_pence, booking_fee_pence, order_processing_fee_pence')
         .eq('status', 'confirmed')
 
     const salesMap = new Map<string, { gross: number; fee: number }>()
     for (const b of salesData || []) {
         const prev = salesMap.get(b.event_id) || { gross: 0, fee: 0 }
         prev.gross += b.total_pence || 0
-        prev.fee += b.booking_fee_pence || 0
+        // Platform revenue = per-ticket booking fee + flat order processing fee
+        prev.fee += (b.booking_fee_pence || 0) + (b.order_processing_fee_pence || 0)
         salesMap.set(b.event_id, prev)
     }
 
