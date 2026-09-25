@@ -1,7 +1,6 @@
 'use client'
 
 import Script from 'next/script'
-import { useEffect, useState } from 'react'
 
 declare global {
     interface Window {
@@ -11,17 +10,7 @@ declare global {
 }
 
 export function MetaPixelInit({ pixelId }: { pixelId: string }) {
-    const [consented, setConsented] = useState(false)
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return
-        if (window.localStorage.getItem('hexlura_cookie_consent') === 'accepted') setConsented(true)
-        const onConsent = () => setConsented(true)
-        window.addEventListener('hexlura-consent-accepted', onConsent)
-        return () => window.removeEventListener('hexlura-consent-accepted', onConsent)
-    }, [])
-
-    if (!pixelId || !consented) return null
+    if (!pixelId) return null
 
     return (
         <Script id="meta-pixel-init" strategy="afterInteractive">{`

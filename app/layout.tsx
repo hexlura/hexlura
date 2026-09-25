@@ -8,7 +8,6 @@ import { MetaPixelInit } from '@/components/analytics/MetaPixel'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
 import { CrispChat } from '@/components/support/CrispChat'
 import { DesignTokens } from '@/components/DesignTokens'
-import FacebookPixel from '@/components/admin/MetaPixel'
 import { createServiceClient } from '@/lib/supabase/service'
 import "./globals.css";
 
@@ -52,7 +51,6 @@ export default async function RootLayout({
       <head>
         <Suspense fallback={null}>
           <DesignTokens />
-          <FacebookPixel />
         </Suspense>
       </head>
       <body
