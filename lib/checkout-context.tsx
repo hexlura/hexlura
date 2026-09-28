@@ -37,6 +37,10 @@ interface CheckoutState {
     clientSecret: string | null
     paymentIntentId: string | null
     connectedAccountId: string | null
+    // Fingerprint of (eventId, items, promo code) the current clientSecret was created
+    // for, so StepPayment can reuse the PaymentIntent across remounts instead of
+    // requesting a new one (and burning rate-limit budget) each time.
+    paymentIntentCartKey: string | null
     step: number
 }
 
@@ -46,7 +50,7 @@ interface CheckoutContextType {
     setEventInfo: (info: { eventId: string; eventTitle: string; eventDate: string; eventTime: string; venueName: string }) => void
     setAttendeeDetails: (details: AttendeeDetails) => void
     setPromo: (promo: PromoDiscount | null) => void
-    setPaymentInfo: (clientSecret: string, paymentIntentId: string, connectedAccountId: string | null) => void
+    setPaymentInfo: (clientSecret: string, paymentIntentId: string, connectedAccountId: string | null, cartKey: string) => void
     setStep: (step: number) => void
     ticketSubtotalPence: number
     discountPence: number
@@ -70,6 +74,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         clientSecret: null,
         paymentIntentId: null,
         connectedAccountId: null,
+        paymentIntentCartKey: null,
         step: 1,
     })
 
@@ -99,8 +104,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 setEventInfo: (info) => setState((s) => ({ ...s, ...info })),
                 setAttendeeDetails: (attendeeDetails) => setState((s) => ({ ...s, attendeeDetails })),
                 setPromo: (promo) => setState((s) => ({ ...s, promo })),
-                setPaymentInfo: (clientSecret, paymentIntentId, connectedAccountId) =>
-                    setState((s) => ({ ...s, clientSecret, paymentIntentId, connectedAccountId })),
+                setPaymentInfo: (clientSecret, paymentIntentId, connectedAccountId, cartKey) =>
+                    setState((s) => ({ ...s, clientSecret, paymentIntentId, connectedAccountId, paymentIntentCartKey: cartKey })),
                 setStep: (step) => setState((s) => ({ ...s, step })),
                 ticketSubtotalPence,
                 discountPence,

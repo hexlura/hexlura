@@ -105,13 +105,29 @@ function PaymentForm() {
     )
 }
 
+// Identifies the priced cart a PaymentIntent was created for — event, ticket
+// selections and promo code all affect the amount Stripe was asked to charge.
+function cartKeyFor(state: { eventId: string; items: { ticket_type_id: string; quantity: number }[]; promo: { code: string } | null }) {
+    return JSON.stringify({
+        eventId: state.eventId,
+        items: state.items.map((i) => ({ id: i.ticket_type_id, qty: i.quantity })),
+        promo: state.promo?.code || null,
+    })
+}
+
 export default function StepPayment() {
     const { state, setPaymentInfo, totalPence, bookingFeePence } = useCheckout()
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(!(state.clientSecret && state.paymentIntentCartKey === cartKeyFor(state)))
     const [error, setError] = useState('')
 
     useEffect(() => {
         async function createIntent() {
+            // Reuse an already-created PaymentIntent for the same cart instead of asking
+            // Stripe — and the checkout rate limiter — for a new one on every remount.
+            if (state.clientSecret && state.paymentIntentCartKey === cartKeyFor(state)) {
+                setLoading(false)
+                return
+            }
             try {
                 // Pull the promoter referral code stamped by /events/[slug] when ?ref= is on the URL
                 const refCookie = typeof document !== 'undefined'
@@ -150,7 +166,7 @@ export default function StepPayment() {
                     return
                 }
 
-                setPaymentInfo(data.client_secret, data.payment_intent_id, data.connected_account_id || null)
+                setPaymentInfo(data.client_secret, data.payment_intent_id, data.connected_account_id || null, cartKeyFor(state))
             } catch {
                 setError('Network error. Please try again.')
             }

@@ -6,7 +6,7 @@ import { calculateBookingFee, getFeeConfig } from '@/lib/fees'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { getPromoterByReferralCode } from '@/lib/promoter-access'
 import { randomUUID } from 'crypto'
-import { checkoutLimiter, getIP } from '@/lib/rate-limit'
+import { checkoutLimiter, checkoutUserLimiter, getIP } from '@/lib/rate-limit'
 import { autoFollowOrganiser } from '@/lib/auto-follow'
 import { computeEligiblePence, type PromoCartLine } from '@/lib/promo-eligibility'
 
@@ -28,6 +28,9 @@ interface CreateIntentRequest {
 }
 
 export async function POST(request: NextRequest) {
+    // Coarse per-IP net against scripted abuse — deliberately generous, since everyone
+    // behind the same NAT/office wifi shares it. The per-user check below is the one
+    // that caps a single shopper's retries.
     const ip = getIP(request)
     const { success } = checkoutLimiter(ip)
     if (!success) {
@@ -50,6 +53,14 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const { success: userOk } = checkoutUserLimiter(user.id)
+    if (!userOk) {
+        return NextResponse.json(
+            { error: 'Too many requests. Please try again in a moment.' },
+            { status: 429 }
+        )
     }
 
     // Verify event exists and is published
