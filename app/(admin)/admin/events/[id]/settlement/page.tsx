@@ -42,7 +42,8 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
     if (!s) notFound()
 
     const { totals } = s
-    const pctSettled = totals.owedPence > 0 ? Math.min(100, Math.round((totals.receivedPence / totals.owedPence) * 100)) : 0
+    const paidOutPence = totals.receivedPence + totals.bankPaidPence
+    const pctSettled = totals.owedPence > 0 ? Math.min(100, Math.round((paidOutPence / totals.owedPence) * 100)) : 0
     const errors = s.issues.filter(i => i.severity === 'error')
     const warnings = s.issues.filter(i => i.severity === 'warn')
     const totalBookings = s.settled.length + s.held.length
@@ -120,13 +121,15 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
                 </div>
                 <div className="bg-card border border-border p-4">
                     <p className="text-[11px] uppercase tracking-wider text-muted">Already received</p>
-                    <p className="font-heading text-3xl text-success mt-1">{formatPence(totals.receivedPence)}</p>
-                    <p className="text-xs text-muted mt-1">{s.settled.length} booking{s.settled.length === 1 ? '' : 's'} settled via Stripe</p>
+                    <p className="font-heading text-3xl text-success mt-1">{formatPence(paidOutPence)}</p>
+                    <p className="text-xs text-muted mt-1">
+                        {s.settled.length} via Stripe{totals.bankPaidPence > 0 ? `, ${formatPence(totals.bankPaidPence)} by bank transfer` : ''}
+                    </p>
                 </div>
                 <div className="bg-card border border-accent p-4">
                     <p className="text-[11px] uppercase tracking-wider text-accent">Still to pay</p>
                     <p className="font-heading text-3xl text-accent mt-1">{formatPence(totals.duePence)}</p>
-                    <p className="text-xs text-muted mt-1">{s.held.length} booking{s.held.length === 1 ? '' : 's'} held by platform</p>
+                    <p className="text-xs text-muted mt-1">{totals.duePence > 0 ? `${s.held.length} booking${s.held.length === 1 ? '' : 's'} held by platform` : 'Nothing outstanding'}</p>
                 </div>
             </div>
 
@@ -142,7 +145,7 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
                         <div className="bg-accent h-full" style={{ width: `${100 - pctSettled}%` }} />
                     </div>
                     <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-xs text-muted">
-                        <span><span className="inline-block w-2 h-2 bg-success mr-1.5" />Paid {formatPence(totals.receivedPence)}</span>
+                        <span><span className="inline-block w-2 h-2 bg-success mr-1.5" />Paid {formatPence(paidOutPence)}</span>
                         <span><span className="inline-block w-2 h-2 bg-accent mr-1.5" />Held {formatPence(totals.duePence)}</span>
                     </div>
                     {s.excluded.length > 0 && (
@@ -220,7 +223,7 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
             {/* Held */}
             <BookingsTable
                 title="Held by the platform"
-                subtitle="Still owed to the organiser"
+                subtitle={totals.bankPaidPence > 0 ? 'Collected by the platform, paid out to the organiser by bank transfer' : 'Still owed to the organiser'}
                 rows={s.held}
                 settled={false}
                 totals={{

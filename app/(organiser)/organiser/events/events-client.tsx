@@ -167,7 +167,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                                 <Link href={`/organiser/events/${e.id}/promo-codes`} className="text-xs text-muted hover:text-text transition-colors">Promo Codes</Link>
                                                 <span className="text-border">·</span>
                                                 <button type="button" onClick={() => handleDuplicate(e.id)} className="text-xs text-muted hover:text-text transition-colors">Duplicate</button>
-                                                {e.status !== 'cancelled' && (
+                                                {!['cancelled', 'ended', 'deleted'].includes(e.status) && (
                                                     <>
                                                         <span className="text-border">·</span>
                                                         <button type="button" onClick={() => setShowCancelModal(e.id)} className="text-xs text-accent hover:underline">Cancel</button>
@@ -217,7 +217,7 @@ export function EventsClient({ events }: EventsClientProps) {
                                                 <Link href={`/organiser/events/${e.id}/checkin`} className="block px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Check-in Scanner</Link>
                                                 <Link href={`/organiser/events/${e.id}/promo-codes`} className="block px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Promo Codes</Link>
                                                 <button type="button" onClick={() => handleDuplicate(e.id)} className="block w-full text-left px-4 py-3 text-xs text-muted hover:text-text hover:bg-surface transition-colors">Duplicate</button>
-                                                {e.status !== 'cancelled' && (
+                                                {!['cancelled', 'ended', 'deleted'].includes(e.status) && (
                                                     <button type="button" onClick={() => setShowCancelModal(e.id)} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Cancel Event</button>
                                                 )}
                                                 <button type="button" onClick={() => { setShowDeleteModal(e.id); setDeleteReason(''); setDeleteError(''); setDeleteSuccess(false) }} className="block w-full text-left px-4 py-3 text-xs text-accent hover:bg-surface transition-colors">Delete Event</button>

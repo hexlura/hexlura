@@ -69,8 +69,9 @@ export interface EventSettlement {
     totals: {
         buyersPaidPence: number
         owedPence: number
-        receivedPence: number
-        duePence: number
+        receivedPence: number // settled via Stripe Connect
+        bankPaidPence: number // held bookings already paid out via a 'paid' payout row (bank transfer)
+        duePence: number // held ticket revenue not yet paid out
         bookingFeesPence: number
         processingFeesPence: number
     }
@@ -281,11 +282,20 @@ export async function getEventSettlement(eventId: string): Promise<EventSettleme
         stripeTransferId: p.stripe_transfer_id,
     }))
 
+    // A 'paid' payout row can cover Connect-settled bookings too, so only the
+    // excess over what Stripe already delivered counts as a bank payout for the
+    // held bookings (capped at what is actually held).
+    const stripeReceivedPence = sum(settled, b => b.receivedPence ?? 0)
+    const heldPence = sum(held, b => b.ticketPence)
+    const paidPayoutPence = payouts.filter(p => p.status === 'paid').reduce((t, p) => t + p.netPence, 0)
+    const bankPaidPence = Math.min(heldPence, Math.max(0, paidPayoutPence - stripeReceivedPence))
+
     const totals = {
         buyersPaidPence: sum(bookings, b => b.totalPence),
         owedPence: sum(bookings, b => b.ticketPence),
-        receivedPence: sum(settled, b => b.receivedPence ?? 0),
-        duePence: sum(held, b => b.ticketPence),
+        receivedPence: stripeReceivedPence,
+        bankPaidPence,
+        duePence: heldPence - bankPaidPence,
         bookingFeesPence: sum(bookings, b => b.bookingFeePence),
         processingFeesPence: sum(bookings, b => b.processingFeePence),
     }
