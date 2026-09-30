@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isEventOver } from '@/lib/event-refund'
 
 export async function GET() {
     const supabase = createClient()
@@ -23,22 +24,23 @@ export async function GET() {
         .filter(r => r.status === 'pending' && r.organiser_id)
         .map(r => r.organiser_id as string)
 
-    const stats: Record<string, { eventCount: number; confirmedBookingCount: number }> = {}
+    const stats: Record<string, { eventCount: number; confirmedBookingCount: number; pastBookingCount: number }> = {}
     if (pendingOrganiserIds.length > 0) {
         const { data: events } = await adminClient
             .from('events')
-            .select('id, organiser_id')
+            .select('id, organiser_id, status, start_at, end_at')
             .in('organiser_id', pendingOrganiserIds)
 
         const eventsByOrganiser: Record<string, string[]> = {}
         for (const e of events || []) {
             if (!eventsByOrganiser[e.organiser_id]) eventsByOrganiser[e.organiser_id] = []
             eventsByOrganiser[e.organiser_id].push(e.id)
-            if (!stats[e.organiser_id]) stats[e.organiser_id] = { eventCount: 0, confirmedBookingCount: 0 }
+            if (!stats[e.organiser_id]) stats[e.organiser_id] = { eventCount: 0, confirmedBookingCount: 0, pastBookingCount: 0 }
             stats[e.organiser_id].eventCount++
         }
 
         const allEventIds = (events || []).map(e => e.id)
+        const pastEventIds = new Set((events || []).filter(isEventOver).map(e => e.id))
         if (allEventIds.length > 0) {
             const { data: bookings } = await adminClient
                 .from('bookings')
@@ -52,7 +54,10 @@ export async function GET() {
             }
             for (const b of bookings || []) {
                 const organiserId = eventToOrganiser[b.event_id]
-                if (organiserId) stats[organiserId].confirmedBookingCount++
+                if (organiserId) {
+                    stats[organiserId].confirmedBookingCount++
+                    if (pastEventIds.has(b.event_id)) stats[organiserId].pastBookingCount++
+                }
             }
         }
     }
@@ -61,6 +66,7 @@ export async function GET() {
         ...r,
         event_count: r.organiser_id ? (stats[r.organiser_id]?.eventCount ?? 0) : 0,
         confirmed_booking_count: r.organiser_id ? (stats[r.organiser_id]?.confirmedBookingCount ?? 0) : 0,
+        past_booking_count: r.organiser_id ? (stats[r.organiser_id]?.pastBookingCount ?? 0) : 0,
     }))
 
     return NextResponse.json({ requests: enriched })

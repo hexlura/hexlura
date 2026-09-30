@@ -13,7 +13,7 @@ export async function GET() {
 
     const { data: requests, error } = await adminClient
         .from('event_deletion_requests')
-        .select('id, event_id, event_title, reason, status, previous_status, admin_notes, requested_at, reviewed_at, organiser:organiser_profiles(org_name), event:events(status)')
+        .select('id, event_id, event_title, reason, status, previous_status, admin_notes, requested_at, reviewed_at, organiser:organiser_profiles(org_name), event:events(status, start_at, end_at)')
         .order('requested_at', { ascending: false })
 
     if (error) return NextResponse.json({ error: 'Failed to load requests.' }, { status: 500 })
