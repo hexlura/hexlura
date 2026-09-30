@@ -16,11 +16,20 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
     const { data: event } = await adminClient
         .from('events')
-        .select('id, title, slug, start_at')
+        .select('id, title, slug, start_at, end_at, status')
         .eq('id', params.id)
         .eq('organiser_id', organiser.id)
         .single()
     if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    // An event that already ran (or was already cancelled/deleted) must never be
+    // cancelled: it would email every attendee a bogus cancellation and refund promise.
+    if (['ended', 'cancelled', 'deleted'].includes(event.status)) {
+        return NextResponse.json({ error: `Cannot cancel an event that is ${event.status}` }, { status: 409 })
+    }
+    if (new Date(event.end_at ?? event.start_at).getTime() < Date.now()) {
+        return NextResponse.json({ error: 'Cannot cancel an event that has already taken place' }, { status: 409 })
+    }
 
     await adminClient.from('events').update({ status: 'cancelled' }).eq('id', params.id)
 
