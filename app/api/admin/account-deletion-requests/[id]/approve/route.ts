@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { refundAllBookingsForEvent } from '@/lib/event-refund'
+import { refundAllBookingsForEvent, isEventOver } from '@/lib/event-refund'
 import { sendAccountDeletionApprovedEmail } from '@/lib/email'
 import { logAuditAction } from '@/lib/audit'
 
@@ -24,6 +24,31 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const body = await req.json().catch(() => ({}))
     const adminNotes = typeof body?.admin_notes === 'string' ? body.admin_notes.trim().slice(0, 2000) : null
+
+    // Past events are never refunded (buyers already attended); they are just
+    // retired. Flag it up-front so the admin has to confirm that explicitly.
+    const { data: pendingRequest } = await adminClient
+        .from('organiser_account_deletion_requests')
+        .select('organiser_id')
+        .eq('id', params.id)
+        .eq('status', 'pending')
+        .single()
+
+    if (pendingRequest?.organiser_id) {
+        const { data: orgEvents } = await adminClient
+            .from('events').select('id, status, start_at, end_at').eq('organiser_id', pendingRequest.organiser_id)
+        const pastIds = (orgEvents || []).filter(isEventOver).map(e => e.id)
+        if (pastIds.length > 0 && body?.confirm_past_event !== true) {
+            const { count: pastBookings } = await adminClient
+                .from('bookings').select('id', { count: 'exact', head: true }).in('event_id', pastIds).eq('status', 'confirmed')
+            if ((pastBookings ?? 0) > 0) {
+                return NextResponse.json({
+                    error: `${pastBookings} confirmed booking(s) belong to events that already took place. They will NOT be refunded — those events are retired and the bookings left as they are. Confirm to continue.`,
+                    requiresConfirmation: true,
+                }, { status: 409 })
+            }
+        }
+    }
 
     const { data: claimedRequest } = await adminClient
         .from('organiser_account_deletion_requests')
@@ -61,11 +86,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const { data: events } = await adminClient
         .from('events')
-        .select('id')
+        .select('id, status, start_at, end_at')
         .eq('organiser_id', organiserId)
 
     let refundedCount = 0
     let totalRefundedPence = 0
+    let pastEventsRetained = 0
 
     for (const event of events || []) {
         // Any booking ever made (not just currently-confirmed) means real
@@ -78,9 +104,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             .eq('event_id', event.id)
 
         if ((anyBookingCount ?? 0) > 0) {
-            const result = await refundAllBookingsForEvent(event.id)
-            refundedCount += result.refundedCount
-            totalRefundedPence += result.totalRefundedPence
+            if (isEventOver(event)) {
+                pastEventsRetained++
+            } else {
+                const result = await refundAllBookingsForEvent(event.id)
+                refundedCount += result.refundedCount
+                totalRefundedPence += result.totalRefundedPence
+            }
             await adminClient.from('events').update({ status: 'deleted' }).eq('id', event.id)
         } else {
             await adminClient.from('ticket_types').delete().eq('event_id', event.id)
@@ -122,7 +152,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         action: 'admin_approved_account_deletion',
         entityType: 'organiser_account_deletion_request',
         entityId: claimedRequest.id,
-        metadata: { organiserId, orgName: claimedRequest.org_name, refundedCount, totalRefundedPence },
+        metadata: { organiserId, orgName: claimedRequest.org_name, refundedCount, totalRefundedPence, pastEventsRetained },
     })
 
     return NextResponse.json({ success: true, refundedCount, totalRefundedPence })

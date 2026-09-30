@@ -3,6 +3,13 @@ import { reversePromoterEarningsForBooking } from '@/lib/promoter-earnings'
 import { sendEventCancelledEmail } from '@/lib/email'
 import { notifyAdmins } from '@/lib/notify-admins'
 
+// An event that has already run (or was marked ended). Refunding its buyers
+// would hand back money for a night they attended, so deletion flows must not.
+export function isEventOver(e: { status?: string | null; start_at: string; end_at?: string | null }): boolean {
+    if (e.status === 'ended') return true
+    return new Date(e.end_at ?? e.start_at).getTime() < Date.now()
+}
+
 interface RefundResult {
     refundedCount: number
     totalRefundedPence: number

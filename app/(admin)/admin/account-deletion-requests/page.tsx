@@ -16,6 +16,7 @@ interface RequestItem {
     reviewed_at: string | null
     event_count: number
     confirmed_booking_count: number
+    past_booking_count: number
 }
 
 function fmtDate(d: string): string {
@@ -47,13 +48,17 @@ export default function AccountDeletionRequestsPage() {
     useEffect(() => { fetchRequests() }, [fetchRequests])
 
     async function handleApprove(r: RequestItem) {
-        const warning = r.confirmed_booking_count > 0
-            ? `This organiser has ${r.confirmed_booking_count} confirmed booking(s) across ${r.event_count} event(s). Approving will refund all of them automatically, then permanently delete the account. Continue?`
+        const upcoming = r.confirmed_booking_count - r.past_booking_count
+        const parts: string[] = []
+        if (upcoming > 0) parts.push(`${upcoming} booking(s) on upcoming events will be refunded automatically`)
+        if (r.past_booking_count > 0) parts.push(`${r.past_booking_count} booking(s) on events that ALREADY TOOK PLACE will NOT be refunded — those events are retired and their bookings and payouts left untouched`)
+        const warning = parts.length > 0
+            ? `${parts.join('; ')}. The account will then be permanently deleted. Continue?`
             : 'Permanently delete this account? This cannot be undone.'
         if (!confirm(warning)) return
         setActionLoading(r.id)
         setError('')
-        const res = await fetch(`/api/admin/account-deletion-requests/${r.id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        const res = await fetch(`/api/admin/account-deletion-requests/${r.id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm_past_event: r.past_booking_count > 0 }) })
         const json = await res.json()
         if (!res.ok) setError(json.error || 'Failed to approve.')
         await fetchRequests()
@@ -106,6 +111,11 @@ export default function AccountDeletionRequestsPage() {
                                 <span className="text-text">{r.event_count} event{r.event_count === 1 ? '' : 's'}</span>
                                 <span className="text-text"><strong>{r.confirmed_booking_count}</strong> confirmed booking{r.confirmed_booking_count === 1 ? '' : 's'} affected</span>
                             </div>
+                            {r.past_booking_count > 0 && (
+                                <div className="border border-gold/40 bg-gold/10 p-3 mb-4 text-sm text-text">
+                                    <strong>{r.past_booking_count} booking{r.past_booking_count === 1 ? '' : 's'} belong to events that already took place.</strong> These will not be refunded — those events are retired and their bookings and payouts stay as they are.
+                                </div>
+                            )}
                             <div className="bg-background border border-border p-3 mb-4">
                                 <p className="text-xs uppercase tracking-wider text-muted font-semibold mb-1">Organiser&apos;s reason</p>
                                 <p className="text-sm text-text whitespace-pre-wrap">{r.reason}</p>

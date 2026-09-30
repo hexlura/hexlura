@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { refundAllBookingsForEvent } from '@/lib/event-refund'
+import { refundAllBookingsForEvent, isEventOver } from '@/lib/event-refund'
 import { logAuditAction } from '@/lib/audit'
 
 // Approving deletion never silently destroys paid bookings: if the event has
@@ -19,6 +19,29 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const body = await req.json().catch(() => ({}))
     const adminNotes = typeof body?.admin_notes === 'string' ? body.admin_notes.trim().slice(0, 2000) : null
+
+    // A past event's buyers already got what they paid for, so approving never
+    // refunds them — the event is just retired. Because that differs from the
+    // normal "refund everyone" behaviour, the admin must confirm it explicitly.
+    const { data: pendingRequest } = await adminClient
+        .from('event_deletion_requests')
+        .select('event_id')
+        .eq('id', params.id)
+        .eq('status', 'pending')
+        .single()
+
+    let pastEvent = false
+    if (pendingRequest?.event_id) {
+        const { data: ev } = await adminClient
+            .from('events').select('status, start_at, end_at').eq('id', pendingRequest.event_id).single()
+        pastEvent = !!ev && isEventOver(ev)
+        if (pastEvent && body?.confirm_past_event !== true) {
+            return NextResponse.json({
+                error: 'This event has already taken place. Approving will retire it WITHOUT refunding any bookings. Confirm to continue.',
+                requiresConfirmation: true,
+            }, { status: 409 })
+        }
+    }
 
     // Atomically claim the request so a concurrent approve/reject can't double-process it.
     const { data: claimedRequest } = await adminClient
@@ -47,9 +70,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             .eq('event_id', claimedRequest.event_id)
 
         if ((anyBookingCount ?? 0) > 0) {
-            const result = await refundAllBookingsForEvent(claimedRequest.event_id)
-            refundedCount = result.refundedCount
-            totalRefundedPence = result.totalRefundedPence
+            if (!pastEvent) {
+                const result = await refundAllBookingsForEvent(claimedRequest.event_id)
+                refundedCount = result.refundedCount
+                totalRefundedPence = result.totalRefundedPence
+            }
             await adminClient.from('events').update({ status: 'deleted' }).eq('id', claimedRequest.event_id)
         } else {
             await adminClient.from('ticket_types').delete().eq('event_id', claimedRequest.event_id)
@@ -84,6 +109,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             eventTitle: claimedRequest.event_title,
             refundedCount,
             totalRefundedPence,
+            refundSkippedPastEvent: pastEvent,
         },
     })
 

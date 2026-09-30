@@ -15,9 +15,14 @@ interface RequestItem {
     requested_at: string
     reviewed_at: string | null
     organiser: { org_name: string } | null
-    event: { status: string } | null
+    event: { status: string; start_at: string; end_at: string | null } | null
     confirmed_booking_count: number
     revenue_pence: number
+}
+
+function isPastEvent(r: RequestItem): boolean {
+    if (!r.event) return false
+    return r.event.status === 'ended' || new Date(r.event.end_at ?? r.event.start_at).getTime() < Date.now()
 }
 
 function fmtPence(pence: number): string {
@@ -52,11 +57,16 @@ export default function EventDeletionRequestsPage() {
 
     useEffect(() => { fetchRequests() }, [fetchRequests])
 
-    async function handleApprove(id: string) {
-        if (!confirm('Approve this deletion? If the event has confirmed bookings, they will be automatically refunded first.')) return
+    async function handleApprove(r: RequestItem) {
+        const past = isPastEvent(r)
+        const message = past
+            ? `${r.event_title} has ALREADY TAKEN PLACE. Approving will retire the event but will NOT refund its ${r.confirmed_booking_count} booking(s) — bookings and payouts are left untouched. Continue?`
+            : 'Approve this deletion? If the event has confirmed bookings, they will be automatically refunded first.'
+        if (!confirm(message)) return
+        const id = r.id
         setActionLoading(id)
         setError('')
-        const res = await fetch(`/api/admin/event-deletion-requests/${id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        const res = await fetch(`/api/admin/event-deletion-requests/${id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm_past_event: past }) })
         const json = await res.json()
         if (!res.ok) setError(json.error || 'Failed to approve.')
         await fetchRequests()
@@ -109,13 +119,18 @@ export default function EventDeletionRequestsPage() {
                                 <span className="text-text"><strong>{r.confirmed_booking_count}</strong> confirmed booking{r.confirmed_booking_count === 1 ? '' : 's'}</span>
                                 <span className="text-text">{fmtPence(r.revenue_pence)} revenue</span>
                             </div>
+                            {isPastEvent(r) && (
+                                <div className="border border-gold/40 bg-gold/10 p-3 mb-4 text-sm text-text">
+                                    <strong>This event has already taken place.</strong> Approving retires it without refunding anyone — its bookings and payouts stay as they are.
+                                </div>
+                            )}
                             <div className="bg-background border border-border p-3 mb-4">
                                 <p className="text-xs uppercase tracking-wider text-muted font-semibold mb-1">Organiser&apos;s reason</p>
                                 <p className="text-sm text-text whitespace-pre-wrap">{r.reason}</p>
                             </div>
                             <div className="flex gap-3">
                                 <button
-                                    onClick={() => handleApprove(r.id)}
+                                    onClick={() => handleApprove(r)}
                                     disabled={actionLoading === r.id}
                                     className="h-9 px-5 rounded-sm bg-accent text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
                                 >
