@@ -30,13 +30,16 @@ export async function generatePayoutsForOrganiser(organiserId: string) {
     // 1. Get all events for this organiser
     const { data: events } = await supabase
         .from('events')
-        .select('id, end_at, start_at')
+        .select('id, end_at, start_at, status')
         .eq('organiser_id', organiserId)
 
     if (!events || events.length === 0) return
 
     // 2. Filter to events that ended before the cutoff (cooldown has passed)
+    // Cancelled/deleted events never pay out: their buyers are owed refunds,
+    // not the organiser a payout.
     const eligibleEvents = events.filter(e => {
+        if (e.status === 'cancelled' || e.status === 'deleted') return false
         const endDate = e.end_at || e.start_at
         return endDate < cutoffISO
     })
@@ -86,8 +89,15 @@ export async function generatePayoutsForOrganiser(organiserId: string) {
         const eventEnd = new Date(event.end_at || event.start_at)
         eventEnd.setDate(eventEnd.getDate() + cooldownDays)
 
+        // A unique index (migration 074) means a concurrent page load that races
+        // this one gets a 23505 here instead of inserting a duplicate payout.
+        const insertPayout = async (row: Record<string, unknown>) => {
+            const { error } = await supabase.from('payouts').insert(row)
+            if (error && error.code !== '23505') console.error('Failed to create payout:', error)
+        }
+
         if (manualPence > 0) {
-            await supabase.from('payouts').insert({
+            await insertPayout({
                 organiser_id: organiserId,
                 event_id: event.id,
                 gross_pence: manualPence,
@@ -99,7 +109,7 @@ export async function generatePayoutsForOrganiser(organiserId: string) {
         }
 
         if (autoSettledPence > 0) {
-            await supabase.from('payouts').insert({
+            await insertPayout({
                 organiser_id: organiserId,
                 event_id: event.id,
                 gross_pence: autoSettledPence,

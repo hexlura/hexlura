@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 import { sendOrganiserPayoutPaidEmail } from '@/lib/email'
+import { notifyAdmins } from '@/lib/notify-admins'
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
     const supabase = createClient()
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const { data: payout } = await adminClient
         .from('payouts')
-        .select('id, net_pence, organiser_id, event_id, organiser_profiles(stripe_account_id, payout_method, org_name, user_id, identity_status, identity_verified_at), events(title)')
+        .select('id, status, net_pence, organiser_id, event_id, organiser_profiles(stripe_account_id, payout_method, org_name, user_id, identity_status, identity_verified_at), events(title)')
         .eq('id', params.id)
         .single()
 
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     type PayoutWithOrg = {
         id: string
+        status: string
         net_pence: number | null
         organiser_id: string
         event_id: string | null
@@ -69,22 +71,50 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         }
     }
 
+    // Only an unpaid payout can be processed. Re-processing a 'paid' one would
+    // send a second real Stripe transfer (or a second "payout sent" email).
+    const PROCESSABLE = ['pending', 'requested', 'failed']
+    if (!PROCESSABLE.includes(p.status)) {
+        return NextResponse.json({ error: `Payout is already ${p.status}` }, { status: 409 })
+    }
+
+    // Atomically claim it: only one caller can move it to 'processing', so a
+    // double-click, two admins, or "Process All" overlapping can't double-pay.
+    const { data: claimed } = await adminClient
+        .from('payouts')
+        .update({ status: 'processing' })
+        .eq('id', params.id)
+        .in('status', PROCESSABLE)
+        .select('id')
+        .maybeSingle()
+    if (!claimed) {
+        return NextResponse.json({ error: 'Payout is already being processed' }, { status: 409 })
+    }
+
     let transferId: string | null = null
     let success = false
+    let failureReason: string | null = null
 
-    if (payoutMethod === 'stripe_connect' && p.organiser_profiles?.stripe_account_id) {
+    if (payoutMethod === 'stripe_connect' && !p.organiser_profiles?.stripe_account_id) {
+        failureReason = 'Organiser is set to Stripe Connect but has no connected account'
+    } else if (payoutMethod === 'stripe_connect' && p.organiser_profiles?.stripe_account_id) {
         try {
             const stripe = (await import('stripe')).default
             const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-02-25.clover' })
+            // Idempotency key: a retried request for the same payout returns the
+            // original transfer instead of creating another. A retry after a
+            // failure needs a fresh key (Stripe replays failures too).
+            const idempotencyKey = p.status === 'failed' ? `payout-${p.id}-retry-${Date.now()}` : `payout-${p.id}`
             const transfer = await stripeClient.transfers.create({
                 amount: p.net_pence || 0,
                 currency: 'gbp',
                 destination: p.organiser_profiles.stripe_account_id,
-            })
+            }, { idempotencyKey })
             transferId = transfer.id
             success = true
-        } catch {
-            // Mark as failed
+        } catch (err) {
+            failureReason = err instanceof Error ? err.message : 'Stripe transfer failed'
+            console.error(`Payout ${p.id} transfer failed:`, err)
         }
     } else if (payoutMethod === 'bank_transfer') {
         // Manual bank transfer — admin has already sent payment externally
@@ -107,7 +137,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         updateRow.reference = finalReference
     }
 
-    await adminClient.from('payouts').update(updateRow).eq('id', params.id)
+    const { error: updateError } = await adminClient.from('payouts').update(updateRow).eq('id', params.id)
+    if (updateError) {
+        // Money may already have moved — never report this as a clean result.
+        console.error(`Payout ${p.id} status update failed after processing:`, updateError)
+        await notifyAdmins({
+            type: 'payout_failed',
+            title: 'Payout status update failed — check manually',
+            body: `Payout ${p.id} (${p.organiser_profiles?.org_name ?? 'organiser'}, £${((p.net_pence || 0) / 100).toFixed(2)}) ${success ? `was sent (transfer ${transferId ?? 'bank'})` : 'failed'} but its row could not be updated and is stuck as 'processing'. Do not retry before checking Stripe.`,
+            link: '/admin/payouts',
+        })
+        return NextResponse.json({ error: 'Payout was processed but its status could not be saved. Check Stripe before retrying.' }, { status: 500 })
+    }
 
     await logAuditAction({
         actorId: user.id,
@@ -119,6 +160,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             payout_method: payoutMethod,
             stripe_transfer_id: transferId,
             reference: success ? finalReference : undefined,
+            failure_reason: failureReason ?? undefined,
             identity_override: !identityVerified ? { reason: overrideReason } : undefined,
         },
     })
@@ -150,6 +192,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             body: `£${((p.net_pence || 0) / 100).toFixed(2)} has been sent to your bank account.`,
             link: '/organiser/payouts',
         })
+    }
+
+    if (!success) {
+        return NextResponse.json({ error: failureReason ?? 'Payout failed' }, { status: 502 })
     }
 
     return NextResponse.json({ success: true })

@@ -129,17 +129,23 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
         }
         setProcessingAll(true)
         setProcessProgress({ current: 0, total: eligible.length })
+        let okCount = 0
+        let okNet = 0
         for (let i = 0; i < eligible.length; i++) {
             setProcessProgress({ current: i + 1, total: eligible.length })
-            await fetch(`/api/admin/payouts/${eligible[i].id}/process`, { method: 'POST' })
+            const res = await fetch(`/api/admin/payouts/${eligible[i].id}/process`, { method: 'POST' })
+            if (res.ok) {
+                okCount++
+                okNet += eligible[i].net_pence || 0
+            }
         }
-        const totalNet = eligible.reduce((s, p) => s + (p.net_pence || 0), 0)
+        const failed = eligible.length - okCount
         setProcessingAll(false)
         setProcessProgress(null)
         showToast(
-            skipped > 0
-                ? `${eligible.length} processed — ${formatPence(totalNet)} sent. ${skipped} skipped (unverified).`
-                : `${eligible.length} payouts processed — ${formatPence(totalNet)} sent`,
+            `${okCount} payout${okCount === 1 ? '' : 's'} processed — ${formatPence(okNet)} sent.`
+            + (failed > 0 ? ` ${failed} FAILED — check each payout.` : '')
+            + (skipped > 0 ? ` ${skipped} skipped (unverified).` : ''),
         )
         router.refresh()
     }
