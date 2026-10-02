@@ -33,13 +33,22 @@ const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 
 function Avatar({ member, index }: { member: TeamMember; index: number }) {
+    // Profile photos can fail to load (expired/blocked URL) — fall back to the initials badge
+    const [imgFailed, setImgFailed] = useState(false)
     const name = member.profile?.full_name || member.invited_email
     const initials = name.includes(' ')
         ? (name.split(' ')[0][0] + name.split(' ').slice(-1)[0][0]).toUpperCase()
         : name.slice(0, 2).toUpperCase()
-    return member.profile?.avatar_url ? (
+    const avatarUrl = member.profile?.avatar_url
+    return avatarUrl && !imgFailed ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={member.profile.avatar_url} alt={initials} className="w-9 h-9 rounded-full object-cover shrink-0" />
+        <img
+            src={avatarUrl}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setImgFailed(true)}
+            className="w-9 h-9 rounded-full object-cover shrink-0"
+        />
     ) : (
         <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length]} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
             {initials}
