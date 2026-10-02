@@ -116,7 +116,7 @@ function cartKeyFor(state: { eventId: string; items: { ticket_type_id: string; q
 }
 
 export default function StepPayment() {
-    const { state, setPaymentInfo, totalPence, bookingFeePence } = useCheckout()
+    const { state, setPaymentInfo, totalPence, bookingFeePence, processingFeePence } = useCheckout()
     const [loading, setLoading] = useState(!(state.clientSecret && state.paymentIntentCartKey === cartKeyFor(state)))
     const [error, setError] = useState('')
 
@@ -203,8 +203,12 @@ export default function StepPayment() {
                 {/* Locked summary */}
                 <div className="bg-surface border border-border rounded-none p-4 text-sm space-y-2">
                     <div className="flex justify-between">
-                        <span className="text-muted">Ticket subtotal{bookingFeePence > 0 ? ' (incl. booking fee)' : ''}</span>
-                        <span className="text-text">{formatPence(state.items.reduce((s, i) => s + i.price_pence * i.quantity, 0) + bookingFeePence)}</span>
+                        <span className="text-muted">Ticket subtotal</span>
+                        <span className="text-text">{formatPence(state.items.reduce((s, i) => s + i.price_pence * i.quantity, 0))}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted">Fees</span>
+                        <span className="text-text">{formatPence(bookingFeePence + processingFeePence)}</span>
                     </div>
                     <div className="border-t border-border pt-2 flex justify-between font-bold text-lg">
                         <span>Total</span>
