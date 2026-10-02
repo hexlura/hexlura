@@ -69,7 +69,7 @@ export default async function OrganiserLayout({
             <OrganiserSidebar userName={userName} orgName={orgName} userId={user.id} identityStatus={identityStatus} />
             <main className="flex-1 min-w-0 min-h-screen lg:ml-64">
                 <OrganiserTopBar userId={user.id} userName={userName} orgName={orgName} />
-                <div className="px-4 sm:px-8 lg:px-10 pb-8 pt-14 lg:pt-8">
+                <div className="px-4 sm:px-8 lg:px-10 pb-8 pt-14 lg:pt-10">
                     {children}
                 </div>
             </main>

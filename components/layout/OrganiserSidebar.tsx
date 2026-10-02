@@ -228,7 +228,7 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
             {/* Sidebar — slides in from RIGHT on mobile, fixed left on desktop */}
             <aside
                 className={[
-                    'fixed inset-y-0 z-50 flex flex-col bg-card border-l border-border w-64',
+                    'fixed inset-y-0 z-50 flex flex-col bg-white/80 backdrop-blur border-l border-border w-64',
                     'transform transition-transform duration-300 ease-in-out',
                     'lg:left-0 lg:border-r lg:border-l-0 lg:translate-x-0',
                     'right-0',
