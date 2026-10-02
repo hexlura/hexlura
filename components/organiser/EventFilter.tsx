@@ -7,7 +7,6 @@ interface EventFilterProps {
     events: { id: string; title: string }[]
     selectedId: string | null
     basePath?: string
-    label?: string
     /**
      * Extra query params to preserve when changing the event filter.
      * Pass them flat — keys with empty/null values will be dropped.
@@ -15,7 +14,7 @@ interface EventFilterProps {
     extraParams?: Record<string, string | null | undefined>
 }
 
-export function EventFilter({ events, selectedId, basePath, label = 'Event', extraParams }: EventFilterProps) {
+export function EventFilter({ events, selectedId, basePath, extraParams }: EventFilterProps) {
     const router = useRouter()
     const pathname = usePathname()
     const [isPending, startTransition] = useTransition()
@@ -36,19 +35,17 @@ export function EventFilter({ events, selectedId, basePath, label = 'Event', ext
     }
 
     return (
-        <label className="inline-flex items-center gap-2 text-xs text-muted">
-            <span className="uppercase tracking-wider">{label}</span>
-            <select
-                value={selectedId ?? ''}
-                onChange={e => handleChange(e.target.value)}
-                disabled={isPending}
-                className="bg-background border border-border text-text text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-accent disabled:opacity-60 max-w-[220px]"
-            >
-                <option value="">All events</option>
-                {events.map(ev => (
-                    <option key={ev.id} value={ev.id}>{ev.title}</option>
-                ))}
-            </select>
-        </label>
+        <select
+            value={selectedId ?? ''}
+            onChange={e => handleChange(e.target.value)}
+            disabled={isPending}
+            aria-label="Filter by event"
+            className="bg-card border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25 disabled:opacity-60 max-w-[220px]"
+        >
+            <option value="">All Events</option>
+            {events.map(ev => (
+                <option key={ev.id} value={ev.id}>{ev.title}</option>
+            ))}
+        </select>
     )
 }

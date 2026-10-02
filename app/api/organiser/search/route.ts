@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveManagingOrganiserId } from '@/lib/organiser-access'
 
 // Global search for the organiser top bar: the caller's OWN events, bookings and
 // attendees only. Every query is scoped to the caller's organiser_id.
@@ -32,25 +33,12 @@ export async function GET(req: NextRequest) {
     const adminClient = createAdminClient()
 
     // 3. Authorization — account owner, or an active team member who is not door-staff-only
-    let organiserId: string | null = null
-    const { data: owned, error: ownedErr } = await adminClient
-        .from('organiser_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-    if (ownedErr) return NextResponse.json({ error: 'Search failed.' }, { status: 500 })
-    if (owned) {
-        organiserId = owned.id
-    } else {
-        const { data: team, error: teamErr } = await adminClient
-            .from('organiser_team')
-            .select('organiser_id')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .neq('privilege', 'door_staff')
-            .limit(1)
-        if (teamErr) return NextResponse.json({ error: 'Search failed.' }, { status: 500 })
-        organiserId = team?.[0]?.organiser_id ?? null
+    let organiserId: string | null
+    try {
+        organiserId = await resolveManagingOrganiserId(user.id)
+    } catch (e) {
+        console.error('[organiser search] access lookup failed:', e)
+        return NextResponse.json({ error: 'Search failed.' }, { status: 500 })
     }
     if (!organiserId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 

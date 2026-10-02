@@ -27,3 +27,31 @@ export async function resolveOrganiserId(userId: string): Promise<string | null>
 
     return teams?.[0]?.organiser_id || null
 }
+
+/**
+ * Like resolveOrganiserId, but for organiser-facing management APIs: the account
+ * owner, or an active team member who is NOT door-staff-only (door staff may only
+ * use the check-in system). Returns null when the caller has no such access.
+ */
+export async function resolveManagingOrganiserId(userId: string): Promise<string | null> {
+    const serviceClient = createServiceClient()
+
+    const { data: owned, error: ownedErr } = await serviceClient
+        .from('organiser_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle()
+    if (ownedErr) throw ownedErr
+    if (owned) return owned.id
+
+    const { data: teams, error: teamErr } = await serviceClient
+        .from('organiser_team')
+        .select('organiser_id')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .neq('privilege', 'door_staff')
+        .limit(1)
+    if (teamErr) throw teamErr
+
+    return teams?.[0]?.organiser_id || null
+}
