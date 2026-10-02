@@ -42,6 +42,16 @@ async function getVimeoThumbnail(url: string): Promise<string | null> {
     }
 }
 
+// Placeholder tile colours (used when a video has no thumbnail), as in the design
+const TILE_GRADIENTS = [
+    'from-accent to-warm-orange',
+    'from-warm-yellow to-warm-orange',
+    'from-warm-orange to-accent',
+    'from-warm-green to-warm-amber',
+]
+
+const modalInput = 'w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
+
 export default function PortfolioPage() {
     const [organiserId, setOrganiserId] = useState<string | null>(null)
     const [items, setItems] = useState<PortfolioItem[]>([])
@@ -65,8 +75,8 @@ export default function PortfolioPage() {
     const [addingVideo, setAddingVideo] = useState(false)
     const [videoError, setVideoError] = useState('')
 
-    // Hover state for grid items
-    const [hoveredId, setHoveredId] = useState<string | null>(null)
+    // Errors from loading / reorder / hide / delete
+    const [actionError, setActionError] = useState('')
 
     useEffect(() => {
         async function init() {
@@ -85,12 +95,18 @@ export default function PortfolioPage() {
 
     const fetchItems = useCallback(async () => {
         setLoading(true)
-        const res = await fetch('/api/organiser/portfolio')
-        if (res.ok) {
+        try {
+            const res = await fetch('/api/organiser/portfolio')
+            if (!res.ok) throw new Error(`portfolio ${res.status}`)
             const data = await res.json()
             setItems(data.items || [])
+            setActionError('')
+        } catch (e) {
+            console.error('[Portfolio] load failed:', e)
+            setActionError('Could not load your portfolio. Please refresh and try again.')
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
     }, [])
 
     useEffect(() => {
@@ -139,7 +155,7 @@ export default function PortfolioPage() {
                 continue
             }
             const { data: urlData } = supabase.storage.from('organiser-portfolio').getPublicUrl(path)
-            await fetch('/api/organiser/portfolio', {
+            const saveRes = await fetch('/api/organiser/portfolio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -148,6 +164,7 @@ export default function PortfolioPage() {
                     caption: photoCaption || null,
                 }),
             })
+            if (!saveRes.ok) setUploadError('A photo uploaded but could not be saved to your portfolio.')
         }
 
         setPhotoFiles([])
@@ -215,7 +232,7 @@ export default function PortfolioPage() {
         const current = items[idx]
         const swap = items[swapIdx]
 
-        await Promise.all([
+        const results = await Promise.all([
             fetch('/api/organiser/portfolio', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -227,109 +244,66 @@ export default function PortfolioPage() {
                 body: JSON.stringify({ id: swap.id, display_order: current.display_order }),
             }),
         ])
+        if (results.some(r => !r.ok)) setActionError('Could not reorder that item. Please try again.')
         await fetchItems()
     }
 
     async function toggleVisibility(item: PortfolioItem) {
-        await fetch('/api/organiser/portfolio', {
+        const res = await fetch('/api/organiser/portfolio', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: item.id, is_active: !item.is_active }),
         })
+        if (!res.ok) setActionError('Could not update that item. Please try again.')
         await fetchItems()
     }
 
     async function deleteItem(id: string) {
         if (!confirm('Delete this portfolio item?')) return
-        await fetch('/api/organiser/portfolio', {
+        const res = await fetch('/api/organiser/portfolio', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id }),
         })
+        if (!res.ok) setActionError('Could not delete that item. Please try again.')
         await fetchItems()
     }
 
-    const tabBtnStyle = (active: boolean): React.CSSProperties => ({
-        padding: '8px 16px',
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: 'pointer',
-        background: active ? '#0A0A0F' : 'transparent',
-        color: active ? '#FFFFFF' : '#0A0A0F',
-        border: active ? 'none' : '1px solid #C0C0C8',
-        transition: 'all 0.15s',
-    })
+    const tabClass = (active: boolean) =>
+        `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-card shadow-soft' : 'text-muted'}`
+    const actionBtn = 'w-7 h-7 rounded bg-white/90 text-xs disabled:opacity-40 disabled:cursor-not-allowed'
 
     return (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }}>
-            <h1 style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 36,
-                color: '#0A0A0F',
-                letterSpacing: '1px',
-                marginBottom: 32,
-            }}>
-                PORTFOLIO
-            </h1>
+        <div className="max-w-7xl">
+            <div className="mb-6">
+                <h1 className="font-heading text-4xl tracking-wide">PORTFOLIO</h1>
+                <p className="text-muted text-sm mt-1">Showcase photos and videos from your events on your public organiser page</p>
+            </div>
 
-            {/* Add Media Section */}
-            <div style={{
-                background: '#FFFFFF',
-                border: '1px solid #E0E0E0',
-                padding: 24,
-                marginBottom: 32,
-            }}>
-                <p style={{ fontSize: 16, fontWeight: 600, color: '#0A0A0F', marginBottom: 16 }}>
-                    Add to Portfolio
-                </p>
-
-                {/* Tabs */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                    <button style={tabBtnStyle(activeTab === 'photo')} onClick={() => setActiveTab('photo')}>
-                        📷 Add Photo
-                    </button>
-                    <button style={tabBtnStyle(activeTab === 'video')} onClick={() => setActiveTab('video')}>
-                        🎬 Add Video
-                    </button>
+            {/* Upload panel */}
+            <div className="bg-card rounded-2xl shadow-card p-6 mb-8">
+                <div className="flex gap-1 bg-background rounded-xl p-1 mb-5 w-fit">
+                    <button type="button" onClick={() => setActiveTab('photo')} className={tabClass(activeTab === 'photo')}>📷 Add Photo</button>
+                    <button type="button" onClick={() => setActiveTab('video')} className={tabClass(activeTab === 'video')}>🎬 Add Video</button>
                 </div>
 
                 {activeTab === 'photo' && (
                     <div>
-                        {/* Drop zone */}
-                        <div
+                        <label
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
-                            onClick={() => fileInputRef.current?.click()}
-                            style={{
-                                border: `2px dashed ${dragOver ? '#0A0A0F' : '#C0C0C8'}`,
-                                padding: 32,
-                                textAlign: 'center',
-                                borderRadius: 0,
-                                cursor: 'pointer',
-                                background: dragOver ? '#F5F5F7' : 'transparent',
-                                transition: 'all 0.15s',
-                                marginBottom: 12,
-                            }}
+                            className={`block w-full border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors mb-4 ${
+                                dragOver ? 'border-warm-red/50 bg-background' : 'border-border hover:border-warm-red/50'
+                            }`}
                         >
                             {photoFiles.length > 0 ? (
-                                <div>
-                                    <p style={{ fontSize: 14, color: '#0A0A0F', fontWeight: 600 }}>
-                                        {photoFiles.length} file{photoFiles.length > 1 ? 's' : ''} selected
-                                    </p>
-                                    <p style={{ fontSize: 12, color: '#8888AA', marginTop: 4 }}>
-                                        {photoFiles.map(f => f.name).join(', ')}
-                                    </p>
-                                </div>
-                            ) : (
                                 <>
-                                    <p style={{ fontSize: 14, color: '#8888AA' }}>
-                                        Drag photos here or click to upload
-                                    </p>
-                                    <p style={{ fontSize: 12, color: '#C0C0C8', marginTop: 6 }}>
-                                        JPG, PNG or WebP · Max 5MB each · Up to 5 at once
-                                    </p>
+                                    <p className="text-sm font-semibold">{photoFiles.length} file{photoFiles.length > 1 ? 's' : ''} selected</p>
+                                    <p className="text-xs text-muted mt-1">{photoFiles.map(f => f.name).join(', ')}</p>
                                 </>
+                            ) : (
+                                <p className="text-sm text-muted">Drag &amp; drop photos here, or click to browse (multiple allowed)</p>
                             )}
                             <input
                                 ref={fileInputRef}
@@ -337,43 +311,22 @@ export default function PortfolioPage() {
                                 accept="image/jpeg,image/png,image/webp"
                                 multiple
                                 onChange={handleFileChange}
-                                style={{ display: 'none' }}
+                                className="hidden"
                             />
-                        </div>
-
+                        </label>
                         <input
                             type="text"
                             value={photoCaption}
                             onChange={e => setPhotoCaption(e.target.value)}
                             placeholder="Add a caption (optional)"
-                            style={{
-                                width: '100%',
-                                border: '1px solid #C0C0C8',
-                                padding: '8px 12px',
-                                fontSize: 14,
-                                marginBottom: 12,
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                            }}
+                            className={`${modalInput} mb-4`}
                         />
-
-                        {uploadError && (
-                            <p style={{ fontSize: 13, color: '#E63950', marginBottom: 8 }}>{uploadError}</p>
-                        )}
-
+                        {uploadError && <p className="text-warm-red text-sm mb-3">{uploadError}</p>}
                         <button
+                            type="button"
                             onClick={uploadPhotos}
                             disabled={uploading || photoFiles.length === 0}
-                            style={{
-                                background: '#0A0A0F',
-                                color: '#FFFFFF',
-                                padding: '10px 24px',
-                                fontSize: 13,
-                                fontWeight: 600,
-                                border: 'none',
-                                cursor: uploading || photoFiles.length === 0 ? 'not-allowed' : 'pointer',
-                                opacity: uploading || photoFiles.length === 0 ? 0.5 : 1,
-                            }}
+                            className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {uploading ? 'Uploading...' : 'Upload Photos'}
                         </button>
@@ -387,70 +340,26 @@ export default function PortfolioPage() {
                             value={videoUrl}
                             onChange={e => handleVideoUrlChange(e.target.value)}
                             placeholder="Paste YouTube or Vimeo URL"
-                            style={{
-                                width: '100%',
-                                border: '1px solid #C0C0C8',
-                                padding: '8px 12px',
-                                fontSize: 14,
-                                marginBottom: 4,
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                            }}
+                            className={`${modalInput} mb-4`}
                         />
-                        <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 12 }}>
-                            Supports YouTube and Vimeo links
-                        </p>
-
                         {videoThumbnail && (
-                            <div style={{ marginBottom: 12 }}>
-                                <Image
-                                    src={videoThumbnail}
-                                    alt="Video thumbnail"
-                                    width={200}
-                                    height={112}
-                                    style={{
-                                        width: 200,
-                                        height: 112,
-                                        objectFit: 'cover',
-                                        border: '1px solid #E0E0E0',
-                                    }}
-                                />
+                            <div className="mb-4 relative w-[200px] h-[112px] rounded-xl overflow-hidden border border-border">
+                                <Image src={videoThumbnail} alt="Video thumbnail" fill sizes="200px" className="object-cover" />
                             </div>
                         )}
-
                         <input
                             type="text"
                             value={videoCaption}
                             onChange={e => setVideoCaption(e.target.value)}
                             placeholder="Add a caption (optional)"
-                            style={{
-                                width: '100%',
-                                border: '1px solid #C0C0C8',
-                                padding: '8px 12px',
-                                fontSize: 14,
-                                marginBottom: 12,
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                            }}
+                            className={`${modalInput} mb-4`}
                         />
-
-                        {videoError && (
-                            <p style={{ fontSize: 13, color: '#E63950', marginBottom: 8 }}>{videoError}</p>
-                        )}
-
+                        {videoError && <p className="text-warm-red text-sm mb-3">{videoError}</p>}
                         <button
+                            type="button"
                             onClick={addVideo}
                             disabled={addingVideo || !videoUrl}
-                            style={{
-                                background: '#E63950',
-                                color: '#FFFFFF',
-                                padding: '10px 24px',
-                                fontSize: 13,
-                                fontWeight: 600,
-                                border: 'none',
-                                cursor: addingVideo || !videoUrl ? 'not-allowed' : 'pointer',
-                                opacity: addingVideo || !videoUrl ? 0.5 : 1,
-                            }}
+                            className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {addingVideo ? 'Adding...' : 'Add Video'}
                         </button>
@@ -458,222 +367,67 @@ export default function PortfolioPage() {
                 )}
             </div>
 
-            {/* Portfolio Grid */}
-            <div>
-                <p style={{ fontSize: 16, fontWeight: 600, color: '#0A0A0F', marginBottom: 16 }}>
-                    Your Portfolio
-                </p>
+            {actionError && <p className="text-warm-red text-sm mb-4">{actionError}</p>}
 
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: 40, color: '#8888AA', fontSize: 14 }}>
-                        Loading...
-                    </div>
-                ) : items.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 40, color: '#8888AA', fontSize: 14 }}>
-                        No portfolio items yet. Add photos or videos above.
-                    </div>
-                ) : (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: 12,
-                    }}
-                        className="portfolio-grid"
-                    >
-                        {items.map((item, idx) => (
-                            <div key={item.id}>
-                                <div
-                                    onMouseEnter={() => setHoveredId(item.id)}
-                                    onMouseLeave={() => setHoveredId(null)}
-                                    style={{
-                                        position: 'relative',
-                                        borderRadius: 0,
-                                        overflow: 'hidden',
-                                        aspectRatio: '1/1',
-                                        cursor: 'pointer',
-                                        background: '#F0F0F0',
-                                        opacity: item.is_active ? 1 : 0.5,
-                                    }}
-                                >
-                                    {/* Image/Thumbnail */}
-                                    {item.type === 'photo' ? (
+            {/* Media grid */}
+            {loading ? (
+                <div className="bg-card rounded-2xl shadow-card p-12 text-center text-muted text-sm">Loading...</div>
+            ) : items.length === 0 ? (
+                <div className="bg-card rounded-2xl shadow-card p-12 text-center text-muted text-sm">
+                    No portfolio items yet. Add photos or videos above.
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {items.map((item, idx) => (
+                        <div
+                            key={item.id}
+                            className={`group relative bg-card rounded-2xl shadow-card overflow-hidden aspect-square ${item.is_active ? '' : 'opacity-50'}`}
+                        >
+                            {item.type === 'photo' ? (
+                                <Image
+                                    src={item.url}
+                                    alt={item.caption || ''}
+                                    fill
+                                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <>
+                                    {item.thumbnail_url ? (
                                         <Image
-                                            src={item.url}
+                                            src={item.thumbnail_url}
                                             alt={item.caption || ''}
-                                            width={200}
-                                            height={200}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                            fill
+                                            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                                            className="object-cover"
                                         />
                                     ) : (
-                                        <>
-                                            {item.thumbnail_url && (
-                                                <Image
-                                                    src={item.thumbnail_url}
-                                                    alt={item.caption || ''}
-                                                    width={200}
-                                                    height={200}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                                />
-                                            )}
-                                            {/* Play button */}
-                                            <div style={{
-                                                position: 'absolute',
-                                                inset: 0,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                pointerEvents: 'none',
-                                            }}>
-                                                <div style={{
-                                                    width: 48,
-                                                    height: 48,
-                                                    borderRadius: '50%',
-                                                    background: 'rgba(0,0,0,0.6)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                }}>
-                                                    <span style={{ color: 'white', fontSize: 18, marginLeft: 3 }}>▶</span>
-                                                </div>
-                                            </div>
-                                        </>
+                                        <div className={`w-full h-full bg-gradient-to-br ${TILE_GRADIENTS[idx % TILE_GRADIENTS.length]}`} />
                                     )}
+                                    <div className="absolute inset-0 flex items-center justify-center text-white text-2xl pointer-events-none">▶</div>
+                                    <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">VIDEO</div>
+                                </>
+                            )}
 
-                                    {/* Hidden badge */}
-                                    {!item.is_active && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: 6,
-                                            left: 6,
-                                            background: '#8888AA',
-                                            color: 'white',
-                                            fontSize: 10,
-                                            fontWeight: 700,
-                                            padding: '2px 6px',
-                                            pointerEvents: 'none',
-                                        }}>
-                                            Hidden
-                                        </div>
-                                    )}
+                            {!item.is_active && (
+                                <span className="absolute top-2 left-2 bg-text text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Hidden</span>
+                            )}
 
-                                    {/* Hover overlay */}
-                                    {hoveredId === item.id && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            background: 'rgba(0,0,0,0.5)',
-                                        }}>
-                                            {/* Caption */}
-                                            {item.caption && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    padding: '0 8px 10px',
-                                                    fontSize: 12,
-                                                    color: 'white',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                }}>
-                                                    {item.caption}
-                                                </div>
-                                            )}
+                            {item.caption && (
+                                <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-3 py-2 truncate">{item.caption}</div>
+                            )}
 
-                                            {/* Action buttons */}
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: 6,
-                                                right: 6,
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 4,
-                                            }}>
-                                                <button
-                                                    onClick={() => moveItem(item.id, 'up')}
-                                                    disabled={idx === 0}
-                                                    title="Move up"
-                                                    style={{
-                                                        width: 28, height: 28,
-                                                        background: 'rgba(255,255,255,0.9)',
-                                                        border: 'none',
-                                                        borderRadius: 2,
-                                                        cursor: idx === 0 ? 'not-allowed' : 'pointer',
-                                                        fontSize: 13,
-                                                        opacity: idx === 0 ? 0.4 : 1,
-                                                    }}
-                                                >↑</button>
-                                                <button
-                                                    onClick={() => moveItem(item.id, 'down')}
-                                                    disabled={idx === items.length - 1}
-                                                    title="Move down"
-                                                    style={{
-                                                        width: 28, height: 28,
-                                                        background: 'rgba(255,255,255,0.9)',
-                                                        border: 'none',
-                                                        borderRadius: 2,
-                                                        cursor: idx === items.length - 1 ? 'not-allowed' : 'pointer',
-                                                        fontSize: 13,
-                                                        opacity: idx === items.length - 1 ? 0.4 : 1,
-                                                    }}
-                                                >↓</button>
-                                                <button
-                                                    onClick={() => toggleVisibility(item)}
-                                                    title={item.is_active ? 'Hide' : 'Show'}
-                                                    style={{
-                                                        width: 28, height: 28,
-                                                        background: 'rgba(255,255,255,0.9)',
-                                                        border: 'none',
-                                                        borderRadius: 2,
-                                                        cursor: 'pointer',
-                                                        fontSize: 13,
-                                                    }}
-                                                >👁</button>
-                                                <button
-                                                    onClick={() => deleteItem(item.id)}
-                                                    title="Delete"
-                                                    style={{
-                                                        width: 28, height: 28,
-                                                        background: '#E63950',
-                                                        border: 'none',
-                                                        borderRadius: 2,
-                                                        cursor: 'pointer',
-                                                        fontSize: 13,
-                                                        color: 'white',
-                                                    }}
-                                                >🗑</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Caption below */}
-                                {item.caption && (
-                                    <p style={{
-                                        fontSize: 12,
-                                        color: '#666677',
-                                        marginTop: 4,
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                    }}>
-                                        {item.caption}
-                                    </p>
-                                )}
+                            {/* Actions — shown on hover (always on touch screens) */}
+                            <div className="absolute top-1.5 right-1.5 flex flex-col gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
+                                <button type="button" onClick={() => moveItem(item.id, 'up')} disabled={idx === 0} title="Move up" className={actionBtn}>↑</button>
+                                <button type="button" onClick={() => moveItem(item.id, 'down')} disabled={idx === items.length - 1} title="Move down" className={actionBtn}>↓</button>
+                                <button type="button" onClick={() => toggleVisibility(item)} title={item.is_active ? 'Hide' : 'Show'} className={actionBtn}>👁</button>
+                                <button type="button" onClick={() => deleteItem(item.id)} title="Delete" className="w-7 h-7 rounded bg-accent text-white text-xs">🗑</button>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            <style>{`
-                @media (max-width: 640px) {
-                    .portfolio-grid {
-                        grid-template-columns: repeat(2, 1fr) !important;
-                    }
-                }
-            `}</style>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
