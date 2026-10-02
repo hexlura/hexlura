@@ -6,8 +6,6 @@ import { formatPence } from '@/lib/fees'
 import { RevenueChart, type RevenueRange } from '@/components/organiser/RevenueChart'
 import { resolveOrganiserId } from '@/lib/organiser-access'
 import { generatePayoutsForOrganiser } from '@/lib/generate-payouts'
-import { EventFilter } from '@/components/organiser/EventFilter'
-import { ProfileLinkButton } from '@/components/organiser/ProfileLinkButton'
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -16,11 +14,7 @@ function fmtShort(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
-interface PageProps {
-    searchParams: { event?: string }
-}
-
-export default async function OrganiserDashboardPage({ searchParams }: PageProps) {
+export default async function OrganiserDashboardPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
@@ -29,19 +23,6 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
 
     const organiserId = await resolveOrganiserId(user.id)
     if (!organiserId) redirect('/organiser/pending')
-
-    // Fetch the public profile slug
-    let slug = 'your-organisation'
-    try {
-        const { data } = await serviceClient
-            .from('organiser_profiles')
-            .select('slug')
-            .eq('id', organiserId)
-            .single()
-        if (data) slug = data.slug
-    } catch (e) {
-        console.error('[OrganiserDashboard] organiser_profiles fetch failed:', e)
-    }
 
     let events: {
         id: string; title: string; start_at: string; end_at: string | null; venue_name: string | null; status: string;
@@ -166,17 +147,6 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
     for (const it of items) {
         if (!buyerByBooking[it.booking_id]) buyerByBooking[it.booking_id] = it.attendee_name || 'Guest'
     }
-
-    // Recent Bookings widget event filter — only filters this widget, not KPIs.
-    // Validate the requested event belongs to this organiser before applying.
-    const eventOptions = events
-        .map(e => ({ id: e.id, title: e.title, start_at: e.start_at }))
-        .sort((a, b) => b.start_at.localeCompare(a.start_at))
-    const requestedEvent = searchParams?.event
-    const selectedEventId = requestedEvent && eventIds.includes(requestedEvent) ? requestedEvent : null
-    const recentBookings = selectedEventId
-        ? bookings.filter(b => b.event_id === selectedEventId)
-        : bookings
 
     // ── Derived display data (all from the real queries above) ──────────────
     const DAY_MS = 86400000
@@ -331,8 +301,6 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
                     <p className="text-muted text-sm mt-1">Welcome back — here&apos;s how your events are performing.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* Copy / open the organiser's public profile link */}
-                    <ProfileLinkButton slug={slug} />
                     <Link
                         href="/organiser/events/new"
                         className="bg-text text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all flex items-center gap-2"
@@ -405,25 +373,13 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
                 <div className="lg:col-span-2 bg-card rounded-2xl shadow-card p-6">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
                         <h2 className="text-sm font-semibold">Recent Bookings</h2>
-                        <div className="flex items-center gap-4">
-                            {eventOptions.length > 0 && (
-                                <EventFilter events={eventOptions} selectedId={selectedEventId} />
-                            )}
-                            <Link
-                                href={selectedEventId ? `/organiser/bookings?event=${selectedEventId}` : '/organiser/bookings'}
-                                className="text-xs text-accent font-medium hover:underline"
-                            >
-                                View all →
-                            </Link>
-                        </div>
+                        <Link href="/organiser/bookings" className="text-xs text-accent font-medium hover:underline">View all →</Link>
                     </div>
                     <div className="flex flex-col divide-y divide-border">
-                        {recentBookings.length === 0 && (
-                            <p className="text-center text-muted text-xs py-8">
-                                {selectedEventId ? 'No bookings for this event yet' : 'No bookings yet'}
-                            </p>
+                        {bookings.length === 0 && (
+                            <p className="text-center text-muted text-xs py-8">No bookings yet</p>
                         )}
-                        {recentBookings.slice(0, 10).map((b, i) => {
+                        {bookings.slice(0, 10).map((b, i) => {
                             const buyer = buyerByBooking[b.id] || 'Guest'
                             return (
                                 <Link key={b.id} href={`/organiser/bookings/${b.booking_ref}`} className="flex items-center gap-3 py-3">

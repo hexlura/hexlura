@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { OrganiserSearch } from '@/components/layout/OrganiserSearch'
 import { NOTIFICATIONS_UPDATED_EVENT } from '@/components/notifications/NotificationsInbox'
 
 interface Notification {
@@ -113,7 +114,9 @@ export function OrganiserTopBar({ userId, userName, orgName }: OrganiserTopBarPr
     const displayName = orgName || userName || 'Organiser'
 
     return (
-        <div className="hidden lg:flex sticky top-0 z-30 items-center justify-end gap-3 px-10 py-4 bg-[#FAF6F3]/80 backdrop-blur border-b border-border">
+        <div className="hidden lg:flex sticky top-0 z-30 items-center justify-between gap-4 px-10 py-4 bg-[#FAF6F3]/80 backdrop-blur border-b border-border">
+            <OrganiserSearch />
+            <div className="flex items-center gap-3">
             {/* Notifications */}
             <div ref={panelRef} className="relative">
                 <button
@@ -200,6 +203,7 @@ export function OrganiserTopBar({ userId, userName, orgName }: OrganiserTopBarPr
                     <path d="M21 12H9" />
                 </svg>
             </button>
+            </div>
         </div>
     )
 }
