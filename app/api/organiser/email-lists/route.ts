@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getOrganiserProfile } from '@/lib/get-organiser'
 
 const MAX_NAME_LENGTH = 100
+const MAX_DESCRIPTION_LENGTH = 300
 
 export async function GET() {
     const supabase = createClient()
@@ -46,10 +47,14 @@ export async function POST(req: Request) {
     if (!name) return NextResponse.json({ error: 'List name is required.' }, { status: 400 })
     if (name.length > MAX_NAME_LENGTH) return NextResponse.json({ error: 'List name is too long.' }, { status: 400 })
 
+    // Optional description — only written when provided, so creating a list never depends on the column existing
+    const description = typeof body?.description === 'string' ? body.description.trim() : ''
+    if (description.length > MAX_DESCRIPTION_LENGTH) return NextResponse.json({ error: 'Description is too long.' }, { status: 400 })
+
     const adminClient = createAdminClient()
     const { data: inserted, error } = await adminClient
         .from('organiser_email_lists')
-        .insert({ organiser_id: organiser.id, name })
+        .insert({ organiser_id: organiser.id, name, ...(description ? { description } : {}) })
         .select('id, name, created_at')
         .single()
 

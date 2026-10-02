@@ -28,9 +28,9 @@ export default function EmailListsPage() {
     const [loadError, setLoadError] = useState<string | null>(null)
     const [showNew, setShowNew] = useState(false)
     const [name, setName] = useState('')
+    const [description, setDescription] = useState('')
     const [creating, setCreating] = useState(false)
     const [error, setError] = useState('')
-    const [deleteError, setDeleteError] = useState<string | null>(null)
 
     const fetchLists = useCallback(async () => {
         setLoading(true)
@@ -60,6 +60,7 @@ export default function EmailListsPage() {
 
     function openNew() {
         setName('')
+        setDescription('')
         setError('')
         setShowNew(true)
     }
@@ -71,29 +72,18 @@ export default function EmailListsPage() {
         const res = await fetch('/api/organiser/email-lists', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ name, description: description.trim() || undefined }),
         })
         const json = await res.json().catch(() => ({}))
         if (!res.ok) {
             setError(json.error || 'Failed to create list.')
         } else {
             setName('')
+            setDescription('')
             setShowNew(false)
             fetchLists()
         }
         setCreating(false)
-    }
-
-    async function handleDelete(id: string, listName: string) {
-        if (!confirm(`Delete "${listName}"? This removes all contacts in it.`)) return
-        setDeleteError(null)
-        const res = await fetch(`/api/organiser/email-lists/${id}`, { method: 'DELETE' })
-        if (!res.ok) {
-            const json = await res.json().catch(() => ({}))
-            setDeleteError(json.error || 'Failed to delete list.')
-            return
-        }
-        fetchLists()
     }
 
     const modalInput = 'w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
@@ -115,8 +105,6 @@ export default function EmailListsPage() {
                 </button>
             </div>
 
-            {deleteError && <p className="text-warm-red text-sm mb-4">{deleteError}</p>}
-
             {loading ? (
                 <p className="text-muted text-sm text-center py-16">Loading lists…</p>
             ) : loadError ? (
@@ -128,25 +116,18 @@ export default function EmailListsPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     {lists.map((list, i) => (
-                        <div key={list.id} className="relative group bg-card rounded-2xl shadow-card hover:shadow-hover transition-shadow">
-                            <Link href={`/organiser/email-lists/${list.id}`} className="block p-6">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${CHIPS[i % CHIPS.length]}`}>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
-                                </div>
-                                <p className="font-medium truncate pr-8">{list.name}</p>
-                                <p className="text-xs text-muted mt-1">{list.entry_count.toLocaleString()} subscriber{list.entry_count === 1 ? '' : 's'}</p>
-                                <p className="text-xs text-muted mt-3">Created {fmtDate(list.created_at)}</p>
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={() => handleDelete(list.id, list.name)}
-                                title="Delete list"
-                                aria-label={`Delete ${list.name}`}
-                                className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-background hover:text-warm-red transition-colors"
-                            >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
-                            </button>
-                        </div>
+                        <Link
+                            key={list.id}
+                            href={`/organiser/email-lists/${list.id}`}
+                            className="block bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow"
+                        >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${CHIPS[i % CHIPS.length]}`}>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                            </div>
+                            <p className="font-medium truncate">{list.name}</p>
+                            <p className="text-xs text-muted mt-1">{list.entry_count.toLocaleString()} subscriber{list.entry_count === 1 ? '' : 's'}</p>
+                            <p className="text-xs text-muted mt-3">Created {fmtDate(list.created_at)}</p>
+                        </Link>
                     ))}
                 </div>
             )}
@@ -181,6 +162,17 @@ export default function EmailListsPage() {
                                     maxLength={100}
                                     required
                                     autoFocus
+                                    className={modalInput}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-muted block mb-1.5">Description (optional)</label>
+                                <textarea
+                                    rows={3}
+                                    value={description}
+                                    onChange={e => setDescription(e.target.value)}
+                                    placeholder="What is this list for?"
+                                    maxLength={300}
                                     className={modalInput}
                                 />
                             </div>
