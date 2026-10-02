@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useTransition } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 interface EventFilterProps {
     events: { id: string; title: string }[]
@@ -35,7 +36,7 @@ export function EventFilter({ events, selectedId, basePath, extraParams }: Event
     }
 
     return (
-        <select
+        <ThemedSelect
             value={selectedId ?? ''}
             onChange={e => handleChange(e.target.value)}
             disabled={isPending}
@@ -46,6 +47,6 @@ export function EventFilter({ events, selectedId, basePath, extraParams }: Event
             {events.map(ev => (
                 <option key={ev.id} value={ev.id}>{ev.title}</option>
             ))}
-        </select>
+        </ThemedSelect>
     )
 }

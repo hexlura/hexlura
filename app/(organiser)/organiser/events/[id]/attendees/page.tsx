@@ -93,24 +93,31 @@ export default async function AttendeesPage({ params }: PageProps) {
         day: 'numeric', month: 'long', year: 'numeric'
     })
 
+    // Whole pounds when exact (as in the design), otherwise keep the pence so nothing is rounded away
+    const revenueLabel = totalRevenue % 100 === 0
+        ? `£${(totalRevenue / 100).toLocaleString('en-GB')}`
+        : formatPence(totalRevenue)
+
     return (
         <div className="max-w-7xl">
             <div className="mb-6">
-                <h1 className="font-heading text-4xl text-text tracking-wide">ATTENDEES</h1>
+                <h1 className="font-heading text-4xl tracking-wide">ATTENDEES</h1>
                 <p className="text-muted text-sm mt-1">{event.title} · {eventDate}</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
-                {[
-                    { label: 'Total Tickets', value: String(totalTickets) },
-                    { label: 'Checked In', value: `${checkedIn} / ${totalTickets}` },
-                    { label: 'Revenue', value: formatPence(totalRevenue) },
-                ].map(s => (
-                    <div key={s.label} className="bg-card border border-border rounded-none p-5">
-                        <p className="text-xs text-muted uppercase tracking-wider mb-1">{s.label}</p>
-                        <p className="font-heading text-3xl text-text">{s.value}</p>
-                    </div>
-                ))}
+            <div className="grid grid-cols-3 gap-4 mb-5">
+                <div className="bg-card rounded-2xl shadow-card p-4">
+                    <p className="text-xs text-muted uppercase tracking-wider mb-1">Total Tickets</p>
+                    <p className="font-heading text-2xl">{totalTickets.toLocaleString()}</p>
+                </div>
+                <div className="bg-card rounded-2xl shadow-card p-4">
+                    <p className="text-xs text-muted uppercase tracking-wider mb-1">Checked In</p>
+                    <p className="font-heading text-2xl text-warm-green">{checkedIn.toLocaleString()}</p>
+                </div>
+                <div className="bg-card rounded-2xl shadow-card p-4">
+                    <p className="text-xs text-muted uppercase tracking-wider mb-1">Revenue</p>
+                    <p className="font-heading text-2xl">{revenueLabel}</p>
+                </div>
             </div>
 
             <AttendeesClient

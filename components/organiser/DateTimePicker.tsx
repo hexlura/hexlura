@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 interface DateTimePickerProps {
     value: string        // "YYYY-MM-DDTHH:mm" (24-hr, local time)
@@ -149,7 +150,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                             <p className="text-xs text-muted mb-1.5 uppercase tracking-wide">Time</p>
                             <div className="flex items-center gap-2 flex-wrap">
                                 {/* Hour */}
-                                <select
+                                <ThemedSelect
                                     value={draftHour}
                                     onChange={e => setDraftHour(parseInt(e.target.value, 10))}
                                     className="bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
@@ -157,10 +158,10 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                     {HOURS.map(h => (
                                         <option key={h} value={h}>{h}</option>
                                     ))}
-                                </select>
+                                </ThemedSelect>
                                 <span className="text-text font-mono text-lg">:</span>
                                 {/* Minute */}
-                                <select
+                                <ThemedSelect
                                     value={draftMinute}
                                     onChange={e => setDraftMinute(parseInt(e.target.value, 10))}
                                     className="bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
@@ -168,7 +169,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                     {MINUTES.map(m => (
                                         <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
                                     ))}
-                                </select>
+                                </ThemedSelect>
                                 {/* AM/PM */}
                                 <div className="flex border border-border rounded-sm overflow-hidden ml-1">
                                     <button

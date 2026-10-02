@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 interface AssignmentItem {
     id: string
@@ -220,7 +221,7 @@ export function PromotersClient({ kpis, items, events }: Props) {
                             required
                             className="md:col-span-5 bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none focus:border-accent"
                         />
-                        <select
+                        <ThemedSelect
                             value={inviteEventId}
                             onChange={e => setInviteEventId(e.target.value)}
                             required
@@ -230,7 +231,7 @@ export function PromotersClient({ kpis, items, events }: Props) {
                             {events.map(e => (
                                 <option key={e.id} value={e.id}>{e.title} · {fmtDateShort(e.start_at)}</option>
                             ))}
-                        </select>
+                        </ThemedSelect>
                         <div className="md:col-span-2 flex items-center gap-2">
                             <input
                                 type="number"

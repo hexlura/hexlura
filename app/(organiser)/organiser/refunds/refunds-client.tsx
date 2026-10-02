@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, Fragment } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 type RefundStatus = 'pending' | 'organiser_approved' | 'organiser_rejected' | 'admin_approved' | 'admin_rejected'
 
@@ -167,19 +168,19 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
 
             {/* Filter Row */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px' }}>
-                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={dropdownStyle}>
+                <ThemedSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={dropdownStyle}>
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
                     <option value="refunded">Refunded</option>
-                </select>
-                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={dropdownStyle}>
+                </ThemedSelect>
+                <ThemedSelect value={sortBy} onChange={e => setSortBy(e.target.value)} style={dropdownStyle}>
                     <option value="latest">Latest First</option>
                     <option value="oldest">Oldest First</option>
                     <option value="amount_high">Amount High-Low</option>
                     <option value="amount_low">Amount Low-High</option>
-                </select>
+                </ThemedSelect>
             </div>
 
             {/* Desktop table */}

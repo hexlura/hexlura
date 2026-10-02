@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { createClient } from '@/lib/supabase/client'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 interface PromoCode {
     id: string
@@ -240,7 +241,7 @@ export default function PromoCodesPage() {
                     </div>
                     <div>
                         <label className="block text-xs text-muted mb-1">Applies to</label>
-                        <select
+                        <ThemedSelect
                             value={ticketTypeId}
                             onChange={e => setTicketTypeId(e.target.value)}
                             className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent"
@@ -249,18 +250,18 @@ export default function PromoCodesPage() {
                             {ticketTypes.map(tt => (
                                 <option key={tt.id} value={tt.id}>{tt.name} only</option>
                             ))}
-                        </select>
+                        </ThemedSelect>
                     </div>
                     <div>
                         <label className="block text-xs text-muted mb-1">Discount type</label>
-                        <select
+                        <ThemedSelect
                             value={discountType}
                             onChange={e => setDiscountType(e.target.value as 'percent' | 'fixed')}
                             className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent"
                         >
                             <option value="percent">Percent off</option>
                             <option value="fixed">Fixed amount off</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
                     <div>
                         <label className="block text-xs text-muted mb-1">

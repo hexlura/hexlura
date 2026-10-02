@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
 import { DateTimePicker } from '@/components/organiser/DateTimePicker'
 import { REFUND_POLICIES } from '@/lib/refund-policy'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 const RichTextEditor = dynamic(
     () => import('@/components/editor/RichTextEditor').then(m => m.RichTextEditor),
@@ -576,10 +577,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                             </div>
                             <div>
                                 <label className={labelClass}>Category *</label>
-                                <select value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
+                                <ThemedSelect value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
                                     <option value="">Select category...</option>
                                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                                </ThemedSelect>
                             </div>
                             <div>
                                 <label className={labelClass}>Tags (comma-separated)</label>
@@ -875,31 +876,31 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Minimum Age</label>
-                                <select value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
+                                <ThemedSelect value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
                                     <option value={0}>All ages</option>
                                     <option value={16}>16+</option>
                                     <option value={18}>18+</option>
-                                </select>
+                                </ThemedSelect>
                             </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Refund Policy</label>
-                                <select value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
+                                <ThemedSelect value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
                                     {REFUND_POLICIES.map(p => <option key={p} value={p}>{p}</option>)}
-                                </select>
+                                </ThemedSelect>
                             </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Event Visibility</label>
-                                <select value={status} onChange={e => setStatus(e.target.value as 'draft' | 'published')} className={inputClass}>
+                                <ThemedSelect value={status} onChange={e => setStatus(e.target.value as 'draft' | 'published')} className={inputClass}>
                                     <option value="draft">Draft — not visible to public</option>
                                     <option value="published">Published — visible and bookable</option>
-                                </select>
+                                </ThemedSelect>
                             </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <label className={labelClass}>Ticket Availability</label>
-                                <select value={ticketAvailability} onChange={e => setTicketAvailability(e.target.value as 'on_sale' | 'coming_soon')} className={inputClass}>
+                                <ThemedSelect value={ticketAvailability} onChange={e => setTicketAvailability(e.target.value as 'on_sale' | 'coming_soon')} className={inputClass}>
                                     <option value="on_sale">On Sale — tickets available now</option>
                                     <option value="coming_soon">Coming Soon — tickets not yet released</option>
-                                </select>
+                                </ThemedSelect>
                                 <p className="text-xs mt-1" style={{ color: '#666677' }}>
                                     Choose &ldquo;Coming Soon&rdquo; if you haven&apos;t added tickets yet. Visitors will see &ldquo;Tickets Coming Soon&rdquo; instead of &ldquo;Sold Out&rdquo;.
                                 </p>

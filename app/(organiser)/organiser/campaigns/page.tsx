@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 interface EventLite { id: string; title: string; slug: string }
 interface EmailListLite { id: string; name: string; entry_count: number }
@@ -131,7 +132,7 @@ export default function CampaignsPage() {
                 <form onSubmit={handleCreateDraft} className="bg-surface border border-border rounded-none p-6 mb-8 space-y-4">
                     <div>
                         <label className="block text-sm font-semibold text-text mb-1">Event</label>
-                        <select
+                        <ThemedSelect
                             value={eventId}
                             onChange={e => setEventId(e.target.value)}
                             required
@@ -139,12 +140,12 @@ export default function CampaignsPage() {
                         >
                             <option value="">Select an event…</option>
                             {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div>
                         <label className="block text-sm font-semibold text-text mb-1">Contact list</label>
-                        <select
+                        <ThemedSelect
                             value={listId}
                             onChange={e => setListId(e.target.value)}
                             required
@@ -152,7 +153,7 @@ export default function CampaignsPage() {
                         >
                             <option value="">Select a list…</option>
                             {lists.map(l => <option key={l.id} value={l.id}>{l.name} ({l.entry_count})</option>)}
-                        </select>
+                        </ThemedSelect>
                         {lists.length === 0 && (
                             <p className="text-xs text-muted mt-1">
                                 No lists yet. <Link href="/organiser/email-lists" className="text-accent hover:underline">Create one first</Link>.
