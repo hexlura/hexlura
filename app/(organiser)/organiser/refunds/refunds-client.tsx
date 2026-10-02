@@ -24,13 +24,6 @@ interface RefundItem {
     } | null
 }
 
-// Net of any promo-code discount — used as the fallback estimate when refund_amount_pence
-// isn't set, so it matches the actual refundable amount rather than the pre-discount face value.
-function netTicketPence(booking: RefundItem['booking']): number {
-    if (!booking) return 0
-    return (booking.ticket_subtotal_pence ?? 0) - (booking.discount_pence ?? 0)
-}
-
 function fmt(pence: number | null): string {
     if (!pence && pence !== 0) return '£0.00'
     return `£${(pence / 100).toFixed(2)}`
@@ -40,47 +33,15 @@ function fmtDate(d: string): string {
     return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-function truncate(s: string, n: number): string {
-    return s.length > n ? s.slice(0, n) + '…' : s
+const STATUS_BADGE: Record<RefundStatus, { cls: string; label: string }> = {
+    pending: { cls: 'text-warm-yellowText bg-warm-yellow/10', label: 'Pending' },
+    organiser_approved: { cls: 'text-cyan-600 bg-blue-500/10', label: 'Awaiting Admin' },
+    organiser_rejected: { cls: 'text-warm-red bg-warm-red/10', label: 'Rejected by You' },
+    admin_approved: { cls: 'text-warm-green bg-warm-green/10', label: 'Refunded' },
+    admin_rejected: { cls: 'text-warm-red bg-warm-red/10', label: 'Denied by Admin' },
 }
 
-const STATUS_BADGE: Record<RefundStatus, { bg: string; color: string; border: string; label: string }> = {
-    pending: { bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623', label: 'Pending' },
-    organiser_approved: { bg: 'rgba(0,100,255,0.1)', color: '#6B9FFF', border: '1px solid #6B9FFF', label: 'Awaiting Admin' },
-    organiser_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Rejected by You' },
-    admin_approved: { bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0', label: 'Refunded' },
-    admin_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Denied by Admin' },
-}
-
-const dropdownStyle: React.CSSProperties = {
-    background: '#FFFFFF',
-    border: '1px solid #C0C0C8',
-    color: '#0A0A0F',
-    padding: '8px 12px',
-    borderRadius: '2px',
-    fontSize: '13px',
-    cursor: 'pointer',
-}
-
-const thStyle: React.CSSProperties = {
-    background: '#F0F0F0',
-    fontSize: '11px',
-    color: '#0A0A0F',
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-    padding: '12px 16px',
-    textAlign: 'left',
-    fontWeight: 600,
-    whiteSpace: 'nowrap',
-}
-
-const tdBase: React.CSSProperties = {
-    padding: '12px 16px',
-    fontSize: '13px',
-    color: '#0A0A0F',
-    borderBottom: '1px solid #C0C0C8',
-    verticalAlign: 'top',
-}
+const filterSelect = 'bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none'
 
 export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] }) {
     const [items, setItems] = useState<RefundItem[]>(requests)
@@ -95,9 +56,6 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
     const pending = items.filter(r => r.status === 'pending').length
     const approved = items.filter(r => r.status === 'organiser_approved' || r.status === 'admin_approved').length
     const rejected = items.filter(r => r.status === 'organiser_rejected' || r.status === 'admin_rejected').length
-    const totalRefunded = items
-        .filter(r => r.status === 'admin_approved')
-        .reduce((sum, r) => sum + (r.refund_amount_pence ?? netTicketPence(r.booking)), 0)
 
     const filtered = useMemo(() => {
         let list = [...items]
@@ -147,166 +105,141 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
         setRejectNote('')
     }
 
+    const stats = [
+        { label: 'Pending', value: String(pending), cls: 'text-accent' },
+        { label: 'Approved by You', value: String(approved), cls: 'text-warm-green' },
+        { label: 'Rejected', value: String(rejected), cls: '' },
+    ]
+
     return (
         <div>
-            {/* Stats Bar */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }} className="sm:grid-cols-4" >
-                {[
-                    { label: 'Pending', value: String(pending), color: '#F5A623' },
-                    { label: 'Approved by You', value: String(approved), color: '#00E5A0' },
-                    { label: 'Rejected', value: String(rejected), color: '#E63950' },
-                    { label: 'Total Refunded', value: fmt(totalRefunded), color: '#0A0A0F' },
-                ].map((stat) => (
-                    <div key={stat.label} style={{ background: '#F5F5F7', border: '1px solid #C0C0C8', padding: '16px 20px' }}>
-                        <div style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '32px', color: stat.color, lineHeight: 1 }}>
-                            {stat.value}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#666677', marginTop: '4px' }}>{stat.label}</div>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                {stats.map(s => (
+                    <div key={s.label} className="bg-card rounded-2xl shadow-card p-4">
+                        <p className="text-xs text-muted uppercase tracking-wider mb-1">{s.label}</p>
+                        <p className={`font-heading text-2xl ${s.cls}`}>{s.value}</p>
                     </div>
                 ))}
             </div>
 
-            {/* Filter Row */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '16px' }}>
-                <ThemedSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={dropdownStyle}>
+            {/* Filter + Sort */}
+            <div className="flex gap-3 mb-4">
+                <ThemedSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)} aria-label="Filter by status" className={filterSelect}>
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
                     <option value="refunded">Refunded</option>
                 </ThemedSelect>
-                <ThemedSelect value={sortBy} onChange={e => setSortBy(e.target.value)} style={dropdownStyle}>
+                <ThemedSelect value={sortBy} onChange={e => setSortBy(e.target.value)} aria-label="Sort refund requests" className={filterSelect}>
                     <option value="latest">Latest First</option>
                     <option value="oldest">Oldest First</option>
-                    <option value="amount_high">Amount High-Low</option>
-                    <option value="amount_low">Amount Low-High</option>
+                    <option value="amount_high">Amount: High to Low</option>
+                    <option value="amount_low">Amount: Low to High</option>
                 </ThemedSelect>
             </div>
 
             {/* Desktop table */}
-            <div className="hidden sm:block" style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#FFFFFF', border: '1px solid #C0C0C8' }}>
-                    <thead>
-                        <tr>
-                            {['Buyer', 'Event', 'Booking Ref', 'Ticket Amount', 'Refund Amount', 'Requested', 'Status', 'Action'].map(h => (
-                                <th key={h} style={thStyle}>{h}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.length === 0 ? (
-                            <tr>
-                                <td colSpan={8} style={{ ...tdBase, textAlign: 'center', color: '#666677', padding: '48px 16px' }}>
-                                    No refund requests found
-                                </td>
-                            </tr>
-                        ) : filtered.map(r => {
-                            const badge = STATUS_BADGE[r.status]
-                            const isRejecting = rejectingId === r.id
-                            const isLoading = loadingId === r.id
-                            const err = errors[r.id]
-                            return (
-                                <Fragment key={r.id}>
-                                    <tr
-                                        style={{ background: 'transparent', transition: 'background 0.1s' }}
-                                        onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = '#F5F5F7'}
-                                        onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-                                    >
-                                        <td style={tdBase}>
-                                            <div style={{ fontWeight: 500 }}>{r.buyer?.full_name || 'Guest'}</div>
-                                            <div style={{ fontSize: '12px', color: '#666677', marginTop: '2px' }}>{r.buyer?.email || '—'}</div>
-                                        </td>
-                                        <td style={tdBase}>{truncate(r.booking?.event?.title || '—', 30)}</td>
-                                        <td style={{ ...tdBase, fontFamily: '"JetBrains Mono", monospace', color: '#E63950' }}>
-                                            {r.booking?.booking_ref || '—'}
-                                        </td>
-                                        <td style={tdBase}>{fmt(r.booking?.ticket_subtotal_pence ?? null)}</td>
-                                        <td style={tdBase}>{fmt(r.refund_amount_pence)}</td>
-                                        <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</td>
-                                        <td style={tdBase}>
-                                            <span style={{
-                                                background: badge.bg,
-                                                color: badge.color,
-                                                border: badge.border,
-                                                padding: '3px 8px',
-                                                fontSize: '11px',
-                                                borderRadius: '2px',
-                                                whiteSpace: 'nowrap',
-                                                display: 'inline-block',
-                                            }}>
-                                                {badge.label}
-                                            </span>
-                                        </td>
-                                        <td style={tdBase}>
-                                            {r.status === 'pending' ? (
-                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                    <button
-                                                        onClick={() => handleApprove(r.id)}
-                                                        disabled={isLoading}
-                                                        style={{ background: 'transparent', border: '1px solid #0A0A0F', color: '#0A0A0F', padding: '4px 10px', borderRadius: '2px', fontSize: '12px', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setRejectingId(r.id); setRejectNote('') }}
-                                                        disabled={isLoading}
-                                                        style={{ background: 'transparent', border: '1px solid #E63950', color: '#E63950', padding: '4px 10px', borderRadius: '2px', fontSize: '12px', cursor: isLoading ? 'not-allowed' : 'pointer' }}
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <span style={{ color: '#555566' }}>—</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                    {isRejecting && (
-                                        <tr style={{ background: '#F5F5F7' }}>
-                                            <td colSpan={9} style={{ padding: '12px 16px', borderBottom: '1px solid #C0C0C8' }}>
-                                                <textarea
-                                                    value={rejectNote}
-                                                    onChange={e => setRejectNote(e.target.value)}
-                                                    rows={2}
-                                                    placeholder="Reason for rejection (optional)..."
-                                                    style={{ width: '100%', background: '#FFFFFF', border: '1px solid #C0C0C8', color: '#0A0A0F', padding: '8px 12px', fontSize: '13px', borderRadius: '2px', resize: 'vertical', boxSizing: 'border-box' }}
-                                                />
-                                                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                                                    <button
-                                                        onClick={() => handleReject(r.id)}
-                                                        disabled={isLoading}
-                                                        style={{ background: '#E63950', border: '1px solid #E63950', color: '#fff', padding: '6px 14px', borderRadius: '2px', fontSize: '12px', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
-                                                    >
-                                                        {isLoading ? 'Processing...' : 'Confirm Reject'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setRejectingId(null)}
-                                                        style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '6px 14px', borderRadius: '2px', fontSize: '12px', cursor: 'pointer' }}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                                {err && <p style={{ fontSize: '12px', color: '#E63950', marginTop: '6px' }}>{err}</p>}
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {err && !isRejecting && (
-                                        <tr>
-                                            <td colSpan={9} style={{ padding: '0 16px 10px', borderBottom: '1px solid #C0C0C8', background: '#F5F5F7' }}>
-                                                <span style={{ fontSize: '12px', color: '#E63950' }}>{err}</span>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </Fragment>
-                            )
-                        })}
-                    </tbody>
-                </table>
+            <div className="hidden sm:block bg-card rounded-2xl shadow-card overflow-hidden">
+                {filtered.length === 0 ? (
+                    <p className="text-center text-muted text-sm py-16">No refund requests found</p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[900px] text-sm">
+                            <thead>
+                                <tr className="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                                    <th className="font-medium py-3.5 px-6">Buyer</th>
+                                    <th className="font-medium py-3.5 px-4">Event</th>
+                                    <th className="font-medium py-3.5 px-4">Booking Ref</th>
+                                    <th className="font-medium py-3.5 px-4 text-right">Ticket Amount</th>
+                                    <th className="font-medium py-3.5 px-4 text-right">Refund Amount</th>
+                                    <th className="font-medium py-3.5 px-4">Requested</th>
+                                    <th className="font-medium py-3.5 px-4">Status</th>
+                                    <th className="font-medium py-3.5 px-6 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map(r => {
+                                    const badge = STATUS_BADGE[r.status]
+                                    const isRejecting = rejectingId === r.id
+                                    const isLoading = loadingId === r.id
+                                    const err = errors[r.id]
+                                    return (
+                                        <Fragment key={r.id}>
+                                            <tr className="border-b border-border last:border-0 hover:bg-[#FAF6F3]/60 transition-colors align-top">
+                                                <td className="py-3.5 px-6 font-medium" title={r.buyer?.email || undefined}>{r.buyer?.full_name || 'Guest'}</td>
+                                                <td className="py-3.5 px-4 text-muted truncate max-w-[120px]" title={r.booking?.event?.title || undefined}>{r.booking?.event?.title || '—'}</td>
+                                                <td className="py-3.5 px-4 font-mono text-xs text-accent">{r.booking?.booking_ref || '—'}</td>
+                                                <td className="py-3.5 px-4 text-right font-medium">{fmt(r.booking?.ticket_subtotal_pence ?? null)}</td>
+                                                <td className="py-3.5 px-4 text-right font-medium">{fmt(r.refund_amount_pence)}</td>
+                                                <td className="py-3.5 px-4 text-muted text-xs whitespace-nowrap">{fmtDate(r.created_at)}</td>
+                                                <td className="py-3.5 px-4">
+                                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${badge.cls}`}>{badge.label}</span>
+                                                </td>
+                                                <td className="py-3.5 px-6 text-right">
+                                                    {r.status === 'pending' ? (
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            <div className="flex justify-end gap-3 text-xs">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleApprove(r.id)}
+                                                                    disabled={isLoading}
+                                                                    className="text-warm-green font-semibold hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                >
+                                                                    {isLoading && !isRejecting ? 'Processing...' : 'Approve'}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => { setRejectingId(isRejecting ? null : r.id); setRejectNote('') }}
+                                                                    disabled={isLoading}
+                                                                    className="text-accent font-semibold hover:underline disabled:opacity-50"
+                                                                >
+                                                                    Reject
+                                                                </button>
+                                                            </div>
+                                                            {isRejecting && (
+                                                                <div className="w-56">
+                                                                    <textarea
+                                                                        value={rejectNote}
+                                                                        onChange={e => setRejectNote(e.target.value)}
+                                                                        rows={2}
+                                                                        placeholder="Reason for rejection (optional)..."
+                                                                        className="w-full bg-background border border-border rounded-xl px-2.5 py-1.5 text-xs focus:outline-none mb-1.5"
+                                                                    />
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <button type="button" onClick={() => setRejectingId(null)} className="text-[11px] text-muted hover:text-text">Cancel</button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleReject(r.id)}
+                                                                            disabled={isLoading}
+                                                                            className="text-[11px] font-semibold text-white bg-accent px-2.5 py-1 rounded-lg disabled:opacity-50"
+                                                                        >
+                                                                            {isLoading ? 'Processing...' : 'Confirm Reject'}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {err && <p className="text-xs text-warm-red max-w-[14rem] text-right">{err}</p>}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted text-xs">—</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        </Fragment>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
-            {/* Mobile card list */}
-            <div className="block sm:hidden space-y-4">
+            {/* Mobile card list (the design is desktop-only; same visual language) */}
+            <div className="block sm:hidden space-y-3">
                 {filtered.length === 0 && (
-                    <p className="text-center text-sm" style={{ color: '#666677', padding: '48px 16px' }}>No refund requests found</p>
+                    <div className="bg-card rounded-2xl shadow-card p-12 text-center text-muted text-sm">No refund requests found</div>
                 )}
                 {filtered.map(r => {
                     const badge = STATUS_BADGE[r.status]
@@ -314,42 +247,41 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                     const isRejecting = rejectingId === r.id
                     const err = errors[r.id]
                     return (
-                        <div key={r.id} style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', padding: '16px' }}>
-                            <div style={{ fontWeight: 600, fontSize: '14px', color: '#0A0A0F' }}>{r.buyer?.full_name || 'Guest'}</div>
-                            <div style={{ fontSize: '12px', color: '#666677', marginBottom: '8px' }}>{r.buyer?.email || '—'}</div>
-                            <div style={{ fontSize: '13px', color: '#0A0A0F', marginBottom: '4px' }}>{truncate(r.booking?.event?.title || '—', 40)}</div>
-                            <div style={{ fontFamily: '"JetBrains Mono", monospace', color: '#E63950', fontSize: '12px', marginBottom: '8px' }}>
-                                {r.booking?.booking_ref || '—'}
+                        <div key={r.id} className="bg-card rounded-2xl shadow-card p-4">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                    <p className="font-medium text-sm">{r.buyer?.full_name || 'Guest'}</p>
+                                    <p className="text-xs text-muted truncate">{r.booking?.event?.title || '—'}</p>
+                                </div>
+                                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${badge.cls}`}>{badge.label}</span>
                             </div>
-                            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#0A0A0F', marginBottom: '8px' }}>
-                                <span>Tickets: {fmt(r.booking?.ticket_subtotal_pence ?? null)}</span>
-                                <span>Refund: {fmt(r.refund_amount_pence)}</span>
+                            <p className="font-mono text-xs text-accent mt-2">{r.booking?.booking_ref || '—'}</p>
+                            <div className="flex gap-4 text-xs mt-2">
+                                <span>Tickets: <span className="font-medium">{fmt(r.booking?.ticket_subtotal_pence ?? null)}</span></span>
+                                <span>Refund: <span className="font-medium">{fmt(r.refund_amount_pence)}</span></span>
                             </div>
-                            <span style={{
-                                background: badge.bg, color: badge.color, border: badge.border,
-                                padding: '3px 8px', fontSize: '11px', borderRadius: '2px', display: 'inline-block', marginBottom: '12px',
-                            }}>
-                                {badge.label}
-                            </span>
+                            <p className="text-xs text-muted mt-1">{fmtDate(r.created_at)}</p>
                             {r.status === 'pending' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div className="mt-3 flex flex-col gap-2">
                                     {!isRejecting ? (
-                                        <>
+                                        <div className="flex gap-3 text-sm">
                                             <button
+                                                type="button"
                                                 onClick={() => handleApprove(r.id)}
                                                 disabled={isLoading}
-                                                style={{ width: '100%', background: 'transparent', border: '1px solid #0A0A0F', color: '#0A0A0F', padding: '10px', borderRadius: '2px', fontSize: '13px', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
+                                                className="flex-1 border border-border rounded-xl py-2.5 font-semibold text-warm-green disabled:opacity-50"
                                             >
                                                 {isLoading ? 'Processing...' : 'Approve'}
                                             </button>
                                             <button
+                                                type="button"
                                                 onClick={() => { setRejectingId(r.id); setRejectNote('') }}
                                                 disabled={isLoading}
-                                                style={{ width: '100%', background: 'transparent', border: '1px solid #E63950', color: '#E63950', padding: '10px', borderRadius: '2px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                                                className="flex-1 border border-border rounded-xl py-2.5 font-semibold text-accent disabled:opacity-50"
                                             >
                                                 Reject
                                             </button>
-                                        </>
+                                        </div>
                                     ) : (
                                         <>
                                             <textarea
@@ -357,24 +289,28 @@ export function OrganiserRefundsClient({ requests }: { requests: RefundItem[] })
                                                 onChange={e => setRejectNote(e.target.value)}
                                                 rows={2}
                                                 placeholder="Reason for rejection (optional)..."
-                                                style={{ width: '100%', background: '#FFFFFF', border: '1px solid #C0C0C8', color: '#0A0A0F', padding: '8px 12px', fontSize: '13px', borderRadius: '2px', resize: 'vertical', boxSizing: 'border-box' }}
+                                                className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs focus:outline-none"
                                             />
-                                            <button
-                                                onClick={() => handleReject(r.id)}
-                                                disabled={isLoading}
-                                                style={{ width: '100%', background: '#E63950', border: '1px solid #E63950', color: '#fff', padding: '10px', borderRadius: '2px', fontSize: '13px', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1 }}
-                                            >
-                                                {isLoading ? 'Processing...' : 'Confirm Reject'}
-                                            </button>
-                                            <button
-                                                onClick={() => setRejectingId(null)}
-                                                style={{ width: '100%', background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '10px', borderRadius: '2px', fontSize: '13px', cursor: 'pointer' }}
-                                            >
-                                                Cancel
-                                            </button>
+                                            <div className="flex gap-3 text-sm">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setRejectingId(null)}
+                                                    className="flex-1 border border-border rounded-xl py-2.5 text-muted"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReject(r.id)}
+                                                    disabled={isLoading}
+                                                    className="flex-1 bg-accent text-white rounded-xl py-2.5 font-semibold disabled:opacity-50"
+                                                >
+                                                    {isLoading ? 'Processing...' : 'Confirm Reject'}
+                                                </button>
+                                            </div>
                                         </>
                                     )}
-                                    {err && <p style={{ fontSize: '12px', color: '#E63950' }}>{err}</p>}
+                                    {err && <p className="text-xs text-warm-red">{err}</p>}
                                 </div>
                             )}
                         </div>
