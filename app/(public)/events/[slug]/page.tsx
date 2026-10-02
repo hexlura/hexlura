@@ -319,7 +319,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                                         <span style={{ display: 'inline-flex', padding: '6px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginTop: '12px', background: policy.bg, color: policy.color, border: policy.border }}>
                                             {policy.label}
                                         </span>
-                                        <p style={{ fontSize: '11px', color: '#666677', marginTop: '6px' }}>Booking fees are non-refundable</p>
+                                        <p style={{ fontSize: '11px', color: '#666677', marginTop: '6px' }}>Fees are non-refundable</p>
                                     </div>
                                 )
                             })()}

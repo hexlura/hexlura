@@ -26,17 +26,21 @@ function loadFees(): Promise<ListingFees> {
         inflight = fetch('/api/settings/fees')
             .then(res => {
                 if (!res.ok) throw new Error(`fees endpoint returned ${res.status}`)
-                return res.json() as Promise<FeeConfig & { exempt_organiser_ids?: string[] }>
+                return res.json() as Promise<FeeConfig & { exempt_organiser_ids?: string[]; processing_exempt_organiser_ids?: string[] }>
             })
             .then(data => {
-                const { exempt_organiser_ids, ...config } = data
-                cached = { config, exemptOrganiserIds: exempt_organiser_ids ?? [] }
+                const { exempt_organiser_ids, processing_exempt_organiser_ids, ...config } = data
+                cached = {
+                    config,
+                    exemptOrganiserIds: exempt_organiser_ids ?? [],
+                    processingExemptOrganiserIds: processing_exempt_organiser_ids ?? [],
+                }
                 return cached
             })
             .catch(err => {
                 console.error('Failed to load booking fee settings:', err)
                 // Don't cache the failure; show bare prices rather than a blank.
-                return { config: DEFAULT_FEE_CONFIG, exemptOrganiserIds: [] }
+                return { config: DEFAULT_FEE_CONFIG, exemptOrganiserIds: [], processingExemptOrganiserIds: [] }
             })
             .finally(() => { inflight = null })
     }

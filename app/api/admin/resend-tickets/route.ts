@@ -109,18 +109,19 @@ export async function GET(req: NextRequest) {
 
     // Build ticket summary from current booking_items (each qty=1 after migration)
     // Group by ticket type for the email summary table
-    const ticketSummaryMap: Map<string, { name: string; quantity: number; price: string }> = new Map()
+    const ticketSummaryMap: Map<string, { name: string; quantity: number; pricePence: number }> = new Map()
     for (const item of booking.items) {
         const typeName = item.ticket_type?.name || 'Ticket'
         const existing = ticketSummaryMap.get(typeName)
+        const unitPence = item.unit_price_pence ?? item.ticket_type?.price_pence ?? 0
         if (existing) {
             existing.quantity += item.quantity
+            existing.pricePence += unitPence * item.quantity
         } else {
-            const unitPence = item.unit_price_pence ?? item.ticket_type?.price_pence ?? 0
             ticketSummaryMap.set(typeName, {
                 name: typeName,
                 quantity: item.quantity,
-                price: `£${((unitPence * item.quantity) / 100).toFixed(2)}`,
+                pricePence: unitPence * item.quantity,
             })
         }
     }
@@ -128,6 +129,14 @@ export async function GET(req: NextRequest) {
 
     const totalPence = booking.total_pence ?? 0
     const totalPaid = booking.is_complimentary ? '£0.00' : `£${(totalPence / 100).toFixed(2)}`
+
+    // Buyers see lines carrying the booking fee and one combined "incl. fee" figure
+    const discountPence = booking.discount_pence ?? 0
+    const baseTotalPence = ticketItems.reduce((sum, t) => sum + t.pricePence, 0)
+    const bookingFeePence = booking.is_complimentary ? 0 : (booking.booking_fee_pence ?? 0)
+    const processingFeePence = booking.is_complimentary
+        ? 0
+        : Math.max(0, totalPence - (baseTotalPence - discountPence) - bookingFeePence)
 
     const { data: orgProfileForPdf } = await supabase
         .from('organiser_profiles')
@@ -170,6 +179,9 @@ export async function GET(req: NextRequest) {
         venueAddress: booking.event.venue_address || '',
         bookingRef: booking.booking_ref,
         ticketItems,
+        bookingFeePence,
+        processingFeePence,
+        discountPence,
         totalPaid,
         downloadUrl: `https://www.hexlura.com/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
     }))

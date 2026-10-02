@@ -33,7 +33,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
             const supabase = createClient()
             const { data } = await supabase
                 .from('bookings')
-                .select('ticket_subtotal_pence, discount_pence, booking_fee_pence, event:events(start_at, refund_policy), items:booking_items(checkins(id))')
+                .select('ticket_subtotal_pence, discount_pence, booking_fee_pence, order_processing_fee_pence, event:events(start_at, refund_policy), items:booking_items(checkins(id))')
                 .eq('id', bookingId)
                 .single()
 
@@ -51,7 +51,8 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
             // Net of any promo-code discount — only what was actually paid for tickets
             // is refundable, not the pre-discount face value.
             const ticketSubtotal = (data.ticket_subtotal_pence ?? 0) - (data.discount_pence ?? 0)
-            const bookingFee = data.booking_fee_pence ?? 0
+            // One combined figure for buyers — no booking/processing split
+            const bookingFee = (data.booking_fee_pence ?? 0) + (data.order_processing_fee_pence ?? 0)
 
             let eligible = false
             let ineligibleReason = ''
@@ -169,7 +170,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                 {eligibility.refundAmountPence > 0 && (
                     <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '6px' }}>
                         Refund amount: {formatPence(eligibility.refundAmountPence)}
-                        {eligibility.bookingFeePence > 0 && ` (booking fee of ${formatPence(eligibility.bookingFeePence)} is non-refundable)`}
+                        {eligibility.bookingFeePence > 0 && ` (fees of ${formatPence(eligibility.bookingFeePence)} are non-refundable)`}
                     </p>
                 )}
             </div>
@@ -186,7 +187,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                                 </p>
                                 {eligibility.bookingFeePence > 0 && (
                                     <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '3px' }}>
-                                        Booking fee of {formatPence(eligibility.bookingFeePence)} is non-refundable
+                                        Fees of {formatPence(eligibility.bookingFeePence)} are non-refundable
                                     </p>
                                 )}
                             </div>

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { formatPence } from '@/lib/fees'
+import { formatPence, allocateFee } from '@/lib/fees'
 import { Booking } from '@/types'
 import { aggregateBookingItems, type RawBookingItem } from '@/lib/booking-aggregation'
 import { isRefundWindowOpen } from '@/lib/refund-policy'
@@ -49,6 +49,8 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
         : ''
 
     const bookingFee = booking.booking_fee_pence || 0
+    // Buyers see one combined fee figure, never the booking/processing split
+    const totalFee = bookingFee + (booking.order_processing_fee_pence || 0)
     const discount = booking.discount_pence || 0
     const total = booking.total_pence || 0
 
@@ -82,6 +84,8 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
 
     // Collapse group-ticket member rows into a single line per ticket type.
     const displayItems = aggregateBookingItems((bookingRaw?.items ?? []) as unknown as RawBookingItem[])
+    // Each line shows its all-in price (ticket + its share of all fees)
+    const lineFees = allocateFee(displayItems.map(r => r.subtotal_pence), totalFee)
 
     return (
         <section className="max-w-3xl mx-auto space-y-8">
@@ -100,12 +104,11 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                         <tr className="border-b border-border text-muted text-left">
                             <th className="pb-2">Ticket</th>
                             <th className="pb-2 text-center">Qty</th>
-                            <th className="pb-2 text-right">Unit Price</th>
-                            <th className="pb-2 text-right">Subtotal</th>
+                            <th className="pb-2 text-right">Price</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {displayItems.map(row => (
+                        {displayItems.map((row, i) => (
                             <tr key={row.key} className="border-b border-border/50">
                                 <td className="py-3 text-text">
                                     {row.name}
@@ -114,24 +117,24 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
                                     )}
                                 </td>
                                 <td className="py-3 text-center text-text">{row.quantity}</td>
-                                <td className="py-3 text-right text-text">{formatPence(row.unit_price_pence)}</td>
-                                <td className="py-3 text-right text-text">{formatPence(row.subtotal_pence)}</td>
+                                <td className="py-3 text-right text-text">{formatPence(row.subtotal_pence + lineFees[i])}</td>
                             </tr>
                         ))}
                         {discount > 0 && (
                             <tr className="border-b border-border/50">
-                                <td colSpan={3} className="py-3 text-success">Promo discount</td>
+                                <td colSpan={2} className="py-3 text-success">Promo discount</td>
                                 <td className="py-3 text-right text-success">-{formatPence(discount)}</td>
                             </tr>
                         )}
-                        <tr className="border-b border-border/50">
-                            <td colSpan={3} className="py-3 text-muted">Hexlura booking fee</td>
-                            <td className="py-3 text-right text-muted">{formatPence(bookingFee)}</td>
-                        </tr>
                         <tr>
-                            <td colSpan={3} className="py-3 font-bold text-text text-lg">Total</td>
+                            <td colSpan={2} className="py-3 font-bold text-text text-lg">Total</td>
                             <td className="py-3 text-right font-bold text-text text-lg">{formatPence(total)}</td>
                         </tr>
+                        {totalFee > 0 && (
+                            <tr>
+                                <td colSpan={3} className="pb-1 text-right text-xs text-muted">incl. {formatPence(totalFee)} fee</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
 

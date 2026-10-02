@@ -1,11 +1,13 @@
 import { Hr, Link, Text } from '@react-email/components'
 import React from 'react'
 import BaseEmail from './components/BaseEmail'
+import { allocateFee } from '../lib/fees'
 
 interface TicketItem {
     name: string
     quantity: number
-    price: string
+    /** Line total at ticket price (unit price × quantity), in pence */
+    pricePence: number
 }
 
 interface BookingConfirmationProps {
@@ -17,6 +19,7 @@ interface BookingConfirmationProps {
     venueAddress: string
     bookingRef: string
     ticketItems: TicketItem[]
+    /** Fees are never shown separately: lines carry all fees, and the total notes them as one figure */
     bookingFeePence?: number
     processingFeePence?: number
     discountPence?: number
@@ -39,6 +42,9 @@ export default function BookingConfirmation({
     totalPaid,
     downloadUrl,
 }: BookingConfirmationProps) {
+    const feePence = bookingFeePence + processingFeePence
+    const lineFees = allocateFee(ticketItems.map(t => t.pricePence), feePence)
+
     return (
         <BaseEmail previewText={`Your tickets for ${eventName} are confirmed!`}>
             {/* Green checkmark */}
@@ -67,29 +73,17 @@ export default function BookingConfirmation({
                 {ticketItems.map((item, i) => (
                     <div key={i} style={tableRowStyle}>
                         <span style={ticketNameStyle}>{item.name}</span>
-                        <span style={ticketPriceStyle}>{item.quantity} × {item.price}</span>
+                        <span style={ticketPriceStyle}>{item.quantity} × £{((item.pricePence + lineFees[i]) / 100).toFixed(2)}</span>
                     </div>
                 ))}
 
                 <Hr style={dividerStyle} />
 
-                {/* Fee breakdown */}
+                {/* Discount */}
                 {discountPence > 0 && (
                     <div style={tableRowStyle}>
                         <span style={{ ...ticketNameStyle, color: '#00C48A' }}>Discount</span>
                         <span style={{ ...ticketPriceStyle, color: '#00C48A' }}>-£{(discountPence / 100).toFixed(2)}</span>
-                    </div>
-                )}
-                {bookingFeePence > 0 && (
-                    <div style={tableRowStyle}>
-                        <span style={ticketNameStyle}>Booking fee</span>
-                        <span style={ticketPriceStyle}>£{(bookingFeePence / 100).toFixed(2)}</span>
-                    </div>
-                )}
-                {processingFeePence > 0 && (
-                    <div style={tableRowStyle}>
-                        <span style={ticketNameStyle}>Order processing fee</span>
-                        <span style={ticketPriceStyle}>£{(processingFeePence / 100).toFixed(2)}</span>
                     </div>
                 )}
 
@@ -100,6 +94,11 @@ export default function BookingConfirmation({
                     <span style={totalLabelStyle}>Total Paid</span>
                     <span style={totalValueStyle}>{totalPaid}</span>
                 </div>
+                {feePence > 0 && (
+                    <div style={tableRowStyle}>
+                        <span style={ticketNameStyle}>incl. £{(feePence / 100).toFixed(2)} fee</span>
+                    </div>
+                )}
             </div>
 
             {/* Download button */}

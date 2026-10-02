@@ -299,7 +299,10 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
                     const maxQty = ticket.max_per_order || 10;
                     const isExpanded = expanded[ticket.id] || false;
 
-                    const ticketFee = calculateBookingFeePerTicket(ticket.price_pence, feeConfig);
+                    // All-in price of this ticket bought on its own: booking fee plus the per-order fee
+                    const ticketFee = ticket.price_pence > 0
+                        ? calculateBookingFeePerTicket(ticket.price_pence, feeConfig) + feeConfig.processingFeePence
+                        : 0;
                     const isGroup = ticket.is_group === true;
                     const groupSize = ticket.group_size || 1;
 

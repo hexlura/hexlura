@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { calculateBookingFeePerTicket } from '@/lib/fees'
+import { calculateBookingFeePerTicket, allocateFee } from '@/lib/fees'
 import { useFeeConfig } from '@/lib/use-fee-config'
 
 interface CheckoutItem {
@@ -55,8 +55,8 @@ interface CheckoutContextType {
     ticketSubtotalPence: number
     discountPence: number
     bookingFeePence: number
-    /** Booking fee for one line item (price × qty), so lines can show the all-in price */
-    itemBookingFeePence: (item: CheckoutItem) => number
+    /** All-in total per line item, aligned with state.items: price × qty + booking fee + share of the order fee */
+    lineTotalsPence: number[]
     processingFeePence: number
     totalPence: number
 }
@@ -94,10 +94,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         0
     )
 
-    const itemBookingFeePence = (item: CheckoutItem) =>
-        calculateBookingFeePerTicket(item.price_pence, feeConfig) * item.quantity
-
     const processingFeePence = ticketSubtotalPence > 0 ? feeConfig.processingFeePence : 0
+
+    const lineBases = state.items.map((item) => item.price_pence * item.quantity)
+    const lineProcessingShares = allocateFee(lineBases, processingFeePence)
+    const lineTotalsPence = state.items.map(
+        (item, i) =>
+            lineBases[i] +
+            calculateBookingFeePerTicket(item.price_pence, feeConfig) * item.quantity +
+            lineProcessingShares[i]
+    )
 
     const totalPence = ticketSubtotalPence - discountPence + bookingFeePence + processingFeePence
 
@@ -115,7 +121,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 ticketSubtotalPence,
                 discountPence,
                 bookingFeePence,
-                itemBookingFeePence,
+                lineTotalsPence,
                 processingFeePence,
                 totalPence,
             }}

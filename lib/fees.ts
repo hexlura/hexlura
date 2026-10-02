@@ -79,7 +79,10 @@ export function calculateBookingFee(ticketPricePence: number, quantity: number, 
  */
 export interface ListingFees {
     config: FeeConfig
+    /** Organisers whose booking fee is waived */
     exemptOrganiserIds: string[]
+    /** Organisers whose order processing fee is waived */
+    processingExemptOrganiserIds: string[]
 }
 
 /** Server-side. Reads live fee config and the booking-fee-exempt organisers. */
@@ -88,16 +91,22 @@ export async function getListingFees(): Promise<ListingFees> {
     const supabase = createServiceClient()
     const { data, error } = await supabase
         .from('organiser_profiles')
-        .select('id')
-        .eq('booking_fee_exempt', true)
+        .select('id, booking_fee_exempt, processing_fee_exempt')
+        .or('booking_fee_exempt.eq.true,processing_fee_exempt.eq.true')
     if (error) console.error('getListingFees: exempt organisers read failed:', error)
-    return { config, exemptOrganiserIds: (data ?? []).map(o => o.id) }
+    const rows = data ?? []
+    return {
+        config,
+        exemptOrganiserIds: rows.filter(o => o.booking_fee_exempt).map(o => o.id),
+        processingExemptOrganiserIds: rows.filter(o => o.processing_fee_exempt).map(o => o.id),
+    }
 }
 
 /**
- * What a buyer pays for one ticket, booking fee included. Mirrors checkout:
- * an exempt organiser's tickets carry no booking fee. `fees` null (not loaded
- * yet) falls back to the bare price.
+ * What a buyer pays for one ticket bought on its own: ticket price plus booking
+ * fee plus the per-order processing fee, as a single all-in figure. Mirrors
+ * checkout, including organiser exemptions. `fees` null (not loaded yet) falls
+ * back to the bare price.
  */
 export function buyerTicketPrice(
     pricePence: number,
@@ -105,9 +114,28 @@ export function buyerTicketPrice(
     fees: ListingFees | null,
 ): { totalPence: number; feePence: number } {
     if (!fees || pricePence <= 0) return { totalPence: pricePence, feePence: 0 }
-    const exempt = !!organiserId && fees.exemptOrganiserIds.includes(organiserId)
-    const feePence = exempt ? 0 : calculateBookingFeePerTicket(pricePence, fees.config)
+    const bookingExempt = !!organiserId && fees.exemptOrganiserIds.includes(organiserId)
+    const processingExempt = !!organiserId && fees.processingExemptOrganiserIds.includes(organiserId)
+    const feePence =
+        (bookingExempt ? 0 : calculateBookingFeePerTicket(pricePence, fees.config)) +
+        (processingExempt ? 0 : fees.config.processingFeePence)
     return { totalPence: pricePence + feePence, feePence }
+}
+
+/**
+ * Spread a fee across ticket lines in proportion to each line's base amount, so
+ * receipts can show every line all-in. Lines sum exactly to the fee; rounding
+ * remainder lands on the last non-zero line.
+ */
+export function allocateFee(basesPence: number[], feePence: number): number[] {
+    const total = basesPence.reduce((a, b) => a + b, 0)
+    if (total <= 0 || feePence <= 0) return basesPence.map(() => 0)
+    const shares = basesPence.map(b => Math.floor((feePence * b) / total))
+    let remainder = feePence - shares.reduce((a, b) => a + b, 0)
+    for (let i = basesPence.length - 1; i >= 0 && remainder > 0; i--) {
+        if (basesPence[i] > 0) { shares[i] += remainder; remainder = 0 }
+    }
+    return shares
 }
 
 export function formatPence(pence: number): string {
