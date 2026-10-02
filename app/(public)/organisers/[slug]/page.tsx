@@ -11,6 +11,8 @@ import OrganiserBadge from '@/components/organisers/OrganiserBadge';
 import { Event, Review } from '@/types';
 import type { Metadata } from 'next';
 import { getDynamicPageMetadata } from '@/lib/seo';
+import { getListingFees } from '@/lib/fees';
+import { FeeProvider } from '@/lib/fee-context';
 
 export const revalidate = 60;
 
@@ -209,7 +211,10 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         }
     }
 
+    const listingFees = await getListingFees();
+
     return (
+        <FeeProvider fees={listingFees}>
         <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
 
             {/* ─── SECTION 1: ORGANISER BADGE ─── */}
@@ -389,5 +394,6 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
             </div>
 
         </div>
+        </FeeProvider>
     );
 }

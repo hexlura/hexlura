@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Event } from '@/types';
+import { buyerTicketPrice } from '@/lib/fees';
+import { useListingFees } from '@/lib/fee-context';
 
 interface EventCardProps {
     event: Event;
@@ -14,6 +16,7 @@ interface EventCardProps {
 
 
 export default function EventCard({ event, compact = false, priority = false }: EventCardProps) {
+    const fees = useListingFees();
     const ticketTypes = event.ticket_types || [];
 
     const visibleTypes = ticketTypes.filter(t => t.is_visible === true);
@@ -42,10 +45,14 @@ export default function EventCard({ event, compact = false, priority = false }: 
     function getPriceRange(types: typeof visibleTypes): string {
         if (types.length === 0) return 'Tickets TBA';
         if (visibleSoldOut) return 'Sold Out';
-        const prices = types.map(t => t.price_pence);
+        const basePrices = types.map(t => t.price_pence);
+        if (Math.max(...basePrices) === 0) return 'Free';
+        // Fee data still loading (client-only lists): hold the space rather than flash a price without the fee
+        if (!fees) return ' ';
+        // All-in price: ticket price plus the buyer's booking fee
+        const prices = basePrices.map(p => buyerTicketPrice(p, event.organiser_id, fees).totalPence);
         const lo = Math.min(...prices);
         const hi = Math.max(...prices);
-        if (hi === 0) return 'Free';
         const fmt = (p: number) => `£${(p / 100).toFixed(2)}`;
         if (lo === hi) return fmt(lo);
         if (lo === 0) return `Free – ${fmt(hi)}`;

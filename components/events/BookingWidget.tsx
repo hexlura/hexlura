@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Event, TicketType } from '@/types';
-import { formatPence } from '@/lib/fees';
+import { formatPence, calculateBookingFeePerTicket, type FeeConfig } from '@/lib/fees';
 
 type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
 
@@ -13,9 +13,11 @@ interface BookingWidgetProps {
     event: Event;
     ticketTypes: GroupTicketType[];
     initialQuantities?: Record<string, number>;
+    /** Live fee config for this event's organiser (exemptions already applied) */
+    feeConfig: FeeConfig;
 }
 
-export default function BookingWidget({ event, ticketTypes, initialQuantities }: BookingWidgetProps) {
+export default function BookingWidget({ event, ticketTypes, initialQuantities, feeConfig }: BookingWidgetProps) {
     const router = useRouter();
     const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>(initialQuantities ?? {});
     const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -71,9 +73,13 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
         return sum + ticket.price_pence * qty;
     }, 0);
 
+    // Buyers see the booking fee built into each ticket price, as at checkout
+    const bookingFeeTotal = ticketTypes.reduce(
+        (sum, ticket) => sum + calculateBookingFeePerTicket(ticket.price_pence, feeConfig) * effectiveQty(ticket),
+        0,
+    );
+    const processingFee = subtotal > 0 ? feeConfig.processingFeePence : 0;
 
-
-;
     const hasSelectedTickets = ticketTypes.some(t => effectiveQty(t) > 0);
     const hasNoTickets = ticketTypes.length === 0;
     const isComingSoon = hasNoTickets || event.ticket_availability === 'coming_soon';
@@ -293,6 +299,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                     const maxQty = ticket.max_per_order || 10;
                     const isExpanded = expanded[ticket.id] || false;
 
+                    const ticketFee = calculateBookingFeePerTicket(ticket.price_pence, feeConfig);
                     const isGroup = ticket.is_group === true;
                     const groupSize = ticket.group_size || 1;
 
@@ -312,8 +319,13 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                                 {/* Price */}
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginRight: 16, whiteSpace: 'nowrap' }}>
                                     <span style={{ fontSize: 14, color: isSoldOut ? '#666677' : ticket.price_pence === 0 ? '#00C48A' : '#0A0A0F' }}>
-                                        {ticket.price_pence === 0 ? 'Free' : formatPence(ticket.price_pence)}
+                                        {ticket.price_pence === 0 ? 'Free' : formatPence(ticket.price_pence + ticketFee)}
                                     </span>
+                                    {ticketFee > 0 && (
+                                        <span style={{ fontSize: 11, color: '#666677' }}>
+                                            incl. {formatPence(ticketFee)} fee
+                                        </span>
+                                    )}
                                 </div>
                                 {/* Qty or sold out */}
                                 {isSoldOut ? (
@@ -377,8 +389,16 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities }:
                 <div className="space-y-2 text-sm bg-surface p-4 rounded-sm border border-border">
                     <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span>{formatPence(subtotal)}</span>
+                        <span>{formatPence(subtotal + bookingFeeTotal + processingFee)}</span>
                     </div>
+                    {(bookingFeeTotal > 0 || processingFee > 0) && (
+                        <p style={{ fontSize: 12, color: '#666677', margin: 0 }}>
+                            {[
+                                bookingFeeTotal > 0 ? `incl. ${formatPence(bookingFeeTotal)} booking fee` : null,
+                                processingFee > 0 ? `${formatPence(processingFee)} order processing fee` : null,
+                            ].filter(Boolean).join(' + ')}
+                        </p>
+                    )}
                 </div>
             )}
 

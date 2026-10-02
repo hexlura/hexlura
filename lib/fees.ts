@@ -73,6 +73,43 @@ export function calculateBookingFee(ticketPricePence: number, quantity: number, 
     return calculateBookingFeePerTicket(ticketPricePence, config) * quantity
 }
 
+/**
+ * Booking-fee inputs needed to show buyers an all-in ticket price in listings:
+ * the live fee config plus the organisers whose booking fee is waived.
+ */
+export interface ListingFees {
+    config: FeeConfig
+    exemptOrganiserIds: string[]
+}
+
+/** Server-side. Reads live fee config and the booking-fee-exempt organisers. */
+export async function getListingFees(): Promise<ListingFees> {
+    const config = await getFeeConfig()
+    const supabase = createServiceClient()
+    const { data, error } = await supabase
+        .from('organiser_profiles')
+        .select('id')
+        .eq('booking_fee_exempt', true)
+    if (error) console.error('getListingFees: exempt organisers read failed:', error)
+    return { config, exemptOrganiserIds: (data ?? []).map(o => o.id) }
+}
+
+/**
+ * What a buyer pays for one ticket, booking fee included. Mirrors checkout:
+ * an exempt organiser's tickets carry no booking fee. `fees` null (not loaded
+ * yet) falls back to the bare price.
+ */
+export function buyerTicketPrice(
+    pricePence: number,
+    organiserId: string | null | undefined,
+    fees: ListingFees | null,
+): { totalPence: number; feePence: number } {
+    if (!fees || pricePence <= 0) return { totalPence: pricePence, feePence: 0 }
+    const exempt = !!organiserId && fees.exemptOrganiserIds.includes(organiserId)
+    const feePence = exempt ? 0 : calculateBookingFeePerTicket(pricePence, fees.config)
+    return { totalPence: pricePence + feePence, feePence }
+}
+
 export function formatPence(pence: number): string {
     return `£${(pence / 100).toFixed(2)}`
 }
