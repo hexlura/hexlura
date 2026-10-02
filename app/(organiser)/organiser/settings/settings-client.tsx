@@ -1,23 +1,22 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { compressImage } from '@/lib/compress-image'
-import { Button } from '@/components/ui/Button'
 import type { OrganiserProfile } from '@/types'
 
+// The eight platforms shown in the design. Anything else already stored in social_links (e.g. "website") is preserved.
 const PLATFORMS = [
-    { key: 'instagram', label: 'Instagram', icon: '📷', placeholder: 'https://instagram.com/yourpage', color: '#E1306C' },
-    { key: 'facebook', label: 'Facebook', icon: '👥', placeholder: 'https://facebook.com/yourpage', color: '#1877F2' },
-    { key: 'tiktok', label: 'TikTok', icon: '🎵', placeholder: 'https://tiktok.com/@yourpage', color: '#000000' },
-    { key: 'youtube', label: 'YouTube', icon: '▶️', placeholder: 'https://youtube.com/@yourchannel', color: '#FF0000' },
-    { key: 'twitter', label: 'X (Twitter)', icon: '𝕏', placeholder: 'https://x.com/yourhandle', color: '#000000' },
-    { key: 'linkedin', label: 'LinkedIn', icon: '💼', placeholder: 'https://linkedin.com/in/yourprofile', color: '#0A66C2' },
-    { key: 'spotify', label: 'Spotify', icon: '🎧', placeholder: 'https://open.spotify.com/artist/...', color: '#1DB954' },
-    { key: 'soundcloud', label: 'SoundCloud', icon: '☁️', placeholder: 'https://soundcloud.com/yourpage', color: '#FF5500' },
-    { key: 'website', label: 'Website', icon: '🌐', placeholder: 'https://yourwebsite.com', color: '#0A0A0F' },
+    { key: 'instagram', label: 'Instagram', icon: '📷', placeholder: 'https://instagram.com/yourpage' },
+    { key: 'facebook', label: 'Facebook', icon: '👥', placeholder: 'https://facebook.com/yourpage' },
+    { key: 'tiktok', label: 'TikTok', icon: '🎵', placeholder: 'https://tiktok.com/@yourpage' },
+    { key: 'youtube', label: 'YouTube', icon: '▶️', placeholder: 'https://youtube.com/@yourchannel' },
+    { key: 'twitter', label: 'X (Twitter)', icon: '𝕏', placeholder: 'https://x.com/yourhandle' },
+    { key: 'linkedin', label: 'LinkedIn', icon: '💼', placeholder: 'https://linkedin.com/in/yourprofile' },
+    { key: 'spotify', label: 'Spotify', icon: '🎧', placeholder: 'https://open.spotify.com/artist/...' },
+    { key: 'soundcloud', label: 'SoundCloud', icon: '☁️', placeholder: 'https://soundcloud.com/yourpage' },
 ]
 
 type OrganiserWithExtras = OrganiserProfile & {
@@ -29,39 +28,37 @@ type OrganiserWithExtras = OrganiserProfile & {
     social_links?: Record<string, string> | null
 }
 
-function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
-    const [open, setOpen] = useState(defaultOpen)
-    return (
-        <div className="bg-card border border-border rounded-none mb-6">
-            <button
-                type="button"
-                onClick={() => setOpen(!open)}
-                className="w-full flex items-center justify-between p-6 cursor-pointer"
-            >
-                <h2 className="text-sm font-semibold text-text uppercase tracking-wider m-0">{title}</h2>
-                <svg
-                    width="16" height="16" viewBox="0 0 16 16" fill="none"
-                    className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-                >
-                    <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </button>
-            {open && <div className="px-6 pb-6">{children}</div>}
-        </div>
-    )
+const ACCOUNT_TYPES: Record<string, string> = {
+    individual: 'Individual',
+    artist: 'Artist / Performer',
+    club_venue: 'Club / Venue',
+    event_company: 'Event Company',
+    charity: 'Charity / Community',
+    education: 'Education',
 }
 
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+const card = 'bg-card rounded-2xl shadow-card p-6 mb-6'
+const cardTitle = 'text-sm font-semibold mb-4'
+const labelClass = 'text-xs text-muted uppercase tracking-wider mb-1.5 block'
+const inputClass = 'w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
+const saveBtn = 'bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold mt-4 disabled:opacity-60'
+const modalInput = 'w-full bg-background border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
+
+function Toggle({ checked, onChange, label, padded }: { checked: boolean; onChange: (v: boolean) => void; label: string; padded?: boolean }) {
     return (
-        <label className="flex items-center justify-between py-2 cursor-pointer">
-            <span className="text-sm text-text">{label}</span>
-            <div
+        <div className={`flex items-center justify-between ${padded ? 'py-3' : 'py-2'}`}>
+            <p className="text-sm">{label}</p>
+            <button
+                type="button"
+                role="switch"
+                aria-checked={checked}
+                aria-label={label}
                 onClick={() => onChange(!checked)}
-                className={`w-10 h-6 rounded-sm relative transition-colors ${checked ? 'bg-accent' : 'bg-border'}`}
+                className={`w-10 h-6 rounded-full relative transition-colors ${checked ? 'bg-accent' : 'bg-border'}`}
             >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} />
-            </div>
-        </label>
+                <span className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${checked ? 'right-1' : 'left-1'}`} />
+            </button>
+        </div>
     )
 }
 
@@ -75,7 +72,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // Identity verification state
+    // ── Identity verification ──────────────────────────────────────────────
     const [identityStatus, setIdentityStatus] = useState(organiser.identity_status ?? null)
     const [identityVerifiedAt] = useState(organiser.identity_verified_at)
     const [identityFailureReason] = useState(organiser.identity_failure_reason)
@@ -136,37 +133,189 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
         }
     }
 
+    // ── Profile ────────────────────────────────────────────────────────────
     const [orgName, setOrgName] = useState(organiser.org_name)
     const [description, setDescription] = useState(organiser.description || '')
     const [website, setWebsite] = useState(organiser.website || '')
+    const [location, setLocation] = useState(organiser.location || '')
+    const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
+    const [logoUploading, setLogoUploading] = useState(false)
+    const [coverUrl, setCoverUrl] = useState(organiser.cover_url || '')
+    const [coverUploading, setCoverUploading] = useState(false)
+    const [profileSaving, setProfileSaving] = useState(false)
+    const [profileSaved, setProfileSaved] = useState(false)
+
+    // ── Social links (the eight design platforms; legacy Instagram/Facebook columns kept in sync) ──
+    const [socialInputs, setSocialInputs] = useState<Record<string, string>>(() => {
+        const existing = organiser.social_links || {}
+        const init: Record<string, string> = {}
+        for (const p of PLATFORMS) init[p.key] = existing[p.key] || ''
+        if (!init.instagram) init.instagram = organiser.social_instagram || ''
+        if (!init.facebook) init.facebook = organiser.social_facebook || ''
+        return init
+    })
+    const [socialSaving, setSocialSaving] = useState(false)
+    const [socialSaved, setSocialSaved] = useState(false)
+
+    // ── VAT ────────────────────────────────────────────────────────────────
     const [vatRegistered, setVatRegistered] = useState(organiser.vat_registered)
     const [vatNumber, setVatNumber] = useState(organiser.vat_number || '')
+    const [vatSaving, setVatSaving] = useState(false)
+    const [vatSaved, setVatSaved] = useState(false)
+
+    // ── Notifications (UI only — these toggles are not persisted, as before) ──
+    const [notifyDailySummary, setNotifyDailySummary] = useState(false)
+    const [notifyPayout, setNotifyPayout] = useState(true)
+
+    // ── Payout method (bank transfer is the legacy route; Connect is the standard one) ──
     const [payoutMethod, setPayoutMethod] = useState<'bank_transfer' | 'stripe_connect'>(organiser.payout_method ?? 'bank_transfer')
     const [bankAccountName, setBankAccountName] = useState(organiser.bank_account_name || '')
     const [bankSortCode, setBankSortCode] = useState(organiser.bank_sort_code || '')
     const [bankAccountNumber, setBankAccountNumber] = useState(organiser.bank_account_number || '')
     const [payoutSaving, setPayoutSaving] = useState(false)
     const [payoutSaved, setPayoutSaved] = useState(false)
-    const [saving, setSaving] = useState(false)
-    const [saved, setSaved] = useState(false)
-    const [logoUploading, setLogoUploading] = useState(false)
-    const [logoUrl, setLogoUrl] = useState(organiser.logo_url || '')
+
+    // ── Analytics ──────────────────────────────────────────────────────────
+    const [metaPixelId, setMetaPixelId] = useState(organiser.meta_pixel_id || '')
+    const [analyticsSaving, setAnalyticsSaving] = useState(false)
+    const [analyticsSaved, setAnalyticsSaved] = useState(false)
+
+    // ── Danger zone ────────────────────────────────────────────────────────
     const [showCloseModal, setShowCloseModal] = useState(false)
     const [closingAccount, setClosingAccount] = useState(false)
+    const [closeError, setCloseError] = useState<string | null>(null)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deletingAccount, setDeletingAccount] = useState(false)
     const [deleteError, setDeleteError] = useState<string | null>(null)
     const [deleteReason, setDeleteReason] = useState('')
     const [deleteRequestSubmitted, setDeleteRequestSubmitted] = useState(false)
 
+    // One error line per section, so a failed save is never reported as "Saved ✓"
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const setErr = (key: string, msg: string) => setErrors(prev => ({ ...prev, [key]: msg }))
+
+    // Runs a profile update and reports success/failure
+    async function updateProfile(section: string, values: Record<string, unknown>): Promise<boolean> {
+        setErr(section, '')
+        const supabase = createClient()
+        const { error } = await supabase.from('organiser_profiles').update(values).eq('id', organiser.id)
+        if (error) {
+            console.error(`[Settings] ${section} save failed:`, error)
+            setErr(section, 'Could not save. Please try again.')
+            return false
+        }
+        return true
+    }
+
+    function flash(setter: (v: boolean) => void) {
+        setter(true)
+        setTimeout(() => setter(false), 2000)
+    }
+
+    async function saveProfile(e: React.FormEvent) {
+        e.preventDefault()
+        setProfileSaving(true)
+        const ok = await updateProfile('profile', { org_name: orgName, description, website, location: location || null })
+        if (ok) flash(setProfileSaved)
+        setProfileSaving(false)
+    }
+
+    async function saveSocialLinks() {
+        setSocialSaving(true)
+        // Keep anything stored under other keys (e.g. "website"); replace the eight platforms from the form
+        const preserved = { ...(organiser.social_links || {}) }
+        for (const p of PLATFORMS) delete preserved[p.key]
+        const linksToSave: Record<string, string> = { ...preserved }
+        for (const p of PLATFORMS) {
+            const v = socialInputs[p.key]?.trim()
+            if (v) linksToSave[p.key] = v
+        }
+        const ok = await updateProfile('social', {
+            social_links: linksToSave,
+            social_instagram: socialInputs.instagram?.trim() || null,
+            social_facebook: socialInputs.facebook?.trim() || null,
+        })
+        if (ok) flash(setSocialSaved)
+        setSocialSaving(false)
+    }
+
+    async function saveVat() {
+        setVatSaving(true)
+        const ok = await updateProfile('vat', { vat_registered: vatRegistered, vat_number: vatRegistered ? vatNumber : null })
+        if (ok) flash(setVatSaved)
+        setVatSaving(false)
+    }
+
+    async function savePayoutMethod(e: React.FormEvent) {
+        e.preventDefault()
+        setPayoutSaving(true)
+        const ok = await updateProfile(
+            'payout',
+            payoutMethod === 'bank_transfer'
+                ? { payout_method: 'bank_transfer', bank_account_name: bankAccountName, bank_sort_code: bankSortCode, bank_account_number: bankAccountNumber }
+                : { payout_method: 'stripe_connect' }
+        )
+        if (ok) flash(setPayoutSaved)
+        setPayoutSaving(false)
+    }
+
+    async function saveAnalytics() {
+        setAnalyticsSaving(true)
+        const ok = await updateProfile('analytics', { meta_pixel_id: metaPixelId.trim() || null })
+        if (ok) flash(setAnalyticsSaved)
+        setAnalyticsSaving(false)
+    }
+
+    async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setLogoUploading(true)
+        setErr('logo', '')
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setLogoUploading(false); return }
+        let blob: Blob
+        try { blob = await compressImage(file, 400) } catch { blob = file }
+        const path = `${user.id}/logo.webp`
+        const { error } = await supabase.storage.from('organiser-logos').upload(path, blob, { upsert: true, contentType: 'image/webp' })
+        if (error) { setErr('logo', 'Upload failed. Please try again.'); setLogoUploading(false); return }
+        const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
+        const url = urlData.publicUrl
+        await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
+        await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
+        setLogoUrl(url)
+        setLogoUploading(false)
+    }
+
+    async function uploadCover(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setCoverUploading(true)
+        setErr('cover', '')
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setCoverUploading(false); return }
+        let blob: Blob
+        try { blob = await compressImage(file, 1600) } catch { blob = file }
+        const path = `${user.id}/cover.webp`
+        const { error } = await supabase.storage.from('organiser-covers').upload(path, blob, { upsert: true, contentType: 'image/webp' })
+        if (error) { setErr('cover', 'Upload failed. Please try again.'); setCoverUploading(false); return }
+        const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
+        const url = urlData.publicUrl
+        await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)
+        setCoverUrl(url)
+        setCoverUploading(false)
+    }
+
     async function handleCloseAccount() {
         setClosingAccount(true)
+        setCloseError(null)
         const res = await fetch('/api/organiser/close-account', { method: 'POST' })
         if (res.ok) {
             window.location.href = '/'
         } else {
             setClosingAccount(false)
-            alert('Something went wrong. Please try again.')
+            setCloseError('Something went wrong. Please try again.')
         }
     }
 
@@ -186,730 +335,418 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
         if (res.ok) {
             setDeleteRequestSubmitted(true)
         } else {
-            const json = await res.json()
+            const json = await res.json().catch(() => ({}))
             setDeleteError(json.error || 'Something went wrong. Please try again.')
         }
     }
 
-    // Cover photo
-    const [coverUrl, setCoverUrl] = useState(organiser.cover_url || '')
-    const [coverUploading, setCoverUploading] = useState(false)
-
-    // Social links
-    const [socialInstagram, setSocialInstagram] = useState(organiser.social_instagram || '')
-    const [socialFacebook, setSocialFacebook] = useState(organiser.social_facebook || '')
-    const [socialWebsite, setSocialWebsite] = useState(organiser.social_website || '')
-    const [location, setLocation] = useState(organiser.location || '')
-    const [socialSaving, setSocialSaving] = useState(false)
-    const [socialSaved, setSocialSaved] = useState(false)
-
-    // Dynamic social links (JSONB)
-    const [socialLinksData, setSocialLinksData] = useState<Record<string, string>>({})
-    const [activeLinksKeys, setActiveLinksKeys] = useState<string[]>([])
-    const [showPlatformDropdown, setShowPlatformDropdown] = useState(false)
-    const [newSocialSaving, setNewSocialSaving] = useState(false)
-    const [newSocialSaved, setNewSocialSaved] = useState(false)
-    const [metaPixelId, setMetaPixelId] = useState(organiser.meta_pixel_id || '')
-    const [analyticsSaving, setAnalyticsSaving] = useState(false)
-    const [analyticsSaved, setAnalyticsSaved] = useState(false)
-    const dropdownRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const existing = organiser.social_links || {}
-        setSocialLinksData(existing)
-        setActiveLinksKeys(Object.keys(existing).filter(k => existing[k]))
-    }, [organiser.social_links])
-
-    useEffect(() => {
-        function handleClick(e: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-                setShowPlatformDropdown(false)
-            }
-        }
-        document.addEventListener('mousedown', handleClick)
-        return () => document.removeEventListener('mousedown', handleClick)
-    }, [])
-
-    async function saveAnalytics(e: React.FormEvent) {
-        e.preventDefault()
-        setAnalyticsSaving(true)
-        const supabase = createClient()
-        await supabase
-            .from('organiser_profiles')
-            .update({ meta_pixel_id: metaPixelId.trim() || null })
-            .eq('id', organiser.id)
-        setAnalyticsSaved(true)
-        setTimeout(() => setAnalyticsSaved(false), 2000)
-        setAnalyticsSaving(false)
-    }
-
-    async function saveNewSocialLinks() {
-        setNewSocialSaving(true)
-        const supabase = createClient()
-        const linksToSave: Record<string, string> = {}
-        for (const key of activeLinksKeys) {
-            if (socialLinksData[key]) linksToSave[key] = socialLinksData[key]
-        }
-        await supabase.from('organiser_profiles').update({ social_links: linksToSave }).eq('id', organiser.id)
-        setNewSocialSaved(true)
-        setTimeout(() => setNewSocialSaved(false), 2000)
-        setNewSocialSaving(false)
-    }
-
-    // Notification toggles
-    const [notifyDailySummary, setNotifyDailySummary] = useState(false)
-    const [notifyPayout, setNotifyPayout] = useState(true)
-
-    async function saveProfile(e: React.FormEvent) {
-        e.preventDefault()
-        setSaving(true)
-        const supabase = createClient()
-        await supabase
-            .from('organiser_profiles')
-            .update({ org_name: orgName, description, website })
-            .eq('id', organiser.id)
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
-        setSaving(false)
-    }
-
-    async function savePayoutMethod(e: React.FormEvent) {
-        e.preventDefault()
-        setPayoutSaving(true)
-        const supabase = createClient()
-        if (payoutMethod === 'bank_transfer') {
-            await supabase
-                .from('organiser_profiles')
-                .update({
-                    payout_method: 'bank_transfer',
-                    bank_account_name: bankAccountName,
-                    bank_sort_code: bankSortCode,
-                    bank_account_number: bankAccountNumber,
-                })
-                .eq('id', organiser.id)
-        } else {
-            await supabase
-                .from('organiser_profiles')
-                .update({ payout_method: 'stripe_connect' })
-                .eq('id', organiser.id)
-        }
-        setPayoutSaved(true)
-        setTimeout(() => setPayoutSaved(false), 2000)
-        setPayoutSaving(false)
-    }
-
-    async function saveVat(e: React.FormEvent) {
-        e.preventDefault()
-        setSaving(true)
-        const supabase = createClient()
-        await supabase
-            .from('organiser_profiles')
-            .update({ vat_registered: vatRegistered, vat_number: vatRegistered ? vatNumber : null })
-            .eq('id', organiser.id)
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
-        setSaving(false)
-    }
-
-    async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setLogoUploading(true)
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setLogoUploading(false); return }
-        let blob: Blob
-        try { blob = await compressImage(file, 400) } catch { blob = file }
-        const path = `${user.id}/logo.webp`
-        const { error } = await supabase.storage.from('organiser-logos').upload(path, blob, { upsert: true, contentType: 'image/webp' })
-        if (error) { alert('Upload failed. Please try again.'); setLogoUploading(false); return }
-        const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
-        const url = urlData.publicUrl
-        await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
-        await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
-        setLogoUrl(url)
-        setLogoUploading(false)
-    }
-
-    async function uploadCover(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setCoverUploading(true)
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setCoverUploading(false); return }
-        let blob: Blob
-        try { blob = await compressImage(file, 1600) } catch { blob = file }
-        const path = `${user.id}/cover.webp`
-        const { error } = await supabase.storage.from('organiser-covers').upload(path, blob, { upsert: true, contentType: 'image/webp' })
-        if (error) { alert('Upload failed. Please try again.'); setCoverUploading(false); return }
-        const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
-        const url = urlData.publicUrl
-        await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)
-        setCoverUrl(url)
-        setCoverUploading(false)
-    }
-
-    async function saveSocialLinks(e: React.FormEvent) {
-        e.preventDefault()
-        setSocialSaving(true)
-        const supabase = createClient()
-        await supabase
-            .from('organiser_profiles')
-            .update({
-                social_instagram: socialInstagram || null,
-                social_facebook: socialFacebook || null,
-                social_website: socialWebsite || null,
-                location: location || null,
-            })
-            .eq('id', organiser.id)
-        setSocialSaved(true)
-        setTimeout(() => setSocialSaved(false), 2000)
-        setSocialSaving(false)
-    }
+    const initials = (orgName || 'O').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+    const showConnectBlock = stripeConnectEnabled || organiser.payout_method === 'stripe_connect'
+    const connectVerified = !!organiser.stripe_account_id && organiser.stripe_charges_enabled && organiser.stripe_payouts_enabled
 
     return (
         <>
-            {/* Cover Photo */}
-            <Section title="Cover Photo">
-                <div style={{ width: '100%', height: 160, marginBottom: 12, border: '1px solid #E0E0E0', overflow: 'hidden', position: 'relative' }}>
-                    {coverUrl ? (
-                        <Image src={coverUrl} alt="Cover" width={100} height={100} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                        <div style={{
-                            width: '100%', height: '100%',
-                            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #E63950 100%)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>No cover photo</span>
-                        </div>
-                    )}
-                </div>
-                <div className="flex items-center gap-3">
-                    <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors inline-block">
-                        {coverUploading ? 'Uploading...' : 'Change Cover Photo'}
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCover} className="hidden" />
-                    </label>
-                    <span style={{ fontSize: 11, color: '#8888AA' }}>Recommended: 1200 x 400px (3:1 ratio). Max 5MB. JPG, PNG or WebP.</span>
-                </div>
-            </Section>
+            {/* Organisation Profile */}
+            <form onSubmit={saveProfile} className={card}>
+                <h2 className={cardTitle}>Organisation Profile</h2>
 
-            {/* Profile */}
-            <Section title="Profile">
-                <form onSubmit={saveProfile} className="space-y-4">
+                <div className="flex items-center gap-4 mb-5">
+                    {logoUrl ? (
+                        <Image src={logoUrl} alt="Logo" width={64} height={64} className="w-16 h-16 rounded-xl object-cover border border-border shrink-0" />
+                    ) : (
+                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-warm-orange to-accent flex items-center justify-center text-white font-heading text-xl shrink-0">{initials}</div>
+                    )}
+                    <label className="cursor-pointer bg-background border border-border rounded-xl px-4 py-2 text-sm font-medium hover:bg-border transition-colors">
+                        {logoUploading ? 'Uploading...' : 'Upload Logo'}
+                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadLogo} className="hidden" />
+                    </label>
+                </div>
+                {errors.logo && <p className="text-warm-red text-xs mb-3">{errors.logo}</p>}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="text-xs text-muted block mb-1.5">Account Type</label>
-                        <span style={{
-                            background: '#F5F5F7',
-                            border: '1px solid #C0C0C8',
-                            color: '#666677',
-                            fontSize: '13px',
-                            borderRadius: '2px',
-                            padding: '4px 12px',
-                            display: 'inline-block',
-                        }}>
-                            {organiser.organiser_type === 'individual' && 'Individual'}
-                            {organiser.organiser_type === 'artist' && 'Artist / Performer'}
-                            {organiser.organiser_type === 'club_venue' && 'Club / Venue'}
-                            {organiser.organiser_type === 'event_company' && 'Event Company'}
-                            {organiser.organiser_type === 'charity' && 'Charity / Community'}
-                            {organiser.organiser_type === 'education' && 'Education'}
-                            {!organiser.organiser_type && 'Individual'}
-                        </span>
+                        <label className={labelClass}>Account Type</label>
+                        <input
+                            value={ACCOUNT_TYPES[organiser.organiser_type] || 'Individual'}
+                            disabled
+                            readOnly
+                            className="w-full bg-border border border-border rounded-xl px-4 py-2.5 text-sm text-muted"
+                        />
                     </div>
                     <div>
-                        <label className="text-xs text-muted block mb-1.5">Organisation Name</label>
-                        <input type="text" value={orgName} onChange={e => setOrgName(e.target.value)} required
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
+                        <label className={labelClass}>Organisation Name</label>
+                        <input type="text" value={orgName} onChange={e => setOrgName(e.target.value)} required className={inputClass} />
                     </div>
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Bio</label>
-                        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} maxLength={300}
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Website URL</label>
+                        <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://" className={inputClass} />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Location / City</label>
+                        <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="London, UK" className={inputClass} />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Bio</label>
+                        <textarea
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                            rows={3}
+                            maxLength={300}
                             placeholder="Tell people about yourself or your organisation..."
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent resize-none" />
+                            className={inputClass}
+                        />
                         <p className="text-xs text-muted mt-1 text-right">{description.length}/300</p>
                     </div>
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Website URL</label>
-                        <input type="url" value={website} onChange={e => setWebsite(e.target.value)}
-                            placeholder="https://"
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
-                    </div>
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Logo</label>
-                        <div className="flex items-center gap-4">
-                            {logoUrl && <Image src={logoUrl} alt="Logo" width={64} height={64} className="w-16 h-16 rounded-sm object-cover border border-border" />}
-                            <label className="cursor-pointer bg-surface border border-border rounded-sm px-3 py-2 text-sm text-muted hover:text-text transition-colors">
-                                {logoUploading ? 'Uploading...' : 'Upload Logo'}
-                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadLogo} className="hidden" />
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Cover Photo</label>
+                        <div className="relative h-32 rounded-xl overflow-hidden border border-border mb-3 bg-gradient-to-br from-warm-orange to-accent">
+                            {coverUrl && <Image src={coverUrl} alt="Cover" fill sizes="(min-width: 1024px) 70vw, 100vw" className="object-cover" />}
+                            {!coverUrl && <span className="absolute inset-0 flex items-center justify-center text-xs text-white/80">No cover photo</span>}
+                        </div>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <label className="cursor-pointer bg-background border border-border rounded-xl px-4 py-2 text-sm font-medium hover:bg-border transition-colors">
+                                {coverUploading ? 'Uploading...' : 'Change Cover Photo'}
+                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCover} className="hidden" />
                             </label>
+                            <span className="text-xs text-muted">Recommended: 1200 x 400px (3:1 ratio). Max 5MB. JPG, PNG or WebP.</span>
                         </div>
+                        {errors.cover && <p className="text-warm-red text-xs mt-2">{errors.cover}</p>}
                     </div>
-                    <Button type="submit" variant="primary" size="md" disabled={saving}>{saved ? 'Saved ✓' : saving ? 'Saving...' : 'Save Profile'}</Button>
-                </form>
-            </Section>
-
-            {/* VAT */}
-            <Section title="VAT Settings">
-                <form onSubmit={saveVat} className="space-y-4">
-                    <Toggle checked={vatRegistered} onChange={setVatRegistered} label="VAT Registered" />
-                    {vatRegistered && (
-                        <div>
-                            <label className="text-xs text-muted block mb-1.5">VAT Number</label>
-                            <input type="text" value={vatNumber} onChange={e => setVatNumber(e.target.value)}
-                                placeholder="GB123456789"
-                                className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent" />
-                        </div>
-                    )}
-                    <p className="text-xs text-muted">VAT invoices will be generated for your payouts</p>
-                    <Button type="submit" variant="primary" size="md" disabled={saving}>{saved ? 'Saved ✓' : 'Save VAT Settings'}</Button>
-                </form>
-            </Section>
-
-            {/* Notifications */}
-            <Section title="Notifications">
-                <div className="divide-y divide-border">
-                    <Toggle checked={notifyDailySummary} onChange={setNotifyDailySummary} label="Daily booking summary" />
-                    <Toggle checked={notifyPayout} onChange={setNotifyPayout} label="Payout notifications" />
                 </div>
-                <p className="text-xs text-muted mt-3">Notification preferences are saved automatically</p>
-            </Section>
+                {errors.profile && <p className="text-warm-red text-xs mt-3">{errors.profile}</p>}
+                <button type="submit" disabled={profileSaving} className={saveBtn}>
+                    {profileSaved ? 'Saved ✓' : profileSaving ? 'Saving...' : 'Save Profile'}
+                </button>
+            </form>
+
+            {/* Social Links */}
+            <div className={card}>
+                <h2 className={cardTitle}>Social Links</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {PLATFORMS.map(p => (
+                        <div key={p.key}>
+                            <label className={labelClass}>{p.icon} {p.label}</label>
+                            <input
+                                type="url"
+                                value={socialInputs[p.key] || ''}
+                                onChange={e => setSocialInputs(prev => ({ ...prev, [p.key]: e.target.value }))}
+                                placeholder={p.placeholder}
+                                className={inputClass}
+                            />
+                        </div>
+                    ))}
+                </div>
+                {errors.social && <p className="text-warm-red text-xs mt-3">{errors.social}</p>}
+                <button type="button" onClick={saveSocialLinks} disabled={socialSaving} className={saveBtn}>
+                    {socialSaved ? 'Saved ✓' : socialSaving ? 'Saving...' : 'Save Social Links'}
+                </button>
+            </div>
+
+            {/* VAT Settings */}
+            <div className={card}>
+                <h2 className={cardTitle}>VAT Settings</h2>
+                <Toggle checked={vatRegistered} onChange={setVatRegistered} label="VAT Registered" />
+                {vatRegistered && (
+                    <div className="mt-3">
+                        <label className={labelClass}>VAT Number</label>
+                        <input
+                            type="text"
+                            value={vatNumber}
+                            onChange={e => setVatNumber(e.target.value)}
+                            placeholder="GB123456789"
+                            className="w-full sm:w-64 bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                        />
+                    </div>
+                )}
+                <p className="text-xs text-muted mt-3">VAT invoices will be generated for your payouts</p>
+                {errors.vat && <p className="text-warm-red text-xs mt-3">{errors.vat}</p>}
+                <button type="button" onClick={saveVat} disabled={vatSaving} className={saveBtn}>
+                    {vatSaved ? 'Saved ✓' : vatSaving ? 'Saving...' : 'Save VAT Settings'}
+                </button>
+            </div>
+
+            {/* Notification Preferences */}
+            <div className={card}>
+                <h2 className={cardTitle}>Notification Preferences</h2>
+                <div className="flex flex-col divide-y divide-border">
+                    <Toggle checked={notifyDailySummary} onChange={setNotifyDailySummary} label="Daily booking summary" padded />
+                    <Toggle checked={notifyPayout} onChange={setNotifyPayout} label="Payout notifications" padded />
+                </div>
+            </div>
 
             {/* Identity Verification */}
-            <div id="identity" />
-            <Section title="Identity Verification" defaultOpen={identityStatus !== 'verified'}>
+            <div id="identity" className={`${card} scroll-mt-28`}>
+                <h2 className={cardTitle}>Identity Verification</h2>
                 {identityToast && (
-                    <div className="mb-4 bg-blue-500/10 border border-blue-500/30 text-blue-600 px-3 py-2 rounded-sm text-sm">
-                        {identityToast}
-                    </div>
+                    <div className="mb-4 bg-blue-500/10 text-blue-600 px-4 py-2.5 rounded-xl text-sm">{identityToast}</div>
                 )}
 
                 {identityStatus === 'verified' && identityVerifiedAt && (
                     <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 bg-success/10 border border-success/30 text-success px-3 py-2 rounded-sm text-sm">
-                            <span>✓</span>
-                            <span>Verified on {new Date(identityVerifiedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                        </div>
+                        <span className="inline-flex items-center gap-2 text-xs font-semibold text-warm-green bg-warm-green/10 px-3 py-1.5 rounded-full">
+                            ✓ Verified on {new Date(identityVerifiedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
                         <p className="text-xs text-muted">Your identity is on file. You can request payouts whenever your balance is available.</p>
                     </div>
                 )}
 
                 {identityStatus === 'processing' && (
                     <div className="space-y-3">
-                        <p className="text-sm text-text">Verification in progress — Stripe is reviewing your submission.</p>
+                        <p className="text-sm">Verification in progress — Stripe is reviewing your submission.</p>
                         <p className="text-xs text-muted">This usually takes a few seconds. Click below to pull the latest status from Stripe.</p>
-                        <Button type="button" variant="secondary" size="md" onClick={handleRefreshIdentity} disabled={identityRefreshing}>
+                        <button
+                            type="button"
+                            onClick={handleRefreshIdentity}
+                            disabled={identityRefreshing}
+                            className="bg-card border border-border px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-60"
+                        >
                             {identityRefreshing ? 'Checking…' : 'Refresh status'}
-                        </Button>
+                        </button>
                     </div>
                 )}
 
                 {identityStatus === 'requires_input' && (
                     <div className="space-y-3">
-                        <p className="text-sm text-text">Verification couldn&apos;t be completed.</p>
+                        <p className="text-sm">Verification couldn&apos;t be completed.</p>
                         {identityFailureReason && (
                             <p className="text-xs text-muted">Reason: <span className="font-mono">{identityFailureReason}</span></p>
                         )}
-                        <Button type="button" variant="primary" size="md" onClick={handleStartIdentity} disabled={identityStarting}>
+                        <button type="button" onClick={handleStartIdentity} disabled={identityStarting} className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-60">
                             {identityStarting ? 'Starting…' : 'Try again'}
-                        </Button>
+                        </button>
                     </div>
                 )}
 
                 {identityStatus === 'canceled' && (
                     <div className="space-y-3">
-                        <p className="text-sm text-text">Verification was canceled.</p>
-                        <Button type="button" variant="primary" size="md" onClick={handleStartIdentity} disabled={identityStarting}>
+                        <p className="text-sm">Verification was canceled.</p>
+                        <button type="button" onClick={handleStartIdentity} disabled={identityStarting} className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-60">
                             {identityStarting ? 'Starting…' : 'Verify Identity'}
-                        </Button>
+                        </button>
                     </div>
                 )}
 
                 {(identityStatus === null || identityStatus === undefined) && (
                     <div className="space-y-3">
-                        <p className="text-sm text-text">Before you can request a payout, we need to verify your identity. This is a one-time check powered by Stripe Identity — selfie + a photo of a government ID.</p>
+                        <p className="text-sm">Before you can request a payout, we need to verify your identity. This is a one-time check powered by Stripe Identity — selfie + a photo of a government ID.</p>
                         <p className="text-xs text-muted">Your data goes directly to Stripe. We only receive a verified / not-verified result.</p>
-                        <Button type="button" variant="primary" size="md" onClick={handleStartIdentity} disabled={identityStarting}>
+                        <button type="button" onClick={handleStartIdentity} disabled={identityStarting} className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-60">
                             {identityStarting ? 'Starting…' : 'Verify Identity'}
-                        </Button>
+                        </button>
                     </div>
                 )}
-            </Section>
+            </div>
 
             {/* Payout Method */}
-            <Section title="Payout Method">
-                <form onSubmit={savePayoutMethod} className="space-y-4">
-                    <div className="flex flex-col gap-3">
-                        <label className="flex items-start gap-3 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="payoutMethod"
-                                value="bank_transfer"
-                                checked={payoutMethod === 'bank_transfer'}
-                                onChange={() => setPayoutMethod('bank_transfer')}
-                                className="mt-0.5"
-                            />
-                            <div>
-                                <p className="text-sm text-text font-medium">Bank Transfer</p>
-                                <p className="text-xs text-muted">Admin manually transfers earnings to your UK bank account</p>
-                            </div>
-                        </label>
-                        {stripeConnectEnabled && (
-                            <label className="flex items-start gap-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="payoutMethod"
-                                    value="stripe_connect"
-                                    checked={payoutMethod === 'stripe_connect'}
-                                    onChange={() => setPayoutMethod('stripe_connect')}
-                                    className="mt-0.5"
-                                />
-                                <div>
-                                    <p className="text-sm text-text font-medium">Stripe Connect</p>
-                                    <p className="text-xs text-muted">Automated payouts directly to your Stripe account</p>
-                                </div>
-                            </label>
-                        )}
-                    </div>
+            <div className={card}>
+                <h2 className={cardTitle}>Payout Method</h2>
 
-                    {payoutMethod === 'bank_transfer' && (
-                        <div className="space-y-3 pt-2 border-t border-border">
+                {showConnectBlock && (
+                    <>
+                        <p className="text-xs text-muted mb-4">
+                            Hexlura pays organisers via Stripe Connect. As part of connecting, Stripe verifies your identity and handles
+                            transferring your earnings to your UK bank account automatically — no bank or ID details are stored with us.
+                        </p>
+                        {!organiser.stripe_account_id ? (
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-warm-yellow/10 rounded-xl">
+                                <div>
+                                    <p className="text-sm font-medium">Not connected yet</p>
+                                    <p className="text-xs text-muted mt-0.5">You&apos;ll be redirected to Stripe to verify your identity and set up payouts</p>
+                                </div>
+                                {stripeConnectEnabled && (
+                                    <a href="/api/stripe/connect" className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap text-center">Connect with Stripe</a>
+                                )}
+                            </div>
+                        ) : connectVerified ? (
+                            <div className="flex items-center justify-between gap-3 p-4 bg-background rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <span className="w-9 h-9 rounded-lg bg-warm-green/10 flex items-center justify-center text-warm-green shrink-0">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg>
+                                    </span>
+                                    <div>
+                                        <p className="text-sm font-medium">Stripe Connect</p>
+                                        <p className="text-xs text-muted">Connected &amp; verified · Payouts active</p>
+                                    </div>
+                                </div>
+                                <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="text-xs text-accent font-semibold hover:underline whitespace-nowrap">Manage in Stripe →</a>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-warm-red/10 rounded-xl">
+                                <div>
+                                    <p className="text-sm font-medium">Action needed</p>
+                                    <p className="text-xs text-muted mt-0.5">Stripe needs more information before payouts can be activated</p>
+                                </div>
+                                <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap text-center">Finish on Stripe</a>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* Bank transfer: the only option when Connect isn't available, and kept for organisers who are still
+                    paid by bank transfer and haven't connected Stripe yet (they need their details to be paid). */}
+                {(!showConnectBlock || (organiser.payout_method === 'bank_transfer' && !organiser.stripe_account_id)) && (
+                    <form onSubmit={savePayoutMethod} className={showConnectBlock ? 'space-y-4 mt-6 pt-6 border-t border-border' : 'space-y-4'}>
+                        {showConnectBlock && <p className="text-sm font-medium">Bank transfer (current method)</p>}
+                        <p className="text-xs text-muted">Admin manually transfers your earnings to your UK bank account.</p>
+                        <div className="space-y-3">
                             <div>
-                                <label className="text-xs text-muted block mb-1.5">Account Holder Name</label>
+                                <label className={labelClass}>Account Holder Name</label>
                                 <input
                                     type="text"
                                     value={bankAccountName}
-                                    onChange={e => setBankAccountName(e.target.value)}
+                                    onChange={e => { setBankAccountName(e.target.value); setPayoutMethod('bank_transfer') }}
                                     placeholder="Full name or company name"
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                    className={inputClass}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-muted block mb-1.5">Sort Code</label>
+                                    <label className={labelClass}>Sort Code</label>
                                     <input
                                         type="text"
                                         value={bankSortCode}
-                                        onChange={e => setBankSortCode(e.target.value)}
+                                        onChange={e => { setBankSortCode(e.target.value); setPayoutMethod('bank_transfer') }}
                                         placeholder="00-00-00"
                                         maxLength={8}
-                                        className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                        className={inputClass}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-muted block mb-1.5">Account Number</label>
+                                    <label className={labelClass}>Account Number</label>
                                     <input
                                         type="text"
                                         value={bankAccountNumber}
-                                        onChange={e => setBankAccountNumber(e.target.value)}
+                                        onChange={e => { setBankAccountNumber(e.target.value); setPayoutMethod('bank_transfer') }}
                                         placeholder="12345678"
                                         maxLength={8}
-                                        className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                        className={inputClass}
                                     />
                                 </div>
                             </div>
                             {organiser.bank_account_number && (
-                                <p className="text-xs text-success">✓ Bank details on file — ending {organiser.bank_account_number.slice(-4)}</p>
+                                <p className="text-xs text-warm-green">✓ Bank details on file — ending {organiser.bank_account_number.slice(-4)}</p>
                             )}
                         </div>
-                    )}
-
-                    {stripeConnectEnabled && payoutMethod === 'stripe_connect' && (
-                        <div className="pt-2 border-t border-border space-y-3">
-                            {organiser.stripe_account_id ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-success text-sm">✓ Stripe account connected</span>
-                                    <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
-                                        <Button type="button" variant="secondary" size="sm">Manage in Stripe</Button>
-                                    </a>
-                                </div>
-                            ) : (
-                                <div>
-                                    <p className="text-xs text-muted mb-2">You&apos;ll be redirected to Stripe to connect your account</p>
-                                    <a href="/api/stripe/connect">
-                                        <Button type="button" variant="primary" size="sm">Connect with Stripe</Button>
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <Button type="submit" variant="primary" size="md" disabled={payoutSaving}>
-                        {payoutSaved ? 'Saved ✓' : payoutSaving ? 'Saving...' : 'Save Payout Method'}
-                    </Button>
-                </form>
-            </Section>
-
-            {/* Social Links */}
-            <Section title="Social Links">
-                <form onSubmit={saveSocialLinks} className="space-y-4">
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Instagram</label>
-                        <input
-                            type="url"
-                            value={socialInstagram}
-                            onChange={e => setSocialInstagram(e.target.value)}
-                            placeholder="https://instagram.com/yourpage"
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Facebook</label>
-                        <input
-                            type="url"
-                            value={socialFacebook}
-                            onChange={e => setSocialFacebook(e.target.value)}
-                            placeholder="https://facebook.com/yourpage"
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Website</label>
-                        <input
-                            type="url"
-                            value={socialWebsite}
-                            onChange={e => setSocialWebsite(e.target.value)}
-                            placeholder="https://yourwebsite.com"
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Location / City</label>
-                        <input
-                            type="text"
-                            value={location}
-                            onChange={e => setLocation(e.target.value)}
-                            placeholder="London, UK"
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <Button type="submit" variant="primary" size="md" disabled={socialSaving}>
-                        {socialSaved ? 'Saved ✓' : socialSaving ? 'Saving...' : 'Save Social Links'}
-                    </Button>
-                </form>
-            </Section>
-
-            {/* Social Links */}
-            <Section title="Social Links">
-                <p style={{ fontSize: 13, color: '#8888AA', marginBottom: 20 }}>
-                    Add your social media profiles. Only platforms you add will be shown on your public profile.
-                </p>
-
-                {activeLinksKeys.map(key => {
-                    const platform = PLATFORMS.find(p => p.key === key)
-                    if (!platform) return null
-                    return (
-                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                            <div style={{ width: 140, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                                <span style={{ fontSize: 20 }}>{platform.icon}</span>
-                                <span style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0F' }}>{platform.label}</span>
-                            </div>
-                            <input
-                                type="url"
-                                value={socialLinksData[key] || ''}
-                                onChange={e => setSocialLinksData(prev => ({ ...prev, [key]: e.target.value }))}
-                                placeholder={platform.placeholder}
-                                style={{
-                                    flex: 1,
-                                    border: '1px solid #C0C0C8',
-                                    padding: '8px 12px',
-                                    fontSize: 13,
-                                    outline: 'none',
-                                }}
-                            />
-                            <button
-                                onClick={() => {
-                                    setActiveLinksKeys(prev => prev.filter(k => k !== key))
-                                    setSocialLinksData(prev => { const next = { ...prev }; delete next[key]; return next })
-                                }}
-                                style={{ background: 'none', border: 'none', color: '#E63950', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
-                                title="Remove"
-                            >×</button>
-                        </div>
-                    )
-                })}
-
-                {/* Add platform */}
-                {PLATFORMS.filter(p => !activeLinksKeys.includes(p.key)).length > 0 && (
-                    <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block', marginBottom: 16 }}>
-                        <button
-                            onClick={() => setShowPlatformDropdown(v => !v)}
-                            style={{
-                                padding: '8px 16px',
-                                fontSize: 13,
-                                fontWeight: 600,
-                                background: 'transparent',
-                                border: '1px solid #C0C0C8',
-                                cursor: 'pointer',
-                                color: '#0A0A0F',
-                            }}
-                        >
-                            + Add Social Link
+                        {errors.payout && <p className="text-warm-red text-xs">{errors.payout}</p>}
+                        <button type="submit" disabled={payoutSaving} className={saveBtn}>
+                            {payoutSaved ? 'Saved ✓' : payoutSaving ? 'Saving...' : 'Save Payout Method'}
                         </button>
-                        {showPlatformDropdown && (
-                            <div style={{
-                                position: 'absolute',
-                                top: '100%',
-                                left: 0,
-                                background: '#FFFFFF',
-                                border: '1px solid #E0E0E0',
-                                zIndex: 10,
-                                minWidth: 200,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                            }}>
-                                {PLATFORMS.filter(p => !activeLinksKeys.includes(p.key)).map(platform => (
-                                    <button
-                                        key={platform.key}
-                                        onClick={() => {
-                                            setActiveLinksKeys(prev => [...prev, platform.key])
-                                            setShowPlatformDropdown(false)
-                                        }}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 10,
-                                            width: '100%',
-                                            padding: '10px 14px',
-                                            background: 'none',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            fontSize: 13,
-                                            textAlign: 'left',
-                                        }}
-                                        onMouseEnter={e => (e.currentTarget.style.background = '#F5F5F7')}
-                                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                                    >
-                                        <span style={{ fontSize: 18 }}>{platform.icon}</span>
-                                        <span style={{ fontWeight: 600, color: '#0A0A0F' }}>{platform.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    </form>
                 )}
-
-                <div>
-                    <button
-                        onClick={saveNewSocialLinks}
-                        disabled={newSocialSaving}
-                        style={{
-                            background: '#0A0A0F',
-                            color: '#FFFFFF',
-                            padding: '10px 24px',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            border: 'none',
-                            cursor: newSocialSaving ? 'not-allowed' : 'pointer',
-                            opacity: newSocialSaving ? 0.7 : 1,
-                        }}
-                    >
-                        {newSocialSaved ? 'Saved ✓' : newSocialSaving ? 'Saving...' : 'Save Social Links'}
-                    </button>
-                </div>
-            </Section>
+            </div>
 
             {/* Analytics & Tracking */}
-            <Section title="Analytics & Tracking">
-                <form onSubmit={saveAnalytics} className="space-y-4">
-                    <div>
-                        <label className="text-xs text-muted block mb-1.5">Meta (Facebook) Pixel ID</label>
-                        <input
-                            type="text"
-                            value={metaPixelId}
-                            onChange={e => setMetaPixelId(e.target.value.replace(/\D/g, ''))}
-                            placeholder="e.g. 1234567890"
-                            maxLength={20}
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
-                        />
-                        <p className="text-xs text-muted mt-1.5">Your Meta Pixel ID tracks conversions from your Facebook and Instagram ads. It fires on your event pages and at checkout.</p>
-                    </div>
-                    <Button type="submit" variant="primary" size="md" disabled={analyticsSaving}>
-                        {analyticsSaved ? 'Saved ✓' : analyticsSaving ? 'Saving...' : 'Save'}
-                    </Button>
-                </form>
-            </Section>
+            <div className={`${card} mt-6`}>
+                <h2 className={cardTitle}>Analytics &amp; Tracking</h2>
+                <label className={labelClass}>Meta (Facebook) Pixel ID</label>
+                <input
+                    type="text"
+                    value={metaPixelId}
+                    onChange={e => setMetaPixelId(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 1234567890"
+                    maxLength={20}
+                    className="w-full sm:w-80 bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                />
+                <p className="text-xs text-muted mt-2">Your Meta Pixel ID tracks conversions from your Facebook and Instagram ads. It fires on your event pages and at checkout.</p>
+                {errors.analytics && <p className="text-warm-red text-xs mt-3">{errors.analytics}</p>}
+                <button type="button" onClick={saveAnalytics} disabled={analyticsSaving} className={saveBtn}>
+                    {analyticsSaved ? 'Saved ✓' : analyticsSaving ? 'Saving...' : 'Save'}
+                </button>
+            </div>
 
             {/* Danger Zone */}
-            <Section title="Danger Zone">
-                <div className="space-y-6">
+            <div className="bg-card border-2 border-warm-red/20 rounded-2xl shadow-card p-6 mt-6">
+                <h2 className="text-sm font-semibold text-accent mb-4">Danger Zone</h2>
+                <div className="flex flex-col gap-6">
                     <div>
-                        <p className="text-sm text-text font-medium mb-1">Close Organiser Account</p>
+                        <p className="text-sm font-medium mb-1">Close Organiser Account</p>
                         <p className="text-sm text-muted mb-3">
                             Removes your organiser status. Your account remains active. You can reapply to create events in future.
                         </p>
-                        <Button variant="danger" size="md" onClick={() => setShowCloseModal(true)}>Close Organiser Account</Button>
+                        <button type="button" onClick={() => { setShowCloseModal(true); setCloseError(null) }} className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold">
+                            Close Organiser Account
+                        </button>
                     </div>
                     <div className="border-t border-border pt-6">
-                        <p className="text-sm text-text font-medium mb-1">Delete Account Permanently</p>
+                        <p className="text-sm font-medium mb-1">Delete Account Permanently</p>
                         <p className="text-sm text-muted mb-3">
                             Requests permanent deletion of your account and all associated data. Goes through
                             admin review — if you have events with confirmed bookings, those are refunded
                             automatically as part of approval.
                         </p>
-                        <Button variant="danger" size="md" onClick={() => { setShowDeleteModal(true); setDeleteError(null); setDeleteReason(''); setDeleteRequestSubmitted(false) }}>
+                        <button
+                            type="button"
+                            onClick={() => { setShowDeleteModal(true); setDeleteError(null); setDeleteReason(''); setDeleteRequestSubmitted(false) }}
+                            className="bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold"
+                        >
                             Delete Account Permanently
-                        </Button>
+                        </button>
                     </div>
                 </div>
-            </Section>
+            </div>
 
-            {/* Delete Account Modal */}
+            {/* Close Account modal */}
+            {showCloseModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div onClick={() => { if (!closingAccount) setShowCloseModal(false) }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                    <div className="relative bg-card rounded-2xl shadow-hover w-full max-w-sm p-6">
+                        <h2 className="font-heading text-xl tracking-wide mb-3 uppercase">Close Organiser Account?</h2>
+                        <p className="text-sm text-muted mb-5">This will remove your organiser status. This action cannot be undone.</p>
+                        {closeError && <p className="text-warm-red text-xs mb-3">{closeError}</p>}
+                        <div className="flex gap-3">
+                            <button type="button" onClick={handleCloseAccount} disabled={closingAccount} className="bg-accent text-white px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60">
+                                {closingAccount ? 'Closing...' : 'Close Account'}
+                            </button>
+                            <button type="button" onClick={() => setShowCloseModal(false)} disabled={closingAccount} className="bg-background border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-border transition-colors disabled:opacity-60">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Account modal */}
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div onClick={() => { if (!deletingAccount) setShowDeleteModal(false) }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                    <div className="relative bg-card rounded-2xl shadow-hover w-full max-w-sm p-6">
                         {deleteRequestSubmitted ? (
                             <>
-                                <h3 className="font-heading text-xl text-text mb-3">Request Submitted</h3>
+                                <h2 className="font-heading text-xl tracking-wide mb-3 uppercase">Request Submitted</h2>
                                 <p className="text-sm text-muted mb-4">
                                     Your account remains active for now. Our team will review your request —
                                     if approved, any confirmed bookings on your events are refunded automatically
                                     before your account is deleted.
                                 </p>
-                                <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)}>Close</Button>
+                                <button type="button" onClick={() => setShowDeleteModal(false)} className="bg-background border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-border transition-colors">Close</button>
                             </>
                         ) : (
                             <>
-                                <h3 className="font-heading text-xl text-text mb-3">Request Account Deletion?</h3>
+                                <h2 className="font-heading text-xl tracking-wide mb-3 uppercase">Request Account Deletion?</h2>
                                 <p className="text-sm text-muted mb-4">
                                     This submits a request for admin review — your account is not deleted yet.
                                     If approved, your account, organiser profile, and events are permanently deleted;
                                     any confirmed bookings are refunded first.
                                 </p>
-                                <label className="block text-xs font-semibold text-text mb-1">Why do you want to delete your account?</label>
+                                <label className="text-xs font-semibold block mb-1.5">Why do you want to delete your account?</label>
                                 <textarea
                                     value={deleteReason}
                                     onChange={e => setDeleteReason(e.target.value)}
                                     rows={3}
                                     placeholder="Required — this is shown to our review team"
-                                    className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-3"
+                                    className={`${modalInput} mb-4`}
                                 />
-                                {deleteError && (
-                                    <p className="text-sm text-accent mb-4 bg-accent/10 border border-accent/30 px-3 py-2">{deleteError}</p>
-                                )}
+                                {deleteError && <p className="text-sm text-warm-red mb-4">{deleteError}</p>}
                                 <div className="flex gap-3">
-                                    <Button variant="danger" size="md" onClick={handleDeleteAccount} disabled={deletingAccount}>
+                                    <button type="button" onClick={handleDeleteAccount} disabled={deletingAccount} className="bg-accent text-white px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60">
                                         {deletingAccount ? 'Submitting...' : 'Submit Request'}
-                                    </Button>
-                                    <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)} disabled={deletingAccount}>Cancel</Button>
+                                    </button>
+                                    <button type="button" onClick={() => setShowDeleteModal(false)} disabled={deletingAccount} className="bg-background border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-border transition-colors disabled:opacity-60">
+                                        Cancel
+                                    </button>
                                 </div>
                             </>
                         )}
-                    </div>
-                </div>
-            )}
-
-            {/* Close Account Modal */}
-            {showCloseModal && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
-                        <h3 className="font-heading text-xl text-text mb-3">Close Organiser Account?</h3>
-                        <p className="text-sm text-muted mb-4">This will remove your organiser status. This action cannot be undone.</p>
-                        <div className="flex gap-3">
-                            <Button variant="danger" size="md" onClick={handleCloseAccount} disabled={closingAccount}>
-                                {closingAccount ? 'Closing...' : 'Close Account'}
-                            </Button>
-                            <Button variant="secondary" size="md" onClick={() => setShowCloseModal(false)} disabled={closingAccount}>Cancel</Button>
-                        </div>
                     </div>
                 </div>
             )}

@@ -29,10 +29,10 @@ export default async function SettingsPage() {
     const stripeConnectEnabled = stripeConnectSetting?.value === 'true' && organiser.stripe_connect_allowed === true
 
     return (
-        <div className="max-w-2xl">
+        <div className="max-w-7xl">
             <div className="mb-8">
-                <h1 className="font-heading text-4xl text-text tracking-wide">SETTINGS</h1>
-                <p className="text-muted text-sm mt-1">Manage your organiser account</p>
+                <h1 className="font-heading text-4xl tracking-wide">SETTINGS</h1>
+                <p className="text-muted text-sm mt-1">Manage your organisation profile and preferences</p>
             </div>
             <SettingsClient organiser={organiser} stripeConnectEnabled={stripeConnectEnabled} />
         </div>
