@@ -3,26 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Hexlura — Style Guide (New Direction)</title>
+<title>Hexlura — Style Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
     theme: {
       extend: {
         colors: {
-          bg: '#F7F7FA',
-          card: '#FFFFFF',
-          border: '#ECECF2',
-          text: '#0A0A0F',
-          muted: '#8888AA',
-          accent: '#E63950',
-          violet: '#7C5CFF',
-          cyan: '#22D3EE',
-          yellow: '#F5C518',
-          green: '#22C55E',
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
         },
         fontFamily: {
           heading: ['"Bebas Neue"', 'sans-serif'],
@@ -30,18 +24,24 @@
           mono: ['"JetBrains Mono"', 'monospace'],
         },
         boxShadow: {
-          soft: '0 2px 10px rgba(20, 20, 40, 0.05)',
-          card: '0 4px 20px rgba(20, 20, 40, 0.06)',
-          hover: '0 8px 30px rgba(20, 20, 40, 0.10)',
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
         },
       },
     },
   }
 </script>
 <style>
-  body { background: #F7F7FA; }
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
   .swatch { transition: transform .15s ease; }
   .swatch:hover { transform: translateY(-2px); }
+  .navlink.active { background: #1A0E0C; color: #fff; box-shadow: 0 6px 18px -4px rgba(26,14,12,0.35); }
 </style>
 </head>
 <body class="font-sans text-text">
@@ -49,9 +49,9 @@
 <div class="max-w-6xl mx-auto px-6 py-12">
 
   <div class="mb-14">
-    <p class="text-xs uppercase tracking-[0.2em] text-muted mb-2">Design Direction Proposal</p>
+    <p class="text-xs uppercase tracking-[0.2em] text-muted mb-2">Design System</p>
     <h1 class="font-heading text-5xl tracking-wide">HEXLURA STYLE GUIDE</h1>
-    <p class="text-muted mt-2 max-w-xl">Soft-UI dashboard direction — rounded cards, layered shadows, colorful data accents. Same fonts and brand colors as the current site, new visual treatment. No functional changes.</p>
+    <p class="text-muted mt-2 max-w-xl">Warm soft-UI direction — cream canvas, white rounded cards, soft warm shadows, red-to-orange gradient accents. Reference implementation: <span class="font-mono text-xs">organiser/dashboard.html</span>. No functional changes.</p>
   </div>
 
   <!-- Logo -->
@@ -74,12 +74,12 @@
     <div class="bg-card rounded-2xl shadow-card p-8 space-y-6">
       <div>
         <p class="font-heading text-6xl tracking-wide">Bebas Neue — Headings</p>
-        <p class="text-xs text-muted mt-1 font-mono">font-heading · used for page titles, KPI values, section headers</p>
+        <p class="text-xs text-muted mt-1 font-mono">font-heading · page titles (text-4xl, tracking-wide, uppercase), KPI values (text-3xl)</p>
       </div>
       <div class="border-t border-border pt-6">
         <p class="font-sans text-2xl font-semibold">DM Sans — Body &amp; UI text</p>
         <p class="text-base mt-1">The quick brown fox jumps over the lazy dog. 0123456789</p>
-        <p class="text-xs text-muted mt-1 font-mono">font-sans · weights 400/500/600/700</p>
+        <p class="text-xs text-muted mt-1 font-mono">font-sans · weights 400/500/600/700/800 · card titles text-sm font-semibold · labels text-xs uppercase tracking-wider text-muted</p>
       </div>
       <div class="border-t border-border pt-6">
         <p class="font-mono text-lg">HXL-4F9K2A · JetBrains Mono</p>
@@ -91,21 +91,52 @@
   <!-- Colors -->
   <section class="mb-14">
     <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Color Palette</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+
+    <p class="text-xs text-muted mb-3 font-medium">Surfaces &amp; text</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-bg border border-border mb-3"></div>
+        <p class="text-sm font-medium">Canvas</p>
+        <p class="text-xs text-muted font-mono">#FAF6F3</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-card border border-border mb-3"></div>
+        <p class="text-sm font-medium">Card</p>
+        <p class="text-xs text-muted font-mono">#FFFFFF</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-border mb-3"></div>
+        <p class="text-sm font-medium">Border</p>
+        <p class="text-xs text-muted font-mono">#F1E7E2</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-text mb-3"></div>
+        <p class="text-sm font-medium">Text (ink)</p>
+        <p class="text-xs text-muted font-mono">#1A0E0C</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-16 rounded-xl bg-muted mb-3"></div>
+        <p class="text-sm font-medium">Muted</p>
+        <p class="text-xs text-muted font-mono">#6B5D56</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-muted mb-3 font-medium">Brand &amp; data accents</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
       <div class="swatch bg-card rounded-2xl shadow-soft p-4">
         <div class="h-16 rounded-xl bg-accent mb-3"></div>
         <p class="text-sm font-medium">Accent</p>
         <p class="text-xs text-muted font-mono">#E63950</p>
       </div>
       <div class="swatch bg-card rounded-2xl shadow-soft p-4">
-        <div class="h-16 rounded-xl bg-violet mb-3"></div>
-        <p class="text-sm font-medium">Violet</p>
-        <p class="text-xs text-muted font-mono">#7C5CFF</p>
+        <div class="h-16 rounded-xl bg-orange mb-3"></div>
+        <p class="text-sm font-medium">Orange</p>
+        <p class="text-xs text-muted font-mono">#FF7A3D</p>
       </div>
       <div class="swatch bg-card rounded-2xl shadow-soft p-4">
-        <div class="h-16 rounded-xl bg-cyan mb-3"></div>
-        <p class="text-sm font-medium">Cyan</p>
-        <p class="text-xs text-muted font-mono">#22D3EE</p>
+        <div class="h-16 rounded-xl bg-amber mb-3"></div>
+        <p class="text-sm font-medium">Amber</p>
+        <p class="text-xs text-muted font-mono">#F5A623</p>
       </div>
       <div class="swatch bg-card rounded-2xl shadow-soft p-4">
         <div class="h-16 rounded-xl bg-yellow mb-3"></div>
@@ -115,143 +146,387 @@
       <div class="swatch bg-card rounded-2xl shadow-soft p-4">
         <div class="h-16 rounded-xl bg-green mb-3"></div>
         <p class="text-sm font-medium">Green</p>
-        <p class="text-xs text-muted font-mono">#22C55E</p>
-      </div>
-      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
-        <div class="h-16 rounded-xl bg-text mb-3"></div>
-        <p class="text-sm font-medium">Text</p>
-        <p class="text-xs text-muted font-mono">#0A0A0F</p>
+        <p class="text-xs text-muted font-mono">#1B9C63</p>
       </div>
     </div>
-    <p class="text-xs text-muted mt-3">Same brand colors as production — accent red stays primary CTA color. Violet/cyan/yellow/green become the data-viz accent set (charts, gauges, badges) instead of sitting unused.</p>
+
+    <p class="text-xs text-muted mb-3 mt-6 font-medium">Text-safe variants (use for text/icons on a tinted background)</p>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-12 rounded-xl bg-orangeText mb-3"></div>
+        <p class="text-sm font-medium">orangeText</p>
+        <p class="text-xs text-muted font-mono">#C2521A</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-12 rounded-xl bg-amberText mb-3"></div>
+        <p class="text-sm font-medium">amberText</p>
+        <p class="text-xs text-muted font-mono">#9C6900</p>
+      </div>
+      <div class="swatch bg-card rounded-2xl shadow-soft p-4">
+        <div class="h-12 rounded-xl bg-yellowText mb-3"></div>
+        <p class="text-sm font-medium">yellowText</p>
+        <p class="text-xs text-muted font-mono">#8C6A00</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-muted mt-3">Accent red stays the primary brand colour. Orange pairs with it for gradients (accent → orange); amber, yellow and green complete the data set. Tinted chips use the colour at 10% opacity (e.g. <span class="font-mono">bg-accent/10</span>) with the colour — or its Text variant — as the foreground. The canvas carries two soft radial washes (orange top-right, red top-left).</p>
+  </section>
+
+  <!-- Gradients & Shadows -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Gradients &amp; Shadows</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bg-card rounded-2xl shadow-card p-6 space-y-4">
+        <div>
+          <div class="h-10 rounded-xl bg-gradient-to-r from-accent to-orange"></div>
+          <p class="text-xs text-muted font-mono mt-1.5">from-accent to-orange · progress bars, chart lines</p>
+        </div>
+        <div>
+          <div class="h-10 rounded-xl bg-gradient-to-br from-accent to-amber"></div>
+          <p class="text-xs text-muted font-mono mt-1.5">from-accent to-amber · radial gauges</p>
+        </div>
+        <div>
+          <div class="h-10 rounded-xl bg-gradient-to-br from-orange to-accent"></div>
+          <p class="text-xs text-muted font-mono mt-1.5">from-orange to-accent · avatars (also yellow→orange, green→amber)</p>
+        </div>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6 grid grid-cols-2 gap-4">
+        <div class="bg-card rounded-xl shadow-soft p-4 text-center"><p class="text-sm font-medium">soft</p><p class="text-[10px] text-muted font-mono mt-1">chips, inputs</p></div>
+        <div class="bg-card rounded-xl shadow-card p-4 text-center"><p class="text-sm font-medium">card</p><p class="text-[10px] text-muted font-mono mt-1">default cards</p></div>
+        <div class="bg-card rounded-xl shadow-hover p-4 text-center"><p class="text-sm font-medium">hover</p><p class="text-[10px] text-muted font-mono mt-1">hover / dropdowns</p></div>
+        <div class="bg-accent rounded-xl shadow-glow p-4 text-center text-white"><p class="text-sm font-medium">glow</p><p class="text-[10px] opacity-80 font-mono mt-1">upgrade card</p></div>
+      </div>
+    </div>
+    <p class="text-xs text-muted mt-3">Radii: cards <span class="font-mono">rounded-2xl</span>, buttons / inputs / nav links <span class="font-mono">rounded-xl</span>, chips <span class="font-mono">rounded-full</span>. Shadows are warm-tinted (brown, not black).</p>
   </section>
 
   <!-- Buttons -->
   <section class="mb-14">
     <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Buttons</h2>
     <div class="bg-card rounded-2xl shadow-card p-8 flex flex-wrap items-center gap-4">
-      <button class="bg-accent text-white px-6 py-3 rounded-xl font-medium text-sm shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all">Primary Action</button>
-      <button class="bg-text text-white px-6 py-3 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">Secondary</button>
-      <button class="bg-bg text-text border border-border px-6 py-3 rounded-xl font-medium text-sm hover:bg-border/30 transition-colors">Tertiary</button>
-      <button class="text-accent px-2 py-3 font-medium text-sm hover:underline">Text Link →</button>
-      <button disabled class="bg-border text-muted px-6 py-3 rounded-xl font-medium text-sm cursor-not-allowed">Disabled</button>
+      <button class="bg-text text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all flex items-center gap-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New Event
+      </button>
+      <button class="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-glow hover:-translate-y-0.5 transition-all">Primary Action</button>
+      <button class="bg-card text-text border border-border px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:bg-bg transition-colors">Secondary</button>
+      <button class="text-accent px-2 py-3 font-semibold text-sm hover:underline">Text Link →</button>
+      <button disabled class="bg-border text-muted px-5 py-3 rounded-xl text-sm font-semibold cursor-not-allowed">Disabled</button>
+      <button title="Log out" class="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-accent hover:border-accent/30 transition-colors shadow-soft">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+    <p class="text-xs text-muted mt-3">The page-level primary action (e.g. New Event) is ink-black; accent red is used for emphasis actions and links.</p>
+  </section>
+
+  <!-- Navigation -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Navigation &amp; Shell</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bg-card/80 border border-border rounded-2xl shadow-card p-5">
+        <p class="font-heading text-2xl text-accent tracking-wider px-2 pb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+        <div class="flex flex-col gap-0.5 text-sm">
+          <a class="navlink active flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+            Dashboard (active)
+          </a>
+          <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+            My Events
+          </a>
+          <a class="navlink flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-bg transition-colors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+            Payouts
+          </a>
+        </div>
+        <div class="mt-4 bg-gradient-to-br from-accent via-accent to-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
+          <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10"></div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
+          <p class="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
+          <a class="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl relative">Upgrade to Pro →</a>
+        </div>
+        <p class="text-xs text-muted font-mono mt-3">Sidebar: w-64, bg-card/80 + backdrop-blur, active link = ink pill with shadow, 16px stroke icons.</p>
+      </div>
+
+      <div class="bg-card rounded-2xl shadow-card p-5 flex flex-col gap-5">
+        <div>
+          <p class="text-xs text-muted mb-2 font-medium">Top bar</p>
+          <div class="bg-bg border border-border rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-[180px]">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input placeholder="Search…" class="w-full bg-card border border-border rounded-xl pl-9 pr-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25" />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="relative w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted shadow-soft">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+                <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center">3</span>
+              </span>
+              <div class="flex items-center gap-2 bg-card border border-border rounded-xl pl-1.5 pr-3 py-1.5 shadow-soft">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange to-accent flex items-center justify-center text-white text-xs font-bold">NE</div>
+                <div class="leading-tight hidden sm:block">
+                  <p class="text-xs font-semibold">Nightshade Events</p>
+                  <p class="text-[10px] text-muted">Organiser</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-muted mb-2 font-medium">Notification dropdown row</p>
+          <div class="border border-border rounded-2xl overflow-hidden shadow-hover">
+            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+              <p class="text-sm font-semibold">Notifications</p>
+              <span class="text-[10px] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full">3 new</span>
+            </div>
+            <div class="flex items-start gap-3 p-4">
+              <span class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </span>
+              <div class="min-w-0">
+                <p class="text-xs leading-snug"><span class="font-semibold">New booking</span> — Jordan Blake booked 2× Neon Nights</p>
+                <p class="text-[10px] text-muted mt-1">12 minutes ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Cards & KPIs -->
+  <!-- Page header -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Page Header</h2>
+    <div class="bg-card rounded-2xl shadow-card p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+          <p class="text-muted text-sm mt-1">Welcome back — here's how your events are performing.</p>
+        </div>
+        <button class="bg-text text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all flex items-center gap-2">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          New Event
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI Cards -->
   <section class="mb-14">
     <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">KPI Cards</h2>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
       <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-xs text-muted uppercase tracking-wider">Total Revenue</p>
-          <span class="w-8 h-8 rounded-lg bg-violet/10 flex items-center justify-center text-violet text-sm">£</span>
+        <div class="flex items-center justify-between mb-4">
+          <span class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </span>
+          <span class="text-xs font-semibold text-green bg-green/10 px-2 py-1 rounded-full">▲ 18%</span>
         </div>
-        <p class="font-heading text-4xl">£12,450</p>
-        <p class="text-xs text-green mt-2">▲ 18% vs last month</p>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Total Revenue</p>
+        <p class="font-heading text-3xl mb-3">£12,450</p>
+        <svg viewBox="0 0 100 28" class="w-full h-7"><polyline fill="none" stroke="#E63950" stroke-width="2" points="0,22 15,18 30,20 45,10 60,14 75,6 100,4"/></svg>
       </div>
       <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-xs text-muted uppercase tracking-wider">Tickets Sold</p>
-          <span class="w-8 h-8 rounded-lg bg-cyan/10 flex items-center justify-center text-cyan text-sm">🎟</span>
+        <div class="flex items-center justify-between mb-4">
+          <span class="w-10 h-10 rounded-xl bg-orange/10 flex items-center justify-center text-orangeText">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg>
+          </span>
+          <span class="text-xs font-semibold text-muted bg-bg px-2 py-1 rounded-full">3,410 total</span>
         </div>
-        <p class="font-heading text-4xl">1,204</p>
-        <p class="text-xs text-muted mt-2">856 all-time total</p>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Tickets Sold</p>
+        <p class="font-heading text-3xl mb-3">1,204</p>
+        <svg viewBox="0 0 100 28" class="w-full h-7"><polyline fill="none" stroke="#FF7A3D" stroke-width="2" points="0,20 15,22 30,14 45,16 60,8 75,12 100,3"/></svg>
       </div>
       <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-xs text-muted uppercase tracking-wider">Upcoming Events</p>
-          <span class="w-8 h-8 rounded-lg bg-yellow/10 flex items-center justify-center text-yellow text-sm">📅</span>
+        <div class="flex items-center justify-between mb-4">
+          <span class="w-10 h-10 rounded-xl bg-yellow/10 flex items-center justify-center text-yellowText">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          </span>
+          <span class="text-xs font-semibold text-muted bg-bg px-2 py-1 rounded-full">6 live</span>
         </div>
-        <p class="font-heading text-4xl">6</p>
-        <p class="text-xs text-muted mt-2">Next: 14 Sep 2026</p>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Upcoming Events</p>
+        <p class="font-heading text-3xl mb-3">6</p>
+        <p class="text-xs text-muted">Next: <span class="text-text font-medium">14 Sep · Neon Nights</span></p>
       </div>
       <div class="bg-card rounded-2xl shadow-card p-6 hover:shadow-hover transition-shadow">
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-xs text-muted uppercase tracking-wider">Payout Balance</p>
-          <span class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent text-sm">↓</span>
+        <div class="flex items-center justify-between mb-4">
+          <span class="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center text-amberText">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v13M6 9l6 6 6-6"/><path d="M4 19h16"/></svg>
+          </span>
+          <span class="text-xs font-semibold text-green bg-green/10 px-2 py-1 rounded-full">This Month</span>
         </div>
-        <p class="font-heading text-4xl">£3,120</p>
-        <p class="text-xs text-muted mt-2">Available for withdrawal</p>
+        <p class="text-xs text-muted uppercase tracking-wider mb-1">Earnings Sent to Stripe</p>
+        <p class="font-heading text-3xl mb-3">£3,120</p>
+        <a class="text-xs text-accent font-semibold hover:underline">View Payouts →</a>
       </div>
     </div>
+    <p class="text-xs text-muted mt-3">Icon chip (colour/10 background) + status pill, uppercase label, Bebas value, then a sparkline or link. Organiser KPIs show ticket revenue only — never platform fees or buyer gross.</p>
   </section>
 
-  <!-- Progress / Gauge -->
+  <!-- Charts & Progress -->
   <section class="mb-14">
-    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Progress &amp; Gauges</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <div class="bg-card rounded-2xl shadow-card p-6">
-        <p class="text-sm font-medium mb-4">Linear progress (ticket capacity)</p>
-        <div class="flex justify-between text-xs text-muted mb-1"><span>384 / 500 sold</span><span>77%</span></div>
-        <div class="h-2.5 bg-border rounded-full overflow-hidden">
-          <div class="h-full bg-gradient-to-r from-violet to-cyan rounded-full" style="width:77%"></div>
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Charts, Progress &amp; Gauges</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-card rounded-2xl shadow-card p-6">
+        <div class="flex items-center justify-between mb-1">
+          <div>
+            <h3 class="text-sm font-semibold">Revenue Overview</h3>
+            <p class="text-xs text-muted mt-0.5">Last 30 days · Daily ticket revenue</p>
+          </div>
+          <div class="flex gap-1 bg-bg rounded-lg p-1">
+            <span class="px-3 py-1 rounded-md text-xs font-medium bg-card shadow-soft">30D</span>
+            <span class="px-3 py-1 rounded-md text-xs font-medium text-muted">90D</span>
+            <span class="px-3 py-1 rounded-md text-xs font-medium text-muted">1Y</span>
+          </div>
         </div>
-      </div>
-      <div class="bg-card rounded-2xl shadow-card p-6 flex items-center gap-6">
-        <svg width="96" height="96" viewBox="0 0 96 96">
-          <circle cx="48" cy="48" r="40" fill="none" stroke="#ECECF2" stroke-width="10"/>
-          <circle cx="48" cy="48" r="40" fill="none" stroke="#7C5CFF" stroke-width="10" stroke-linecap="round"
-            stroke-dasharray="251.2" stroke-dashoffset="62.8" transform="rotate(-90 48 48)"/>
-          <text x="48" y="54" text-anchor="middle" font-family="Bebas Neue" font-size="22" fill="#0A0A0F">75%</text>
+        <svg viewBox="0 0 600 200" class="w-full h-52 mt-2" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E63950" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#FF7A3D" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#E63950"/><stop offset="100%" stop-color="#FF7A3D"/>
+            </linearGradient>
+          </defs>
+          <g stroke="#F1E7E2" stroke-width="1">
+            <line x1="0" y1="30" x2="600" y2="30"/><line x1="0" y1="80" x2="600" y2="80"/>
+            <line x1="0" y1="130" x2="600" y2="130"/><line x1="0" y1="180" x2="600" y2="180"/>
+          </g>
+          <polyline fill="none" stroke="url(#line)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
+            points="0,160 40,140 80,150 120,105 160,115 200,80 240,95 280,65 320,82 360,42 400,60 440,38 480,55 520,20 560,32 600,15" />
+          <polygon fill="url(#rev)" points="0,160 40,140 80,150 120,105 160,115 200,80 240,95 280,65 320,82 360,42 400,60 440,38 480,55 520,20 560,32 600,15 600,200 0,200" />
+          <circle cx="600" cy="15" r="5" fill="#FF7A3D" stroke="white" stroke-width="2"/>
         </svg>
-        <div>
-          <p class="text-sm font-medium">Radial gauge</p>
-          <p class="text-xs text-muted mt-1">Sell-through rate, quota progress, check-in %</p>
+      </div>
+
+      <div class="bg-card rounded-2xl shadow-card p-6 flex flex-col items-center justify-center text-center">
+        <h3 class="text-sm font-semibold self-start mb-2">Avg. Sell-Through</h3>
+        <svg width="150" height="150" viewBox="0 0 120 120" class="my-1">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#F1E7E2" stroke-width="14"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round"
+            stroke-dasharray="314" stroke-dashoffset="82" transform="rotate(-90 60 60)"/>
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E63950"/><stop offset="100%" stop-color="#F5A623"/>
+            </linearGradient>
+          </defs>
+          <text x="60" y="56" text-anchor="middle" font-family="Bebas Neue" font-size="30" fill="#1A0E0C">74%</text>
+          <text x="60" y="74" text-anchor="middle" font-family="DM Sans" font-size="9" fill="#6B5D56">capacity</text>
+        </svg>
+        <p class="text-xs text-muted mt-2">Across 6 upcoming events</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div class="bg-card rounded-2xl shadow-card p-6">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-sm font-semibold truncate">Neon Nights Festival</p>
+          <span class="text-[10px] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full shrink-0">77%</span>
         </div>
+        <p class="text-xs text-muted mt-0.5">14 Sep 2026 · Manchester</p>
+        <div class="h-2 bg-bg rounded-full overflow-hidden mt-3">
+          <div class="h-full bg-gradient-to-r from-accent to-orange rounded-full" style="width:77%"></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-muted mt-1"><span>384 sold</span><span>500 cap</span></div>
+      </div>
+      <div class="bg-card rounded-2xl shadow-card p-6 flex flex-col justify-center">
+        <p class="text-sm font-semibold mb-3">Segmented control</p>
+        <div class="flex gap-1 bg-bg rounded-lg p-1 w-fit">
+          <span class="px-3 py-1 rounded-md text-xs font-medium bg-card shadow-soft">Active</span>
+          <span class="px-3 py-1 rounded-md text-xs font-medium text-muted">Idle</span>
+          <span class="px-3 py-1 rounded-md text-xs font-medium text-muted">Idle</span>
+        </div>
+        <p class="text-xs text-muted font-mono mt-3">Progress track = bg-bg, fill = accent → orange gradient, h-2.</p>
       </div>
     </div>
   </section>
 
-  <!-- Table -->
+  <!-- Lists -->
   <section class="mb-14">
-    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Tables</h2>
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">List Rows</h2>
     <div class="bg-card rounded-2xl shadow-card p-6">
-      <table class="w-full">
-        <thead>
-          <tr class="text-left text-xs text-muted uppercase tracking-wider">
-            <th class="pb-3 font-medium">Ref</th>
-            <th class="pb-3 font-medium">Buyer</th>
-            <th class="pb-3 font-medium">Event</th>
-            <th class="pb-3 font-medium text-right">Amount</th>
-            <th class="pb-3 font-medium text-right">Date</th>
-          </tr>
-        </thead>
-        <tbody class="text-sm">
-          <tr class="hover:bg-bg rounded-xl transition-colors">
-            <td class="py-3 font-mono text-accent text-xs">HXL-4F9K2A</td>
-            <td class="py-3">Jordan Blake</td>
-            <td class="py-3 text-muted">Neon Nights Festival</td>
-            <td class="py-3 text-right font-medium">£84.00</td>
-            <td class="py-3 text-right text-muted text-xs">12 Sep</td>
-          </tr>
-          <tr class="hover:bg-bg rounded-xl transition-colors">
-            <td class="py-3 font-mono text-accent text-xs">HXL-9B2C7D</td>
-            <td class="py-3">Amara Osei</td>
-            <td class="py-3 text-muted">Warehouse Sessions</td>
-            <td class="py-3 text-right font-medium">£42.00</td>
-            <td class="py-3 text-right text-muted text-xs">11 Sep</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold">Recent Bookings</h3>
+        <a class="text-xs text-accent font-medium hover:underline">View all →</a>
+      </div>
+      <div class="flex flex-col divide-y divide-border">
+        <div class="flex items-center gap-3 py-3">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">JB</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium truncate">Jordan Blake</p>
+            <p class="text-xs text-muted truncate">Neon Nights Festival · <span class="font-mono">HXL-4F9K2A</span></p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-sm font-semibold">£84.00</p>
+            <p class="text-[11px] text-muted">12 Sep</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 py-3">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-yellow to-orange flex items-center justify-center text-white text-xs font-bold shrink-0">AO</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium truncate">Amara Osei</p>
+            <p class="text-xs text-muted truncate">Warehouse Sessions · <span class="font-mono">HXL-9B2C7D</span></p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-sm font-semibold">£42.00</p>
+            <p class="text-[11px] text-muted">11 Sep</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 py-3">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-green to-amber flex items-center justify-center text-white text-xs font-bold shrink-0">TW</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium truncate">Tom Whitfield</p>
+            <p class="text-xs text-muted truncate">Rooftop Sessions · <span class="font-mono">HXL-7A1D93</span></p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-sm font-semibold">£56.00</p>
+            <p class="text-[11px] text-muted">09 Sep</p>
+          </div>
+        </div>
+      </div>
     </div>
+    <p class="text-xs text-muted mt-3">Lists use <span class="font-mono">divide-y divide-border</span> rows with a gradient initials avatar instead of table grids; refs in JetBrains Mono.</p>
   </section>
 
   <!-- Badges -->
   <section class="mb-14">
     <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Badges &amp; Status</h2>
     <div class="bg-card rounded-2xl shadow-card p-8 flex flex-wrap gap-3">
-      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-green/10 text-green">Confirmed</span>
-      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-yellow/10 text-yellow">Pending</span>
-      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-accent/10 text-accent">Cancelled</span>
-      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-violet/10 text-violet">Pro</span>
-      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-cyan/10 text-cyan">Premium</span>
-      <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-border text-muted">Free</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-green/10 text-green">Confirmed</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow/10 text-yellowText">Pending</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange/10 text-orangeText">Low stock</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber/10 text-amberText">Refund requested</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-accent/10 text-accent">Cancelled</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-accent to-orange text-white">Pro</span>
+      <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-bg border border-border text-muted">Free</span>
+      <span class="px-2 py-1 rounded-full text-xs font-semibold text-green bg-green/10">▲ 18%</span>
+      <span class="px-2 py-1 rounded-full text-xs font-semibold text-muted bg-bg">6 live</span>
     </div>
+    <p class="text-xs text-muted mt-3">Pattern: colour/10 background + foreground. On yellow, orange and amber use the Text variant for contrast (yellowText, orangeText, amberText).</p>
+  </section>
+
+  <!-- Inputs -->
+  <section class="mb-14">
+    <h2 class="text-xs uppercase tracking-[0.2em] text-muted mb-5">Inputs</h2>
+    <div class="bg-card rounded-2xl shadow-card p-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <label class="text-xs text-muted uppercase tracking-wider">Event name</label>
+        <input placeholder="Neon Nights Festival" class="mt-1.5 w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25" />
+      </div>
+      <div>
+        <label class="text-xs text-muted uppercase tracking-wider">Search</label>
+        <div class="relative mt-1.5">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Search events, bookings, attendees…" class="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25" />
+        </div>
+      </div>
+    </div>
+    <p class="text-xs text-muted mt-3">White field, 1px border, rounded-xl, red focus ring at 25% opacity.</p>
   </section>
 
   <div class="text-center text-xs text-muted pt-6 border-t border-border">
-    Hexlura Design Direction — Preview Only — Not wired to production code
+    Hexlura Design System — Preview Only — Not wired to production code
   </div>
 
 </div>

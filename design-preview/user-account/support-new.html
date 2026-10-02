@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>New Support Ticket — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="account.html" class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange flex items-center justify-center text-white text-sm font-bold">A</a>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-2xl mx-auto px-6 lg:px-10 py-10">
+  <a href="support.html" class="text-sm text-muted hover:text-accent mb-2 inline-block">← Back to Support</a>
+  <h1 class="font-heading text-3xl tracking-wide mb-6">NEW SUPPORT TICKET</h1>
+
+  <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+    <div class="mb-4">
+      <label class="text-xs font-semibold text-muted mb-1.5 block">Category</label>
+      <select class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm">
+        <option>Booking Issue</option>
+        <option>Refund Request</option>
+        <option>Payment Problem</option>
+        <option>Account Help</option>
+        <option>Technical Issue</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="text-xs font-semibold text-muted mb-1.5 block">Related Booking <span class="font-normal text-muted">(optional)</span></label>
+      <select class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm">
+        <option>None</option>
+        <option>HXL-8K3P2Q — Midnight Pulse Festival</option>
+        <option>HXL-4N9X1R — Comedy Basement Live</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="text-xs font-semibold text-muted mb-1.5 block">Subject</label>
+      <input type="text" placeholder="Brief summary of your issue" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+    </div>
+
+    <div class="mb-5">
+      <label class="text-xs font-semibold text-muted mb-1.5 block">Message</label>
+      <textarea rows="6" placeholder="Describe your issue in detail…" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm resize-none"></textarea>
+    </div>
+
+    <button class="w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Submit Ticket</button>
+  </div>
+</div>
+
+</body>
+</html>

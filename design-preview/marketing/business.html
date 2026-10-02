@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sell Tickets with Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-muted">
+      <a href="../public-site/events.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">Browse Events</a>
+      <a href="how-it-works.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">How It Works</a>
+      <a href="business.html" class="px-3 py-2 rounded-lg bg-bg text-text">For Organisers</a>
+      <a href="about.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">About</a>
+    </nav>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="../auth/login.html" class="px-4 py-2 rounded-full text-sm font-semibold text-text hover:bg-bg transition-colors">Log In</a>
+      <a href="../auth/register.html" class="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-white shadow-glow hover:brightness-110 transition">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="bg-text text-white">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-20 text-center">
+    <span class="inline-block px-3 py-1 rounded-full bg-accent/90 text-xs font-semibold mb-5 tracking-wide">FOR EVENT ORGANISERS</span>
+    <h1 class="font-heading text-5xl sm:text-6xl lg:text-7xl leading-none mb-6">SELL TICKETS<br/>WITH HEXLURA</h1>
+    <p class="text-white/70 text-lg max-w-xl mx-auto mb-8">Set up in minutes, connect Stripe, and start selling — no setup fee, no lock-in.</p>
+    <a href="../organiser-open/apply.html" class="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Get Started Free →</a>
+  </div>
+</section>
+
+<!-- ================= STRIPE TRUST BAR ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 -mt-6 relative z-10">
+  <div class="rounded-2xl bg-card border border-border shadow-card px-6 py-3 flex items-center justify-center gap-3 text-sm text-muted">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+    Payouts powered by <span class="font-semibold text-text">Stripe Connect</span>
+  </div>
+</section>
+
+<!-- ================= FEATURE GRID ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-16">
+  <div class="text-center mb-12">
+    <h2 class="font-heading text-4xl tracking-wide mb-3">EVERYTHING YOU NEED TO RUN EVENTS</h2>
+    <p class="text-muted max-w-lg mx-auto">From ticketing to check-in, Hexlura handles the operations so you can focus on the event.</p>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <div class="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E63950" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+      </div>
+      <p class="font-semibold mb-1">Event Management</p>
+      <p class="text-sm text-muted">Create events, ticket tiers, and promo codes in minutes.</p>
+    </div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <div class="w-11 h-11 rounded-xl bg-orange/10 flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7A3D" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+      </div>
+      <p class="font-semibold mb-1">Fast, Secure Payouts</p>
+      <p class="text-sm text-muted">Stripe Connect handles payments — funds settle directly to your account.</p>
+    </div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <div class="w-11 h-11 rounded-xl bg-amber/10 flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><path d="M14 3h4a3 3 0 0 1 3 3v4M21 14v4a3 3 0 0 1-3 3h-4M10 21H6a3 3 0 0 1-3-3v-4"/></svg>
+      </div>
+      <p class="font-semibold mb-1">QR Check-In</p>
+      <p class="text-sm text-muted">Scan tickets at the door with our web scanner or the Hexlura scanner app.</p>
+    </div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <div class="w-11 h-11 rounded-xl bg-green/10 flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B9C63" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
+      </div>
+      <p class="font-semibold mb-1">Real-Time Analytics</p>
+      <p class="text-sm text-muted">Track sales, attendee demographics, and revenue as they happen.</p>
+    </div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <div class="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E63950" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
+      </div>
+      <p class="font-semibold mb-1">Team & Promoters</p>
+      <p class="text-sm text-muted">Add co-organisers, door staff, and promoters with commission tracking.</p>
+    </div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <div class="w-11 h-11 rounded-xl bg-orange/10 flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7A3D" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      </div>
+      <p class="font-semibold mb-1">Email Marketing</p>
+      <p class="text-sm text-muted">Build email lists and send campaigns to promote your events.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING TEASER ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-16">
+  <div class="rounded-3xl bg-card border border-border shadow-card p-10 lg:p-14 text-center">
+    <h2 class="font-heading text-4xl tracking-wide mb-3">START FREE, UPGRADE WHEN READY</h2>
+    <p class="text-muted max-w-lg mx-auto mb-8">Free plan gets you selling immediately. Upgrade to Pro to remove buyer fees and unlock the full toolkit.</p>
+    <div class="flex items-center justify-center gap-3 flex-wrap">
+      <a href="../organiser-open/apply.html" class="px-8 py-3.5 rounded-full bg-text text-white font-semibold hover:bg-black transition">Get Started Free</a>
+      <a href="../organiser/billing.html" class="px-8 py-3.5 rounded-full border border-border font-semibold hover:bg-bg transition">Compare Plans →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRUSTED PARTNERS ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-12">
+  <p class="text-center text-xs text-muted mb-6 tracking-widest">TRUSTED BY ORGANISERS ACROSS THE UK</p>
+  <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-50 text-muted font-heading text-2xl tracking-wide">
+    <span>VENUEHUB</span>
+    <span>CROWD&CO</span>
+    <span>NIGHTFRAME</span>
+    <span>PULSE COLLECTIVE</span>
+    <span>STAGE&SOUND</span>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-border bg-card">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+      <p class="text-sm text-muted max-w-xs">The UK's platform for discovering and selling tickets to live events.</p>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">DISCOVER</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="../public-site/events.html" class="hover:text-accent">Browse Events</a>
+        <a href="how-it-works.html" class="hover:text-accent">How It Works</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">ORGANISERS</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="business.html" class="hover:text-accent">Sell Tickets</a>
+        <a href="../auth/login.html" class="hover:text-accent">Organiser Login</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">COMPANY</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="about.html" class="hover:text-accent">About</a>
+        <a href="contact.html" class="hover:text-accent">Contact</a>
+        <a href="../legal/terms.html" class="hover:text-accent">Terms</a>
+        <a href="../legal/privacy.html" class="hover:text-accent">Privacy</a>
+        <a href="../legal/refund-policy.html" class="hover:text-accent">Refund Policy</a>
+        <a href="../legal/cookies.html" class="hover:text-accent">Cookies</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-border">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+      <p>© 2026 Hexlura Ltd. Company No. 17102803. All rights reserved.</p>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+        Secure payments via Stripe
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

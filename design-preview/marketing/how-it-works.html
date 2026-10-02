@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How It Works — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #1A0E0C; }
+</style>
+</head>
+<body class="font-sans text-white">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-text/90 backdrop-blur border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-white/70">
+      <a href="../public-site/events.html" class="px-3 py-2 rounded-lg hover:text-white transition-colors">Browse Events</a>
+      <a href="how-it-works.html" class="px-3 py-2 rounded-lg bg-white/10 text-white">How It Works</a>
+      <a href="business.html" class="px-3 py-2 rounded-lg hover:text-white transition-colors">For Organisers</a>
+      <a href="about.html" class="px-3 py-2 rounded-lg hover:text-white transition-colors">About</a>
+    </nav>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="../auth/login.html" class="px-4 py-2 rounded-full text-sm font-semibold text-white/90 hover:text-white transition-colors">Log In</a>
+      <a href="../auth/register.html" class="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-white shadow-glow hover:brightness-110 transition">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-4xl mx-auto px-6 lg:px-10 py-16">
+  <h1 class="font-heading text-5xl lg:text-6xl tracking-wide text-center mb-16">HOW IT WORKS</h1>
+
+  <!-- For Ticket Buyers -->
+  <section class="mb-20">
+    <h2 class="font-heading text-3xl text-accent tracking-wide mb-8">FOR TICKET BUYERS</h2>
+    <div class="space-y-6">
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-heading text-lg shrink-0">1</div>
+        <div>
+          <p class="font-semibold mb-1">Find an event</p>
+          <p class="text-white/60 text-sm">Browse by city, category, or search for something specific.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-heading text-lg shrink-0">2</div>
+        <div>
+          <p class="font-semibold mb-1">Select tickets</p>
+          <p class="text-white/60 text-sm">Choose your ticket type and quantity from the event page.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-heading text-lg shrink-0">3</div>
+        <div>
+          <p class="font-semibold mb-1">Pay securely</p>
+          <p class="text-white/60 text-sm">Checkout with card via Stripe — no account required.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-heading text-lg shrink-0">4</div>
+        <div>
+          <p class="font-semibold mb-1">Get your PDF ticket</p>
+          <p class="text-white/60 text-sm">Your ticket with QR code is emailed instantly and available to download anytime.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-heading text-lg shrink-0">5</div>
+        <div>
+          <p class="font-semibold mb-1">Show up and scan in</p>
+          <p class="text-white/60 text-sm">Present your QR code at the door for instant check-in.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- For Organisers -->
+  <section>
+    <h2 class="font-heading text-3xl text-accent tracking-wide mb-8">FOR EVENT ORGANISERS</h2>
+    <div class="space-y-6">
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-orange flex items-center justify-center font-heading text-lg shrink-0 text-text">1</div>
+        <div>
+          <p class="font-semibold mb-1">Create an account</p>
+          <p class="text-white/60 text-sm">Sign up and apply as an organiser — free to start.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-orange flex items-center justify-center font-heading text-lg shrink-0 text-text">2</div>
+        <div>
+          <p class="font-semibold mb-1">Connect Stripe</p>
+          <p class="text-white/60 text-sm">Link your Stripe account so you can receive payouts directly.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-orange flex items-center justify-center font-heading text-lg shrink-0 text-text">3</div>
+        <div>
+          <p class="font-semibold mb-1">Create your event</p>
+          <p class="text-white/60 text-sm">Add ticket tiers, banner images, refund policy, and publish.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-orange flex items-center justify-center font-heading text-lg shrink-0 text-text">4</div>
+        <div>
+          <p class="font-semibold mb-1">Share and sell</p>
+          <p class="text-white/60 text-sm">Promote your event page directly or via promoters and email campaigns.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-orange flex items-center justify-center font-heading text-lg shrink-0 text-text">5</div>
+        <div>
+          <p class="font-semibold mb-1">Manage attendees and check-in</p>
+          <p class="text-white/60 text-sm">Track sales in real time and scan tickets at the door.</p>
+        </div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-full bg-orange flex items-center justify-center font-heading text-lg shrink-0 text-text">6</div>
+        <div>
+          <p class="font-semibold mb-1">Get paid</p>
+          <p class="text-white/60 text-sm">Funds settle directly to your connected Stripe account after each sale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="text-center mt-16">
+    <a href="business.html" class="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Start Selling Tickets →</a>
+  </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-white/10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+      <p class="text-sm text-white/50 max-w-xs">The UK's platform for discovering and selling tickets to live events.</p>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-white/40 tracking-widest mb-3">DISCOVER</p>
+      <div class="flex flex-col gap-2 text-sm text-white/70">
+        <a href="../public-site/events.html" class="hover:text-white">Browse Events</a>
+        <a href="how-it-works.html" class="hover:text-white">How It Works</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-white/40 tracking-widest mb-3">ORGANISERS</p>
+      <div class="flex flex-col gap-2 text-sm text-white/70">
+        <a href="business.html" class="hover:text-white">Sell Tickets</a>
+        <a href="../auth/login.html" class="hover:text-white">Organiser Login</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-white/40 tracking-widest mb-3">COMPANY</p>
+      <div class="flex flex-col gap-2 text-sm text-white/70">
+        <a href="about.html" class="hover:text-white">About</a>
+        <a href="contact.html" class="hover:text-white">Contact</a>
+        <a href="../legal/terms.html" class="hover:text-white">Terms</a>
+        <a href="../legal/privacy.html" class="hover:text-white">Privacy</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 text-center text-xs text-white/40">
+      © 2026 Hexlura Ltd. Company No. 17102803. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

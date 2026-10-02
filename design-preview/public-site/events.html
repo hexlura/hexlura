@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Browse Events — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+  input[type=range] { accent-color: #E63950; }
+  /* Poster aspect ratio — matches production EventCard.tsx (2:3 portrait) */
+  .poster-img { aspect-ratio: 2 / 3; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-muted">
+      <a href="events.html" class="px-3 py-2 rounded-lg bg-bg text-text">Browse Events</a>
+      <a href="how-it-works.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">How It Works</a>
+      <a href="business.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">For Organisers</a>
+      <a href="about.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">About</a>
+    </nav>
+    <div class="flex-1 max-w-sm hidden md:block">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search events, artists, venues…" class="w-full pl-9 pr-3 py-2 rounded-full bg-bg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="favourites.html" class="p-2 rounded-full hover:bg-bg text-muted hover:text-accent transition-colors" title="Favourites">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </a>
+      <a href="login.html" class="px-4 py-2 rounded-full text-sm font-semibold text-text hover:bg-bg transition-colors">Log In</a>
+      <a href="register.html" class="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-white shadow-glow hover:brightness-110 transition">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-6 lg:px-10 py-8 flex gap-8">
+
+  <!-- ================= FILTER SIDEBAR (desktop) ================= -->
+  <aside class="hidden lg:block w-72 shrink-0">
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-5 sticky top-24">
+      <div class="flex items-center justify-between mb-5">
+        <p class="font-heading text-lg tracking-wide">FILTERS</p>
+        <button class="text-xs text-accent font-semibold hover:underline">Clear all</button>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-xs font-bold text-muted tracking-widest mb-2.5">CATEGORY</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <label class="flex items-center gap-2"><input type="radio" name="cat" checked class="accent-accent"/> All Categories</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 🎵 Music</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 🌃 Nightlife</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 🎤 Comedy</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 🎨 Arts</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> ⚽ Sports</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 🍽️ Food & Drink</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 👨‍👩‍👧 Family</label>
+          <label class="flex items-center gap-2"><input type="radio" name="cat" class="accent-accent"/> 🛠️ Workshops</label>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-xs font-bold text-muted tracking-widest mb-2.5">CITY</p>
+        <input list="cities" placeholder="Any city…" class="w-full px-3 py-2 rounded-lg bg-bg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+        <datalist id="cities">
+          <option>London</option><option>Manchester</option><option>Birmingham</option>
+          <option>Leeds</option><option>Glasgow</option><option>Bristol</option>
+        </datalist>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-xs font-bold text-muted tracking-widest mb-2.5">PRICE RANGE</p>
+        <div class="flex items-center gap-2">
+          <input type="number" placeholder="Min £" class="w-full px-3 py-2 rounded-lg bg-bg border border-border text-sm" />
+          <span class="text-muted">—</span>
+          <input type="number" placeholder="Max £" class="w-full px-3 py-2 rounded-lg bg-bg border border-border text-sm" />
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-xs font-bold text-muted tracking-widest mb-2.5">NEAR ME</p>
+        <input type="text" placeholder="Postcode…" class="w-full px-3 py-2 rounded-lg bg-bg border border-border text-sm mb-2" />
+        <input type="range" min="1" max="50" value="10" class="w-full" />
+        <div class="flex justify-between text-[11px] text-muted mt-1"><span>1 mi</span><span>Within 10 miles</span><span>50 mi</span></div>
+      </div>
+
+      <button class="w-full py-2.5 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition">Apply Filters</button>
+    </div>
+  </aside>
+
+  <!-- Mobile filter trigger -->
+  <div class="lg:hidden fixed bottom-20 right-4 z-30">
+    <button class="flex items-center gap-2 px-5 py-3 rounded-full bg-text text-white text-sm font-semibold shadow-hover">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filters
+    </button>
+  </div>
+
+  <!-- ================= RESULTS ================= -->
+  <main class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+      <div>
+        <h1 class="font-heading text-3xl tracking-wide">BROWSE EVENTS</h1>
+        <p class="text-sm text-muted mt-1">248 events found</p>
+      </div>
+      <select class="px-4 py-2 rounded-full bg-card border border-border text-sm font-medium">
+        <option>Sort: Soonest</option>
+        <option>Sort: Price (Low to High)</option>
+        <option>Sort: Price (High to Low)</option>
+        <option>Sort: Most Popular</option>
+      </select>
+    </div>
+
+    <!-- Active filter chips -->
+    <div class="flex items-center gap-2 mb-6 flex-wrap">
+      <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium">
+        🎵 Music <button class="text-muted hover:text-accent">✕</button>
+      </span>
+      <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium">
+        London <button class="text-muted hover:text-accent">✕</button>
+      </span>
+      <button class="text-xs text-accent font-semibold hover:underline">Clear all</button>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-accent to-orange">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 27 SEP</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">Midnight Pulse Festival</p>
+          <p class="text-xs text-muted mb-1.5">Alexandra Palace, London</p>
+          <p class="text-sm font-heading text-lg">From £35.00</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-orange to-amber">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">FRI 3 OCT</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">Comedy Basement Live</p>
+          <p class="text-xs text-muted mb-1.5">The Stand, Manchester</p>
+          <p class="text-sm font-heading text-lg">From £12.00</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-green to-amber">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SUN 5 OCT</span>
+          <span class="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-green text-white text-[10px] font-bold">FREE</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">Community Food Market</p>
+          <p class="text-xs text-muted mb-1.5">Digbeth, Birmingham</p>
+          <p class="text-sm font-heading text-lg text-green">Free Event</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-accent to-amber">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 11 OCT</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">Neon Nights Warehouse</p>
+          <p class="text-xs text-muted mb-1.5">Depot Mayfield, Manchester</p>
+          <p class="text-sm font-heading text-lg">From £22.50</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-orange to-yellow">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 18 OCT</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">Deep House Rooftop Sessions</p>
+          <p class="text-xs text-muted mb-1.5">Shoreditch, London</p>
+          <p class="text-sm font-heading text-lg">From £18.00</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-amber to-green">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SUN 26 OCT</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">Street Food & Vinyl Fair</p>
+          <p class="text-xs text-muted mb-1.5">Baltic Triangle, Liverpool</p>
+          <p class="text-sm font-heading text-lg">From £8.00</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-center gap-2 mt-10">
+      <button class="w-9 h-9 rounded-full bg-card border border-border text-muted flex items-center justify-center">‹</button>
+      <button class="w-9 h-9 rounded-full bg-text text-white text-sm font-semibold flex items-center justify-center">1</button>
+      <button class="w-9 h-9 rounded-full bg-card border border-border text-sm flex items-center justify-center">2</button>
+      <button class="w-9 h-9 rounded-full bg-card border border-border text-sm flex items-center justify-center">3</button>
+      <button class="w-9 h-9 rounded-full bg-card border border-border text-muted flex items-center justify-center">›</button>
+    </div>
+  </main>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-border bg-card mt-8">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+      <p class="text-sm text-muted max-w-xs">The UK's platform for discovering and selling tickets to live events.</p>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">DISCOVER</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="events.html" class="hover:text-accent">Browse Events</a>
+        <a href="events.html?city=london" class="hover:text-accent">Events in London</a>
+        <a href="how-it-works.html" class="hover:text-accent">How It Works</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">ORGANISERS</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="business.html" class="hover:text-accent">Sell Tickets</a>
+        <a href="login.html" class="hover:text-accent">Organiser Login</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">COMPANY</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="about.html" class="hover:text-accent">About</a>
+        <a href="contact.html" class="hover:text-accent">Contact</a>
+        <a href="terms.html" class="hover:text-accent">Terms</a>
+        <a href="privacy.html" class="hover:text-accent">Privacy</a>
+        <a href="refund-policy.html" class="hover:text-accent">Refund Policy</a>
+        <a href="cookies.html" class="hover:text-accent">Cookies</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-border">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+      <p>© 2026 Hexlura Ltd. Company No. 17102803. All rights reserved.</p>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+        Secure payments via Stripe
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile bottom nav -->
+<nav class="lg:hidden fixed bottom-0 inset-x-0 bg-card border-t border-border flex items-center justify-around py-2 z-40">
+  <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    <span class="text-[10px] font-semibold">Home</span>
+  </a>
+  <a href="events.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-accent">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <span class="text-[10px] font-semibold">Browse</span>
+  </a>
+  <a href="favourites.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+    <span class="text-[10px] font-semibold">Saved</span>
+  </a>
+  <a href="bookings.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+    <span class="text-[10px] font-semibold">Bookings</span>
+  </a>
+  <a href="account.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg>
+    <span class="text-[10px] font-semibold">Account</span>
+  </a>
+</nav>
+
+</body>
+</html>

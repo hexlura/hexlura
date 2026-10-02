@@ -42,7 +42,7 @@ export function EventFilter({ events, selectedId, basePath, label = 'Event', ext
                 value={selectedId ?? ''}
                 onChange={e => handleChange(e.target.value)}
                 disabled={isPending}
-                className="bg-background border border-border text-text text-xs px-2 py-1 rounded-none focus:outline-none focus:border-accent disabled:opacity-60 max-w-[220px]"
+                className="bg-background border border-border text-text text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-accent disabled:opacity-60 max-w-[220px]"
             >
                 <option value="">All events</option>
                 {events.map(ev => (

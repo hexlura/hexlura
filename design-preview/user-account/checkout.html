@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #FAF6F3; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+  .step.active .step-circle { background: #E63950; color: white; }
+  .step.done .step-circle { background: #1B9C63; color: white; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR (minimal) ================= -->
+<header class="border-b border-border bg-card">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <div class="flex items-center gap-1.5 text-xs text-muted">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+      Secure Checkout
+    </div>
+  </div>
+</header>
+
+<!-- Step indicator -->
+<div class="max-w-5xl mx-auto px-6 lg:px-10 py-6">
+  <div class="flex items-center justify-center gap-4">
+    <div class="step done flex items-center gap-2">
+      <span class="step-circle w-7 h-7 rounded-full bg-green text-white flex items-center justify-center text-xs font-bold">✓</span>
+      <span class="text-sm font-semibold">Tickets</span>
+    </div>
+    <div class="w-10 h-px bg-border"></div>
+    <div class="step active flex items-center gap-2">
+      <span class="step-circle w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold">2</span>
+      <span class="text-sm font-semibold">Your Details</span>
+    </div>
+    <div class="w-10 h-px bg-border"></div>
+    <div class="step flex items-center gap-2">
+      <span class="step-circle w-7 h-7 rounded-full bg-border text-muted flex items-center justify-center text-xs font-bold">3</span>
+      <span class="text-sm font-medium text-muted">Payment</span>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 lg:px-10 pb-16 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+
+  <!-- ================= LEFT: step content ================= -->
+  <div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-6">
+      <h2 class="font-heading text-2xl tracking-wide mb-1">YOUR DETAILS</h2>
+      <p class="text-sm text-muted mb-5">We'll send your tickets to this email.</p>
+
+      <!-- Guest checkout notice -->
+      <div class="flex items-center justify-between px-4 py-3 rounded-xl bg-bg border border-border mb-5">
+        <p class="text-sm">Already have an account?</p>
+        <a href="login.html" class="text-sm font-semibold text-accent hover:underline">Log In</a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        <div>
+          <label class="text-xs font-semibold text-muted mb-1.5 block">Full Name</label>
+          <input type="text" placeholder="Jane Smith" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-muted mb-1.5 block">Email</label>
+          <input type="email" placeholder="jane@example.com" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="text-xs font-semibold text-muted mb-1.5 block">Phone</label>
+          <input type="tel" placeholder="+44 7…" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+        </div>
+      </div>
+
+      <!-- Promo code -->
+      <div class="mb-5">
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Promo / Comp Code</label>
+        <div class="flex gap-2">
+          <input type="text" placeholder="Enter code" class="flex-1 px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+          <button class="px-5 py-2.5 rounded-lg border border-border text-sm font-semibold hover:bg-bg transition">Apply</button>
+        </div>
+      </div>
+
+      <label class="flex items-start gap-2 text-xs text-muted mb-6">
+        <input type="checkbox" class="mt-0.5 accent-accent" />
+        I agree to the <a href="../public-site/terms.html" class="text-accent hover:underline">Terms</a> and <a href="../public-site/privacy.html" class="text-accent hover:underline">Privacy Policy</a>
+      </label>
+
+      <a href="#" class="block w-full py-3.5 rounded-full bg-accent text-white font-semibold text-center shadow-glow hover:brightness-110 transition">Continue to Payment →</a>
+    </div>
+  </div>
+
+  <!-- ================= RIGHT: order summary ================= -->
+  <div>
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-5 sticky top-6">
+      <h3 class="font-heading text-lg tracking-wide mb-4">ORDER SUMMARY</h3>
+      <div class="flex gap-3 mb-4">
+        <div class="w-14 aspect-[2/3] rounded-xl overflow-hidden bg-gradient-to-br from-accent to-orange shrink-0"></div>
+        <div>
+          <p class="font-semibold text-sm">Midnight Pulse Festival</p>
+          <p class="text-xs text-muted">Sat 27 Sep 2026 · Alexandra Palace</p>
+        </div>
+      </div>
+      <div class="space-y-1.5 text-sm border-t border-border pt-4">
+        <div class="flex justify-between"><span class="text-muted">General Admission × 2</span><span>£70.00</span></div>
+        <div class="flex justify-between text-muted"><span>Booking Fee</span><span>£3.50</span></div>
+      </div>
+      <div class="flex justify-between font-semibold text-base border-t border-border pt-3 mt-3">
+        <span>Total</span><span class="font-heading text-xl">£73.50</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

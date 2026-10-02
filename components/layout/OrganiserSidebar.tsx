@@ -19,9 +19,7 @@ const navLinks = [
         label: 'Dashboard',
         exact: true,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M2 11l8-8 8 8v9H13v-6H7v6H2V11z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
         ),
     },
     {
@@ -29,9 +27,7 @@ const navLinks = [
         label: 'My Events',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
         ),
     },
     {
@@ -39,10 +35,7 @@ const navLinks = [
         label: 'Bookings',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
         ),
     },
     {
@@ -50,9 +43,7 @@ const navLinks = [
         label: 'Attendees',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 8.5a3 3 0 1 1 3.2 3M21.5 20c0-2.8-2-5-4.5-5.6"/></svg>
         ),
     },
     {
@@ -60,9 +51,7 @@ const navLinks = [
         label: 'Team',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM2 8a2 2 0 11-4 0 2 2 0 014 0zM16.5 17c0-2.485-2.015-4.5-4.5-4.5S7.5 14.515 7.5 17H16.5zM4 17a4.5 4.5 0 014.5-4.5c.17 0 .336.009.5.027A6.016 6.016 0 004 17zM18 17a6.016 6.016 0 00-5-5.473A4.5 4.5 0 0118 17z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
         ),
     },
     {
@@ -70,9 +59,7 @@ const navLinks = [
         label: 'Promoters',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l1.414 1.414a1 1 0 001.414-1.414L3.707 2.293zM5 7a1 1 0 100 2 1 1 0 000-2zM7 10a3 3 0 100 6 3 3 0 000-6zm10-7a3 3 0 100 6 3 3 0 000-6zm-1 9a3 3 0 100 6 3 3 0 000-6zM7.707 13.293a1 1 0 010 1.414L6.414 16H8a1 1 0 110 2H4a1 1 0 01-1-1v-4a1 1 0 112 0v1.586l1.293-1.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
         ),
     },
     {
@@ -80,10 +67,7 @@ const navLinks = [
         label: 'Email Lists',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
         ),
     },
     {
@@ -91,9 +75,7 @@ const navLinks = [
         label: 'Promote via Email',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>
         ),
     },
     {
@@ -101,9 +83,7 @@ const navLinks = [
         label: 'Portfolio',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M3 3h6v6H3V3zm0 8h6v6H3v-6zm8-8h6v6h-6V3zm0 8h6v6h-6v-6z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         ),
     },
     {
@@ -111,10 +91,7 @@ const navLinks = [
         label: 'Analytics',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M3 3v18h18"/><path d="m7 14 4-5 3 3 5-7"/></svg>
         ),
     },
     {
@@ -122,10 +99,7 @@ const navLinks = [
         label: 'Payouts',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
         ),
     },
     {
@@ -133,9 +107,7 @@ const navLinks = [
         label: 'Refunds',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M3 12a9 9 0 1 1 2.6 6.3"/><path d="M3 21v-5h5"/></svg>
         ),
     },
     {
@@ -143,9 +115,7 @@ const navLinks = [
         label: 'Promo Codes',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M17.707 9.293l-7-7A1 1 0 0010 2H4a2 2 0 00-2 2v6a1 1 0 00.293.707l7 7a1 1 0 001.414 0l7-7a1 1 0 000-1.414zM6 6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M20.6 12.6 12.6 20.6a2 2 0 0 1-2.8 0l-7.4-7.4a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h6.8a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
         ),
     },
     {
@@ -153,9 +123,7 @@ const navLinks = [
         label: 'Settings',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1z"/></svg>
         ),
     },
     {
@@ -163,9 +131,7 @@ const navLinks = [
         label: 'Help & Support',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 4.8 1c0 1.5-2.3 1.8-2.3 3.5"/><path d="M12 17h.01"/></svg>
         ),
     },
     {
@@ -173,9 +139,7 @@ const navLinks = [
         label: 'Notifications',
         exact: false,
         icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
         ),
     },
 ]
@@ -234,21 +198,21 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
     return (
         <>
             {/* Mobile header bar — hidden on desktop */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center justify-between px-4">
-                <Link href="/" className="font-heading text-accent tracking-widest text-lg">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></Link>
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-card border-b border-border flex items-center justify-between px-4">
+                <Link href="/" className="font-heading text-accent tracking-wider text-xl">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></Link>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsOpen(true)}
-                        className="text-[#0A0A0F] p-2 -mr-2"
-                    type="button"
-                    aria-label="Open menu"
-                >
-                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <line x1="3" y1="12" x2="21" y2="12" />
-                        <line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                </button>
+                        className="text-text p-2 -mr-2"
+                        type="button"
+                        aria-label="Open menu"
+                    >
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -264,18 +228,17 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
             {/* Sidebar — slides in from RIGHT on mobile, fixed left on desktop */}
             <aside
                 className={[
-                    'fixed inset-y-0 z-50 flex flex-col bg-surface border-l border-border',
+                    'fixed inset-y-0 z-50 flex flex-col bg-card border-l border-border w-64',
                     'transform transition-transform duration-300 ease-in-out',
                     'lg:left-0 lg:border-r lg:border-l-0 lg:translate-x-0',
                     'right-0',
                     isOpen ? 'translate-x-0' : 'translate-x-full',
                 ].join(' ')}
-                style={{ width: '220px' }}
             >
                 {/* X close button — mobile only */}
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden absolute top-4 right-4 text-[#666677] hover:text-[#0A0A0F] transition-colors"
+                    className="lg:hidden absolute top-4 right-4 text-muted hover:text-text transition-colors"
                     type="button"
                     aria-label="Close menu"
                 >
@@ -286,13 +249,12 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                 </button>
 
                 {/* Logo */}
-                <Link href="/" className="block px-6 py-5 border-b border-border hover:bg-card transition-colors">
-                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></div>
-                    <div className="text-xs text-muted mt-0.5">Organiser Portal</div>
+                <Link href="/" className="block shrink-0 px-7 pt-5 pb-4">
+                    <div className="font-heading text-2xl text-accent tracking-wider">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></div>
                 </Link>
 
                 {/* Navigation — scrolls independently, pb-28 clears the mobile bottom nav */}
-                <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto [padding-bottom:max(7rem,env(safe-area-inset-bottom,7rem))]">
+                <nav className="flex-1 px-5 pb-4 flex flex-col gap-0.5 overflow-y-auto [padding-bottom:max(7rem,env(safe-area-inset-bottom,7rem))]">
                     {visibleLinks.map((link) => {
                         const active = isActive(link.href, link.exact)
                         const loading = loadingPath === link.href
@@ -301,21 +263,15 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => handleNavClick(link.href)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
                                     active
-                                        ? 'text-text bg-card font-medium'
+                                        ? 'bg-text text-white font-medium shadow-[0_6px_18px_-4px_rgba(26,14,12,0.35)]'
                                         : loading
                                         ? 'text-muted'
-                                        : 'text-muted hover:text-text hover:bg-card'
+                                        : 'text-muted hover:text-text hover:bg-background'
                                 }`}
                             >
-                                {active && (
-                                    <span
-                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent"
-                                        style={{ borderLeft: '2px solid #E63950' }}
-                                    />
-                                )}
-                                <span className={active ? 'text-accent' : ''}>{link.icon}</span>
+                                <span className="shrink-0">{link.icon}</span>
                                 {link.label}
                                 <span className="ml-auto flex items-center gap-1.5">
                                     {link.href === '/organiser/notifications' && unreadNotifications > 0 && (
@@ -335,24 +291,41 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                     })}
 
                     {/* My Account link — inside scroll area so it's reachable */}
-                    <div style={{ borderTop: '1px solid #C0C0C8', margin: '8px 0 0', paddingTop: '8px' }}>
+                    <div className="border-t border-border mt-2 pt-2">
                         <Link
                             href="/account"
                             onClick={() => setIsOpen(false)}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors text-muted hover:text-text"
-                            style={{ fontSize: '14px' }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition-colors text-muted hover:text-text hover:bg-background"
                         >
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+                                <circle cx="12" cy="8" r="3.5" />
+                                <path d="M4 21c1-4 4-6 8-6s7 2 8 6" />
                             </svg>
                             My Account
                         </Link>
                     </div>
 
+                    {/* Upgrade card */}
+                    <div className="mt-4 bg-gradient-to-br from-accent via-accent to-warm-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
+                        <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
+                        <p className="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
+                        <Link
+                            href="/organiser/billing"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative"
+                        >
+                            Upgrade to Pro →
+                        </Link>
+                    </div>
+
                     {/* User footer — inside scroll area so Sign Out is reachable */}
-                    <div className="px-3 pt-4 pb-2 border-t border-border mt-2">
-                        <div className="text-xs text-muted mb-0.5 truncate">{orgName}</div>
-                        <div className="text-sm text-text font-medium truncate mb-2">{userName}</div>
+                    <div className="pt-4 pb-2 mt-4 border-t border-border">
+                        {/* Name + sign out live in the desktop top bar; shown here on mobile only */}
+                        <div className="lg:hidden">
+                            <div className="text-xs text-muted mb-0.5 truncate">{orgName}</div>
+                            <div className="text-sm text-text font-medium truncate mb-2">{userName}</div>
+                        </div>
 
                         {/* Identity verification status — clickable, links to settings */}
                         {(() => {
@@ -361,7 +334,7 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                                 return (
                                     <button
                                         onClick={() => handleNavClick(target)}
-                                        className="w-full inline-flex items-center gap-1.5 mb-3 px-2 py-1 rounded-sm text-[11px] font-medium text-success bg-success/10 border border-success/30 hover:bg-success/15 transition-colors"
+                                        className="w-full inline-flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-warm-green bg-warm-green/10 border border-warm-green/30 hover:bg-warm-green/15 transition-colors"
                                         title="Identity verified — view in settings"
                                     >
                                         <span>✓</span>
@@ -373,7 +346,7 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                                 return (
                                     <button
                                         onClick={() => handleNavClick(target)}
-                                        className="w-full inline-flex items-center gap-1.5 mb-3 px-2 py-1 rounded-sm text-[11px] font-medium text-blue-500 bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/15 transition-colors"
+                                        className="w-full inline-flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-blue-500 bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/15 transition-colors"
                                         title="Identity verification in progress"
                                     >
                                         <span>⏳</span>
@@ -385,7 +358,7 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                             return (
                                 <button
                                     onClick={() => handleNavClick(target)}
-                                    className="w-full inline-flex items-center gap-1.5 mb-3 px-2 py-1 rounded-sm text-[11px] font-medium text-accent bg-accent/10 border border-accent/30 hover:bg-accent/15 transition-colors"
+                                    className="w-full inline-flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-warm-red bg-warm-red/10 border border-warm-red/30 hover:bg-warm-red/15 transition-colors"
                                     title="Verify your identity to enable payouts"
                                 >
                                     <span>⚠</span>
@@ -396,7 +369,7 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                         <button
                             onClick={handleSignOut}
                             disabled={signingOut}
-                            className="flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="lg:hidden flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {signingOut ? (
                                 <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">

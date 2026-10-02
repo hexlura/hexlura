@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { OrganiserSidebar } from '@/components/layout/OrganiserSidebar'
+import { OrganiserTopBar } from '@/components/layout/OrganiserTopBar'
 import MobileBottomNav from '@/components/layout/MobileBottomNav'
 import { getLatestLegalDocument } from '@/lib/legal'
 
@@ -64,10 +65,13 @@ export default async function OrganiserLayout({
     }
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div className="organiser-theme flex min-h-screen">
             <OrganiserSidebar userName={userName} orgName={orgName} userId={user.id} identityStatus={identityStatus} />
-            <main className="flex-1 min-h-screen px-4 sm:px-8 pb-8 pt-14 lg:pt-8 lg:ml-[220px]">
-                {children}
+            <main className="flex-1 min-w-0 min-h-screen lg:ml-64">
+                <OrganiserTopBar userId={user.id} userName={userName} orgName={orgName} />
+                <div className="px-4 sm:px-8 lg:px-10 pb-8 pt-14 lg:pt-8">
+                    {children}
+                </div>
             </main>
             <MobileBottomNav role="organiser" />
         </div>

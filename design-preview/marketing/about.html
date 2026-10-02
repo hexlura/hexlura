@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-muted">
+      <a href="../public-site/events.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">Browse Events</a>
+      <a href="how-it-works.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">How It Works</a>
+      <a href="business.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">For Organisers</a>
+      <a href="about.html" class="px-3 py-2 rounded-lg bg-bg text-text">About</a>
+    </nav>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="../auth/login.html" class="px-4 py-2 rounded-full text-sm font-semibold text-text hover:bg-bg transition-colors">Log In</a>
+      <a href="../auth/register.html" class="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-white shadow-glow hover:brightness-110 transition">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-3xl mx-auto px-6 lg:px-10 py-16">
+  <h1 class="font-heading text-5xl lg:text-6xl tracking-wide mb-12 text-center">ABOUT HEXLURA</h1>
+
+  <section class="mb-10">
+    <h2 class="font-heading text-2xl text-accent tracking-wide mb-3">OUR STORY</h2>
+    <hr class="border-border mb-4" />
+    <p class="text-muted leading-relaxed">Hexlura started with a simple frustration: buying and selling event tickets shouldn't be this complicated. We set out to build a platform that's fast for buyers and fair for organisers — no bloated fees, no clunky checkout, no unnecessary friction.</p>
+  </section>
+
+  <section class="mb-10">
+    <h2 class="font-heading text-2xl text-accent tracking-wide mb-3">OUR MISSION</h2>
+    <hr class="border-border mb-4" />
+    <p class="text-muted leading-relaxed">To make live events more accessible — helping people discover experiences worth showing up for, and helping the organisers behind them grow sustainably.</p>
+  </section>
+
+  <section class="mb-10">
+    <h2 class="font-heading text-2xl text-accent tracking-wide mb-3">FOR BUSINESS</h2>
+    <hr class="border-border mb-4" />
+    <p class="text-muted leading-relaxed">Whether you're running a warehouse rave, a comedy night, or a community market, Hexlura gives you the tools to sell tickets, manage attendees, and get paid — all in one place, with payouts settled directly to your own Stripe account.</p>
+  </section>
+
+  <section class="mb-10">
+    <h2 class="font-heading text-2xl text-accent tracking-wide mb-3">FOR BUYERS</h2>
+    <hr class="border-border mb-4" />
+    <p class="text-muted leading-relaxed">Discover events happening near you, book in seconds, and keep your tickets safe with QR codes delivered straight to your inbox — no app download required.</p>
+  </section>
+
+  <section>
+    <h2 class="font-heading text-2xl text-accent tracking-wide mb-3">THE COMPANY</h2>
+    <hr class="border-border mb-4" />
+    <p class="text-muted leading-relaxed">Hexlura is operated by Hexlura Ltd, a company registered in England and Wales.</p>
+    <div class="mt-4 space-y-1 text-sm text-muted">
+      <p><span class="font-semibold text-text">Company No.</span> 17102803</p>
+      <p><span class="font-semibold text-text">Registered Address:</span> United Kingdom</p>
+      <p><span class="font-semibold text-text">Support:</span> <a href="mailto:support@hexlura.com" class="text-accent hover:underline">support@hexlura.com</a></p>
+    </div>
+  </section>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-border bg-card">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+      <p class="text-sm text-muted max-w-xs">The UK's platform for discovering and selling tickets to live events.</p>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">DISCOVER</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="../public-site/events.html" class="hover:text-accent">Browse Events</a>
+        <a href="how-it-works.html" class="hover:text-accent">How It Works</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">ORGANISERS</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="business.html" class="hover:text-accent">Sell Tickets</a>
+        <a href="../auth/login.html" class="hover:text-accent">Organiser Login</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">COMPANY</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="about.html" class="hover:text-accent">About</a>
+        <a href="contact.html" class="hover:text-accent">Contact</a>
+        <a href="../legal/terms.html" class="hover:text-accent">Terms</a>
+        <a href="../legal/privacy.html" class="hover:text-accent">Privacy</a>
+        <a href="../legal/refund-policy.html" class="hover:text-accent">Refund Policy</a>
+        <a href="../legal/cookies.html" class="hover:text-accent">Cookies</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-border">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+      <p>© 2026 Hexlura Ltd. Company No. 17102803. All rights reserved.</p>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+        Secure payments via Stripe
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

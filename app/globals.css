@@ -21,6 +21,27 @@
   }
 }
 
+/* Warm redesign theme — scoped to the organiser portal.
+   Re-declares the theme variables on the wrapper element, so every token-based
+   class inside it picks up the new palette and the admin /design overrides on
+   :root can't win here. Nothing outside .organiser-theme is affected. */
+.organiser-theme {
+  --background: #FAF6F3;
+  --surface: #FAF6F3;
+  --card: #FFFFFF;
+  --border: #F1E7E2;
+  --accent: #E63950;
+  --gold: #F5A623;
+  --text: #1A0E0C;
+  --muted: #6B5D56;
+  --success: #1B9C63;
+  background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  color: var(--text);
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>You're Going! — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background: #FAF6F3; }
+  @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .check-pop { animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<header class="border-b border-border bg-card">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10 h-16 flex items-center">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+  </div>
+</header>
+
+<div class="max-w-xl mx-auto px-6 lg:px-10 py-14 text-center">
+  <div class="check-pop w-20 h-20 rounded-full bg-green flex items-center justify-center mx-auto mb-6">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="m5 13 4 4L19 7"/></svg>
+  </div>
+  <h1 class="font-heading text-5xl tracking-wide mb-2">YOU'RE GOING!</h1>
+  <p class="text-muted mb-8">Your tickets have been sent to <span class="font-semibold text-text">jane@example.com</span></p>
+
+  <!-- Booking ref card -->
+  <div class="bg-card rounded-2xl border border-border shadow-card p-6 text-left mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="font-semibold">Midnight Pulse Festival</p>
+        <p class="text-xs text-muted">Sat 27 Sep 2026 · Alexandra Palace, London</p>
+      </div>
+      <span class="px-2.5 py-1 rounded-full bg-green/15 text-green text-[11px] font-bold">CONFIRMED</span>
+    </div>
+    <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-bg mb-4">
+      <span class="text-xs text-muted">Booking Reference</span>
+      <span class="font-mono text-sm font-semibold">HXL-8K3P2Q</span>
+    </div>
+    <div class="space-y-1.5 text-sm border-t border-border pt-4">
+      <div class="flex justify-between"><span class="text-muted">General Admission × 2</span><span>£70.00</span></div>
+      <div class="flex justify-between text-muted"><span>Booking Fee</span><span>£3.50</span></div>
+      <div class="flex justify-between font-semibold text-base border-t border-border pt-2 mt-2"><span>Total Paid</span><span class="font-heading text-xl">£73.50</span></div>
+    </div>
+  </div>
+
+  <div class="flex flex-col sm:flex-row gap-3 mb-8">
+    <button class="flex-1 py-3 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition">Download Tickets (PDF)</button>
+    <a href="../public-site/events.html" class="flex-1 py-3 rounded-full border border-border text-sm font-semibold hover:bg-bg transition">Browse More Events</a>
+  </div>
+
+  <!-- Guest → account conversion -->
+  <div class="bg-accent/5 rounded-2xl border border-accent/20 p-5 text-left">
+    <p class="font-semibold text-sm mb-1">Save this booking to an account</p>
+    <p class="text-xs text-muted mb-4">Create a free account to track this booking, get faster checkout next time, and manage refunds.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <input type="password" placeholder="Create a password" class="px-3.5 py-2.5 rounded-lg bg-white border border-border text-sm" />
+      <input type="password" placeholder="Confirm password" class="px-3.5 py-2.5 rounded-lg bg-white border border-border text-sm" />
+    </div>
+    <button class="px-6 py-2.5 rounded-full bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition">Create Account</button>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Bookings — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+  .tab.active { color: #1A0E0C; border-color: #E63950; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-muted">
+      <a href="../public-site/events.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">Browse Events</a>
+    </nav>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="notifications.html" class="p-2 rounded-full hover:bg-bg text-muted hover:text-accent transition-colors" title="Notifications">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </a>
+      <a href="account.html" class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange flex items-center justify-center text-white text-sm font-bold">A</a>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-4xl mx-auto px-6 lg:px-10 py-10">
+  <h1 class="font-heading text-3xl tracking-wide mb-6">MY BOOKINGS</h1>
+
+  <!-- Tabs -->
+  <div class="flex items-center gap-6 border-b border-border mb-6 text-sm font-semibold">
+    <button class="tab active pb-3 border-b-2 border-transparent text-muted">Upcoming (2)</button>
+    <button class="tab pb-3 border-b-2 border-transparent text-muted">Past (5)</button>
+    <button class="tab pb-3 border-b-2 border-transparent text-muted">Cancelled (1)</button>
+  </div>
+
+  <div class="space-y-4">
+    <a href="booking-detail.html" class="flex items-center gap-4 bg-card rounded-2xl border border-border shadow-soft hover:shadow-hover transition p-3">
+      <div class="w-16 aspect-[2/3] rounded-xl overflow-hidden bg-gradient-to-br from-accent to-orange shrink-0"></div>
+      <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-sm mb-1 truncate">Midnight Pulse Festival</p>
+          <p class="text-xs text-muted mb-1">Alexandra Palace, London · Sat 27 Sep 2026</p>
+          <p class="text-xs font-mono text-muted">HXL-8K3P2Q</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="font-heading text-lg mb-1">£70.00</p>
+          <span class="px-2.5 py-1 rounded-full bg-green/15 text-green text-[11px] font-bold">CONFIRMED</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="booking-detail.html" class="flex items-center gap-4 bg-card rounded-2xl border border-border shadow-soft hover:shadow-hover transition p-3">
+      <div class="w-16 aspect-[2/3] rounded-xl overflow-hidden bg-gradient-to-br from-orange to-amber shrink-0"></div>
+      <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-sm mb-1 truncate">Comedy Basement Live</p>
+          <p class="text-xs text-muted mb-1">The Stand, Manchester · Fri 3 Oct 2026</p>
+          <p class="text-xs font-mono text-muted">HXL-4N9X1R</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="font-heading text-lg mb-1">£24.00</p>
+          <span class="px-2.5 py-1 rounded-full bg-amber/15 text-amberText text-[11px] font-bold">REFUND REQUESTED</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

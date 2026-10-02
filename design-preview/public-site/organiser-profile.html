@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pulse Collective Events — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .tab.active { color: #1A0E0C; border-color: #E63950; }
+  /* Poster aspect ratio — matches production EventCard.tsx (2:3 portrait) */
+  .poster-img { aspect-ratio: 2 / 3; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-muted">
+      <a href="events.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">Browse Events</a>
+      <a href="how-it-works.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">How It Works</a>
+      <a href="business.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">For Organisers</a>
+      <a href="about.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">About</a>
+    </nav>
+    <div class="flex-1 max-w-sm hidden md:block">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search events, artists, venues…" class="w-full pl-9 pr-3 py-2 rounded-full bg-bg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="favourites.html" class="p-2 rounded-full hover:bg-bg text-muted hover:text-accent transition-colors" title="Favourites">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </a>
+      <a href="login.html" class="px-4 py-2 rounded-full text-sm font-semibold text-text hover:bg-bg transition-colors">Log In</a>
+      <a href="register.html" class="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-white shadow-glow hover:brightness-110 transition">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= COVER + HEADER ================= -->
+<div class="h-48 lg:h-64 bg-gradient-to-br from-accent via-orange to-amber"></div>
+
+<div class="max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 mb-8">
+    <div class="flex items-end gap-4">
+      <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-orange to-amber border-4 border-bg shadow-card shrink-0"></div>
+      <div class="pb-1">
+        <h1 class="font-heading text-3xl lg:text-4xl tracking-wide">PULSE COLLECTIVE EVENTS</h1>
+        <div class="flex items-center gap-3 text-sm text-muted mt-1">
+          <span class="flex items-center gap-1"><span class="text-amber">★</span> 4.8 (126 reviews)</span>
+          <span>·</span>
+          <span>1.2k followers</span>
+          <span>·</span>
+          <span>24 events hosted</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 pb-1">
+      <button class="px-5 py-2.5 rounded-full border border-border text-sm font-semibold hover:bg-bg transition">+ Follow</button>
+      <button class="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-muted hover:text-accent">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex items-center gap-6 border-b border-border mb-8 text-sm font-semibold">
+    <button class="tab active pb-3 border-b-2 border-transparent text-muted">Upcoming Events</button>
+    <button class="tab pb-3 border-b-2 border-transparent text-muted">Past Events</button>
+    <button class="tab pb-3 border-b-2 border-transparent text-muted">Portfolio</button>
+    <button class="tab pb-3 border-b-2 border-transparent text-muted">Reviews</button>
+  </div>
+
+  <!-- ================= UPCOMING EVENTS ================= -->
+  <section class="mb-14">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-accent to-orange">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 27 SEP</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm mb-1 group-hover:text-accent transition-colors line-clamp-2">Midnight Pulse Festival</p>
+          <p class="text-xs text-muted mb-1.5">Alexandra Palace, London</p>
+          <p class="text-sm font-heading text-lg">From £35.00</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-orange to-yellow">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 18 OCT</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm mb-1 group-hover:text-accent transition-colors line-clamp-2">Deep House Rooftop Sessions</p>
+          <p class="text-xs text-muted mb-1.5">Shoreditch, London</p>
+          <p class="text-sm font-heading text-lg">From £18.00</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="group block">
+        <div class="poster-img rounded-2xl overflow-hidden shadow-soft group-hover:shadow-hover transition relative bg-gradient-to-br from-accent to-amber">
+          <span class="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 11 NOV</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm mb-1 group-hover:text-accent transition-colors line-clamp-2">Neon Nights Warehouse</p>
+          <p class="text-xs text-muted mb-1.5">Depot Mayfield, Manchester</p>
+          <p class="text-sm font-heading text-lg">From £22.50</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= PAST EVENTS ================= -->
+  <section class="mb-14">
+    <h2 class="font-heading text-2xl tracking-wide mb-4">PAST EVENTS</h2>
+    <div class="flex gap-5 overflow-x-auto hide-scrollbar pb-2">
+      <div class="shrink-0 w-40 sm:w-44">
+        <div class="poster-img rounded-2xl overflow-hidden bg-gradient-to-br from-muted to-text relative opacity-70">
+          <span class="absolute inset-0 flex items-center justify-center text-white text-xs font-bold tracking-widest">ENDED</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm line-clamp-2">Summer Beats Closing Party</p>
+          <p class="text-xs text-muted">Printworks, London · 14 Sep</p>
+        </div>
+      </div>
+      <div class="shrink-0 w-40 sm:w-44">
+        <div class="poster-img rounded-2xl overflow-hidden bg-gradient-to-br from-muted to-text relative opacity-70">
+          <span class="absolute inset-0 flex items-center justify-center text-white text-xs font-bold tracking-widest">ENDED</span>
+        </div>
+        <div class="pt-3">
+          <p class="font-semibold text-sm line-clamp-2">Spring Rooftop Series</p>
+          <p class="text-xs text-muted">Shoreditch, London · 2 Jun</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PORTFOLIO ================= -->
+  <section class="mb-14">
+    <h2 class="font-heading text-2xl tracking-wide mb-4">PORTFOLIO</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="aspect-square rounded-2xl bg-gradient-to-br from-accent to-orange"></div>
+      <div class="aspect-square rounded-2xl bg-gradient-to-br from-orange to-amber"></div>
+      <div class="aspect-square rounded-2xl bg-gradient-to-br from-amber to-yellow"></div>
+      <div class="aspect-square rounded-2xl bg-gradient-to-br from-green to-amber"></div>
+    </div>
+  </section>
+
+  <!-- ================= REVIEWS ================= -->
+  <section class="mb-14">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-heading text-2xl tracking-wide">REVIEWS</h2>
+      <button class="px-4 py-2 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition">Leave a Review</button>
+    </div>
+
+    <div class="bg-card rounded-2xl border border-border shadow-soft p-5 mb-5 flex items-center gap-8 flex-wrap">
+      <div class="text-center">
+        <p class="font-heading text-5xl">4.8</p>
+        <p class="text-amber text-sm">★★★★★</p>
+        <p class="text-xs text-muted mt-1">126 reviews</p>
+      </div>
+      <div class="flex-1 min-w-[200px] space-y-1.5">
+        <div class="flex items-center gap-2 text-xs"><span class="w-3">5</span><div class="flex-1 h-1.5 rounded-full bg-border overflow-hidden"><div class="h-full bg-amber" style="width:80%"></div></div></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-3">4</span><div class="flex-1 h-1.5 rounded-full bg-border overflow-hidden"><div class="h-full bg-amber" style="width:14%"></div></div></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-3">3</span><div class="flex-1 h-1.5 rounded-full bg-border overflow-hidden"><div class="h-full bg-amber" style="width:4%"></div></div></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-3">2</span><div class="flex-1 h-1.5 rounded-full bg-border overflow-hidden"><div class="h-full bg-amber" style="width:1%"></div></div></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-3">1</span><div class="flex-1 h-1.5 rounded-full bg-border overflow-hidden"><div class="h-full bg-amber" style="width:1%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="bg-card rounded-2xl border border-border shadow-soft p-4">
+        <div class="flex items-center justify-between mb-2">
+          <p class="font-semibold text-sm">Jamie T.</p>
+          <span class="text-amber text-xs">★★★★★</span>
+        </div>
+        <p class="text-sm text-muted">Incredible production value, the sound system was insane. Will be back next year.</p>
+      </div>
+      <div class="bg-card rounded-2xl border border-border shadow-soft p-4">
+        <div class="flex items-center justify-between mb-2">
+          <p class="font-semibold text-sm">Priya S.</p>
+          <span class="text-amber text-xs">★★★★☆</span>
+        </div>
+        <p class="text-sm text-muted">Great lineup, queues at the bar were a bit long but overall a great night.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-border bg-card mt-8">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+      <p class="text-sm text-muted max-w-xs">The UK's platform for discovering and selling tickets to live events.</p>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">DISCOVER</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="events.html" class="hover:text-accent">Browse Events</a>
+        <a href="events.html?city=london" class="hover:text-accent">Events in London</a>
+        <a href="how-it-works.html" class="hover:text-accent">How It Works</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">ORGANISERS</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="business.html" class="hover:text-accent">Sell Tickets</a>
+        <a href="login.html" class="hover:text-accent">Organiser Login</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">COMPANY</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="about.html" class="hover:text-accent">About</a>
+        <a href="contact.html" class="hover:text-accent">Contact</a>
+        <a href="terms.html" class="hover:text-accent">Terms</a>
+        <a href="privacy.html" class="hover:text-accent">Privacy</a>
+        <a href="refund-policy.html" class="hover:text-accent">Refund Policy</a>
+        <a href="cookies.html" class="hover:text-accent">Cookies</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-border">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+      <p>© 2026 Hexlura Ltd. Company No. 17102803. All rights reserved.</p>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+        Secure payments via Stripe
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile bottom nav -->
+<nav class="lg:hidden fixed bottom-0 inset-x-0 bg-card border-t border-border flex items-center justify-around py-2 z-40">
+  <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    <span class="text-[10px] font-semibold">Home</span>
+  </a>
+  <a href="events.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <span class="text-[10px] font-semibold">Browse</span>
+  </a>
+  <a href="favourites.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+    <span class="text-[10px] font-semibold">Saved</span>
+  </a>
+  <a href="bookings.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+    <span class="text-[10px] font-semibold">Bookings</span>
+  </a>
+  <a href="account.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg>
+    <span class="text-[10px] font-semibold">Account</span>
+  </a>
+</nav>
+
+</body>
+</html>

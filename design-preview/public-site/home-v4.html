@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Find Your Next Night Out (v4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .story-ring { background: conic-gradient(from 180deg, #E63950, #FF7A3D, #F5A623, #E63950); padding: 2.5px; }
+  .poster:nth-child(odd) { transform: rotate(-1.2deg); }
+  .poster:nth-child(even) { transform: rotate(1deg); }
+  .poster:hover { transform: rotate(0deg) scale(1.02); }
+  .poster { transition: transform 0.25s ease; }
+  .pin-pulse { animation: pulse-ring 2s infinite; }
+  @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(230,57,80,0.5); } 70% { box-shadow: 0 0 0 12px rgba(230,57,80,0); } 100% { box-shadow: 0 0 0 0 rgba(230,57,80,0); } }
+  /* Poster aspect ratio — matches production EventCard.tsx (2:3 portrait) */
+  .poster-img { aspect-ratio: 2 / 3; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="home-v4.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-muted">
+      <a href="events.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">Browse Events</a>
+      <a href="how-it-works.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">How It Works</a>
+      <a href="business.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">For Organisers</a>
+      <a href="about.html" class="px-3 py-2 rounded-lg hover:bg-bg hover:text-text transition-colors">About</a>
+    </nav>
+    <div class="flex-1 max-w-sm hidden md:block">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search events, artists, venues…" class="w-full pl-9 pr-3 py-2 rounded-full bg-bg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="favourites.html" class="p-2 rounded-full hover:bg-bg text-muted hover:text-accent transition-colors" title="Favourites">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </a>
+      <a href="login.html" class="px-4 py-2 rounded-full text-sm font-semibold text-text hover:bg-bg transition-colors">Log In</a>
+      <a href="register.html" class="px-4 py-2 rounded-full text-sm font-semibold bg-accent text-white shadow-glow hover:brightness-110 transition">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= STORIES ROW: cities/organisers ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 pt-6">
+  <div class="flex gap-5 overflow-x-auto hide-scrollbar pb-1">
+    <a href="events.html?city=london" class="shrink-0 flex flex-col items-center gap-1.5 w-[68px]">
+      <div class="story-ring rounded-full">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-accent to-orange border-2 border-bg"></div>
+      </div>
+      <span class="text-[11px] font-semibold">London</span>
+    </a>
+    <a href="events.html?city=manchester" class="shrink-0 flex flex-col items-center gap-1.5 w-[68px]">
+      <div class="story-ring rounded-full">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange to-amber border-2 border-bg"></div>
+      </div>
+      <span class="text-[11px] font-semibold">Manchester</span>
+    </a>
+    <a href="events.html?city=birmingham" class="shrink-0 flex flex-col items-center gap-1.5 w-[68px]">
+      <div class="story-ring rounded-full">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber to-yellow border-2 border-bg"></div>
+      </div>
+      <span class="text-[11px] font-semibold">Birmingham</span>
+    </a>
+    <a href="organiser-profile.html" class="shrink-0 flex flex-col items-center gap-1.5 w-[68px]">
+      <div class="story-ring rounded-full">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green to-amber border-2 border-bg"></div>
+      </div>
+      <span class="text-[11px] font-semibold">Pulse Co.</span>
+    </a>
+    <a href="events.html?city=glasgow" class="shrink-0 flex flex-col items-center gap-1.5 w-[68px]">
+      <div class="story-ring rounded-full">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-accent to-amber border-2 border-bg"></div>
+      </div>
+      <span class="text-[11px] font-semibold">Glasgow</span>
+    </a>
+    <a href="events.html?city=bristol" class="shrink-0 flex flex-col items-center gap-1.5 w-[68px]">
+      <div class="story-ring rounded-full">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange to-accent border-2 border-bg"></div>
+      </div>
+      <span class="text-[11px] font-semibold">Bristol</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= HERO: bold headline + poster wall ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 pt-8 pb-4 text-center">
+  <h1 class="font-heading text-5xl sm:text-6xl lg:text-7xl leading-none mb-3">
+    THE WALL OF <span class="text-accent">WHAT'S ON</span>
+  </h1>
+  <p class="text-muted max-w-lg mx-auto">Hand-picked, always fresh — the events everyone's talking about this week.</p>
+</section>
+
+<!-- ================= POSTER WALL GRID ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-8">
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-accent to-orange relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 27 SEP</span>
+        <p class="text-white font-heading text-xl leading-none">MIDNIGHT PULSE FESTIVAL</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">Alexandra Palace, London</p>
+        <p class="text-sm font-heading">From £35.00</p>
+      </div>
+    </a>
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-orange to-amber relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-text">FRI 3 OCT</span>
+        <p class="text-white font-heading text-xl leading-none">COMEDY BASEMENT LIVE</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">The Stand, Manchester</p>
+        <p class="text-sm font-heading">From £12.00</p>
+      </div>
+    </a>
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-green to-amber relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-green text-white text-[10px] font-bold">FREE</span>
+        <p class="text-white font-heading text-xl leading-none">COMMUNITY FOOD MARKET</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">Digbeth, Birmingham</p>
+        <p class="text-sm font-heading text-green">Free Event</p>
+      </div>
+    </a>
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-accent to-amber relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 11 OCT</span>
+        <p class="text-white font-heading text-xl leading-none">NEON NIGHTS WAREHOUSE</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">Depot Mayfield, Manchester</p>
+        <p class="text-sm font-heading">From £22.50</p>
+      </div>
+    </a>
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-orange to-yellow relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-text">SAT 18 OCT</span>
+        <p class="text-white font-heading text-xl leading-none">DEEP HOUSE ROOFTOP</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">Shoreditch, London</p>
+        <p class="text-sm font-heading">From £18.00</p>
+      </div>
+    </a>
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-accent to-orange relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-text">THU 23 OCT</span>
+        <p class="text-white font-heading text-xl leading-none">INDIE LIVE: VELVET ROOM</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">The Garage, London</p>
+        <p class="text-sm font-heading">From £15.00</p>
+      </div>
+    </a>
+    <a href="event-detail.html" class="poster group block bg-card rounded-xl border border-border shadow-card hover:shadow-hover overflow-hidden">
+      <div class="poster-img bg-gradient-to-br from-amber to-green relative flex items-end p-3">
+        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-text">SUN 26 OCT</span>
+        <p class="text-white font-heading text-xl leading-none">STREET FOOD & VINYL FAIR</p>
+      </div>
+      <div class="p-3">
+        <p class="text-xs text-muted mb-1">Baltic Triangle, Liverpool</p>
+        <p class="text-sm font-heading">From £8.00</p>
+      </div>
+    </a>
+    <a href="events.html" class="poster group flex flex-col items-center justify-center text-center bg-text rounded-xl p-4 poster-img">
+      <p class="font-heading text-3xl text-white leading-none mb-2">+240</p>
+      <p class="text-white/60 text-xs mb-3">more events live now</p>
+      <span class="text-accent text-sm font-semibold">View All →</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= LIVE MAP + LIST ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-12">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-heading text-2xl lg:text-3xl tracking-wide">HAPPENING NEAR YOU</h2>
+    <a href="events.html" class="text-sm font-semibold text-accent hover:underline">Open Full Map →</a>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
+    <div class="relative h-80 lg:h-auto rounded-3xl bg-border/50 overflow-hidden">
+      <span class="absolute inset-0 flex items-center justify-center text-xs text-muted">Interactive map preview</span>
+      <span class="absolute top-1/3 left-1/3 w-3 h-3 rounded-full bg-accent pin-pulse"></span>
+      <span class="absolute top-1/2 left-1/2 w-3 h-3 rounded-full bg-orange pin-pulse"></span>
+      <span class="absolute top-2/3 left-1/4 w-3 h-3 rounded-full bg-amber pin-pulse"></span>
+    </div>
+    <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+      <a href="event-detail.html" class="flex items-center gap-3 bg-card rounded-xl border border-border shadow-soft p-3 hover:shadow-hover transition">
+        <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-accent to-orange shrink-0"></div>
+        <div class="min-w-0">
+          <p class="font-semibold text-sm truncate">Midnight Pulse Festival</p>
+          <p class="text-xs text-muted">0.8 mi · Sat 27 Sep</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="flex items-center gap-3 bg-card rounded-xl border border-border shadow-soft p-3 hover:shadow-hover transition">
+        <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-orange to-amber shrink-0"></div>
+        <div class="min-w-0">
+          <p class="font-semibold text-sm truncate">Comedy Basement Live</p>
+          <p class="text-xs text-muted">1.4 mi · Fri 3 Oct</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="flex items-center gap-3 bg-card rounded-xl border border-border shadow-soft p-3 hover:shadow-hover transition">
+        <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-green to-amber shrink-0"></div>
+        <div class="min-w-0">
+          <p class="font-semibold text-sm truncate">Community Food Market</p>
+          <p class="text-xs text-muted">2.1 mi · Sun 5 Oct</p>
+        </div>
+      </a>
+      <a href="event-detail.html" class="flex items-center gap-3 bg-card rounded-xl border border-border shadow-soft p-3 hover:shadow-hover transition">
+        <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-accent to-amber shrink-0"></div>
+        <div class="min-w-0">
+          <p class="font-semibold text-sm truncate">Neon Nights Warehouse</p>
+          <p class="text-xs text-muted">3.6 mi · Sat 11 Oct</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ORGANISER RECRUIT BANNER ================= -->
+<section class="mt-4 bg-text text-white">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-16 flex flex-col lg:flex-row items-center justify-between gap-8">
+    <div class="max-w-xl">
+      <p class="text-accent font-semibold text-sm mb-2 tracking-wide">SELLING TICKETS?</p>
+      <h2 class="font-heading text-4xl lg:text-5xl leading-none mb-4">GROW YOUR EVENTS<br/>WITH HEXLURA</h2>
+      <p class="text-white/70">Free to start. Connect Stripe, publish your event, and start selling in minutes — no setup fee, no lock-in.</p>
+    </div>
+    <a href="business.html" class="shrink-0 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">FOR BUSINESS →</a>
+  </div>
+</section>
+
+<!-- ================= TRUSTED PARTNERS ================= -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-12">
+  <p class="text-center text-xs text-muted mb-6 tracking-widest">TRUSTED BY ORGANISERS ACROSS THE UK</p>
+  <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-50 text-muted font-heading text-2xl tracking-wide">
+    <span>VENUEHUB</span>
+    <span>CROWD&CO</span>
+    <span>NIGHTFRAME</span>
+    <span>PULSE COLLECTIVE</span>
+    <span>STAGE&SOUND</span>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-border bg-card">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <p class="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></p>
+      <p class="text-sm text-muted max-w-xs">The UK's platform for discovering and selling tickets to live events.</p>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">DISCOVER</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="events.html" class="hover:text-accent">Browse Events</a>
+        <a href="events.html?city=london" class="hover:text-accent">Events in London</a>
+        <a href="how-it-works.html" class="hover:text-accent">How It Works</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">ORGANISERS</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="business.html" class="hover:text-accent">Sell Tickets</a>
+        <a href="login.html" class="hover:text-accent">Organiser Login</a>
+      </div>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-muted tracking-widest mb-3">COMPANY</p>
+      <div class="flex flex-col gap-2 text-sm">
+        <a href="about.html" class="hover:text-accent">About</a>
+        <a href="contact.html" class="hover:text-accent">Contact</a>
+        <a href="terms.html" class="hover:text-accent">Terms</a>
+        <a href="privacy.html" class="hover:text-accent">Privacy</a>
+        <a href="refund-policy.html" class="hover:text-accent">Refund Policy</a>
+        <a href="cookies.html" class="hover:text-accent">Cookies</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-border">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+      <p>© 2026 Hexlura Ltd. Company No. 17102803. All rights reserved.</p>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+        Secure payments via Stripe
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile bottom nav -->
+<nav class="lg:hidden fixed bottom-0 inset-x-0 bg-card border-t border-border flex items-center justify-around py-2 z-40">
+  <a href="home-v4.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-accent">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    <span class="text-[10px] font-semibold">Home</span>
+  </a>
+  <a href="events.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <span class="text-[10px] font-semibold">Browse</span>
+  </a>
+  <a href="favourites.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+    <span class="text-[10px] font-semibold">Saved</span>
+  </a>
+  <a href="bookings.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10"/></svg>
+    <span class="text-[10px] font-semibold">Bookings</span>
+  </a>
+  <a href="account.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-muted">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg>
+    <span class="text-[10px] font-semibold">Account</span>
+  </a>
+</nav>
+
+</body>
+</html>

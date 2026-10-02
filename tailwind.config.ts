@@ -26,6 +26,25 @@ const config: Config = {
         hexyellow: "#f5c518",
         hexviolet: "#7c5cff",
         hexcyan: "#22d3ee",
+        // Warm redesign palette — namespaced so it never collides with Tailwind's
+        // built-in orange/amber/yellow scales used elsewhere in the app.
+        // (Plain hex, not CSS vars, so opacity modifiers like bg-warm-red/10 work.)
+        warm: {
+          red: "#E63950",
+          green: "#1B9C63",
+          orange: "#FF7A3D",
+          amber: "#F5A623",
+          yellow: "#F5C518",
+          orangeText: "#C2521A",
+          amberText: "#9C6900",
+          yellowText: "#8C6A00",
+        },
+      },
+      boxShadow: {
+        soft: "0 2px 12px rgba(60,20,10,0.05)",
+        card: "0 6px 24px -4px rgba(60,20,10,0.08)",
+        hover: "0 12px 36px -6px rgba(60,20,10,0.14)",
+        glow: "0 10px 34px -6px rgba(230,57,80,0.4)",
       },
       fontFamily: {
         sans: ["var(--font-body)"],

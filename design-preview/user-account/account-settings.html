@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Account Settings — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#FAF6F3', card: '#FFFFFF', border: '#F1E7E2', text: '#1A0E0C',
+          muted: '#6B5D56', accent: '#E63950', orange: '#FF7A3D', amber: '#F5A623',
+          yellow: '#F5C518', green: '#1B9C63',
+          orangeText: '#C2521A', amberText: '#9C6900', yellowText: '#8C6A00',
+        },
+        fontFamily: {
+          heading: ['"Bebas Neue"', 'sans-serif'],
+          sans: ['"DM Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          soft: '0 2px 12px rgba(60,20,10,0.05)',
+          card: '0 6px 24px -4px rgba(60,20,10,0.08)',
+          hover: '0 12px 36px -6px rgba(60,20,10,0.14)',
+          glow: '0 10px 34px -6px rgba(230,57,80,0.4)',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent),
+    radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent),
+    #FAF6F3;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+</style>
+</head>
+<body class="font-sans text-text">
+
+<!-- ================= NAVBAR ================= -->
+<header class="sticky top-0 z-40 bg-card/90 backdrop-blur border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+    <a href="../public-site/home.html" class="font-heading text-2xl text-accent tracking-wider shrink-0">HEXLURA<sup class="text-[0.45em] align-super tracking-normal">®</sup></a>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="account.html" class="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange flex items-center justify-center text-white text-sm font-bold">A</a>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-3xl mx-auto px-6 lg:px-10 py-10">
+  <a href="account.html" class="text-sm text-muted hover:text-accent mb-2 inline-block">← Back to Account</a>
+  <h1 class="font-heading text-3xl tracking-wide mb-6">ACCOUNT SETTINGS</h1>
+
+  <!-- Profile Photo -->
+  <section class="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+    <h2 class="font-heading text-lg tracking-wide mb-4">PROFILE PHOTO</h2>
+    <div class="flex items-center gap-4">
+      <div class="w-20 h-20 rounded-full bg-gradient-to-br from-accent to-orange flex items-center justify-center text-white text-3xl font-bold shrink-0">A</div>
+      <div class="flex gap-2">
+        <button class="px-4 py-2 rounded-full border border-border text-sm font-semibold hover:bg-bg transition">Upload New</button>
+        <button class="px-4 py-2 rounded-full text-sm font-semibold text-accent hover:bg-accent/10 transition">Remove</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Personal Information -->
+  <section class="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+    <h2 class="font-heading text-lg tracking-wide mb-4">PERSONAL INFORMATION</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Full Name</label>
+        <input type="text" value="Aghil Raj" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Email</label>
+        <input type="email" value="aghilraj11@gmail.com" disabled class="w-full px-3.5 py-2.5 rounded-lg bg-border/40 border border-border text-sm text-muted" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Phone</label>
+        <input type="tel" placeholder="+44 7…" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Date of Birth</label>
+        <input type="date" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Gender</label>
+        <select class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm">
+          <option>Prefer not to say</option><option>Male</option><option>Female</option><option>Non-binary</option>
+        </select>
+      </div>
+    </div>
+    <button class="mt-4 px-5 py-2.5 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition">Save Changes</button>
+  </section>
+
+  <!-- Address -->
+  <section class="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+    <h2 class="font-heading text-lg tracking-wide mb-4">ADDRESS</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2">
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Address Line 1</label>
+        <input type="text" placeholder="123 High Street" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Postcode</label>
+        <input type="text" placeholder="SW1A 1AA" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">City <span class="text-muted font-normal">(auto-filled from postcode)</span></label>
+        <input type="text" placeholder="London" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+    </div>
+    <button class="mt-4 px-5 py-2.5 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition">Save Changes</button>
+  </section>
+
+  <!-- Change Password -->
+  <section class="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+    <h2 class="font-heading text-lg tracking-wide mb-4">CHANGE PASSWORD</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2">
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Current Password</label>
+        <input type="password" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">New Password</label>
+        <input type="password" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-muted mb-1.5 block">Confirm New Password</label>
+        <input type="password" class="w-full px-3.5 py-2.5 rounded-lg bg-bg border border-border text-sm" />
+      </div>
+    </div>
+    <button class="mt-4 px-5 py-2.5 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition">Update Password</button>
+  </section>
+
+  <!-- Notification Preferences -->
+  <section class="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+    <h2 class="font-heading text-lg tracking-wide mb-4">NOTIFICATION PREFERENCES</h2>
+    <div class="flex items-center justify-between py-2">
+      <div>
+        <p class="text-sm font-semibold">Marketing Emails</p>
+        <p class="text-xs text-muted">Event recommendations, offers, and news</p>
+      </div>
+      <button class="w-11 h-6 rounded-full bg-accent relative shrink-0">
+        <span class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-white"></span>
+      </button>
+    </div>
+    <div class="flex items-center justify-between py-2 border-t border-border mt-2 pt-4">
+      <div>
+        <p class="text-sm font-semibold">Booking Confirmations</p>
+        <p class="text-xs text-muted">Required — always sent for your bookings</p>
+      </div>
+      <button class="w-11 h-6 rounded-full bg-border relative shrink-0 cursor-not-allowed">
+        <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Danger Zone -->
+  <section class="bg-card rounded-2xl border border-accent/30 shadow-soft p-6">
+    <h2 class="font-heading text-lg tracking-wide mb-4 text-accent">DANGER ZONE</h2>
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <p class="text-sm font-semibold">Delete Account</p>
+        <p class="text-xs text-muted">Permanently delete your account and all associated data</p>
+      </div>
+      <button class="px-5 py-2 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-accent/10 transition">Delete Account</button>
+    </div>
+  </section>
+</div>
+
+</body>
+</html>
