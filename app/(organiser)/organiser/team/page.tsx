@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 type Privilege = 'door_staff'
 
@@ -21,50 +22,37 @@ const PRIVILEGE_LABELS: Record<Privilege, string> = {
     door_staff: 'Door Staff',
 }
 
-const PRIVILEGE_BADGE: Record<Privilege, React.CSSProperties> = {
-    door_staff: { background: 'rgba(0,196,138,0.1)', color: '#00C48A' },
-}
+const AVATAR_GRADIENTS = [
+    'from-accent to-warm-orange',
+    'from-warm-yellow to-warm-orange',
+    'from-warm-orange to-accent',
+    'from-warm-green to-warm-amber',
+]
 
-const PRIVILEGE_DESC: Record<Privilege, string> = {
-    door_staff: 'Can only access the ticket scanner for check-in',
-}
+const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 
-function PrivilegeBadge({ privilege }: { privilege: Privilege }) {
-    return (
-        <span style={{
-            ...PRIVILEGE_BADGE[privilege],
-            fontSize: 12, fontWeight: 600, padding: '3px 8px',
-            borderRadius: 4, whiteSpace: 'nowrap',
-        }}>
-            {PRIVILEGE_LABELS[privilege]}
-        </span>
-    )
-}
-
-function Avatar({ member }: { member: TeamMember }) {
+function Avatar({ member, index }: { member: TeamMember; index: number }) {
     const name = member.profile?.full_name || member.invited_email
     const initials = name.includes(' ')
         ? (name.split(' ')[0][0] + name.split(' ').slice(-1)[0][0]).toUpperCase()
-        : name[0].toUpperCase()
+        : name.slice(0, 2).toUpperCase()
     return member.profile?.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={member.profile.avatar_url} alt={initials} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+        <img src={member.profile.avatar_url} alt={initials} className="w-9 h-9 rounded-full object-cover shrink-0" />
     ) : (
-        <div style={{
-            width: 40, height: 40, borderRadius: '50%', background: '#E63950',
-            color: '#fff', fontSize: 14, fontWeight: 700,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>{initials}</div>
+        <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length]} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+            {initials}
+        </div>
     )
 }
-
-const cardStyle: React.CSSProperties = { background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24, marginBottom: 24 }
-const inputStyle: React.CSSProperties = { border: '1px solid #C0C0C8', padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none', boxSizing: 'border-box' }
 
 export default function OrganiserTeamPage() {
     const router = useRouter()
     const [members, setMembers] = useState<TeamMember[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState<string | null>(null)
+    const [showInvite, setShowInvite] = useState(false)
     const [email, setEmail] = useState('')
     const privilege: Privilege = 'door_staff'
     const [addLoading, setAddLoading] = useState(false)
@@ -73,14 +61,28 @@ export default function OrganiserTeamPage() {
 
     const fetchMembers = useCallback(async () => {
         setLoading(true)
-        const res = await fetch('/api/organiser/team')
-        if (res.status === 403) { router.push('/organiser'); return }
-        const json = await res.json()
-        setMembers(json.members || [])
-        setLoading(false)
+        try {
+            const res = await fetch('/api/organiser/team')
+            if (res.status === 403) { router.push('/organiser'); return }
+            if (!res.ok) throw new Error(`team fetch ${res.status}`)
+            const json = await res.json()
+            setMembers(json.members || [])
+            setLoadError(null)
+        } catch (e) {
+            console.error('[OrganiserTeam] load failed:', e)
+            setLoadError('Could not load your team. Please refresh and try again.')
+        } finally {
+            setLoading(false)
+        }
     }, [router])
 
     useEffect(() => { fetchMembers() }, [fetchMembers])
+
+    function openInvite() {
+        setEmail('')
+        setAddMsg(null)
+        setShowInvite(true)
+    }
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault()
@@ -98,12 +100,13 @@ export default function OrganiserTeamPage() {
             setAddMsg({ type: 'success', text: 'Invitation sent successfully.' })
             setEmail('')
             fetchMembers()
+            setTimeout(() => setShowInvite(false), 1200)
         }
         setAddLoading(false)
     }
 
-    async function handleRemove(memberId: string) {
-        if (!confirm('Remove this team member?')) return
+    async function handleRemove(memberId: string, pending: boolean) {
+        if (!confirm(pending ? 'Cancel this invitation?' : 'Remove this team member?')) return
         setActionLoading(memberId + '-remove')
         await fetch('/api/organiser/team', {
             method: 'DELETE',
@@ -124,163 +127,168 @@ export default function OrganiserTeamPage() {
         setActionLoading(null)
     }
 
-    const activeMembers = members.filter(m => m.status === 'active')
-    const pendingMembers = members.filter(m => m.status === 'pending')
+    const visible = members.filter(m => m.status !== 'removed')
+    const modalInput = 'w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
 
     return (
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 24px' }}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 36, color: '#0A0A0F', letterSpacing: '0.05em', marginBottom: 32 }}>
-                TEAM MEMBERS
-            </h1>
-
-            {/* Add Member */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 16 }}>Add Team Member</h2>
-                <form onSubmit={handleAdd}>
-                    <div style={{ marginBottom: 12 }}>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            style={inputStyle}
-                            placeholder="Enter email address"
-                            required
-                        />
-                    </div>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                        <p style={{ fontSize: 12, color: '#8888AA', margin: '6px 0', flex: 1 }}>
-                            {PRIVILEGE_DESC[privilege]}
-                        </p>
-                        <button
-                            type="submit"
-                            disabled={addLoading}
-                            style={{
-                                background: '#0A0A0F', color: '#FFFFFF', padding: '10px 24px',
-                                fontSize: 14, fontWeight: 600, border: 'none', borderRadius: 0,
-                                cursor: addLoading ? 'not-allowed' : 'pointer', opacity: addLoading ? 0.6 : 1,
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            {addLoading ? 'Sending...' : 'Add Member'}
-                        </button>
-                    </div>
-                    {addMsg && (
-                        <p style={{ fontSize: 13, color: addMsg.type === 'success' ? '#00C48A' : '#E63950', marginTop: 10 }}>
-                            {addMsg.text}
-                        </p>
-                    )}
-                </form>
+        <div className="max-w-7xl">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <div>
+                    <h1 className="font-heading text-4xl tracking-wide">TEAM</h1>
+                    <p className="text-muted text-sm mt-1">Invite door staff and co-organisers to help run your events</p>
+                </div>
+                <button
+                    type="button"
+                    onClick={openInvite}
+                    className="bg-text text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                    Invite Member
+                </button>
             </div>
 
-            {loading ? (
-                <p style={{ color: '#8888AA', textAlign: 'center', padding: 32 }}>Loading team members...</p>
-            ) : members.length === 0 ? (
-                <p style={{ color: '#8888AA', textAlign: 'center', padding: 32 }}>
-                    No team members yet. Add your first team member above.
-                </p>
-            ) : (
-                <>
-                    {/* Active Members */}
-                    {activeMembers.length > 0 && (
-                        <div style={cardStyle}>
-                            <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 16 }}>Active Members</h2>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '1px solid #E0E0E0' }}>
-                                        {['Member', 'Privilege', 'Joined', 'Actions'].map(h => (
-                                            <th key={h} style={{ padding: '8px 12px', fontSize: 11, color: '#8888AA', textAlign: 'left', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {activeMembers.map(m => (
-                                        <tr key={m.id} style={{ borderBottom: '1px solid #F0F0F0' }}>
-                                            <td style={{ padding: '12px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                    <Avatar member={m} />
-                                                    <div>
-                                                        <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0F', margin: 0 }}>
-                                                            {m.profile?.full_name || m.invited_email}
-                                                        </p>
+            <div className="bg-card rounded-2xl shadow-card overflow-hidden">
+                {loading ? (
+                    <p className="text-center text-muted text-sm py-16">Loading team members...</p>
+                ) : loadError ? (
+                    <p className="text-center text-warm-red text-sm py-16">{loadError}</p>
+                ) : visible.length === 0 ? (
+                    <p className="text-center text-muted text-sm py-16">No team members yet. Invite your first team member.</p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[640px] text-sm">
+                            <thead>
+                                <tr className="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                                    <th className="font-medium py-3.5 px-6">Member</th>
+                                    <th className="font-medium py-3.5 px-4">Role</th>
+                                    <th className="font-medium py-3.5 px-4">Status</th>
+                                    <th className="font-medium py-3.5 px-4">Invited</th>
+                                    <th className="font-medium py-3.5 px-6 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {visible.map((m, i) => {
+                                    const pending = m.status === 'pending'
+                                    return (
+                                        <tr key={m.id} className="border-b border-border last:border-0 hover:bg-[#FAF6F3]/60 transition-colors">
+                                            <td className="py-3.5 px-6">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar member={m} index={i} />
+                                                    <div className="min-w-0">
+                                                        <p className="font-medium truncate">{m.invited_email}</p>
                                                         {m.profile?.full_name && (
-                                                            <p style={{ fontSize: 12, color: '#8888AA', margin: 0 }}>{m.invited_email}</p>
+                                                            <p className="text-xs text-muted truncate">{m.profile.full_name}</p>
                                                         )}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '12px' }}>
-                                                <PrivilegeBadge privilege={m.privilege} />
+                                            <td className="py-3.5 px-4">
+                                                <span className="text-xs font-semibold text-warm-green bg-warm-green/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                                    {PRIVILEGE_LABELS[m.privilege] || m.privilege}
+                                                </span>
                                             </td>
-                                            <td style={{ padding: '12px', fontSize: 13, color: '#8888AA', whiteSpace: 'nowrap' }}>
-                                                {m.accepted_at ? new Date(m.accepted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                                            <td className="py-3.5 px-4">
+                                                {pending ? (
+                                                    <span className="text-xs font-semibold text-warm-yellowText bg-warm-yellow/10 px-2.5 py-1 rounded-full">Pending</span>
+                                                ) : (
+                                                    <span className="text-xs font-semibold text-warm-green bg-warm-green/10 px-2.5 py-1 rounded-full">Active</span>
+                                                )}
                                             </td>
-                                            <td style={{ padding: '12px' }}>
+                                            <td className="py-3.5 px-4 text-muted text-xs whitespace-nowrap">{fmtDate(m.created_at)}</td>
+                                            <td className="py-3.5 px-6 text-right whitespace-nowrap">
+                                                {pending && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleResend(m.id)}
+                                                        disabled={actionLoading === m.id + '-resend'}
+                                                        className="text-xs text-accent font-medium hover:underline mr-4 disabled:opacity-50"
+                                                    >
+                                                        {actionLoading === m.id + '-resend' ? 'Sending...' : 'Resend'}
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() => handleRemove(m.id)}
+                                                    type="button"
+                                                    onClick={() => handleRemove(m.id, pending)}
                                                     disabled={actionLoading === m.id + '-remove'}
-                                                    style={{ fontSize: 12, padding: '4px 10px', border: '1px solid #E63950', color: '#E63950', background: 'transparent', cursor: 'pointer' }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = '#E63950'; e.currentTarget.style.color = '#fff' }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#E63950' }}
+                                                    className="text-xs text-accent font-medium hover:underline disabled:opacity-50"
                                                 >
-                                                    Remove
+                                                    {pending ? 'Cancel Invite' : 'Remove'}
                                                 </button>
                                             </td>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
 
-                    {/* Pending Invitations */}
-                    {pendingMembers.length > 0 && (
-                        <div style={cardStyle}>
-                            <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 16 }}>Pending Invitations</h2>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '1px solid #E0E0E0' }}>
-                                        {['Email', 'Privilege', 'Status', 'Actions'].map(h => (
-                                            <th key={h} style={{ padding: '8px 12px', fontSize: 11, color: '#8888AA', textAlign: 'left', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {pendingMembers.map(m => (
-                                        <tr key={m.id} style={{ borderBottom: '1px solid #F0F0F0' }}>
-                                            <td style={{ padding: '12px', fontSize: 13, color: '#0A0A0F' }}>{m.invited_email}</td>
-                                            <td style={{ padding: '12px' }}>
-                                                <PrivilegeBadge privilege={m.privilege} />
-                                            </td>
-                                            <td style={{ padding: '12px' }}>
-                                                <span style={{ fontSize: 12, color: '#8888AA', fontWeight: 500 }}>Pending</span>
-                                            </td>
-                                            <td style={{ padding: '12px' }}>
-                                                <div style={{ display: 'flex', gap: 8 }}>
-                                                    <button
-                                                        onClick={() => handleResend(m.id)}
-                                                        disabled={actionLoading === m.id + '-resend'}
-                                                        style={{ fontSize: 12, padding: '4px 10px', border: '1px solid #C0C0C8', color: '#0A0A0F', background: '#fff', cursor: 'pointer' }}
-                                                    >
-                                                        {actionLoading === m.id + '-resend' ? 'Sending...' : 'Resend Invite'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleRemove(m.id)}
-                                                        disabled={actionLoading === m.id + '-remove'}
-                                                        style={{ fontSize: 12, padding: '4px 10px', border: '1px solid #E63950', color: '#E63950', background: 'transparent', cursor: 'pointer' }}
-                                                        onMouseEnter={e => { e.currentTarget.style.background = '#E63950'; e.currentTarget.style.color = '#fff' }}
-                                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#E63950' }}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+            <p className="text-xs text-muted mt-4">Door staff can only access the check-in scanner for events you assign them to.</p>
+
+            {/* Invite Member modal */}
+            {showInvite && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div onClick={() => setShowInvite(false)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                    <form onSubmit={handleAdd} className="relative bg-card rounded-2xl shadow-hover w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+                            <div>
+                                <h2 className="font-heading text-2xl tracking-wide">INVITE MEMBER</h2>
+                                <p className="text-muted text-xs mt-0.5">Send an invite to join your team</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowInvite(false)}
+                                aria-label="Close"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-background hover:text-text transition-colors shrink-0"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                            </button>
                         </div>
-                    )}
-                </>
+                        <div className="p-6 flex flex-col gap-4">
+                            <div>
+                                <label className="text-xs text-muted block mb-1.5">Email address</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    placeholder="teammate@email.com"
+                                    required
+                                    className={modalInput}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-muted block mb-1.5">Role</label>
+                                <ThemedSelect
+                                    value={privilege}
+                                    onChange={() => {}}
+                                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                                >
+                                    <option value="door_staff">Door Staff</option>
+                                </ThemedSelect>
+                            </div>
+                            {addMsg && (
+                                <p className={`text-sm ${addMsg.type === 'success' ? 'text-warm-green' : 'text-warm-red'}`}>{addMsg.text}</p>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-end gap-3 px-6 py-5 border-t border-border">
+                            <button
+                                type="button"
+                                onClick={() => setShowInvite(false)}
+                                className="bg-background border border-border px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-border transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={addLoading}
+                                className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
+                            >
+                                {addLoading ? 'Sending...' : 'Send Invite'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             )}
         </div>
     )

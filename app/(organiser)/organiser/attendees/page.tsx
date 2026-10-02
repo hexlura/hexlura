@@ -3,6 +3,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { resolveOrganiserId } from '@/lib/organiser-access'
+import { loadEventAttendees } from '@/lib/organiser-attendees'
+import { EventAttendeesPanel } from '@/components/organiser/EventAttendeesPanel'
 
 // Decorative event thumbnails, cycled in list order (as in the design)
 const THUMB_GRADIENTS = [
@@ -14,7 +16,11 @@ const THUMB_GRADIENTS = [
 
 const PAGE_SIZE = 1000
 
-export default async function OrganiserAttendeesPage() {
+interface PageProps {
+    searchParams: { event?: string }
+}
+
+export default async function OrganiserAttendeesPage({ searchParams }: PageProps) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/auth/login')
@@ -60,6 +66,11 @@ export default async function OrganiserAttendeesPage() {
         }
     }
 
+    // Selected event: must be one of this organiser's listed events; defaults to the most recent
+    const requested = searchParams?.event
+    const selectedId = requested && eventIds.includes(requested) ? requested : (eventList[0]?.id ?? null)
+    const selectedData = selectedId ? await loadEventAttendees(selectedId, organiserId) : null
+
     return (
         <div className="max-w-7xl">
             <div className="mb-6">
@@ -87,7 +98,7 @@ export default async function OrganiserAttendeesPage() {
                             </div>
                         </div>
                         <Link
-                            href={`/organiser/events/${e.id}/attendees`}
+                            href={`/organiser/attendees?event=${e.id}#attendee-list`}
                             className="px-4 py-2 bg-warm-red/10 text-accent text-sm font-semibold rounded-xl hover:bg-warm-red/20 transition-colors whitespace-nowrap shrink-0"
                         >
                             View Attendees →
@@ -95,6 +106,9 @@ export default async function OrganiserAttendeesPage() {
                     </div>
                 ))}
             </div>
+
+            {/* Attendee list for the selected event */}
+            {selectedData && <EventAttendeesPanel data={selectedData} showHeading />}
         </div>
     )
 }
