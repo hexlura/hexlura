@@ -55,6 +55,8 @@ interface CheckoutContextType {
     ticketSubtotalPence: number
     discountPence: number
     bookingFeePence: number
+    /** Booking fee for one line item (price × qty), so lines can show the all-in price */
+    itemBookingFeePence: (item: CheckoutItem) => number
     processingFeePence: number
     totalPence: number
 }
@@ -92,6 +94,9 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         0
     )
 
+    const itemBookingFeePence = (item: CheckoutItem) =>
+        calculateBookingFeePerTicket(item.price_pence, feeConfig) * item.quantity
+
     const processingFeePence = ticketSubtotalPence > 0 ? feeConfig.processingFeePence : 0
 
     const totalPence = ticketSubtotalPence - discountPence + bookingFeePence + processingFeePence
@@ -110,6 +115,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 ticketSubtotalPence,
                 discountPence,
                 bookingFeePence,
+                itemBookingFeePence,
                 processingFeePence,
                 totalPence,
             }}
