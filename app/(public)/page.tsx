@@ -11,6 +11,8 @@ import RecommendedEvents from '@/components/home/RecommendedEvents';
 import TrustedPartners from '@/components/home/TrustedPartners';
 import { getPageControls, isSectionVisible } from '@/lib/page-controls/get-page-controls';
 import { PAGE_KEYS, HOME_SECTION_KEYS } from '@/lib/page-controls/constants';
+import { getListingFees, buyerTicketPrice } from '@/lib/fees';
+import { FeeProvider } from '@/lib/fee-context';
 // import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
 
 
@@ -43,7 +45,7 @@ export default async function HomePage() {
 
     const now = new Date().toISOString();
 
-    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls] = await Promise.all([
+    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls, listingFees] = await Promise.all([
         supabase
             .from('events')
             .select('*, ticket_types(*)')
@@ -69,7 +71,7 @@ export default async function HomePage() {
             .order('display_order', { ascending: true }),
         supabase
             .from('events')
-            .select('id, title, slug, banner_url, start_at, end_at, venue_name, venue_address, category, ticket_types(price_pence)')
+            .select('id, title, slug, banner_url, start_at, end_at, venue_name, venue_address, category, organiser_id, ticket_types(price_pence)')
             .eq('status', 'published')
             .eq('is_featured', true)
             .or(`end_at.gte.${now},end_at.is.null`)
@@ -80,6 +82,7 @@ export default async function HomePage() {
             .eq('is_active', true)
             .order('display_order', { ascending: true }),
         getPageControls(PAGE_KEYS.HOME),
+        getListingFees(),
     ]);
 
     const upcomingEventsVisible = isSectionVisible(pageControls, HOME_SECTION_KEYS.UPCOMING_EVENTS);
@@ -90,7 +93,7 @@ export default async function HomePage() {
     const categories = (categoriesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
     const partners = (partnersRaw || []).filter(p => !!p.image_url) as Array<{ name: string; image_url: string }>;
 
-    type FeaturedRaw = FeaturedEvent & { ticket_types: { price_pence: number }[] };
+    type FeaturedRaw = FeaturedEvent & { organiser_id: string; ticket_types: { price_pence: number }[] };
     const featuredEvents: FeaturedEvent[] = ((featuredRaw || []) as unknown as FeaturedRaw[]).map(e => ({
         id: e.id,
         title: e.title,
@@ -100,8 +103,13 @@ export default async function HomePage() {
         venue_name: e.venue_name,
         venue_address: e.venue_address,
         category: e.category,
+        // All-in: cheapest ticket plus the buyer's booking fee (fee never decreases with price)
         min_price_pence: e.ticket_types?.length > 0
-            ? Math.min(...e.ticket_types.map((t: { price_pence: number }) => t.price_pence))
+            ? buyerTicketPrice(
+                Math.min(...e.ticket_types.map((t: { price_pence: number }) => t.price_pence)),
+                e.organiser_id,
+                listingFees,
+            ).totalPence
             : null,
     }));
 
@@ -114,6 +122,7 @@ export default async function HomePage() {
     ];
 
     return (
+        <FeeProvider fees={listingFees}>
         <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className="page-wrapper">
 
             {/* Responsive styles — server-rendered to avoid FOUC */}
@@ -477,5 +486,6 @@ export default async function HomePage() {
                 .past-scroll::-webkit-scrollbar { display: none; }
             `}</style>
         </div>
+        </FeeProvider>
     );
 }

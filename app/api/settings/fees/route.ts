@@ -56,7 +56,17 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    return NextResponse.json(config, {
+    // Lets listing pages show each organiser's all-in ticket price without a
+    // request per event.
+    const { data: exemptRows, error: exemptError } = await adminClient
+        .from('organiser_profiles')
+        .select('id')
+        .eq('booking_fee_exempt', true)
+    if (exemptError) {
+        console.error('fees endpoint: exempt organisers read failed:', exemptError)
+    }
+
+    return NextResponse.json({ ...config, exempt_organiser_ids: (exemptRows ?? []).map(o => o.id) }, {
         headers: { 'Cache-Control': 'no-store' },
     })
 }

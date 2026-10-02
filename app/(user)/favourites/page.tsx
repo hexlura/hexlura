@@ -6,6 +6,8 @@ import EventCard from '@/components/events/EventCard'
 import OrganiserCard from '@/components/organisers/OrganiserCard'
 import FavouritesTabs from '@/components/favourites/FavouritesTabs'
 import Link from 'next/link'
+import { getListingFees } from '@/lib/fees'
+import { FeeProvider } from '@/lib/fee-context'
 
 export const metadata = {
     title: 'My Favourites | Hexlura',
@@ -37,6 +39,7 @@ export default async function FavouritesPage() {
                 banner_url,
                 category,
                 status,
+                organiser_id,
                 ticket_types (
                     id,
                     name,
@@ -77,6 +80,8 @@ export default async function FavouritesPage() {
         .map((f) => f.organiser as unknown as { id: string; org_name: string; slug: string; logo_url: string | null; organiser_type: string })
         .filter((o) => !!o)
 
+    const listingFees = await getListingFees()
+
     // Events tab content
     const eventsContent = likedEvents.length > 0 ? (
         <div
@@ -86,9 +91,11 @@ export default async function FavouritesPage() {
                 gap: '16px',
             }}
         >
-            {likedEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-            ))}
+            <FeeProvider fees={listingFees}>
+                {likedEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                ))}
+            </FeeProvider>
         </div>
     ) : (
         <div className="py-20 text-center border-2 border-dashed border-border rounded-none">

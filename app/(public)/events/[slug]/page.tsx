@@ -15,6 +15,7 @@ import OrganiserBadge from '@/components/organisers/OrganiserBadge';
 
 import type { Metadata } from 'next';
 import { getDynamicPageMetadata } from '@/lib/seo';
+import { getFeeConfig } from '@/lib/fees';
 
 export const revalidate = 120;
 
@@ -190,6 +191,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         return `${date}, ${time}`;
     }
 
+    // Buyer-facing prices include the booking fee, unless this organiser is exempt (same rule as checkout)
+    const liveFeeConfig = await getFeeConfig();
+    const bookingFeeConfig = {
+        ...liveFeeConfig,
+        ...(organiser?.booking_fee_exempt ? { percent: 0, minPence: 0, maxPence: 0 } : {}),
+        ...(organiser?.processing_fee_exempt ? { processingFeePence: 0 } : {}),
+    };
+
     return (
         <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
 
@@ -341,7 +350,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
                             {/* Booking widget */}
                             <div id="booking-widget">
-                                <BookingWidget event={event} ticketTypes={ticketTypes} />
+                                <BookingWidget event={event} ticketTypes={ticketTypes} feeConfig={bookingFeeConfig} />
                             </div>
                         </div>
                     </div>
