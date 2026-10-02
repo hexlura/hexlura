@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export default function CheckoutFlow() {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const { state, setItems, setEventInfo, setAttendeeDetails, setPromo, setStep, ticketSubtotalPence, discountPence, bookingFeePence, processingFeePence, totalPence } = useCheckout()
+    const { state, setItems, setEventInfo, setAttendeeDetails, setPromo, setStep, ticketSubtotalPence, discountPence, bookingFeePence, itemBookingFeePence, processingFeePence, totalPence } = useCheckout()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     // Shown when the visitor has no session at all — choose to continue as guest
@@ -305,15 +305,9 @@ export default function CheckoutFlow() {
                             {state.items.map(item => (
                                 <div key={item.ticket_type_id} className="flex justify-between">
                                     <span className="text-muted">{item.ticket_name} × {item.quantity}</span>
-                                    <span className="text-text">{formatPence(item.price_pence * item.quantity)}</span>
+                                    <span className="text-text">{formatPence(item.price_pence * item.quantity + itemBookingFeePence(item))}</span>
                                 </div>
                             ))}
-                            {bookingFeePence + processingFeePence > 0 && (
-                                <div className="flex justify-between text-muted">
-                                    <span>Fees</span>
-                                    <span>{formatPence(bookingFeePence + processingFeePence)}</span>
-                                </div>
-                            )}
                             {discountPence > 0 && (
                                 <div className="flex justify-between text-success">
                                     <span>Discount ({state.promo?.code})</span>
@@ -363,6 +357,10 @@ export default function CheckoutFlow() {
                                 {formatPence(ticketSubtotalPence - discountPence <= 0 ? 0 : (ticketSubtotalPence > 0 ? totalPence : ticketSubtotalPence))}
                             </span>
                         </div>
+                        {/* One combined figure; buyers don't need the booking/processing split */}
+                        {ticketSubtotalPence - discountPence > 0 && bookingFeePence + processingFeePence > 0 && (
+                            <p className="text-xs text-muted">incl. {formatPence(bookingFeePence + processingFeePence)} fee</p>
+                        )}
                     </div>
 
                     {/* Attendee details — only shown when nothing was prefilled from a profile
