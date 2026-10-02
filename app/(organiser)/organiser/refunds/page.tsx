@@ -6,6 +6,20 @@ import { resolveOrganiserId } from '@/lib/organiser-access'
 
 export const dynamic = 'force-dynamic'
 
+type ClientRequests = React.ComponentProps<typeof OrganiserRefundsClient>['requests']
+
+function RefundsLayout({ requests }: { requests: ClientRequests }) {
+    return (
+        <div className="max-w-7xl">
+            <div className="mb-6">
+                <h1 className="font-heading text-4xl tracking-wide">REFUND REQUESTS</h1>
+                <p className="text-muted text-sm mt-1">Review and action refund requests from attendees</p>
+            </div>
+            <OrganiserRefundsClient requests={requests} />
+        </div>
+    )
+}
+
 export default async function OrganiserRefundsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -17,45 +31,33 @@ export default async function OrganiserRefundsPage() {
     const adminClient = createAdminClient()
 
     // Get this organiser's event IDs
-    const { data: events } = await adminClient
+    const { data: events, error: eventsErr } = await adminClient
         .from('events')
         .select('id')
         .eq('organiser_id', organiserId)
+    if (eventsErr) throw eventsErr
 
     const eventIds = (events || []).map((e: { id: string }) => e.id)
 
     if (eventIds.length === 0) {
-        return (
-            <div>
-                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', marginBottom: '32px' }}>
-                    REFUND REQUESTS
-                </h1>
-                <OrganiserRefundsClient requests={[]} />
-            </div>
-        )
+        return <RefundsLayout requests={[]} />
     }
 
     // Get bookings for those events
-    const { data: bookings } = await adminClient
+    const { data: bookings, error: bookingsErr } = await adminClient
         .from('bookings')
         .select('id, user_id')
         .in('event_id', eventIds)
+    if (bookingsErr) throw bookingsErr
 
     const bookingIds = (bookings || []).map((b: { id: string }) => b.id)
 
     if (bookingIds.length === 0) {
-        return (
-            <div>
-                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', marginBottom: '32px' }}>
-                    REFUND REQUESTS
-                </h1>
-                <OrganiserRefundsClient requests={[]} />
-            </div>
-        )
+        return <RefundsLayout requests={[]} />
     }
 
     // Fetch ALL refund requests for this organiser's bookings (all statuses)
-    const { data: refundData } = await adminClient
+    const { data: refundData, error: refundsErr } = await adminClient
         .from('refund_requests')
         .select(`
             id, status, reason, message, organiser_note, refund_amount_pence, created_at,
@@ -66,6 +68,7 @@ export default async function OrganiserRefundsPage() {
         `)
         .in('booking_id', bookingIds)
         .order('created_at', { ascending: false })
+    if (refundsErr) throw refundsErr
 
     const requests = refundData || []
 
@@ -113,13 +116,5 @@ export default async function OrganiserRefundsPage() {
         buyer: r.booking?.user_id ? (profileMap[r.booking.user_id] ?? null) : null,
     }))
 
-    return (
-        <div className="max-w-7xl">
-            <div className="mb-6">
-                <h1 className="font-heading text-4xl tracking-wide">REFUND REQUESTS</h1>
-                <p className="text-muted text-sm mt-1">Review and action refund requests from attendees</p>
-            </div>
-            <OrganiserRefundsClient requests={enriched} />
-        </div>
-    )
+    return <RefundsLayout requests={enriched} />
 }
