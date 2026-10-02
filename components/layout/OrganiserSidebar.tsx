@@ -254,7 +254,7 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                 </Link>
 
                 {/* Navigation — scrolls independently, pb-28 clears the mobile bottom nav */}
-                <nav className="flex-1 px-5 pb-4 flex flex-col gap-0.5 overflow-y-auto [padding-bottom:max(7rem,env(safe-area-inset-bottom,7rem))]">
+                <nav className="flex-1 min-h-0 px-5 pb-4 flex flex-col gap-0.5 overflow-y-auto">
                     {visibleLinks.map((link) => {
                         const active = isActive(link.href, link.exact)
                         const loading = loadingPath === link.href
@@ -305,22 +305,8 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                         </Link>
                     </div>
 
-                    {/* Upgrade card */}
-                    <div className="mt-4 bg-gradient-to-br from-accent via-accent to-warm-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
-                        <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
-                        <p className="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
-                        <Link
-                            href="/organiser/billing"
-                            onClick={() => setIsOpen(false)}
-                            className="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative"
-                        >
-                            Upgrade to Pro →
-                        </Link>
-                    </div>
-
                     {/* User footer — inside scroll area so Sign Out is reachable */}
-                    <div className="pt-4 pb-2 mt-4 border-t border-border">
+                    <div className="pt-3 pb-2 mt-2 border-t border-border">
                         {/* Name + sign out live in the desktop top bar; shown here on mobile only */}
                         <div className="lg:hidden">
                             <div className="text-xs text-muted mb-0.5 truncate">{orgName}</div>
@@ -385,6 +371,22 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                         </button>
                     </div>
                 </nav>
+                {/* Upgrade card — pinned to the bottom of the sidebar, outside the scrolling menu.
+                    pb-20 on mobile clears the bottom nav bar. */}
+                <div className="shrink-0 p-5 pt-3 pb-20 lg:pb-5 border-t border-border">
+                    <div className="bg-gradient-to-br from-accent via-accent to-warm-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
+                        <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
+                        <p className="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
+                        <Link
+                            href="/organiser/billing"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative"
+                        >
+                            Upgrade to Pro →
+                        </Link>
+                    </div>
+                </div>
             </aside>
         </>
     )

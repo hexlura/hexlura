@@ -42,6 +42,16 @@
   color: var(--text);
 }
 
+/* Warm scrollbars for the organiser portal (mockup: 8px page, 5px sidebar menu).
+   The page scrollbar belongs to <html>, so it is targeted with :has(). */
+html:has(.organiser-theme)::-webkit-scrollbar,
+.organiser-theme ::-webkit-scrollbar { width: 8px; height: 8px; }
+html:has(.organiser-theme)::-webkit-scrollbar-thumb,
+.organiser-theme ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+html:has(.organiser-theme)::-webkit-scrollbar-track,
+.organiser-theme ::-webkit-scrollbar-track { background: transparent; }
+.organiser-theme aside nav::-webkit-scrollbar { width: 5px; }
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
-import { RevenueChart } from '@/components/organiser/RevenueChart'
+import { RevenueChart, type RevenueRange } from '@/components/organiser/RevenueChart'
 import { resolveOrganiserId } from '@/lib/organiser-access'
 import { generatePayoutsForOrganiser } from '@/lib/generate-payouts'
 import { EventFilter } from '@/components/organiser/EventFilter'
@@ -209,6 +209,40 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
     const upSold = upcoming.reduce((s, e) => s + e.ticket_types.reduce((a, t) => a + t.quantity_sold, 0), 0)
     const sellThroughPct = upCap > 0 ? Math.min(100, Math.round((upSold / upCap) * 100)) : 0
 
+    // Revenue chart ranges: 30 / 90 days daily, 12 months monthly (net of discounts)
+    const dailySeries = (days: number) => {
+        const m: Record<string, number> = {}
+        for (let i = days - 1; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i)
+            m[d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })] = 0
+        }
+        const from = new Date(); from.setDate(from.getDate() - days)
+        for (const b of bookings) {
+            if (new Date(b.created_at) < from) continue
+            const k = new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+            if (k in m) m[k] += netTicketPence(b) / 100
+        }
+        return Object.entries(m).map(([date, revenue]) => ({ date, revenue }))
+    }
+    const monthlySeries = () => {
+        const label = (d: Date) => d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })
+        const m: Record<string, number> = {}
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i)
+            m[label(d)] = 0
+        }
+        for (const b of bookings) {
+            const k = label(new Date(b.created_at))
+            if (k in m) m[k] += netTicketPence(b) / 100
+        }
+        return Object.entries(m).map(([date, revenue]) => ({ date, revenue }))
+    }
+    const revenueRanges: RevenueRange[] = [
+        { key: '30D', label: '30D', subtitle: 'Last 30 days · Daily ticket revenue', data: chartData },
+        { key: '90D', label: '90D', subtitle: 'Last 90 days · Daily ticket revenue', data: dailySeries(90) },
+        { key: '1Y', label: '1Y', subtitle: 'Last 12 months · Monthly ticket revenue', data: monthlySeries() },
+    ]
+
     const iconProps = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 } as const
     const pillMuted = 'text-muted bg-background'
     const pillGreen = 'text-warm-green bg-warm-green/10'
@@ -337,13 +371,7 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 {/* Revenue chart */}
                 <div className="lg:col-span-2 bg-card rounded-2xl shadow-card p-6">
-                    <div className="mb-1">
-                        <h2 className="text-sm font-semibold">Revenue Overview</h2>
-                        <p className="text-xs text-muted mt-0.5">Last 30 days · Daily ticket revenue</p>
-                    </div>
-                    <div className="mt-2">
-                        <RevenueChart data={chartData} />
-                    </div>
+                    <RevenueChart ranges={revenueRanges} />
                 </div>
 
                 {/* Sell-through gauge */}
@@ -361,8 +389,8 @@ export default async function OrganiserDashboardPage({ searchParams }: PageProps
                             cx="60" cy="60" r="50" fill="none" stroke="url(#sellThroughGradient)" strokeWidth="14" strokeLinecap="round"
                             strokeDasharray="314" strokeDashoffset={314 * (1 - sellThroughPct / 100)} transform="rotate(-90 60 60)"
                         />
-                        <text x="60" y="56" textAnchor="middle" fontFamily="Bebas Neue" fontSize="30" fill="#1A0E0C">{sellThroughPct}%</text>
-                        <text x="60" y="74" textAnchor="middle" fontFamily="DM Sans" fontSize="9" fill="#6B5D56">capacity</text>
+                        <text x="60" y="56" textAnchor="middle" fontSize="30" fill="#1A0E0C" style={{ fontFamily: 'var(--font-heading)' }}>{sellThroughPct}%</text>
+                        <text x="60" y="74" textAnchor="middle" fontSize="9" fill="#6B5D56" style={{ fontFamily: 'var(--font-body)' }}>capacity</text>
                     </svg>
                     <p className="text-xs text-muted mt-2">
                         {upcoming.length > 0
