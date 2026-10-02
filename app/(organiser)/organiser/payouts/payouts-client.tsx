@@ -21,7 +21,7 @@ export function WithdrawButton({ pendingBalance, canRequestWithdrawal }: Props) 
         if (res.ok) {
             router.refresh()
         } else {
-            const data = await res.json()
+            const data = await res.json().catch(() => ({}))
             setError(data.error || 'Failed to request withdrawal')
         }
         setLoading(false)
@@ -34,11 +34,11 @@ export function WithdrawButton({ pendingBalance, canRequestWithdrawal }: Props) 
             <button
                 onClick={handleRequest}
                 disabled={loading}
-                className="px-6 py-2.5 bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {loading ? 'Requesting...' : `Request Withdrawal — ${formatPence(pendingBalance)}`}
             </button>
-            {error && <p className="text-accent text-xs mt-2">{error}</p>}
+            {error && <p className="text-warm-red text-xs mt-2">{error}</p>}
         </div>
     )
 }
