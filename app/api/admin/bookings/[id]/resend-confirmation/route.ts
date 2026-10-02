@@ -92,18 +92,19 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
     const eventTime = endTime ? `${startTime} - ${endTime} UK Time` : `${startTime} UK Time`
 
     // Group items by ticket type for the summary table
-    const ticketSummaryMap: Map<string, { name: string; quantity: number; price: string }> = new Map()
+    const ticketSummaryMap: Map<string, { name: string; quantity: number; pricePence: number }> = new Map()
     for (const item of booking.items) {
         const typeName = item.ticket_type?.name || 'Ticket'
         const existing = ticketSummaryMap.get(typeName)
+        const unitPence = item.unit_price_pence ?? item.ticket_type?.price_pence ?? 0
         if (existing) {
             existing.quantity += item.quantity
+            existing.pricePence += unitPence * item.quantity
         } else {
-            const unitPence = item.unit_price_pence ?? item.ticket_type?.price_pence ?? 0
             ticketSummaryMap.set(typeName, {
                 name: typeName,
                 quantity: item.quantity,
-                price: `£${((unitPence * item.quantity) / 100).toFixed(2)}`,
+                pricePence: unitPence * item.quantity,
             })
         }
     }
@@ -111,6 +112,14 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
 
     const totalPence = booking.total_pence ?? 0
     const totalPaid = booking.is_complimentary ? '£0.00' : `£${(totalPence / 100).toFixed(2)}`
+
+    // Buyers see lines carrying the booking fee and one combined "incl. fee" figure
+    const discountPence = booking.discount_pence ?? 0
+    const baseTotalPence = ticketItems.reduce((sum, t) => sum + t.pricePence, 0)
+    const bookingFeePence = booking.is_complimentary ? 0 : (booking.booking_fee_pence ?? 0)
+    const processingFeePence = booking.is_complimentary
+        ? 0
+        : Math.max(0, totalPence - (baseTotalPence - discountPence) - bookingFeePence)
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.hexlura.com'
 
@@ -155,6 +164,9 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         venueAddress: booking.event.venue_address || '',
         bookingRef: booking.booking_ref,
         ticketItems,
+        bookingFeePence,
+        processingFeePence,
+        discountPence,
         totalPaid,
         downloadUrl: `${appUrl}/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`,
     }))

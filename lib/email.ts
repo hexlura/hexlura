@@ -61,8 +61,11 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
     const ticketItems = data.ticketSummary.map(t => ({
         name: t.name,
         quantity: t.quantity,
-        price: `£${((t.unitPricePence * t.quantity) / 100).toFixed(2)}`,
+        pricePence: t.unitPricePence * t.quantity,
     }))
+    // This path doesn't carry the processing fee separately; derive it from what was charged
+    const baseTotal = ticketItems.reduce((sum, t) => sum + t.pricePence, 0)
+    const processingFeePence = Math.max(0, data.totalPence - (baseTotal - data.discountPence) - data.bookingFeePence)
 
     const totalPaid = `£${(data.totalPence / 100).toFixed(2)}`
 
@@ -125,6 +128,9 @@ export async function sendBookingConfirmationEmail(data: BookingEmailData) {
             venueAddress: data.venueAddress || '',
             bookingRef: data.bookingRef,
             ticketItems,
+            bookingFeePence: data.bookingFeePence,
+            processingFeePence,
+            discountPence: data.discountPence,
             totalPaid,
             downloadUrl: `${appUrl}/api/tickets/${data.bookingRef}/pdf${accessToken ? `?token=${accessToken}` : ''}`,
         }))

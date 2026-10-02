@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export default function CheckoutFlow() {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const { state, setItems, setEventInfo, setAttendeeDetails, setPromo, setStep, ticketSubtotalPence, discountPence, bookingFeePence, itemBookingFeePence, processingFeePence, totalPence } = useCheckout()
+    const { state, setItems, setEventInfo, setAttendeeDetails, setPromo, setStep, ticketSubtotalPence, discountPence, bookingFeePence, processingFeePence, lineTotalsPence, totalPence } = useCheckout()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     // Shown when the visitor has no session at all — choose to continue as guest
@@ -302,10 +302,10 @@ export default function CheckoutFlow() {
                         <p className="font-bold text-text text-base">{state.eventTitle}</p>
                         <p className="text-muted text-xs">{state.eventDate} · {state.venueName}</p>
                         <div className="border-t border-border pt-3 space-y-1">
-                            {state.items.map(item => (
+                            {state.items.map((item, i) => (
                                 <div key={item.ticket_type_id} className="flex justify-between">
                                     <span className="text-muted">{item.ticket_name} × {item.quantity}</span>
-                                    <span className="text-text">{formatPence(item.price_pence * item.quantity + itemBookingFeePence(item))}</span>
+                                    <span className="text-text">{formatPence(lineTotalsPence[i])}</span>
                                 </div>
                             ))}
                             {discountPence > 0 && (

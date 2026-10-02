@@ -4,7 +4,7 @@ import { useCheckout } from '@/lib/checkout-context'
 import { formatPence } from '@/lib/fees'
 
 export default function OrderSummary() {
-    const { state, ticketSubtotalPence, discountPence, bookingFeePence, itemBookingFeePence, processingFeePence, totalPence } = useCheckout()
+    const { state, ticketSubtotalPence, discountPence, bookingFeePence, processingFeePence, lineTotalsPence, totalPence } = useCheckout()
 
     return (
         <div className="bg-surface border border-border rounded-none p-6 space-y-4 sticky top-24">
@@ -18,10 +18,10 @@ export default function OrderSummary() {
 
             <div className="border-t border-border pt-4 space-y-2 text-sm">
                 {/* Ticket lines */}
-                {state.items.map((item) => (
+                {state.items.map((item, i) => (
                     <div key={item.ticket_type_id} className="flex justify-between">
                         <span className="text-muted">{item.ticket_name} × {item.quantity}</span>
-                        <span className="text-text">{formatPence(item.price_pence * item.quantity + itemBookingFeePence(item))}</span>
+                        <span className="text-text">{formatPence(lineTotalsPence[i])}</span>
                     </div>
                 ))}
 
@@ -29,7 +29,7 @@ export default function OrderSummary() {
                 {state.items.length > 1 && (
                     <div className="flex justify-between text-muted pt-1">
                         <span>Subtotal</span>
-                        <span>{formatPence(ticketSubtotalPence + bookingFeePence)}</span>
+                        <span>{formatPence(ticketSubtotalPence + bookingFeePence + processingFeePence)}</span>
                     </div>
                 )}
 

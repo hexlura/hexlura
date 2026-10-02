@@ -60,13 +60,17 @@ export async function GET(request: NextRequest) {
     // request per event.
     const { data: exemptRows, error: exemptError } = await adminClient
         .from('organiser_profiles')
-        .select('id')
-        .eq('booking_fee_exempt', true)
+        .select('id, booking_fee_exempt, processing_fee_exempt')
+        .or('booking_fee_exempt.eq.true,processing_fee_exempt.eq.true')
     if (exemptError) {
         console.error('fees endpoint: exempt organisers read failed:', exemptError)
     }
 
-    return NextResponse.json({ ...config, exempt_organiser_ids: (exemptRows ?? []).map(o => o.id) }, {
+    return NextResponse.json({
+        ...config,
+        exempt_organiser_ids: (exemptRows ?? []).filter(o => o.booking_fee_exempt).map(o => o.id),
+        processing_exempt_organiser_ids: (exemptRows ?? []).filter(o => o.processing_fee_exempt).map(o => o.id),
+    }, {
         headers: { 'Cache-Control': 'no-store' },
     })
 }

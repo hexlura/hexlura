@@ -307,7 +307,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
 
         const eventTime = endTime ? `${startTime} - ${endTime} UK Time` : `${startTime} UK Time`
 
-        const ticketItems: { name: string; quantity: number; price: string }[] = []
+        const ticketItems: { name: string; quantity: number; price: string; pricePence: number }[] = []
         for (const item of items) {
             const { data: tt } = await supabase
                 .from('ticket_types')
@@ -318,7 +318,8 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                 ticketItems.push({
                     name: tt.name,
                     quantity: item.quantity,
-                    price: `£${((tt.price_pence * item.quantity) / 100).toFixed(2)}`,
+                    price: `£${((tt.price_pence * item.quantity) / 100).toFixed(2)}`, // organiser email: ticket price only
+                    pricePence: tt.price_pence * item.quantity,
                 })
             }
         }
