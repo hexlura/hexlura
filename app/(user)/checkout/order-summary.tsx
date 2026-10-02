@@ -4,7 +4,7 @@ import { useCheckout } from '@/lib/checkout-context'
 import { formatPence } from '@/lib/fees'
 
 export default function OrderSummary() {
-    const { state, ticketSubtotalPence, discountPence, bookingFeePence, itemBookingFeePence, processingFeePence, totalPence } = useCheckout()
+    const { state, ticketSubtotalPence, discountPence, bookingFeePence, processingFeePence, totalPence } = useCheckout()
 
     return (
         <div className="bg-surface border border-border rounded-none p-6 space-y-4 sticky top-24">
@@ -21,7 +21,7 @@ export default function OrderSummary() {
                 {state.items.map((item) => (
                     <div key={item.ticket_type_id} className="flex justify-between">
                         <span className="text-muted">{item.ticket_name} × {item.quantity}</span>
-                        <span className="text-text">{formatPence(item.price_pence * item.quantity + itemBookingFeePence(item))}</span>
+                        <span className="text-text">{formatPence(item.price_pence * item.quantity)}</span>
                     </div>
                 ))}
 
@@ -29,7 +29,7 @@ export default function OrderSummary() {
                 {state.items.length > 1 && (
                     <div className="flex justify-between text-muted pt-1">
                         <span>Subtotal</span>
-                        <span>{formatPence(ticketSubtotalPence + bookingFeePence)}</span>
+                        <span>{formatPence(ticketSubtotalPence)}</span>
                     </div>
                 )}
 
@@ -41,16 +41,11 @@ export default function OrderSummary() {
                     </div>
                 )}
 
-                {/* Booking fee is built into the ticket prices above, as on the event page */}
-                {bookingFeePence > 0 && (
-                    <p className="text-xs text-muted">Ticket prices include {formatPence(bookingFeePence)} booking fee</p>
-                )}
-
-                {/* Order processing fee */}
-                {processingFeePence > 0 && (
+                {/* Fees — shown as one figure; buyers don't need the split */}
+                {bookingFeePence + processingFeePence > 0 && (
                     <div className="flex justify-between text-muted">
-                        <span>Order processing fee</span>
-                        <span>{formatPence(processingFeePence)}</span>
+                        <span>Fees</span>
+                        <span>{formatPence(bookingFeePence + processingFeePence)}</span>
                     </div>
                 )}
 

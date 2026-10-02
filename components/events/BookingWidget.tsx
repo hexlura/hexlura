@@ -391,12 +391,9 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
                         <span>Total</span>
                         <span>{formatPence(subtotal + bookingFeeTotal + processingFee)}</span>
                     </div>
-                    {(bookingFeeTotal > 0 || processingFee > 0) && (
+                    {bookingFeeTotal + processingFee > 0 && (
                         <p style={{ fontSize: 12, color: '#666677', margin: 0 }}>
-                            {[
-                                bookingFeeTotal > 0 ? `incl. ${formatPence(bookingFeeTotal)} booking fee` : null,
-                                processingFee > 0 ? `${formatPence(processingFee)} order processing fee` : null,
-                            ].filter(Boolean).join(' + ')}
+                            incl. {formatPence(bookingFeeTotal + processingFee)} fee
                         </p>
                     )}
                 </div>
