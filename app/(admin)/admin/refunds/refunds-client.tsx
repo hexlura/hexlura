@@ -53,9 +53,9 @@ function truncate(s: string, n: number): string {
 
 const STATUS_BADGE: Record<RefundStatus, { bg: string; color: string; border: string; label: string }> = {
     pending: { bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623', label: 'Pending Organiser' },
-    organiser_approved: { bg: 'rgba(0,100,255,0.1)', color: '#3B6FD4', border: '1px solid #3B6FD4', label: 'Awaiting Admin' },
+    organiser_approved: { bg: 'rgba(59,111,212,0.1)', color: '#3B6FD4', border: '1px solid #3B6FD4', label: 'Awaiting Admin' },
     organiser_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Organiser Rejected' },
-    admin_approved: { bg: 'rgba(0,196,138,0.1)', color: '#1B9C63', border: '1px solid #1B9C63', label: 'Refunded' },
+    admin_approved: { bg: 'rgba(27,156,99,0.1)', color: '#1B9C63', border: '1px solid #1B9C63', label: 'Refunded' },
     admin_rejected: { bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950', label: 'Denied by Admin' },
 }
 
@@ -312,7 +312,7 @@ export function AdminRefundsClient({
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <span style={{ color: '#555566' }}>—</span>
+                                                <span style={{ color: '#6B5D56' }}>—</span>
                                             )}
                                         </td>
                                     </tr>

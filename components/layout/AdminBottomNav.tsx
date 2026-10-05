@@ -84,7 +84,7 @@ export function AdminBottomNav({ pendingOrganisers = 0, onMoreClick }: Props) {
             className="lg:hidden fixed bottom-0 left-0 right-0 z-40"
             style={{
                 background: '#FFFFFF',
-                borderTop: '1px solid #E0E0E8',
+                borderTop: '1px solid #F1E7E2',
                 paddingBottom: 'env(safe-area-inset-bottom)',
             }}
         >
@@ -102,7 +102,7 @@ export function AdminBottomNav({ pendingOrganisers = 0, onMoreClick }: Props) {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: 3,
-                                color: active ? '#E63950' : '#8888AA',
+                                color: active ? '#E63950' : '#6B5D56',
                                 textDecoration: 'none',
                                 transition: 'color 0.15s',
                                 position: 'relative',
@@ -115,7 +115,7 @@ export function AdminBottomNav({ pendingOrganisers = 0, onMoreClick }: Props) {
                                     top: 8,
                                     right: '50%',
                                     transform: 'translateX(8px)',
-                                    background: '#E8A000',
+                                    background: '#E63950',
                                     color: '#000',
                                     fontSize: 9,
                                     fontWeight: 700,
@@ -148,7 +148,7 @@ export function AdminBottomNav({ pendingOrganisers = 0, onMoreClick }: Props) {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 3,
-                        color: isMoreActive ? '#E63950' : '#8888AA',
+                        color: isMoreActive ? '#E63950' : '#6B5D56',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',

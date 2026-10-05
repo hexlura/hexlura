@@ -276,7 +276,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                     height: '24px',
                                     borderRadius: '12px',
                                     border: 'none',
-                                    background: isActive ? '#22C55E' : '#D9CCC6',
+                                    background: isActive ? '#1B9C63' : '#D9CCC6',
                                     cursor: 'pointer',
                                     position: 'relative',
                                     transition: 'background 0.2s',
@@ -383,7 +383,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                             onClick={() => setEditData(d => ({ ...d, is_active: !(d.is_active ?? cat.is_active) }))}
                                             style={{
                                                 width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-                                                background: (editData.is_active ?? cat.is_active) ? '#22C55E' : '#D9CCC6',
+                                                background: (editData.is_active ?? cat.is_active) ? '#1B9C63' : '#D9CCC6',
                                                 cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                                             }}
                                         >
@@ -432,7 +432,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                 </tr>
                             ) : deleteConfirm === cat.id ? (
                                 // Delete confirm row
-                                <tr key={cat.id} style={{ borderBottom: '1px solid #F1E7E2', background: '#FFF5F5' }}>
+                                <tr key={cat.id} style={{ borderBottom: '1px solid #F1E7E2', background: '#FDEEF0' }}>
                                     <td colSpan={6} style={{ padding: '16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                             <span style={{ fontSize: '14px', color: '#1A0E0C' }}>
@@ -455,7 +455,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                 </tr>
                             ) : (
                                 // Normal row
-                                <tr key={cat.id} style={{ borderBottom: '1px solid #F0F0F0' }}>
+                                <tr key={cat.id} style={{ borderBottom: '1px solid #F1E7E2' }}>
                                     <td style={{ padding: '12px 16px' }}>
                                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#F1E7E2' }}>
                                             {cat.image_url ? (
@@ -492,7 +492,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                             onClick={() => handleToggleActive(cat)}
                                             style={{
                                                 width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-                                                background: cat.is_active ? '#22C55E' : '#D9CCC6',
+                                                background: cat.is_active ? '#1B9C63' : '#D9CCC6',
                                                 cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                                             }}
                                         >

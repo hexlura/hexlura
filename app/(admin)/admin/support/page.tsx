@@ -113,7 +113,7 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
                             const lastActivity = t.last_reply_at ?? t.created_at
                             const needsAdmin = !t.last_reply_by_admin && t.status !== 'closed' && t.status !== 'resolved'
                             return (
-                                <tr key={t.id} style={{ borderBottom: '1px solid #F0F0F0' }}>
+                                <tr key={t.id} style={{ borderBottom: '1px solid #F1E7E2' }}>
                                     <td style={{ padding: '12px 16px', maxWidth: '320px' }}>
                                         <Link href={`/admin/support/${t.id}`} className="text-accent text-sm font-medium hover:underline block truncate">
                                             {t.subject}

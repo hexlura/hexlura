@@ -247,7 +247,7 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
                                     height: '24px',
                                     borderRadius: '12px',
                                     border: 'none',
-                                    background: isActive ? '#22C55E' : '#D9CCC6',
+                                    background: isActive ? '#1B9C63' : '#D9CCC6',
                                     cursor: 'pointer',
                                     position: 'relative',
                                     transition: 'background 0.2s',
@@ -354,7 +354,7 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
                                             onClick={() => setEditData(d => ({ ...d, is_active: !(d.is_active ?? city.is_active) }))}
                                             style={{
                                                 width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-                                                background: (editData.is_active ?? city.is_active) ? '#22C55E' : '#D9CCC6',
+                                                background: (editData.is_active ?? city.is_active) ? '#1B9C63' : '#D9CCC6',
                                                 cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                                             }}
                                         >
@@ -392,7 +392,7 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
                                 </tr>
                             ) : deleteConfirm === city.id ? (
                                 // Delete confirm row
-                                <tr key={city.id} style={{ borderBottom: '1px solid #F1E7E2', background: '#FFF5F5' }}>
+                                <tr key={city.id} style={{ borderBottom: '1px solid #F1E7E2', background: '#FDEEF0' }}>
                                     <td colSpan={6} style={{ padding: '16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                             <span style={{ fontSize: '14px', color: '#1A0E0C' }}>
@@ -415,7 +415,7 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
                                 </tr>
                             ) : (
                                 // Normal row
-                                <tr key={city.id} style={{ borderBottom: '1px solid #F0F0F0' }}>
+                                <tr key={city.id} style={{ borderBottom: '1px solid #F1E7E2' }}>
                                     <td style={{ padding: '12px 16px' }}>
                                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#F1E7E2' }}>
                                             {city.image_url ? (
@@ -452,7 +452,7 @@ export function CitiesClient({ cities: initialCities }: CitiesClientProps) {
                                             onClick={() => handleToggleActive(city)}
                                             style={{
                                                 width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-                                                background: city.is_active ? '#22C55E' : '#D9CCC6',
+                                                background: city.is_active ? '#1B9C63' : '#D9CCC6',
                                                 cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                                             }}
                                         >

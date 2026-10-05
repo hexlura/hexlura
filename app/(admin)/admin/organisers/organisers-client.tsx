@@ -17,12 +17,12 @@ const TYPE_LABELS: Record<string, string> = {
     education: 'Education',
 }
 const TYPE_COLOURS: Record<string, string> = {
-    individual: '#6B7280',
-    artist: '#7C3AED',
-    club_venue: '#2563EB',
-    event_company: '#0D9488',
-    charity: '#16A34A',
-    education: '#D97706',
+    individual: '#6B5D56',
+    artist: '#C2521A',
+    club_venue: '#3B6FD4',
+    event_company: '#1B9C63',
+    charity: '#E63950',
+    education: '#9C6900',
 }
 
 function OrgTypeBadge({ type }: { type: string | null }) {

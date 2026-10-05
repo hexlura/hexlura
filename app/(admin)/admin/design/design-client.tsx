@@ -95,7 +95,7 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
         fontSize: '14px', color: '#1A0E0C', outline: 'none', background: '#FFFFFF', cursor: 'pointer',
     }
     const previewBox: React.CSSProperties = {
-        marginTop: '16px', padding: '16px', border: '1px solid #F1E7E2', background: '#FAFAFA',
+        marginTop: '16px', padding: '16px', border: '1px solid #F1E7E2', background: '#FAF6F3',
     }
 
     return (
@@ -123,7 +123,7 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
             </div>
 
             {error && (
-                <div style={{ background: '#FFF5F5', border: '1px solid #E63950', borderRadius: 999, padding: '12px 16px', marginBottom: '24px', fontSize: '14px', color: '#E63950' }}>
+                <div style={{ background: '#FDEEF0', border: '1px solid #E63950', borderRadius: 999, padding: '12px 16px', marginBottom: '24px', fontSize: '14px', color: '#E63950' }}>
                     {error}
                 </div>
             )}
