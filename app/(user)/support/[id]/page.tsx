@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { statusBadgeClasses, statusLabel, categoryLabel, type SupportStatus, type SupportCategory } from '@/lib/support'
+import { statusLabel, categoryLabel, type SupportStatus, type SupportCategory } from '@/lib/support'
 import { UserReplyForm } from './user-reply-form'
 
 export const dynamic = 'force-dynamic'
