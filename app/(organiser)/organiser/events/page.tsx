@@ -35,16 +35,19 @@ export default async function OrganiserEventsPage() {
 
     const bookingIdList = (allBookings || []).map((b: { id: string }) => b.id)
     const { data: items } = bookingIdList.length
-        ? await serviceClient.from('booking_items').select('booking_id, quantity').in('booking_id', bookingIdList)
+        ? await serviceClient.from('booking_items').select('booking_id, quantity, ticket_type:ticket_types(is_group, group_size)').in('booking_id', bookingIdList)
         : { data: [] }
 
     const bookingMap = new Map((allBookings || []).map((b: { id: string; event_id: string }) => [b.id, b.event_id]))
     const salesByEvent: Record<string, { tickets: number; revenue: number }> = {}
-    for (const item of (items || []) as { booking_id: string; quantity: number }[]) {
+    // Group tickets are stored as one row per member; divide by group size so a group counts as one ticket
+    // (the same units as the ticket type's total quantity).
+    for (const item of (items || []) as unknown as { booking_id: string; quantity: number; ticket_type: { is_group?: boolean | null; group_size?: number | null } | null }[]) {
         const eventId = bookingMap.get(item.booking_id)
         if (!eventId) continue
         if (!salesByEvent[eventId]) salesByEvent[eventId] = { tickets: 0, revenue: 0 }
-        salesByEvent[eventId].tickets += item.quantity
+        const size = item.ticket_type?.is_group ? Math.max(1, item.ticket_type.group_size ?? 1) : 1
+        salesByEvent[eventId].tickets += item.quantity / size
     }
     for (const b of (allBookings || []) as { event_id: string; ticket_subtotal_pence: number | null; discount_pence: number | null }[]) {
         if (!salesByEvent[b.event_id]) salesByEvent[b.event_id] = { tickets: 0, revenue: 0 }
@@ -56,8 +59,8 @@ export default async function OrganiserEventsPage() {
         title: e.title,
         slug: e.slug,
         start_at: e.start_at,
-        status: e.status as 'draft' | 'published' | 'cancelled' | 'archived',
-        ticketsSold: salesByEvent[e.id]?.tickets || 0,
+        status: e.status as 'draft' | 'published' | 'cancelled' | 'archived' | 'ended',
+        ticketsSold: Math.round(salesByEvent[e.id]?.tickets || 0),
         capacity: (e.ticket_types || []).reduce((s, t) => s + (t.quantity_total || 0), 0),
         revenue: salesByEvent[e.id]?.revenue || 0,
     }))

@@ -36,7 +36,7 @@ export default async function EventOverviewPage({ params }: EventPageProps) {
 
     const { data: ticketTypes, error: ttErr } = await serviceClient
         .from('ticket_types')
-        .select('id, name, price_pence, quantity_total, sort_order')
+        .select('id, name, price_pence, quantity_total, sort_order, is_group, group_size')
         .eq('event_id', params.id)
         .order('sort_order')
     if (ttErr) throw ttErr
@@ -44,14 +44,21 @@ export default async function EventOverviewPage({ params }: EventPageProps) {
     // Sales, revenue (net of promo discounts) and check-ins — same source as the Attendees page
     const stats = await loadEventAttendees(params.id, organiserId)
     const attendees = stats?.attendees ?? []
-    const sold = stats?.totalTickets ?? 0
+    const people = stats?.totalTickets ?? 0 // physical tickets (one per person)
     const checkedIn = stats?.checkedIn ?? 0
     const revenuePence = stats?.totalRevenuePence ?? 0
 
-    const types = (ticketTypes || []) as { id: string; name: string; price_pence: number; quantity_total: number }[]
+    const types = (ticketTypes || []) as { id: string; name: string; price_pence: number; quantity_total: number; is_group?: boolean | null; group_size?: number | null }[]
     const capacity = types.reduce((s, t) => s + (t.quantity_total || 0), 0)
+    // Tickets sold per type in the same units as its capacity: a group ticket counts once, not once per member
+    const peopleByType: Record<string, number> = {}
+    for (const a of attendees) peopleByType[a.ticketTypeId] = (peopleByType[a.ticketTypeId] || 0) + 1
     const soldByType: Record<string, number> = {}
-    for (const a of attendees) soldByType[a.ticketTypeId] = (soldByType[a.ticketTypeId] || 0) + 1
+    for (const t of types) {
+        const size = t.is_group ? Math.max(1, t.group_size ?? 1) : 1
+        soldByType[t.id] = Math.round((peopleByType[t.id] || 0) / size)
+    }
+    const sold = types.reduce((s, t) => s + (soldByType[t.id] || 0), 0)
 
     const now = Date.now()
     const start = new Date(event.start_at)
@@ -127,7 +134,7 @@ export default async function EventOverviewPage({ params }: EventPageProps) {
                 <div className="bg-card rounded-2xl shadow-card p-5">
                     <p className="text-xs text-muted uppercase tracking-wider mb-2">Checked In</p>
                     <p className="font-heading text-3xl">
-                        {checkedIn.toLocaleString()} <span className="text-lg text-muted">/ {sold.toLocaleString()}</span>
+                        {checkedIn.toLocaleString()} <span className="text-lg text-muted">/ {people.toLocaleString()}</span>
                     </p>
                 </div>
                 <div className="bg-card rounded-2xl shadow-card p-5">

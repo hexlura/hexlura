@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
 
-type EventStatus = 'draft' | 'published' | 'cancelled' | 'archived'
+type EventStatus = 'draft' | 'published' | 'cancelled' | 'archived' | 'ended'
 
 interface EventRow {
     id: string
@@ -48,7 +48,8 @@ export function EventsClient({ events }: EventsClientProps) {
     const now = new Date()
 
     function getEffectiveStatus(e: EventRow): string {
-        if (e.status === 'published' && new Date(e.start_at) < now) return 'past'
+        // The nightly job marks finished events 'ended'; a published event whose start has passed is also Past
+        if (e.status === 'ended' || (e.status === 'published' && new Date(e.start_at) < now)) return 'past'
         return e.status
     }
 
@@ -67,6 +68,11 @@ export function EventsClient({ events }: EventsClientProps) {
         { value: 'past', label: 'Past' },
         { value: 'cancelled', label: 'Cancelled' },
     ]
+
+    const statusOf = (e: EventRow) => {
+        const key = getEffectiveStatus(e)
+        return STATUS_STYLES[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), cls: 'text-muted bg-border' }
+    }
 
     const sold = (e: EventRow) => (e.capacity > 0 ? `${e.ticketsSold} / ${e.capacity}` : String(e.ticketsSold))
 
@@ -122,7 +128,7 @@ export function EventsClient({ events }: EventsClientProps) {
                             </thead>
                             <tbody>
                                 {filtered.map((e, i) => {
-                                    const status = STATUS_STYLES[getEffectiveStatus(e)] || STATUS_STYLES.draft
+                                    const status = statusOf(e)
                                     return (
                                         <tr key={e.id} className="border-b border-border last:border-0 hover:bg-[#FAF6F3]/60 transition-colors">
                                             <td className="py-4 px-6">
@@ -150,7 +156,7 @@ export function EventsClient({ events }: EventsClientProps) {
                     {/* Mobile card list (the design is desktop-only; same visual language) */}
                     <div className="block sm:hidden divide-y divide-border">
                         {filtered.map((e, i) => {
-                            const status = STATUS_STYLES[getEffectiveStatus(e)] || STATUS_STYLES.draft
+                            const status = statusOf(e)
                             return (
                                 <div key={e.id} className="p-4 flex items-center gap-3">
                                     <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${THUMB_GRADIENTS[i % THUMB_GRADIENTS.length]} shrink-0`} />
