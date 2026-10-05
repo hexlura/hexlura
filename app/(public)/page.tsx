@@ -5,10 +5,9 @@ import { createClient } from '@/lib/supabase/server';
 import { getStaticPageMetadata } from '@/lib/seo';
 import type { Metadata } from 'next';
 import { Event } from '@/types';
-import { HeroSlider, SlideData, FeaturedEvent } from './HeroSlider';
+import type { FeaturedEvent } from './HeroSlider';
 import EventCard from '@/components/events/EventCard'
 import RecommendedEvents from '@/components/home/RecommendedEvents';
-import TrustedPartners from '@/components/home/TrustedPartners';
 import { getPageControls, isSectionVisible } from '@/lib/page-controls/get-page-controls';
 import { PAGE_KEYS, HOME_SECTION_KEYS } from '@/lib/page-controls/constants';
 import { getListingFees, buyerTicketPrice } from '@/lib/fees';
@@ -44,8 +43,15 @@ export default async function HomePage() {
     const supabase = createClient();
 
     const now = new Date().toISOString();
+    const weekAhead = new Date(Date.now() + 7 * 86400000).toISOString();
 
-    const [{ data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls, listingFees] = await Promise.all([
+    const [{ count: thisWeekCount }, { data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls, listingFees] = await Promise.all([
+        supabase
+            .from('events')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'published')
+            .gte('start_at', now)
+            .lte('start_at', weekAhead),
         supabase
             .from('events')
             .select('*, ticket_types(*)')
@@ -113,259 +119,186 @@ export default async function HomePage() {
             : null,
     }));
 
-    const slides: SlideData[] = [
-        { type: 'brand' },
-        ...featuredEvents.slice(0, 2).map(e => ({ type: 'event' as const, event: e })),
-        { type: 'organiser' },
-        ...featuredEvents.slice(2).map(e => ({ type: 'event' as const, event: e })),
-        { type: 'fomo' },
-    ];
+    const fmtPence = (p: number) => `£${(p / 100).toFixed(2)}`
+    const featuredShown = featuredEvents.slice(0, 6)
+    const chips = categories.slice(0, 5)
+    const gradients = [
+        'from-accent to-warm-orange',
+        'from-warm-orange to-warm-amber',
+        'from-warm-amber to-warm-yellow',
+        'from-warm-green to-warm-amber',
+        'from-accent to-warm-amber',
+        'from-warm-orange to-accent',
+    ]
+    const cardTextBtn = 'text-sm font-semibold text-accent hover:underline'
 
     return (
         <FeeProvider fees={listingFees}>
-        <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className="page-wrapper">
-
-            {/* Responsive styles — server-rendered to avoid FOUC */}
-            <style>{`
-                .page-wrapper { padding: 0 48px; }
-                @media (max-width: 768px) { .page-wrapper { padding: 0 20px; } }
-                .headline-xl { font-size: 100px; line-height: 0.85; font-family: "Bebas Neue", sans-serif; margin: 0; }
-                @media (max-width: 768px) { .headline-xl { font-size: 60px; } }
-                . { margin-left: -48px; margin-right: -48px; }
-                @media (max-width: 768px) { . { margin-left: -20px; margin-right: -20px; } }
-                .city-scroll::-webkit-scrollbar { display: none; }
-                .drag-scroll::-webkit-scrollbar { display: none; }
-                .category-scroll::-webkit-scrollbar { display: none; }
-                @media (min-width: 769px) { .category-scroll { justify-content: center; overflow-x: hidden; } }
-                @media (max-width: 768px) { .category-scroll { justify-content: flex-start; overflow-x: auto; } }
-                .slider-wrapper { padding: 0 48px; width: 100%; }
-                @media (max-width: 768px) { .slider-wrapper { padding: 0 16px; } }
-                .cat-circle { width: 64px; height: 64px; font-size: 26px; }
-                @media (max-width: 768px) { .cat-circle { width: 56px; height: 56px; } }
-            `}</style>
-
-            {/* ── CATEGORY ICONS ROW ── */}
-            <div className="" style={{ background: '#FFFFFF', padding: '12px 24px 0' }}>
+        <div>
+            {/* ── HERO ── */}
+            <section
+                className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28"
+                style={{
+                    background:
+                        'radial-gradient(1000px 500px at 100% 0%, rgba(255,122,61,0.25), transparent), radial-gradient(800px 400px at 0% 100%, rgba(230,57,80,0.25), transparent), #1A0E0C',
+                }}
+            >
                 <div
-                    className="category-scroll"
-                    style={{
-                        display: 'flex',
-                        gap: '20px',
-                        padding: '12px 0 16px',
-                        scrollbarWidth: 'none',
-                        WebkitOverflowScrolling: 'touch',
-                        cursor: 'grab',
-                    }}
-                >
-                    {categories.map((cat) => (
-                        <Link
-                            key={cat.id}
-                            href={`/events?category=${encodeURIComponent(cat.name)}`}
-                            className="cat-item"
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '8px',
-                                cursor: 'pointer',
-                                flexShrink: 0,
-                                textDecoration: 'none',
-                                transition: 'transform 0.2s',
-                            }}
-                        >
-                            <div
-                                className="cat-circle"
-                                style={{
-                                    borderRadius: '50%',
-                                    background: '#FFFFFF',
-                                    border: 'none',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    transition: 'box-shadow 0.2s, transform 0.2s',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                {cat.image_url ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        src={cat.image_url}
-                                        alt={cat.name}
-                                        loading="lazy"
-                                        width={64}
-                                        height={64}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                ) : (
-                                    CATEGORY_EMOJI_FALLBACK[cat.name] ?? cat.name.charAt(0)
-                                )}
-                            </div>
-                            <span style={{
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                color: '#0A0A0F',
-                                textAlign: 'center',
-                                maxWidth: '68px',
-                                lineHeight: 1.3,
-                            }}>
-                                {cat.name}
-                            </span>
-                        </Link>
-                    ))}
-                </div>
-            </div>
+                    aria-hidden
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '18px 18px' }}
+                />
+                <div className="max-w-5xl mx-auto px-6 lg:px-10 text-center relative">
+                    {(thisWeekCount ?? 0) > 0 && (
+                        <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold mb-6 tracking-wide">
+                            🔥 {thisWeekCount} {thisWeekCount === 1 ? 'EVENT' : 'EVENTS'} THIS WEEK
+                        </span>
+                    )}
+                    <h1 className="font-heading text-5xl sm:text-6xl lg:text-8xl leading-[0.9] text-white mb-6">
+                        FIND YOUR<br />
+                        <span className="bg-gradient-to-r from-accent via-warm-orange to-warm-amber bg-clip-text text-transparent">NEXT NIGHT OUT</span>
+                    </h1>
+                    <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto">
+                        Discover live music, nightlife, comedy and more — all across the UK, all in one place.
+                    </p>
 
-            {/* ── HERO SLIDER ── */}
-            <div className="">
-                <div className="slider-wrapper">
-                    <HeroSlider slides={slides} />
-                </div>
-            </div>
+                    {/* Search-first bar */}
+                    <form action="/events" method="get" className="bg-white rounded-2xl shadow-card p-2 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto text-left">
+                        <label className="flex-1 flex items-center gap-2 px-4 py-2.5">
+                            <svg className="text-muted shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                            <input
+                                type="text"
+                                name="q"
+                                placeholder="Search events, artists, venues…"
+                                aria-label="Search events"
+                                className="w-full text-sm text-text placeholder:text-muted focus:outline-none bg-transparent"
+                            />
+                        </label>
+                        <div className="hidden sm:block w-px bg-border my-1" />
+                        <label className="flex items-center gap-2 px-4 py-2.5 sm:w-44">
+                            <svg className="text-muted shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>
+                            <input
+                                type="text"
+                                name="location"
+                                placeholder="Any city"
+                                aria-label="City"
+                                className="w-full text-sm text-text placeholder:text-muted focus:outline-none bg-transparent"
+                            />
+                        </label>
+                        <button type="submit" className="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition shrink-0">
+                            Search
+                        </button>
+                    </form>
 
-            {/* ── STRIPE TRUST BAR ── */}
-            <div className="" style={{
-                background: '#F8F8F8',
-                borderBottom: '1px solid #EEEEEE',
-                padding: '10px 24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '24px',
-                flexWrap: 'wrap',
-            }}>
-                <span style={{ fontSize: '12px', color: '#8888AA', fontWeight: 500 }}>🔒 Secure payments powered by Stripe</span>
-            </div>
-
-            {/* ── CITY CARDS ── */}
-            <section style={{ marginTop: '0' }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '16px',
-                    borderBottom: '2px solid #F0F0F0',
-                    paddingBottom: '12px',
-                }}>
-                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                        EXPLORE BY CITY
-                    </h2>
-                </div>
-                <div
-                    className="city-scroll"
-                    style={{
-                        display: 'flex',
-                        gap: '24px',
-                        overflowX: 'auto',
-                        scrollbarWidth: 'none',
-                        WebkitOverflowScrolling: 'touch',
-                        padding: '16px 4px 20px',
-                    }}
-                >
-                    {cities.map((city) => (
-                        <Link
-                            key={city.id}
-                            href={`/events?city=${encodeURIComponent(city.slug)}`}
-                            className="city-card"
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                                width: '160px',
-                                flexShrink: 0,
-                                textDecoration: 'none',
-                            }}
-                        >
-                            <div
-                                className="city-circle"
-                                style={{
-                                    width: '160px',
-                                    height: '160px',
-                                    borderRadius: '50%',
-                                    overflow: 'hidden',
-                                    border: '3px solid #FFFFFF',
-                                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                                    transition: 'all 0.3s ease',
-                                }}
-                            >
-                                {city.image_url ? (
-                                    <Image
-                                        src={city.image_url}
-                                        alt={city.name}
-                                        width={160}
-                                        height={160}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                            objectPosition: 'center',
-                                        }}
-                                    />
-                                ) : (
-                                    <div style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        background: '#E0E0E8',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '48px',
-                                        fontWeight: 700,
-                                        color: '#8888AA',
-                                        fontFamily: '"Bebas Neue", sans-serif',
-                                    }}>
-                                        {city.name.charAt(0)}
-                                    </div>
-                                )}
-                            </div>
-                            <span style={{
-                                textAlign: 'center',
-                                fontSize: '13px',
-                                fontWeight: 700,
-                                color: '#0A0A0F',
-                                marginTop: '10px',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                            }}>
-                                {city.name}
-                            </span>
-                        </Link>
-                    ))}
+                    {/* Category quick chips */}
+                    {chips.length > 0 && (
+                        <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+                            {chips.map(cat => (
+                                <Link
+                                    key={cat.id}
+                                    href={`/events?category=${encodeURIComponent(cat.name)}`}
+                                    className="px-3.5 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-semibold hover:bg-white/20 transition"
+                                >
+                                    {CATEGORY_EMOJI_FALLBACK[cat.name] ? `${CATEGORY_EMOJI_FALLBACK[cat.name]} ` : ''}{cat.name}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
+            {/* ── FEATURED POSTERS (overlap the hero) ── */}
+            {featuredShown.length > 0 && (
+                <section className="max-w-7xl mx-auto px-6 lg:px-10 -mt-16 relative z-10">
+                    <div className="flex gap-5 overflow-x-auto overflow-y-hidden pb-2" style={{ scrollbarWidth: 'none' }}>
+                        {featuredShown.map((e, i) => {
+                            const dateLabel = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/London' }).format(new Date(e.start_at)).replace(',', '')
+                            return (
+                                <Link key={e.id} href={`/events/${e.slug}`} className="group shrink-0 w-48 sm:w-56">
+                                    <div
+                                        className={`relative overflow-hidden rounded-2xl shadow-hover bg-gradient-to-br ${gradients[i % gradients.length]}`}
+                                        style={{ aspectRatio: '2 / 3' }}
+                                    >
+                                        {e.banner_url && (
+                                            <Image
+                                                src={e.banner_url}
+                                                alt={e.title}
+                                                fill
+                                                sizes="(max-width: 640px) 192px, 224px"
+                                                className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                                                priority={i < 3}
+                                            />
+                                        )}
+                                        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 text-[11px] font-bold text-text">FEATURED</span>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                        <p className="absolute bottom-3 left-3 right-3 text-white font-heading text-xl leading-none line-clamp-3">{e.title.toUpperCase()}</p>
+                                    </div>
+                                    <div className="pt-3">
+                                        <p className="text-xs text-muted mb-1 line-clamp-1">
+                                            {[e.venue_name, dateLabel].filter(Boolean).join(' · ')}
+                                        </p>
+                                        <p className={`font-heading text-lg ${e.min_price_pence === 0 ? 'text-warm-green' : ''}`}>
+                                            {e.min_price_pence == null ? 'Tickets TBA' : e.min_price_pence === 0 ? 'Free Event' : `From ${fmtPence(e.min_price_pence)}`}
+                                        </p>
+                                    </div>
+                                </Link>
+                            )
+                        })}
+                        <Link href="/business" className="group shrink-0 w-48 sm:w-56">
+                            <div className="rounded-2xl shadow-hover bg-text flex flex-col justify-center px-5" style={{ aspectRatio: '2 / 3', background: '#1A0E0C' }}>
+                                <p className="text-accent text-xs font-bold mb-2 tracking-wide">FOR ORGANISERS</p>
+                                <p className="text-white font-heading text-3xl leading-none mb-3">SELLING<br />TICKETS?</p>
+                                <span className="text-white/60 text-xs group-hover:text-white transition">Start free →</span>
+                            </div>
+                            <div className="pt-3">
+                                <p className="text-xs text-muted">Free to start, no lock-in</p>
+                            </div>
+                        </Link>
+                    </div>
+                </section>
+            )}
+
+            {/* ── EXPLORE BY CITY ── */}
+            {cities.length > 0 && (
+                <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-16">
+                    <h2 className="font-heading text-2xl lg:text-3xl tracking-wide mb-5">EXPLORE BY CITY</h2>
+                    <div className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2" style={{ scrollbarWidth: 'none' }}>
+                        {cities.map((city, i) => (
+                            <Link
+                                key={city.id}
+                                href={`/events?city=${encodeURIComponent(city.slug)}`}
+                                className="shrink-0 flex items-center gap-2 pl-2 pr-4 py-2 rounded-full bg-card border border-border shadow-soft hover:shadow-hover transition"
+                            >
+                                <span className={`relative w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center text-white text-sm font-bold`}>
+                                    {city.image_url ? (
+                                        <Image src={city.image_url} alt="" fill sizes="36px" className="object-cover" />
+                                    ) : (
+                                        city.name.charAt(0)
+                                    )}
+                                </span>
+                                <span className="text-sm font-semibold">{city.name}</span>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* ── UPCOMING EVENTS ── */}
             {upcomingEventsVisible && (
-                <section style={{ marginTop: '48px', paddingBottom: '48px' }}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        borderBottom: '2px solid #F0F0F0',
-                        paddingBottom: '12px',
-                    }}>
-                        <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                            UPCOMING EVENTS
-                        </h2>
-                        <Link
-                            href="/events"
-                            style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
-                        >
-                            See All &rarr;
-                        </Link>
+                <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">UPCOMING EVENTS</h2>
+                        <Link href="/events" className={cardTextBtn}>View All →</Link>
                     </div>
 
                     {events.length === 0 ? (
-                        <div style={{ padding: '40px 0', textAlign: 'center', color: '#8888AA' }}>
+                        <div className="py-12 text-center text-muted bg-card rounded-2xl border border-dashed border-border">
                             No upcoming events yet. Check back soon!
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
                             {events.map((event, i) => (
-                                <EventCard key={event.id} event={event} priority={i < 4} />
+                                <EventCard key={event.id} event={event} priority={i < 5} />
                             ))}
                         </div>
                     )}
@@ -377,38 +310,14 @@ export default async function HomePage() {
 
             {/* ── PAST EVENTS ── */}
             {pastEvents.length > 0 && (
-                <section style={{ marginTop: '60px', paddingBottom: '48px' }}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        borderBottom: '2px solid #F0F0F0',
-                        paddingBottom: '12px',
-                    }}>
-                        <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                            PAST EVENTS
-                        </h2>
-                        <Link
-                            href="/events?tab=past"
-                            style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
-                        >
-                            See All &rarr;
-                        </Link>
+                <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">PAST EVENTS</h2>
+                        <Link href="/events?tab=past" className={cardTextBtn}>View All →</Link>
                     </div>
-                    <div
-                        className="past-scroll"
-                        style={{
-                            display: 'flex',
-                            gap: '16px',
-                            overflowX: 'auto',
-                            scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch',
-                            padding: '4px 4px 16px',
-                        }}
-                    >
+                    <div className="flex gap-5 overflow-x-auto overflow-y-hidden pb-2" style={{ scrollbarWidth: 'none' }}>
                         {pastEvents.map((event) => (
-                            <div key={event.id} style={{ width: '160px', flexShrink: 0 }}>
+                            <div key={event.id} className="shrink-0 w-40 sm:w-44">
                                 <EventCard event={event} compact />
                             </div>
                         ))}
@@ -416,75 +325,56 @@ export default async function HomePage() {
                 </section>
             )}
 
-            {/* ── SECTION 3: ORGANISER CTA — full bleed ── */}
-            <section
-                className=""
-                style={{
-                    background: '#0A0A0F',
-                    padding: '80px 24px',
-                    textAlign: 'center',
-                    marginTop: '60px',
-                }}
-            >
-                <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px' }}>
-                    FOR BUSINESS
-                </p>
-                <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: 'clamp(48px, 5vw, 72px)', color: '#FFFFFF', margin: '0 0 8px 0', lineHeight: 0.95 }}>
-                    SELLING TICKETS?
-                </h2>
-                <h3 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#8888AA', margin: '0 0 24px 0', fontWeight: 400 }}>
-                    JOIN HUNDREDS OF UK ORGANISERS
-                </h3>
-                <p style={{ fontSize: '16px', color: '#8888AA', marginBottom: '40px', lineHeight: 1.5 }}>
-                    Free to start. No monthly fees. You keep 100% of ticket face value.
-                </p>
-                <Link
-                    href="/business"
-                    style={{
-                        display: 'inline-block',
-                        background: '#E63950',
-                        color: '#FFFFFF',
-                        padding: '16px 48px',
-                        fontSize: '16px',
-                        fontWeight: 700,
-                        borderRadius: 0,
-                        border: 'none',
-                        textDecoration: 'none',
-                        letterSpacing: '0.3px',
-                    }}
-                >
-                    Start Selling Free &rarr;
-                </Link>
-                <Link
-                    href="/auth/login"
-                    style={{
-                        display: 'block',
-                        fontSize: '13px',
-                        color: '#8888AA',
-                        marginTop: '16px',
-                        textDecoration: 'none',
-                    }}
-                >
-                    Already have an account? Sign in &rarr;
-                </Link>
+            {/* ── ORGANISER RECRUIT ── */}
+            <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-20">
+                <div className="rounded-3xl relative overflow-hidden" style={{ background: '#1A0E0C' }}>
+                    <div className="absolute inset-0" style={{ background: 'radial-gradient(600px 300px at 90% 0%, rgba(230,57,80,0.35), transparent)' }} />
+                    <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-10 lg:p-16">
+                        <div>
+                            <p className="text-accent font-semibold text-sm mb-2 tracking-wide">SELLING TICKETS?</p>
+                            <h2 className="font-heading text-4xl lg:text-5xl leading-none text-white mb-4">GROW YOUR EVENTS<br />WITH HEXLURA</h2>
+                            <p className="text-white/60 mb-6">
+                                Free to start. Connect Stripe, publish your event, and start selling in minutes — no setup fee, no lock-in.
+                            </p>
+                            <Link
+                                href="/business"
+                                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition"
+                            >
+                                FOR BUSINESS →
+                            </Link>
+                            <Link href="/auth/login" className="block text-sm text-white/50 hover:text-white mt-4 transition">
+                                Already have an account? Sign in →
+                            </Link>
+                        </div>
+                        <div className="hidden lg:grid grid-cols-2 gap-3" aria-hidden>
+                            <div className="aspect-square rounded-2xl bg-white/5 border border-white/10" />
+                            <div className="aspect-square rounded-2xl bg-white/10 border border-white/10 mt-6" />
+                            <div className="aspect-square rounded-2xl bg-white/10 border border-white/10 -mt-6" />
+                            <div className="aspect-square rounded-2xl bg-white/5 border border-white/10" />
+                        </div>
+                    </div>
+                </div>
             </section>
 
             {/* ── TRUSTED PARTNERS ── */}
-            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 pb-10 sm:py-10">
-                <TrustedPartners partners={partners} />
-            </div>
-
-            {/* CSS hover effects — replaces inline JS for better performance */}
-            <style>{`
-                .city-card:hover .city-circle { box-shadow: 0 8px 28px rgba(0,0,0,0.25); transform: scale(1.05); }
-                .book-now-btn:hover { background: #C0392B !important; }
-                .event-portrait-card { transition: transform 0.2s, box-shadow 0.2s; }
-                .event-portrait-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-                .event-portrait-card:hover .portrait-img { transform: scale(1.04); }
-                .portrait-img { transition: transform 0.2s; }
-                .cat-item:hover { transform: translateY(-3px); }
-                .past-scroll::-webkit-scrollbar { display: none; }
-            `}</style>
+            {partners.length > 0 && (
+                <section className="max-w-7xl mx-auto px-6 lg:px-10 py-14">
+                    <p className="text-center text-xs text-muted mb-6 tracking-widest">TRUSTED BY ORGANISERS ACROSS THE UK</p>
+                    <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+                        {partners.map((pt) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                key={pt.name + pt.image_url}
+                                src={pt.image_url}
+                                alt={pt.name}
+                                loading="lazy"
+                                className="h-10 w-auto max-w-[140px] object-contain opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition"
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+            {partners.length === 0 && <div className="pb-14" />}
         </div>
         </FeeProvider>
     );

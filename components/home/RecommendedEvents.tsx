@@ -23,39 +23,28 @@ export default function RecommendedEvents() {
 
     if (loading || events.length === 0) return null
 
-    const label = categories.length > 0
-        ? categories.map(c => c.toUpperCase()).join(' · ')
-        : 'YOUR INTERESTS'
+    const basedOn = categories.length > 0 ? categories.join(' · ') : 'your interests'
 
     return (
-        <section style={{ marginTop: '60px', paddingBottom: '16px' }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px',
-                borderBottom: '2px solid #F0F0F0',
-                paddingBottom: '12px',
-            }}>
-                <div>
-                    <p style={{ fontSize: '11px', color: '#E63950', fontWeight: 700, letterSpacing: '2px', margin: '0 0 2px' }}>
-                        RECOMMENDED FOR YOU
-                    </p>
-                    <h2 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: '#0A0A0F', letterSpacing: '1px', margin: 0 }}>
-                        {label}
-                    </h2>
-                </div>
-                {categories[0] && (
+        <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
+            <div className="flex items-center justify-between gap-4 mb-5">
+                <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">RECOMMENDED FOR YOU</h2>
+                {categories[0] ? (
                     <Link
                         href={`/events?category=${encodeURIComponent(categories[0])}`}
-                        style={{ fontSize: '13px', color: '#E63950', fontWeight: 600, textDecoration: 'none' }}
+                        className="text-sm font-semibold text-accent hover:underline"
                     >
-                        See All &rarr;
+                        See all →
                     </Link>
+                ) : (
+                    <span className="text-xs text-muted">Based on {basedOn}</span>
                 )}
             </div>
+            {categories.length > 0 && (
+                <p className="text-xs text-muted -mt-3 mb-5">Based on {basedOn}</p>
+            )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
                 {events.map(event => (
                     <EventCard key={event.id} event={event} />
                 ))}

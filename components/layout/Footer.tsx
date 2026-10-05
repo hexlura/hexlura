@@ -1,169 +1,75 @@
 import Link from 'next/link'
 
 const discoverLinks = [
-    { label: 'Find Events', href: '/events' },
+    { label: 'Browse Events', href: '/events' },
     { label: 'Events Today', href: '/events?date=today' },
     { label: 'Events This Weekend', href: '/events?date=weekend' },
+    { label: 'How It Works', href: '/how-it-works' },
 ]
 
 const organiserLinks = [
-    { label: 'For Business', href: '/business' },
+    { label: 'Sell Tickets', href: '/business' },
+    { label: 'Organiser Login', href: '/auth/login?next=/organiser' },
     { label: 'Become a Promoter', href: '/promoter/apply' },
 ]
 
-const legalLinks = [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/cookies' },
+const companyLinks = [
+    { label: 'About', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+    { label: 'Terms', href: '/terms' },
+    { label: 'Privacy', href: '/privacy' },
     { label: 'Refund Policy', href: '/refund-policy' },
+    { label: 'Cookies', href: '/cookies' },
 ]
+
+const socialClass = 'w-9 h-9 rounded-full border border-border flex items-center justify-center text-muted hover:border-accent hover:text-accent transition-colors'
+
+function Column({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+    return (
+        <div>
+            <p className="text-xs font-bold text-muted tracking-widest mb-3">{title}</p>
+            <div className="flex flex-col gap-2 text-sm">
+                {links.map(l => (
+                    <Link key={l.href} href={l.href} className="hover:text-accent transition-colors">{l.label}</Link>
+                ))}
+            </div>
+        </div>
+    )
+}
 
 export function Footer() {
     return (
-        <footer style={{ background: '#0A0A0F', color: '#FFFFFF' }}>
-            <style>{`
-                .footer-wrapper { padding: 60px 48px 0; }
-                @media (max-width: 768px) { .footer-wrapper { padding: 40px 24px 0; } }
-
-                .footer-grid {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 40px;
-                }
-                @media (max-width: 900px) {
-                    .footer-grid { grid-template-columns: repeat(2, 1fr); }
-                }
-                @media (max-width: 480px) {
-                    .footer-grid { grid-template-columns: 1fr; }
-                }
-
-                .footer-link {
-                    display: block;
-                    font-size: 14px;
-                    color: #8888AA;
-                    margin-bottom: 12px;
-                    text-decoration: none;
-                    transition: color 0.15s;
-                }
-                .footer-link:hover { color: #FFFFFF; }
-
-                .footer-social-btn {
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    border: 1px solid rgba(255,255,255,0.15);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #8888AA;
-                    text-decoration: none;
-                    transition: border-color 0.15s, color 0.15s;
-                    flex-shrink: 0;
-                }
-                .footer-social-btn:hover { border-color: #E63950; color: #E63950; }
-            `}</style>
-
-            <div className="footer-wrapper">
-                {/* Top 4-column grid */}
-                <div className="footer-grid">
-
-                    {/* Column 1 — Brand */}
-                    <div>
-                        <div style={{
-                            fontFamily: '"Bebas Neue", "Arial Black", sans-serif',
-                            fontSize: '32px',
-                            color: '#E63950',
-                            letterSpacing: '4px',
-                            marginBottom: '12px',
-                        }}>
-                            HEXLURA<sup style={{ fontSize: '0.45em', letterSpacing: 'normal' }}>®</sup>
-                        </div>
-                        <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '16px' }}>
-                            The UK&apos;s home for live events
-                        </p>
-                        <div style={{ fontSize: '12px', color: '#8888AA', lineHeight: 1.8 }}>
-                            <div>© 2026 Hexlura Ltd</div>
-                            <div>Company No. 17102803</div>
-                            <div>Registered in England &amp; Wales</div>
-                        </div>
-
-                        {/* Social icons */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                            {/* Instagram */}
-                            <a href="https://www.instagram.com/hexlura" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="footer-social-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                                </svg>
-                            </a>
-                            {/* Facebook */}
-                            <a href="https://www.facebook.com/share/17FUteK96w/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="footer-social-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                                </svg>
-                            </a>
-                            {/* TikTok */}
-                            <a href="https://www.tiktok.com/@hexlura" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="footer-social-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-
-                    {/* Column 2 — Discover */}
-                    <div>
-                        <p style={{ fontSize: '11px', color: '#FFFFFF', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '20px' }}>
-                            Discover
-                        </p>
-                        {discoverLinks.map(l => (
-                            <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>
-                        ))}
-                    </div>
-
-                    {/* Column 3 — For Business */}
-                    <div>
-                        <p style={{ fontSize: '11px', color: '#FFFFFF', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '20px' }}>
-                            For Business
-                        </p>
-                        {organiserLinks.map(l => (
-                            <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>
-                        ))}
-                    </div>
-
-                    {/* Column 4 — Legal */}
-                    <div>
-                        <p style={{ fontSize: '11px', color: '#FFFFFF', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '20px' }}>
-                            Legal
-                        </p>
-                        {legalLinks.map(l => (
-                            <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>
-                        ))}
+        <footer className="border-t border-border bg-card">
+            <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+                <div className="col-span-2">
+                    <p className="font-heading text-2xl text-accent tracking-wider mb-3">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></p>
+                    <p className="text-sm text-muted max-w-xs">The UK&apos;s home for live events — discover, book and sell tickets in one place.</p>
+                    <div className="flex gap-2 mt-5">
+                        <a href="https://www.instagram.com/hexlura" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={socialClass}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                            </svg>
+                        </a>
+                        <a href="https://www.facebook.com/share/17FUteK96w/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className={socialClass}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+                        </a>
+                        <a href="https://www.tiktok.com/@hexlura" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className={socialClass}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z" /></svg>
+                        </a>
                     </div>
                 </div>
-
-                {/* Divider */}
-                <div style={{ marginTop: '48px', borderTop: '1px solid rgba(255,255,255,0.08)' }} />
-
-                {/* Bottom bar */}
-                <div style={{
-                    padding: '20px 0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '12px',
-                }}>
-                    <span style={{ fontSize: '12px', color: '#8888AA' }}>
-                        © 2026 Hexlura Ltd · All rights reserved
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                        <span style={{ fontSize: '12px', color: '#8888AA' }}>Payments secured by Stripe</span>
+                <Column title="DISCOVER" links={discoverLinks} />
+                <Column title="ORGANISERS" links={organiserLinks} />
+                <Column title="COMPANY" links={companyLinks} />
+            </div>
+            <div className="border-t border-border">
+                <div className="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+                    <p>© 2026 Hexlura Ltd. Company No. 17102803. Registered in England &amp; Wales. All rights reserved.</p>
+                    <div className="flex items-center gap-1.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-warm-green"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z" /></svg>
+                        Secure payments via Stripe
                     </div>
                 </div>
             </div>

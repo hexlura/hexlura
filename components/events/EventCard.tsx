@@ -15,6 +15,7 @@ interface EventCardProps {
 }
 
 
+// Portrait poster card: date chip on the image, then title, venue and an all-in price.
 export default function EventCard({ event, compact = false, priority = false }: EventCardProps) {
     const fees = useListingFees();
     const ticketTypes = event.ticket_types || [];
@@ -36,170 +37,79 @@ export default function EventCard({ event, compact = false, priority = false }: 
         day: 'numeric',
         month: 'short',
         timeZone: 'Europe/London',
-    }).format(new Date(event.start_at));
-
+    }).format(new Date(event.start_at)).replace(',', '');
 
     const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
 
-    // Price range display
-    function getPriceRange(types: typeof visibleTypes): string {
-        if (types.length === 0) return 'Tickets TBA';
-        if (visibleSoldOut) return 'Sold Out';
-        const basePrices = types.map(t => t.price_pence);
-        if (Math.max(...basePrices) === 0) return 'Free';
-        // Fee data still loading (client-only lists): hold the space rather than flash a price without the fee
-        if (!fees) return ' ';
-        // All-in price: ticket price plus the buyer's booking fee
-        const prices = basePrices.map(p => buyerTicketPrice(p, event.organiser_id, fees).totalPence);
+    const isEventEnded = event.end_at ? new Date(event.end_at) < new Date() : false;
+    const isFree = visibleTypes.length > 0 && Math.max(...visibleTypes.map(t => t.price_pence)) === 0;
+
+    // Price line. Prices are all-in: ticket price plus the buyer's booking fee.
+    let price: { text: string; tone: 'normal' | 'free' | 'red' | 'muted' } = { text: ' ', tone: 'normal' };
+    if (visibleTypes.length === 0) {
+        price = { text: 'Tickets TBA', tone: 'muted' };
+    } else if (isEventEnded) {
+        price = { text: 'Event ended', tone: 'muted' };
+    } else if (visibleSoldOut) {
+        price = { text: 'Sold out', tone: 'red' };
+    } else if (isFree) {
+        price = { text: 'Free Event', tone: 'free' };
+    } else if (fees) {
+        const prices = visibleTypes.map(t => buyerTicketPrice(t.price_pence, event.organiser_id, fees).totalPence);
         const lo = Math.min(...prices);
         const hi = Math.max(...prices);
         const fmt = (p: number) => `£${(p / 100).toFixed(2)}`;
-        if (lo === hi) return fmt(lo);
-        if (lo === 0) return `Free – ${fmt(hi)}`;
-        return `${fmt(lo)} – ${fmt(hi)}`;
+        if (lo === 0) price = { text: `Free – ${fmt(hi)}`, tone: 'normal' };
+        else price = { text: lo === hi ? fmt(lo) : `From ${fmt(lo)}`, tone: 'normal' };
     }
 
-    const priceDisplay = getPriceRange(visibleTypes);
-    const isEventEnded = event.end_at ? new Date(event.end_at) < new Date() : false;
+    const priceTone = {
+        normal: '',
+        free: 'text-warm-green',
+        red: 'text-warm-red',
+        muted: 'text-muted',
+    }[price.tone];
 
     return (
-        <Link
-            href={`/events/${event.slug}`}
-            className="group flex flex-col h-full bg-white overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:border-l-[3px] hover:border-l-[#E63950]"
-            style={{
-                width: '100%',
-                border: '1px solid #E0E0E0',
-                borderRadius: 0,
-                cursor: 'pointer',
-                borderLeft: '3px solid transparent',
-            }}
-        >
-            {/* Portrait image — 3:4 aspect ratio */}
-            <div className="relative overflow-hidden" style={{ width: '100%', aspectRatio: '3 / 4' }}>
-                {event.banner_url ? (
+        <Link href={`/events/${event.slug}`} className="group block h-full">
+            <div className="relative overflow-hidden rounded-2xl shadow-soft group-hover:shadow-hover transition bg-gradient-to-br from-accent to-warm-orange" style={{ aspectRatio: '2 / 3' }}>
+                {event.banner_url && (
                     <Image
                         src={event.banner_url}
                         alt={event.title}
                         priority={priority}
-                        width={320}
-                        height={480}
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                         className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
                     />
-                ) : (
-                    <div className="w-full h-full bg-[#F0F0F0] flex items-center justify-center">
-                        <span className="text-[#C0C0C8] text-xs">No image</span>
+                )}
+                {!event.banner_url && (
+                    <div className="absolute inset-0 flex items-end p-3">
+                        <p className="text-white font-heading text-xl leading-none">{event.title}</p>
                     </div>
                 )}
-
-                {/* Category badge — top left */}
-                <span
-                    className="absolute top-2 left-2 text-white uppercase"
-                    style={{
-                        background: '#E63950',
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        padding: '3px 8px',
-                        letterSpacing: '0.5px',
-                    }}
-                >
-                    {event.category}
-                </span>
-
-            </div>
-
-            {/* Card body — flex-1 pushes footer to bottom */}
-            <div className="flex flex-col flex-1" style={{ padding: '10px 10px 0' }}>
-                {/* Title */}
-                <p
-                    style={{
-                        fontSize: '14px',
-                        color: '#0A0A0F',
-                        fontWeight: 700,
-                        lineHeight: 1.3,
-                        marginBottom: '4px',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                    } as React.CSSProperties}
-                >
-                    {event.title}
-                </p>
-
-                {/* Date */}
-                <p style={{ fontSize: '12px', color: '#0A0A0F', fontWeight: 500, marginBottom: '4px' }}>
+                <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text uppercase">
                     {dateStr}
-                </p>
-
-                {/* Venue */}
-                {venueLine && (
-                    <p
-                        style={{
-                            fontSize: '12px',
-                            color: '#666677',
-                            marginBottom: '6px',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 1,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                        } as React.CSSProperties}
-                    >
-                        {venueLine}
-                    </p>
+                </span>
+                {isFree && !isEventEnded && !visibleSoldOut && (
+                    <span className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-warm-green text-white text-[10px] font-bold">FREE</span>
+                )}
+                {visibleSoldOut && !isEventEnded && (
+                    <span className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-warm-red text-white text-[10px] font-bold">SOLD OUT</span>
                 )}
             </div>
 
-            {/* Spacer pushes footer to bottom */}
-            <div className="flex-1" />
-
-            {/* Footer row */}
-            {!compact && (
-                <div
-                    className="flex items-center justify-between"
-                    style={{ padding: '6px 10px 8px' }}
-                >
-                    <span style={{ fontSize: '13px', color: '#0A0A0F', fontWeight: 600 }}>
-                        {priceDisplay}
-                    </span>
-                    {isEventEnded ? (
-                        <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#666677' }}>
-                            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#666677' }} />
-                            Ended
-                        </span>
-                    ) : visibleSoldOut ? (
-                        <span className="flex items-center gap-1" style={{ fontSize: '11px', color: '#E63950' }}>
-                            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E63950' }} />
-                            Sold out
-                        </span>
-                    ) : null}
-                </div>
-            )}
-
-            {/* Book Now / Event Ended button */}
-            {!compact && (
-                <div
-                    className="group/btn"
-                    style={{
-                        margin: '0 10px 14px',
-                        background: isEventEnded ? '#C0C0C8' : '#E63950',
-                        color: '#FFFFFF',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        padding: '8px 0',
-                        textAlign: 'center',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px',
-                        transition: 'background 0.2s',
-                        cursor: isEventEnded ? 'default' : 'pointer',
-                    }}
-                    onMouseEnter={e => { if (!isEventEnded) (e.currentTarget as HTMLDivElement).style.background = '#C0392B' }}
-                    onMouseLeave={e => { if (!isEventEnded) (e.currentTarget as HTMLDivElement).style.background = '#E63950' }}
-                >
-                    {isEventEnded ? 'Event Ended' : 'Book Now'}
-                </div>
-            )}
-            {compact && <div style={{ paddingBottom: '10px' }} />}
+            <div className="pt-3">
+                <p className="font-semibold text-sm leading-snug mb-1 group-hover:text-accent transition-colors line-clamp-2">
+                    {event.title}
+                </p>
+                {venueLine && (
+                    <p className="text-xs text-muted mb-1.5 line-clamp-1">{venueLine}</p>
+                )}
+                {!compact && (
+                    <p className={`font-heading text-lg ${priceTone}`}>{price.text}</p>
+                )}
+            </div>
         </Link>
     );
 }
