@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Application Under Review — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:"#FAF6F3", card:"#FFFFFF", border:"#F1E7E2", text:"#1A0E0C", muted:"#6B5D56", accent:"#E63950", orange:"#FF7A3D", amber:"#F5A623", green:"#1B9C63", amberText:"#9C6900" },
+    fontFamily: { heading:["Bebas Neue","sans-serif"], sans:["DM Sans","sans-serif"], mono:["JetBrains Mono","monospace"] },
+    boxShadow: { soft:"0 2px 12px rgba(60,20,10,0.05)", card:"0 6px 24px -4px rgba(60,20,10,0.08)", glow:"0 10px 34px -6px rgba(230,57,80,0.4)" },
+  } } }
+</script>
+<style>
+  body { background: radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent), radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent), #FAF6F3; }
+</style>
+</head>
+<body class="font-sans text-text min-h-screen">
+
+<header class="flex items-center justify-between px-6 py-4">
+  <a href="../public-site/home.html" class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.4em] align-super tracking-normal">®</sup></a>
+  <a href="../auth/login.html" class="text-sm font-semibold text-muted hover:text-text transition">Sign out</a>
+</header>
+
+<main class="px-6 pb-16 pt-8 flex justify-center">
+  <div class="w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-10 text-center">
+    <div class="w-16 h-16 rounded-full bg-amber/15 flex items-center justify-center mx-auto mb-6">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9C6900" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <h1 class="font-heading text-4xl tracking-wide mb-3">APPLICATION UNDER REVIEW</h1>
+    <p class="text-sm text-muted leading-relaxed mb-3">Your organiser account is being reviewed by our team.</p>
+    <span class="inline-block text-xs font-bold text-amberText bg-amber/15 rounded-full px-3 py-1 mb-5">Usually within 24 hours</span>
+    <p class="text-sm text-muted leading-relaxed mb-7">We'll email <strong class="text-text">you@example.com</strong> as soon as you're approved.</p>
+
+    <div class="rounded-2xl border border-border bg-bg p-4 text-left mb-7">
+      <p class="text-xs text-muted mb-0.5">Need help?</p>
+      <a href="mailto:support@hexlura.com" class="text-sm font-semibold text-accent hover:underline">support@hexlura.com</a>
+    </div>
+
+    <button class="px-7 py-2.5 rounded-full border border-border bg-white text-sm font-semibold text-muted hover:text-text transition">Sign out</button>
+  </div>
+</main>
+</body>
+</html>

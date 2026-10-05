@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Page not found — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:'#FAF6F3', card:'#FFFFFF', border:'#F1E7E2', text:'#1A0E0C', muted:'#6B5D56', accent:'#E63950', orange:'#FF7A3D', amber:'#F5A623', green:'#1B9C63', amberText:'#9C6900' },
+    fontFamily: { heading:['"Bebas Neue"','sans-serif'], sans:['"DM Sans"','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    boxShadow: { soft:'0 2px 12px rgba(60,20,10,0.05)', card:'0 6px 24px -4px rgba(60,20,10,0.08)', glow:'0 10px 34px -6px rgba(230,57,80,0.4)' },
+  } } }
+</script>
+<style>
+  body { background: radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.12), transparent), radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.08), transparent), #FAF6F3; }
+</style>
+</head>
+<body class="font-sans text-text min-h-screen flex flex-col">
+<header class="px-6 py-5 flex items-center justify-between"><a href="not-found.html" class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.4em] align-super tracking-normal">®</sup></a></header>
+<main class="flex-1 flex items-center justify-center px-6 pb-16">
+
+  <div class="text-center max-w-lg">
+    <p class="font-heading text-[9rem] leading-none text-accent/90 tracking-wider">404</p>
+    <h1 class="font-heading text-4xl tracking-wide -mt-2 mb-3">THIS PAGE HAS LEFT THE BUILDING</h1>
+    <p class="text-muted mb-8">The page you're looking for doesn't exist, or the event has moved. Try searching for what you wanted.</p>
+    <form class="relative max-w-sm mx-auto mb-8">
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Search events…" class="w-full pl-11 pr-4 py-3.5 rounded-full bg-white border border-border text-sm shadow-soft" />
+    </form>
+    <div class="flex flex-wrap justify-center gap-3"><a href="#" class="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Back to home</a><a href="#" class="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-white border border-border text-sm font-semibold hover:border-text/30 transition">Browse events</a></div>
+  </div>
+</main>
+</body>
+</html>

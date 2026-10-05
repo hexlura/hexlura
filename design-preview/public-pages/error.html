@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Something went wrong — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:'#FAF6F3', card:'#FFFFFF', border:'#F1E7E2', text:'#1A0E0C', muted:'#6B5D56', accent:'#E63950', orange:'#FF7A3D', amber:'#F5A623', green:'#1B9C63', amberText:'#9C6900' },
+    fontFamily: { heading:['"Bebas Neue"','sans-serif'], sans:['"DM Sans"','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    boxShadow: { soft:'0 2px 12px rgba(60,20,10,0.05)', card:'0 6px 24px -4px rgba(60,20,10,0.08)', glow:'0 10px 34px -6px rgba(230,57,80,0.4)' },
+  } } }
+</script>
+<style>
+  body { background: radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.12), transparent), radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.08), transparent), #FAF6F3; }
+</style>
+</head>
+<body class="font-sans text-text min-h-screen flex flex-col">
+<header class="px-6 py-5 flex items-center justify-between"><a href="not-found.html" class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.4em] align-super tracking-normal">®</sup></a></header>
+<main class="flex-1 flex items-center justify-center px-6 pb-16">
+
+  <div class="text-center max-w-md">
+    <div class="w-20 h-20 mx-auto rounded-3xl bg-amber/15 flex items-center justify-center mb-6"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9C6900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+    <h1 class="font-heading text-5xl tracking-wide mb-3">SOMETHING WENT WRONG</h1>
+    <p class="text-muted mb-8">We hit an unexpected problem. It's not you — please try again. If it keeps happening, our team can help.</p>
+    <div class="flex flex-wrap justify-center gap-3"><a href="#" class="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Try again</a><a href="#" class="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-white border border-border text-sm font-semibold hover:border-text/30 transition">Back to home</a></div>
+    <p class="text-xs text-muted mt-8">Need help? <a href="#" class="text-accent font-semibold hover:underline">support@hexlura.com</a></p>
+    <p class="text-[11px] text-muted/70 font-mono mt-3">Reference: 7f3a91c2</p>
+  </div>
+</main>
+</body>
+</html>

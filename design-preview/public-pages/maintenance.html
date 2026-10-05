@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Back soon — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:'#FAF6F3', card:'#FFFFFF', border:'#F1E7E2', text:'#1A0E0C', muted:'#6B5D56', accent:'#E63950', orange:'#FF7A3D', amber:'#F5A623', green:'#1B9C63', amberText:'#9C6900' },
+    fontFamily: { heading:['"Bebas Neue"','sans-serif'], sans:['"DM Sans"','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    boxShadow: { soft:'0 2px 12px rgba(60,20,10,0.05)', card:'0 6px 24px -4px rgba(60,20,10,0.08)', glow:'0 10px 34px -6px rgba(230,57,80,0.4)' },
+  } } }
+</script>
+<style>
+  body { background: radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.12), transparent), radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.08), transparent), #FAF6F3; }
+</style>
+</head>
+<body class="font-sans text-text min-h-screen flex flex-col">
+<header class="px-6 py-5 flex items-center justify-between"><a href="not-found.html" class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.4em] align-super tracking-normal">®</sup></a></header>
+<main class="flex-1 flex items-center justify-center px-6 pb-16">
+
+  <div class="text-center max-w-md">
+    <div class="w-20 h-20 mx-auto rounded-3xl bg-accent/10 flex items-center justify-center mb-6"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E63950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3z"/></svg></div>
+    <h1 class="font-heading text-5xl tracking-wide mb-3">WE'LL BE RIGHT BACK</h1>
+    <p class="text-muted mb-6">Hexlura is getting a quick tune-up. Your tickets are safe, and bookings you've already made are not affected.</p>
+    <div class="bg-card rounded-2xl border border-border shadow-card p-5 mb-6 text-left">
+      <p class="text-xs font-bold tracking-widest text-muted mb-2">AT THE DOOR TONIGHT?</p>
+      <p class="text-sm text-muted">Your ticket QR code still works at the venue. Open it from the confirmation email you received.</p>
+    </div>
+    <p class="text-xs text-muted">Questions? <a href="#" class="text-accent font-semibold hover:underline">support@hexlura.com</a></p>
+    <!-- Admins are never shown this page; they see a thin banner "Maintenance mode is on — only admins can see the site" at the top of every page. -->
+  </div>
+</main>
+</body>
+</html>

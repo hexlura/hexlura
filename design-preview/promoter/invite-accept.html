@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Promoter Invitation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:'#FAF6F3', card:'#FFFFFF', border:'#F1E7E2', text:'#1A0E0C', muted:'#6B5D56', accent:'#E63950', orange:'#FF7A3D', amber:'#F5A623', yellow:'#F5C518', green:'#1B9C63', amberText:'#9C6900', yellowText:'#8C6A00' },
+    fontFamily: { heading:['"Bebas Neue"','sans-serif'], sans:['"DM Sans"','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+    boxShadow: { soft:'0 2px 12px rgba(60,20,10,0.05)', card:'0 6px 24px -4px rgba(60,20,10,0.08)', hover:'0 12px 36px -6px rgba(60,20,10,0.14)', glow:'0 10px 34px -6px rgba(230,57,80,0.4)' },
+  } } }
+</script>
+<style>
+  body { background: radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent), radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent), #FAF6F3; }
+  .navlink.active { background:#1A0E0C; color:#fff; box-shadow:0 6px 18px -4px rgba(26,14,12,0.35); }
+  .tab.active { color:#1A0E0C; border-color:#E63950; }
+  ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:#F1E7E2; border-radius:8px; }
+</style>
+</head>
+<body class="font-sans text-text min-h-screen">
+<header class="flex items-center justify-between px-6 py-4">
+  <a href="#" class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.4em] align-super tracking-normal">®</sup></a>
+  <a href="#" class="text-sm font-semibold text-muted hover:text-text transition">My account</a>
+</header>
+<main class="px-6 pb-16 pt-6 flex justify-center">
+  <div class="w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-8 md:p-10">
+
+    <div class="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-4"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E63950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div>
+    <h1 class="font-heading text-4xl tracking-wide mb-2">PROMOTER INVITATION</h1>
+    <p class="text-sm text-muted leading-relaxed mb-6"><strong class="text-text">Nightshade Events</strong> has invited you to promote <strong class="text-text">Neon Nights Festival</strong> on Sat 17 Oct 2026.</p>
+    <div class="rounded-2xl border border-border bg-bg p-5 text-center mb-6">
+      <p class="text-xs text-muted uppercase tracking-wider mb-1">Commission</p>
+      <p class="font-heading text-5xl text-green">10%</p>
+      <p class="text-xs text-muted mt-1">of each ticket sold via your link</p>
+    </div>
+    <button class="w-full py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Accept invitation</button>
+
+    <!-- Other states of this page (shown instead of the button above) -->
+    <div class="mt-8 pt-6 border-t border-dashed border-border space-y-3 text-xs text-muted">
+      <p><strong class="text-text">No promoter account yet:</strong> note "You'll need a free promoter account to accept. <a href="apply.html" class="text-accent font-semibold">Sign up</a>, then come back to this page." and the button reads "Sign up first to accept" (disabled).</p>
+      <p><strong class="text-text">Already accepted:</strong> green "You've already accepted this invitation." with an "Open My Links →" button.</p>
+      <p><strong class="text-text">Invalid / withdrawn:</strong> red "This invitation link is invalid or has expired." / "This invitation has been withdrawn by the organiser."</p>
+    </div>
+  </div>
+</main>
+</body>
+</html>

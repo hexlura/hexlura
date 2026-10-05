@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terms Updated — Hexlura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:"#FAF6F3", card:"#FFFFFF", border:"#F1E7E2", text:"#1A0E0C", muted:"#6B5D56", accent:"#E63950", orange:"#FF7A3D", amber:"#F5A623", green:"#1B9C63", amberText:"#9C6900" },
+    fontFamily: { heading:["Bebas Neue","sans-serif"], sans:["DM Sans","sans-serif"], mono:["JetBrains Mono","monospace"] },
+    boxShadow: { soft:"0 2px 12px rgba(60,20,10,0.05)", card:"0 6px 24px -4px rgba(60,20,10,0.08)", glow:"0 10px 34px -6px rgba(230,57,80,0.4)" },
+  } } }
+</script>
+<style>
+  body { background: radial-gradient(1200px 500px at 90% -10%, rgba(255,122,61,0.10), transparent), radial-gradient(900px 400px at -10% 0%, rgba(230,57,80,0.07), transparent), #FAF6F3; }
+</style>
+</head>
+<body class="font-sans text-text min-h-screen">
+
+<header class="flex items-center justify-between px-6 py-4">
+  <span class="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup class="text-[0.4em] align-super tracking-normal">®</sup></span>
+  <a href="../auth/login.html" class="text-sm font-semibold text-muted hover:text-text transition">Sign out</a>
+</header>
+
+<main class="px-6 pb-16 pt-4 flex justify-center">
+  <div class="w-full max-w-2xl bg-card rounded-3xl border border-border shadow-card p-8 md:p-10">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E63950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg>
+      </div>
+      <p class="text-xs font-bold tracking-widest text-accent">ACTION NEEDED</p>
+    </div>
+    <h1 class="font-heading text-4xl tracking-wide mb-2">TERMS &amp; CONDITIONS UPDATED</h1>
+    <p class="text-sm text-muted leading-relaxed mb-6">Hi Night Owl Events — our Organiser Terms have been updated to <span class="font-mono text-text font-semibold">version 2.1</span>. Please read them below and accept to continue to your dashboard.</p>
+
+    <!-- Scrollable terms: content comes from the published legal document -->
+    <div class="max-h-80 overflow-y-auto rounded-2xl border border-border bg-bg p-5 mb-6 text-sm leading-relaxed">
+      <h2 class="font-heading text-xl text-accent tracking-wide mb-2">1. ORGANISER OBLIGATIONS</h2>
+      <p class="mb-3">You are responsible for the accuracy of your event listings, including date, venue, age restrictions and ticket prices.</p>
+      <h2 class="font-heading text-xl text-accent tracking-wide mt-5 mb-2">2. PAYMENTS</h2>
+      <p class="mb-3">Ticket revenue is paid to you in line with your payout settings. Refunds and cancellations follow the platform refund policy.</p>
+      <h2 class="font-heading text-xl text-accent tracking-wide mt-5 mb-2">3. ATTENDEE DATA</h2>
+      <p class="mb-3">You must only use attendee data to deliver the event the ticket was sold for, unless the attendee has agreed otherwise.</p>
+      <ul class="list-disc pl-6 space-y-1"><li>Keep attendee data secure.</li><li>Do not sell or share it with third parties.</li></ul>
+    </div>
+
+    <label class="flex items-start gap-3 cursor-pointer mb-6">
+      <input type="checkbox" class="mt-1 w-4 h-4 accent-[#E63950]" />
+      <span class="text-sm">I have read and agree to the updated Terms &amp; Conditions (version 2.1).</span>
+    </label>
+
+    <!-- Error line: only shown when saving fails -->
+    <p class="hidden text-xs font-semibold text-accent mb-4">Could not record your acceptance — please try again.</p>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <button class="px-8 py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">Accept &amp; Continue</button>
+      <a href="../auth/login.html" class="text-sm font-semibold text-muted hover:text-text transition">Sign out instead</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>
