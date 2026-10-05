@@ -116,7 +116,7 @@ export function AdminBottomNav({ pendingOrganisers = 0, onMoreClick }: Props) {
                                     right: '50%',
                                     transform: 'translateX(8px)',
                                     background: '#E63950',
-                                    color: '#000',
+                                    color: '#fff',
                                     fontSize: 9,
                                     fontWeight: 700,
                                     borderRadius: 999,
