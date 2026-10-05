@@ -242,7 +242,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                         <thead>
                             <tr className="border-b border-border">
                                 {['Org Name', 'Type', 'Organiser', 'Email', 'Events', 'Revenue', 'Stripe', 'Verified', 'Joined', 'Actions'].map(h => (
-                                    <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
+                                    <th key={h} className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">{h}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -252,29 +252,29 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                             )}
                             {active.map(org => (
                                 <tr key={org.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
-                                    <td className="py-3 px-4 text-text font-medium">
+                                    <td className="py-3 px-3 text-text font-medium min-w-[150px] max-w-[200px]">
                                         <Link href={`/admin/organisers/${org.id}`} className="hover:text-accent hover:underline">
                                             {org.org_name}
                                         </Link>
                                     </td>
-                                    <td className="py-3 px-4">
+                                    <td className="py-3 px-3">
                                         <OrgTypeBadge type={org.organiser_type} />
                                     </td>
-                                    <td className="py-3 px-4 text-muted text-xs">{org.profiles?.full_name ?? '—'}</td>
-                                    <td className="py-3 px-4 text-muted text-xs">{org.profiles?.email ?? '—'}</td>
-                                    <td className="py-3 px-4 text-text text-xs">{org.events_count}</td>
-                                    <td className="py-3 px-4 text-text text-xs">{formatPence(org.revenue_pence)}</td>
-                                    <td className="py-3 px-4">
+                                    <td className="py-3 px-3 text-muted text-xs max-w-[130px] truncate">{org.profiles?.full_name ?? '—'}</td>
+                                    <td className="py-3 px-3 text-muted text-xs max-w-[170px] truncate" title={org.profiles?.email ?? undefined}>{org.profiles?.email ?? '—'}</td>
+                                    <td className="py-3 px-3 text-text text-xs">{org.events_count}</td>
+                                    <td className="py-3 px-3 text-text text-xs">{formatPence(org.revenue_pence)}</td>
+                                    <td className="py-3 px-3">
                                         {org.stripe_account_id
                                             ? <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-warm-green bg-warm-green/10">Connected</span>
                                             : <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-muted bg-border">Not connected</span>
                                         }
                                     </td>
-                                    <td className="py-3 px-4 whitespace-nowrap">
+                                    <td className="py-3 px-3 whitespace-nowrap">
                                         <VerificationBadge status={org.identity_status} />
                                     </td>
-                                    <td className="py-3 px-4 text-muted text-xs whitespace-nowrap">{fmt(org.created_at)}</td>
-                                    <td className="py-3 px-4">
+                                    <td className="py-3 px-3 text-muted text-xs whitespace-nowrap">{fmt(org.created_at)}</td>
+                                    <td className="py-3 px-3">
                                         <div className="flex items-center gap-3">
                                             <Link href={`/admin/organisers/${org.id}`} className="text-xs text-accent hover:underline">
                                                 Manage

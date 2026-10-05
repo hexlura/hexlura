@@ -197,7 +197,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                     <thead>
                         <tr className="border-b border-border">
                             {['Title', 'Organiser', 'Category', 'Date', 'Status', 'Tickets', 'Gross Sales', 'Platform Fee', 'Featured', 'Actions'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -207,24 +207,24 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                         )}
                         {events.map(e => (
                             <tr key={e.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
-                                <td className="py-3 px-4">
+                                <td className="py-3 px-3">
                                     <div className="flex items-center gap-2">
                                         {e.is_featured && <span className="text-warm-amberText text-xs">★</span>}
                                         <p className="text-text font-medium text-sm truncate max-w-[200px]">{e.title}</p>
                                     </div>
                                 </td>
-                                <td className="py-3 px-4 text-muted text-xs">{e.organiser_name}</td>
-                                <td className="py-3 px-4 text-muted text-xs">{e.category}</td>
-                                <td className="py-3 px-4 text-muted text-xs whitespace-nowrap">{fmt(e.start_at)}</td>
-                                <td className="py-3 px-4">
+                                <td className="py-3 px-3 text-muted text-xs">{e.organiser_name}</td>
+                                <td className="py-3 px-3 text-muted text-xs">{e.category}</td>
+                                <td className="py-3 px-3 text-muted text-xs whitespace-nowrap">{fmt(e.start_at)}</td>
+                                <td className="py-3 px-3">
                                     <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[e.status] || STATUS_BADGE.draft}`}>
                                         {e.status}
                                     </span>
                                 </td>
-                                <td className="py-3 px-4 text-text text-xs">{e.tickets_sold}</td>
-                                <td className="py-3 px-4 text-text text-xs whitespace-nowrap">{formatPence(e.gross_pence)}</td>
-                                <td className="py-3 px-4 text-warm-amberText text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
-                                <td className="py-3 px-4">
+                                <td className="py-3 px-3 text-text text-xs">{e.tickets_sold}</td>
+                                <td className="py-3 px-3 text-text text-xs whitespace-nowrap">{formatPence(e.gross_pence)}</td>
+                                <td className="py-3 px-3 text-warm-amberText text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
+                                <td className="py-3 px-3">
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleFeatureToggle(e)}
@@ -256,7 +256,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                         )}
                                     </div>
                                 </td>
-                                <td className="py-3 px-4">
+                                <td className="py-3 px-3">
                                     <div className="flex items-center gap-2 flex-wrap text-xs">
                                         <Link href={`/events/${e.slug}`} target="_blank" className="text-muted hover:text-text">View</Link>
                                         <span className="text-border">·</span>
