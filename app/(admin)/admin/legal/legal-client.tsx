@@ -9,7 +9,7 @@ import { LEGAL_CONTENT_CLASSES } from '@/lib/legal-content-styles'
 
 const RichTextEditor = dynamic(
     () => import('@/components/editor/RichTextEditor').then(m => m.RichTextEditor),
-    { ssr: false, loading: () => <div className="h-64 bg-surface border border-border animate-pulse" /> }
+    { ssr: false, loading: () => <div className="h-64 bg-card rounded-2xl animate-pulse" /> }
 )
 
 interface DocVersion {
@@ -206,7 +206,7 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
                 <button
                     onClick={publish}
                     disabled={publishing || plainTextLength(draft) < MIN_CONTENT_LENGTH}
-                    className="bg-text text-white text-sm font-medium px-6 py-2.5 hover:bg-text/90 disabled:opacity-50"
+                    className="bg-text text-white text-sm font-medium px-6 py-2.5 hover:bg-[#1A0E0C]/90 disabled:opacity-50"
                 >
                     {publishing ? 'Publishing…' : 'Publish new version'}
                 </button>

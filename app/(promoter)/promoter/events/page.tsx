@@ -99,7 +99,7 @@ export default async function PromoterEventsPage() {
                                 ? { label: 'Invite pending', className: 'text-warm-yellowText bg-warm-yellow/15' }
                                 : statusFor(r.event.status, r.event.start_at)
                             return (
-                                <tr key={r.id} className="border-b border-border last:border-0 hover:bg-background/60 transition-colors">
+                                <tr key={r.id} className="border-b border-border last:border-0 hover:bg-[#FAF6F3]/60 transition-colors">
                                     <td className="py-3.5 px-6">
                                         <p className="font-medium">{r.event.title}</p>
                                         <p className="text-xs text-muted">{r.event.venue_name || ''}</p>
@@ -107,7 +107,7 @@ export default async function PromoterEventsPage() {
                                     <td className="py-3.5 px-4 text-xs text-muted whitespace-nowrap">{fmtDate(r.event.start_at)}</td>
                                     <td className="py-3.5 px-4 text-xs">{r.event.organiser?.org_name || '—'}</td>
                                     <td className="py-3.5 px-4">
-                                        <span className="text-xs font-semibold text-accent bg-accent/10 px-2.5 py-1 rounded-full">{r.commission_percent}%</span>
+                                        <span className="text-xs font-semibold text-accent bg-warm-red/10 px-2.5 py-1 rounded-full">{r.commission_percent}%</span>
                                     </td>
                                     <td className="py-3.5 px-4">{stats.count}</td>
                                     <td className="py-3.5 px-4 font-semibold text-warm-green">{formatPence(stats.earnedPence)}</td>

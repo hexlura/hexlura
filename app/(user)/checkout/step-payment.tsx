@@ -85,7 +85,7 @@ function PaymentForm() {
             </label>
 
             {error && (
-                <p className="text-sm font-semibold text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
+                <p className="text-sm font-semibold text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5">{error}</p>
             )}
 
             <button

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
 
 export interface PromoterPayoutRow {
@@ -123,7 +123,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
 
             {/* Due Promoter Payouts */}
             {duePayouts.length > 0 && (
-                <div className="bg-amber-50 border border-warm-amber/30 rounded-lg p-6 mb-8">
+                <div className="bg-warm-amber/10 border border-warm-amber/30 rounded-2xl p-6 mb-8">
                     <div className="mb-4">
                         <h3 className="text-sm font-medium text-warm-amberText">Promoter Payouts Due</h3>
                         <p className="text-xs text-warm-amberText/60 mt-0.5">{duePayouts.length} request{duePayouts.length !== 1 ? 's' : ''} awaiting processing</p>
@@ -143,7 +143,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setBankModal(p)}
-                                        className="text-xs text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                        className="text-xs text-muted hover:text-text px-2 py-1 border border-border rounded-full transition-colors"
                                     >
                                         Bank Details
                                     </button>
@@ -201,7 +201,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => setBankModal(p)}
-                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-full transition-colors"
                                             title="View bank details"
                                         >
                                             Bank
@@ -212,7 +212,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                                 setSelectedStatus(p.status)
                                                 setReferenceInput(p.reference || deriveReference(p.id))
                                             }}
-                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-full transition-colors"
                                             title="Change status"
                                         >
                                             Status
@@ -224,7 +224,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                                     setConfirmModal(p)
                                                 }}
                                                 disabled={loading === p.id}
-                                                className="text-[11px] text-white bg-accent hover:bg-warm-red/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
+                                                className="text-[11px] text-white bg-accent hover:bg-warm-red/80 px-2 py-1 rounded-full transition-colors disabled:opacity-50"
                                             >
                                                 {loading === p.id ? '...' : 'Process'}
                                             </button>
@@ -257,7 +257,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(confirmModal.id)}
-                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. Sent to the promoter in their commission email.</p>
                             </div>
@@ -328,7 +328,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                             <select
                                 value={selectedStatus}
                                 onChange={e => setSelectedStatus(e.target.value)}
-                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="requested">Requested</option>
@@ -345,7 +345,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(statusModal.id)}
-                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference.</p>
                             </div>

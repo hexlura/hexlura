@@ -56,7 +56,7 @@ export function SettingsClient({ initial }: { initial: Initial }) {
         router.refresh()
     }
 
-    const fieldClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+    const fieldClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
     const labelClass = "text-xs font-semibold text-muted mb-1.5 block"
 
     return (

@@ -124,7 +124,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
 
     if (submitted) {
         return (
-            <div className="px-5 py-2.5 rounded-full bg-success/10 text-success text-sm font-semibold text-center">
+            <div className="px-5 py-2.5 rounded-full bg-warm-green/10 text-success text-sm font-semibold text-center">
                 Request submitted — organiser will respond within 48 hours
             </div>
         )
@@ -162,7 +162,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
             <div>
                 <button
                     onClick={() => setOpen(true)}
-                    className="px-5 py-2.5 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-accent/10 transition"
+                    className="px-5 py-2.5 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-warm-red/10 transition"
                 >
                     Request Refund
                 </button>
@@ -180,7 +180,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                         <h3 className="font-heading text-2xl tracking-wide">REQUEST REFUND</h3>
 
                         {eligibility.refundAmountPence > 0 && (
-                            <div className="bg-success/10 rounded-xl px-3.5 py-2.5">
+                            <div className="bg-warm-green/10 rounded-xl px-3.5 py-2.5">
                                 <p className="text-sm font-semibold text-success">
                                     Refund amount: {formatPence(eligibility.refundAmountPence)}
                                 </p>
@@ -197,7 +197,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                             <select
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
-                                className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                             >
                                 <option value="">Select a reason...</option>
                                 {REASONS.map((r) => (
@@ -214,7 +214,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                                 maxLength={500}
                                 rows={3}
                                 placeholder="Any additional details..."
-                                className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 resize-none"
+                                className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 resize-none"
                             />
                             <span className="text-xs text-muted text-right">{message.length}/500</span>
                         </div>

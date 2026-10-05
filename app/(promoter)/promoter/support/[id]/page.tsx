@@ -81,7 +81,7 @@ export default async function PromoterSupportTicketPage({ params }: { params: { 
 
             <div className="flex flex-col gap-4 mb-6">
                 {messages.map(m => m.is_admin ? (
-                    <div key={m.id} className="bg-accent/5 border border-accent/10 rounded-2xl p-5 max-w-[85%] ml-auto">
+                    <div key={m.id} className="bg-warm-red/5 border border-warm-red/10 rounded-2xl p-5 max-w-[85%] ml-auto">
                         <div className="flex items-center gap-2 mb-2 justify-end">
                             <p className="text-[10px] text-muted">{fmt(m.created_at)}</p>
                             <p className="text-xs font-semibold">Hexlura Support</p>

@@ -56,7 +56,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 </div>
                 <Link
                     href="/api/admin/export/audit-log"
-                    className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors"
+                    className="text-xs px-3 py-2 rounded-full bg-card border border-border text-muted hover:text-text transition-colors"
                 >
                     Export CSV
                 </Link>
@@ -67,7 +67,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 <select
                     defaultValue={searchParams.get('admin') ?? ''}
                     onChange={e => updateParam('admin', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Admins</option>
                     {admins.map(a => (
@@ -77,7 +77,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 <select
                     defaultValue={searchParams.get('action') ?? ''}
                     onChange={e => updateParam('action', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Actions</option>
                     {distinctActions.map(a => (
@@ -87,7 +87,7 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                 <select
                     defaultValue={searchParams.get('entity') ?? ''}
                     onChange={e => updateParam('entity', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Entity Types</option>
                     {['user', 'organiser', 'event', 'booking', 'payout'].map(e => (
@@ -98,13 +98,13 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
                     type="date"
                     defaultValue={searchParams.get('from') ?? ''}
                     onChange={e => updateParam('from', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 />
                 <input
                     type="date"
                     defaultValue={searchParams.get('to') ?? ''}
                     onChange={e => updateParam('to', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 />
             </div>
 

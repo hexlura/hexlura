@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
 
 export interface PromoterRow {
@@ -130,7 +130,7 @@ export function PromotersClient({ active, suspended, defaultTab }: Props) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search by name, code or email…"
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none w-full sm:w-72 focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none w-full sm:w-72 focus:ring-2 focus:ring-warm-red/25"
                 />
             </div>
 
@@ -204,7 +204,7 @@ export function PromotersClient({ active, suspended, defaultTab }: Props) {
                                 onChange={e => setReasonInput(e.target.value)}
                                 rows={3}
                                 placeholder="e.g. fraud, ToS violation, account compromise"
-                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                             />
                         </div>
                         <div className="flex gap-3">

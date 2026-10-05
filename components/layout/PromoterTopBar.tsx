@@ -47,7 +47,7 @@ export function PromoterTopBar({ userId, userName }: { userId: string; userName:
         .toUpperCase() || 'P'
 
     return (
-        <div className="hidden lg:flex sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border px-10 py-3.5 items-center justify-end gap-3">
+        <div className="hidden lg:flex sticky top-0 z-10 bg-[#FAF6F3]/80 backdrop-blur border-b border-border px-10 py-3.5 items-center justify-end gap-3">
             <Link
                 href="/promoter/notifications"
                 className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-text transition-colors relative shadow-soft"
@@ -71,7 +71,7 @@ export function PromoterTopBar({ userId, userName }: { userId: string; userName:
                 onClick={handleSignOut}
                 disabled={signingOut}
                 title="Log out"
-                className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-accent hover:border-accent/30 transition-colors shadow-soft disabled:opacity-50"
+                className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted hover:text-accent hover:border-warm-red/30 transition-colors shadow-soft disabled:opacity-50"
             >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></svg>
             </button>

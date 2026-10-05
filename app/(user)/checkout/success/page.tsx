@@ -46,14 +46,14 @@ function SaveBookingPanel() {
 
     if (done) {
         return (
-            <div className="bg-accent/5 rounded-2xl border border-accent/20 p-5 text-left text-sm">
+            <div className="bg-warm-red/5 rounded-2xl border border-warm-red/20 p-5 text-left text-sm">
                 Check your email to confirm and finish setting up your account.
             </div>
         )
     }
 
     return (
-        <form onSubmit={handleSave} className="bg-accent/5 rounded-2xl border border-accent/20 p-5 text-left">
+        <form onSubmit={handleSave} className="bg-warm-red/5 rounded-2xl border border-warm-red/20 p-5 text-left">
             <p className="font-semibold text-sm mb-1">Save this booking to an account</p>
             <p className="text-xs text-muted mb-4">Create a free account to track this booking, get faster checkout next time, and manage refunds.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -63,7 +63,7 @@ function SaveBookingPanel() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="Email address"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 />
                 <input
                     type="password"
@@ -72,11 +72,11 @@ function SaveBookingPanel() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="Create a password"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 />
             </div>
             {saveError && (
-                <p className="text-sm font-semibold text-accent bg-accent/10 rounded-lg px-3.5 py-2.5 mb-3">{saveError}</p>
+                <p className="text-sm font-semibold text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5 mb-3">{saveError}</p>
             )}
             <button
                 type="submit"
@@ -182,7 +182,7 @@ function SuccessContent() {
     if (error) {
         return (
             <div className="max-w-lg mx-auto py-16 text-center space-y-6">
-                <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                <div className="w-20 h-20 rounded-full bg-warm-red/10 flex items-center justify-center mx-auto">
                     <span className="text-accent text-4xl">✕</span>
                 </div>
                 <h1 className="font-heading text-4xl tracking-wide">PAYMENT FAILED</h1>

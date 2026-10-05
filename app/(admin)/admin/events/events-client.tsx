@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/WarmButton'
 import { CATEGORIES } from '@/lib/config/categories'
 import { formatPence } from '@/lib/fees'
 
@@ -139,7 +139,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 mb-4 border-b border-border overflow-x-auto hide-scrollbar">
+            <div className="flex gap-1 mb-4 border-b border-border overflow-x-auto overflow-y-hidden">
                 {tabs.map(t => (
                     <button
                         key={t.value}
@@ -162,12 +162,12 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                         clearTimeout((window as Window & { _st?: ReturnType<typeof setTimeout> })._st)
                         ;(window as Window & { _st?: ReturnType<typeof setTimeout> })._st = setTimeout(() => updateParam('q', v), 300)
                     }}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-warm-red/25"
                 />
                 <select
                     defaultValue={searchParams.get('category') ?? ''}
                     onChange={e => updateParam('category', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -175,7 +175,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <select
                     defaultValue={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Statuses</option>
                     <option value="published">Published</option>
@@ -187,7 +187,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <select
                     value={pageSize}
                     onChange={e => updateParam('pageSize', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
                 </select>
@@ -233,7 +233,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                             disabled={loading === e.id}
                                             style={{
                                                 fontSize: '18px',
-                                                color: e.is_featured ? '#F5A623' : '#C0C0C8',
+                                                color: e.is_featured ? '#F5A623' : '#D9CCC6',
                                                 background: 'none', border: 'none',
                                                 cursor: loading === e.id ? 'not-allowed' : 'pointer',
                                                 padding: 0, lineHeight: 1,
@@ -248,9 +248,9 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                                 defaultValue={e.featured_order}
                                                 onBlur={ev => handleFeaturedOrderBlur(e.id, Number(ev.target.value))}
                                                 style={{
-                                                    width: '50px', border: '1px solid #E0E0E0',
+                                                    width: '50px', border: '1px solid #F1E7E2',
                                                     padding: '2px 4px', fontSize: '12px',
-                                                    textAlign: 'center', color: '#0A0A0F', outline: 'none',
+                                                    textAlign: 'center', color: '#1A0E0C', outline: 'none',
                                                 }}
                                                 min={0}
                                                 title="Featured order"
@@ -317,7 +317,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                             value={cancelConfirmTitle}
                             onChange={e => setCancelConfirmTitle(e.target.value)}
                             placeholder="Event title..."
-                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent mb-4 focus:ring-2 focus:ring-accent/25"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent mb-4 focus:ring-2 focus:ring-warm-red/25"
                         />
                         <div className="flex gap-3">
                             <Button

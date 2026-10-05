@@ -98,9 +98,9 @@ export default async function AdminFinancialsPage() {
                     <p className="text-muted text-sm mt-1">Platform revenue and payout overview</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <Link href="/api/admin/export/revenue" className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors">Export Revenue CSV</Link>
-                    <Link href="/api/admin/export/bookings" className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors">Export Bookings CSV</Link>
-                    <Link href="/api/admin/export/payouts" className="text-xs px-3 py-2 rounded-sm bg-card border border-border text-muted hover:text-text transition-colors">Export Payouts CSV</Link>
+                    <Link href="/api/admin/export/revenue" className="text-xs px-3 py-2 rounded-full bg-card border border-border text-muted hover:text-text transition-colors">Export Revenue CSV</Link>
+                    <Link href="/api/admin/export/bookings" className="text-xs px-3 py-2 rounded-full bg-card border border-border text-muted hover:text-text transition-colors">Export Bookings CSV</Link>
+                    <Link href="/api/admin/export/payouts" className="text-xs px-3 py-2 rounded-full bg-card border border-border text-muted hover:text-text transition-colors">Export Payouts CSV</Link>
                 </div>
             </div>
 

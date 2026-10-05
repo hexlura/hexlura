@@ -10,7 +10,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
-const inputClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:bg-border/40 disabled:text-muted disabled:cursor-not-allowed"
+const inputClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 disabled:bg-border disabled:text-muted disabled:cursor-not-allowed"
 const labelClass = "text-xs font-semibold text-muted mb-1.5 block"
 const cardClass = "bg-card rounded-2xl border border-border shadow-soft p-6 mb-5"
 const cardTitleClass = "font-heading text-lg tracking-wide mb-4"
@@ -478,7 +478,7 @@ export default function AccountSettingsPage() {
             </section>
 
             {/* Danger Zone */}
-            <section className="bg-card rounded-2xl border border-accent/30 shadow-soft p-6">
+            <section className="bg-card rounded-2xl border border-warm-red/30 shadow-soft p-6">
                 <h2 className={`${cardTitleClass} text-accent`}>DANGER ZONE</h2>
                 <div className="flex items-center justify-between flex-wrap gap-3">
                     <div>
@@ -489,7 +489,7 @@ export default function AccountSettingsPage() {
                         type="button"
                         onClick={handleDeleteAccount}
                         disabled={deleteLoading}
-                        className="px-5 py-2 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-accent/10 transition inline-flex items-center gap-2"
+                        className="px-5 py-2 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-warm-red/10 transition inline-flex items-center gap-2"
                     >
                         {deleteLoading && <Spinner />}
                         {deleteLoading ? 'Deleting...' : 'Delete Account'}

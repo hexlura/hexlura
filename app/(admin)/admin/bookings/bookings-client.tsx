@@ -225,7 +225,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                         placeholder="Booking ref…"
                         value={filterQ}
                         onChange={e => setFilterQ(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-accent/25"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
@@ -234,7 +234,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     <select
                         value={filterStatus}
                         onChange={e => setFilterStatus(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
                     >
                         <option value="">All</option>
                         <option value="pending">Pending</option>
@@ -249,7 +249,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     <select
                         value={filterOrganiserId}
                         onChange={e => setFilterOrganiserId(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[220px] focus:ring-2 focus:ring-accent/25"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[220px] focus:ring-2 focus:ring-warm-red/25"
                     >
                         <option value="">All organisers</option>
                         {organisers.map(o => (
@@ -263,7 +263,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     <select
                         value={filterEventId}
                         onChange={e => setFilterEventId(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[260px] focus:ring-2 focus:ring-accent/25"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[260px] focus:ring-2 focus:ring-warm-red/25"
                     >
                         <option value="">All events</option>
                         {visibleEvents.map(ev => (
@@ -413,7 +413,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                                 {/* Tickets */}
                                 <section>
                                     <h4 className="text-xs uppercase tracking-wider text-muted mb-2">Tickets</h4>
-                                    <div className="bg-surface border border-border">
+                                    <div className="bg-background border border-border rounded-xl">
                                         <table className="w-full text-xs">
                                             <thead>
                                                 <tr className="border-b border-border">

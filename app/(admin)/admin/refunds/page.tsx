@@ -93,7 +93,7 @@ export default async function AdminRefundsPage({
 
     return (
         <div className="max-w-7xl">
-            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', marginBottom: '32px' }}>
+            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#1A0E0C', marginBottom: '32px' }}>
                 REFUND REQUESTS
             </h1>
             <AdminRefundsClient requests={enriched} initialTab={initialTab} />

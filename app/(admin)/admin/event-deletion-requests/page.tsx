@@ -179,7 +179,7 @@ export default function EventDeletionRequestsPage() {
                             onChange={e => setRejectNotes(e.target.value)}
                             rows={3}
                             placeholder="Reason (optional)"
-                            className="w-full border border-border rounded-lg px-3.5 py-2.5 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-4 focus:ring-2 focus:ring-accent/25"
+                            className="w-full border border-border rounded-lg px-3.5 py-2.5 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-4 focus:ring-2 focus:ring-warm-red/25"
                         />
                         <div className="flex gap-3">
                             <button onClick={handleReject} disabled={actionLoading === rejectModal.id} className="h-10 px-5 rounded-full bg-accent text-white text-sm font-semibold disabled:opacity-50 shadow-glow">

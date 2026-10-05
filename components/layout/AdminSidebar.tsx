@@ -258,7 +258,7 @@ export function AdminSidebar({ adminName, userId, pendingOrganisers, openSupport
                 <nav className="flex-1 min-h-0 px-5 pb-4 overflow-y-auto text-sm">
                     {NAV_SECTIONS.map((section) => (
                         <div key={section.title}>
-                            <p className="text-[10px] font-bold tracking-[0.15em] text-muted/80 px-3 pt-4 pb-1.5">{section.title}</p>
+                            <p className="text-[10px] font-bold tracking-[0.15em] text-[#6B5D56]/80 px-3 pt-4 pb-1.5">{section.title}</p>
                             <div className="flex flex-col gap-0.5">
                                 {section.links.map((link) => {
                                     const active = isActive(link.href, link.exact)

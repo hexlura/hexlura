@@ -225,7 +225,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
     const rangeStart = totalRows === 0 ? 0 : (page - 1) * pageSize + 1
     const rangeEnd = Math.min(page * pageSize, totalRows)
 
-    const selectClass = 'bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent'
+    const selectClass = 'bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent'
 
     return (
         <div className="max-w-7xl">
@@ -233,7 +233,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                 <div
                     role="status"
                     aria-live="polite"
-                    className={`fixed top-4 right-4 z-50 border px-4 py-2 rounded-sm text-sm ${toastMsg.tone === 'success' ? 'bg-warm-green/20 border-warm-green/40 text-success' : 'bg-warm-red/20 border-warm-red/40 text-accent'}`}
+                    className={`fixed top-4 right-4 z-50 border px-4 py-2 rounded-full text-sm ${toastMsg.tone === 'success' ? 'bg-warm-green/20 border-warm-green/40 text-success' : 'bg-warm-red/20 border-warm-red/40 text-accent'}`}
                 >
                     {toastMsg.text}
                 </div>
@@ -254,7 +254,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                             placeholder="Name or email…"
                             value={filterSearch}
                             onChange={e => setFilterSearch(e.target.value)}
-                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
                         />
                     </div>
 
@@ -334,7 +334,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
             </form>
 
             {loadError && (
-                <div className="bg-warm-red/10 border border-warm-red/30 text-accent text-sm px-4 py-3 rounded-sm mb-4">
+                <div className="bg-warm-red/10 border border-warm-red/30 text-accent text-sm px-4 py-3 rounded-full mb-4">
                     Something went wrong loading enquiries. Try refreshing the page.
                 </div>
             )}
@@ -525,7 +525,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         rows={4}
                                         placeholder="Add internal notes about this lead…"
                                         disabled={saving}
-                                        className="w-full bg-white border border-border text-text text-sm px-3.5 py-2.5 focus:outline-none focus:border-accent resize-y disabled:opacity-60 focus:ring-2 focus:ring-accent/25"
+                                        className="w-full bg-white border border-border text-text text-sm px-3.5 py-2.5 focus:outline-none focus:border-accent resize-y disabled:opacity-60 focus:ring-2 focus:ring-warm-red/25"
                                     />
                                 </div>
 

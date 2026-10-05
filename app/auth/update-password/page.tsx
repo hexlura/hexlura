@@ -30,7 +30,7 @@ function UpdatePasswordForm() {
     if (urlError) {
         return (
             <section className="text-center">
-                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-5">
+                <div className="w-16 h-16 rounded-full bg-warm-red/10 flex items-center justify-center mx-auto mb-5">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
                 </div>
                 <h1 className="font-heading text-3xl tracking-wide mb-2">LINK EXPIRED</h1>
@@ -49,7 +49,7 @@ function UpdatePasswordForm() {
     if (success) {
         return (
             <section className="text-center">
-                <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-5">
+                <div className="w-16 h-16 rounded-full bg-warm-green/10 flex items-center justify-center mx-auto mb-5">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B9C63" strokeWidth="3"><path d="m5 13 4 4L19 7" /></svg>
                 </div>
                 <h1 className="font-heading text-3xl tracking-wide mb-2">PASSWORD UPDATED</h1>
@@ -78,7 +78,7 @@ function UpdatePasswordForm() {
                         required
                         minLength={8}
                         placeholder="Min 8 characters"
-                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
@@ -91,12 +91,12 @@ function UpdatePasswordForm() {
                         required
                         minLength={8}
                         placeholder="Repeat your password"
-                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
                 {error && (
-                    <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
+                    <p className="text-sm text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5">{error}</p>
                 )}
 
                 <button

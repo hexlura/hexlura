@@ -134,7 +134,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                         disabled={saving}
                         role="switch"
                         aria-checked={allowed}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${allowed ? 'bg-accent' : 'bg-border'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${allowed ? 'bg-accent' : 'bg-border'}`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${allowed ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
@@ -173,7 +173,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                         disabled={savingField === 'booking_fee_exempt'}
                         role="switch"
                         aria-checked={bookingFeeExempt}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${bookingFeeExempt ? 'bg-accent' : 'bg-border'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${bookingFeeExempt ? 'bg-accent' : 'bg-border'}`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bookingFeeExempt ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
@@ -191,7 +191,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                         disabled={savingField === 'processing_fee_exempt'}
                         role="switch"
                         aria-checked={processingFeeExempt}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors disabled:opacity-40 ${processingFeeExempt ? 'bg-accent' : 'bg-border'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${processingFeeExempt ? 'bg-accent' : 'bg-border'}`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${processingFeeExempt ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>

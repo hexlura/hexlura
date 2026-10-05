@@ -91,7 +91,7 @@ export function PageControlsClient({ pageKey, sections }: Props) {
                                 aria-label={`${isVisible ? 'Hide' : 'Show'} ${section.display_name} on the public page`}
                                 disabled={isPending}
                                 onClick={() => handleToggle(section)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${isVisible ? 'bg-accent' : 'bg-border'}`}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${isVisible ? 'bg-accent' : 'bg-border'}`}
                             >
                                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
                             </button>

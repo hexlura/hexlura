@@ -203,7 +203,7 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
                                 onChange={e => setManualRef(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleManualLookup()}
                                 placeholder="HXL-XXXXXX"
-                                className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-background border border-border text-base font-mono uppercase placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-background border border-border text-base font-mono uppercase placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                             />
                             <button
                                 onClick={handleManualLookup}

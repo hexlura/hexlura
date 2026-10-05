@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
 
 type UserRole = 'user' | 'organiser' | 'admin'
@@ -172,12 +172,12 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                     placeholder="Search by name or email..."
                     value={searchValue}
                     onChange={e => handleSearchChange(e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-64 focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-64 focus:ring-2 focus:ring-warm-red/25"
                 />
                 <select
                     value={searchParams.get('role') ?? 'all'}
                     onChange={e => updateParam('role', e.target.value === 'all' ? '' : e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="all">All Roles</option>
                     <option value="user">User</option>
@@ -187,7 +187,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                 <select
                     value={searchParams.get('status') ?? 'all'}
                     onChange={e => updateParam('status', e.target.value === 'all' ? '' : e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -196,7 +196,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                 <select
                     value={searchParams.get('joined') ?? 'any'}
                     onChange={e => updateParam('joined', e.target.value === 'any' ? '' : e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="any">Any Time</option>
                     <option value="7d">Last 7 Days</option>
@@ -288,7 +288,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
             {panelUser && (
                 <div className="fixed inset-0 z-50 flex">
                     <div className="flex-1 bg-black/50" onClick={() => setPanelUser(null)} />
-                    <div className="w-96 bg-surface border-l border-border flex flex-col overflow-y-auto">
+                    <div className="w-96 bg-card shadow-hover flex flex-col overflow-y-auto">
                         <div className="flex items-center justify-between p-6 border-b border-border">
                             <h3 className="font-heading text-xl text-text">User Profile</h3>
                             <button onClick={() => setPanelUser(null)} className="text-muted hover:text-text text-xl">×</button>
@@ -334,7 +334,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                         <select
                             value={newRole}
                             onChange={e => setNewRole(e.target.value as UserRole)}
-                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none mb-4 focus:ring-2 focus:ring-accent/25"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none mb-4 focus:ring-2 focus:ring-warm-red/25"
                         >
                             <option value="user">User</option>
                             <option value="organiser">Organiser</option>
@@ -361,7 +361,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                             onChange={e => setSuspendReason(e.target.value)}
                             placeholder="Reason for suspension (required)"
                             rows={3}
-                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4 focus:ring-2 focus:ring-accent/25"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4 focus:ring-2 focus:ring-warm-red/25"
                         />
                         <div className="flex gap-3">
                             <Button variant="danger" size="md" onClick={handleSuspend} disabled={loading || !suspendReason.trim()}>

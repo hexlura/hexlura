@@ -45,7 +45,7 @@ export function ApplyForm({ defaultName }: Props) {
                     minLength={2}
                     maxLength={50}
                     required
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 />
                 <p className="text-xs text-muted mt-1.5">Used to generate your referral code (e.g. DJAZEER).</p>
             </div>
@@ -58,12 +58,12 @@ export function ApplyForm({ defaultName }: Props) {
                     placeholder="A line about who you are and what you promote."
                     rows={3}
                     maxLength={300}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 resize-none"
                 />
             </div>
 
             {error && (
-                <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
+                <p className="text-sm text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5">{error}</p>
             )}
 
             <button

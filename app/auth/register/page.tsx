@@ -89,7 +89,7 @@ function RegisterContent() {
                         type="text"
                         required
                         placeholder="John Doe"
-                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
@@ -101,7 +101,7 @@ function RegisterContent() {
                         type="email"
                         required
                         placeholder="you@example.com"
-                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
@@ -115,7 +115,7 @@ function RegisterContent() {
                             required
                             minLength={8}
                             placeholder="Min 8 characters"
-                            className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 pr-11"
+                            className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 pr-11"
                         />
                         <button
                             type="button"
@@ -149,7 +149,7 @@ function RegisterContent() {
                             required
                             minLength={8}
                             placeholder="Repeat your password"
-                            className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 pr-11"
+                            className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 pr-11"
                         />
                         <button
                             type="button"
@@ -174,7 +174,7 @@ function RegisterContent() {
                 </div>
 
                 {error && (
-                    <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
+                    <p className="text-sm text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5">{error}</p>
                 )}
 
                 <button

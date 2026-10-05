@@ -227,7 +227,7 @@ export default function CheckoutFlow() {
     if (error) {
         return (
             <div className="max-w-md mx-auto py-12 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 rounded-full bg-warm-red/10 flex items-center justify-center mx-auto">
                     <span className="text-accent text-2xl">!</span>
                 </div>
                 <p className="font-medium">{error}</p>
@@ -269,7 +269,7 @@ export default function CheckoutFlow() {
 
     // 0 = Tickets (done before checkout), 1 = Your Details, 2 = Payment
     const currentStep = state.step === 1 && !proceedToPayment ? 1 : 2
-    const fieldClass = 'w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25'
+    const fieldClass = 'w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25'
     const labelClass = 'text-xs font-semibold text-muted mb-1.5 block'
 
     return (
@@ -357,7 +357,7 @@ export default function CheckoutFlow() {
                             <div className="mb-6">
                                 <label className={labelClass}>Promo / Comp Code</label>
                                 {state.promo ? (
-                                    <div className="bg-success/10 rounded-lg px-3.5 py-2.5 text-sm text-success flex items-center justify-between gap-3">
+                                    <div className="bg-warm-green/10 rounded-lg px-3.5 py-2.5 text-sm text-success flex items-center justify-between gap-3">
                                         <span>
                                             Code <span className="font-mono font-bold">{state.promo.code}</span> applied
                                         </span>

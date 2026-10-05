@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
 
 interface PayoutRow {
@@ -204,7 +204,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
 
             {/* Due Payouts */}
             {duePayouts.length > 0 && (
-                <div className="bg-amber-50 border border-warm-amber/30 rounded-lg p-6 mb-8">
+                <div className="bg-warm-amber/10 border border-warm-amber/30 rounded-2xl p-6 mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-sm font-medium text-warm-amberText">Payouts Due</h2>
@@ -215,7 +215,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             size="md"
                             onClick={handleProcessAll}
                             disabled={processingAll}
-                            className="bg-gold hover:bg-gold/80 border-gold text-black"
+                            className="bg-gold hover:bg-warm-amber/80 border-gold text-black"
                         >
                             {processingAll
                                 ? processProgress
@@ -254,7 +254,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setBankModal(p)}
-                                        className="text-xs text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                        className="text-xs text-muted hover:text-text px-2 py-1 border border-border rounded-full transition-colors"
                                     >
                                         Bank Details
                                     </button>
@@ -282,7 +282,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 <select
                     defaultValue={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
@@ -348,7 +348,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => setBankModal(p)}
-                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-full transition-colors"
                                             title="View bank details"
                                         >
                                             Bank
@@ -359,7 +359,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                                 setSelectedStatus(p.status)
                                                 setReferenceInput(p.reference || deriveReference(p.id))
                                             }}
-                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-sm transition-colors"
+                                            className="text-[11px] text-muted hover:text-text px-2 py-1 border border-border rounded-full transition-colors"
                                             title="Change status"
                                         >
                                             Status
@@ -371,7 +371,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                                     setConfirmModal(p)
                                                 }}
                                                 disabled={loading === p.id}
-                                                className="text-[11px] text-white bg-accent hover:bg-warm-red/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
+                                                className="text-[11px] text-white bg-accent hover:bg-warm-red/80 px-2 py-1 rounded-full transition-colors disabled:opacity-50"
                                             >
                                                 {loading === p.id ? '...' : 'Process'}
                                             </button>
@@ -414,13 +414,13 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(confirmModal.id)}
-                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. This is shown to the organiser.</p>
                             </div>
                         )}
                         {!confirmModal.organiser_profiles?.identity_verified_at && (
-                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-sm">
+                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-lg">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
                                 <label className="text-[11px] text-muted block mb-1.5">Override reason (audit-logged, required)</label>
                                 <textarea
@@ -428,7 +428,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     onChange={e => setOverrideReason(e.target.value)}
                                     rows={2}
                                     placeholder="e.g. legacy organiser, payout already processed externally"
-                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-xs text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-xs text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
                                 />
                             </div>
                         )}
@@ -498,7 +498,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             <select
                                 value={selectedStatus}
                                 onChange={e => setSelectedStatus(e.target.value)}
-                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="requested">Requested</option>
@@ -515,13 +515,13 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(statusModal.id)}
-                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. Sent to the organiser in their payout email.</p>
                             </div>
                         )}
                         {((selectedStatus === 'paid' && statusModal.status !== 'paid') || (selectedStatus === 'requested' && statusModal.status !== 'requested')) && !statusModal.organiser_profiles?.identity_verified_at && (
-                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-sm">
+                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-lg">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
                                 <label className="text-[11px] text-muted block mb-1.5">Override reason (audit-logged, required)</label>
                                 <textarea
@@ -529,7 +529,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     onChange={e => setOverrideReason(e.target.value)}
                                     rows={2}
                                     placeholder="e.g. legacy organiser, payout already processed externally"
-                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-xs text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-xs text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
                                 />
                             </div>
                         )}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/WarmButton'
 import { SaveFeedback } from '@/components/ui/SaveFeedback'
 import type { SeoMetadata } from '@/types'
 
@@ -176,7 +176,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
 
     const sectionClass = "bg-card shadow-card rounded-2xl p-6 mb-6"
     const labelClass = "text-xs text-muted block mb-1"
-    const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+    const inputClass = "w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent"
 
     return (
         <div className="max-w-3xl">

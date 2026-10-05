@@ -40,7 +40,7 @@ function VerifyContent() {
 
     return (
         <section className="text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-5">
+            <div className="mx-auto w-16 h-16 rounded-full bg-warm-red/10 flex items-center justify-center mb-5">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
                     <rect width="20" height="16" x="2" y="4" rx="2"/>
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
@@ -56,11 +56,11 @@ function VerifyContent() {
             </div>
 
             {error && (
-                <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5 mb-4">{error}</p>
+                <p className="text-sm text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5 mb-4">{error}</p>
             )}
 
             {message && (
-                <p className="text-sm text-success bg-success/10 rounded-lg px-3.5 py-2.5 mb-4">{message}</p>
+                <p className="text-sm text-success bg-warm-green/10 rounded-lg px-3.5 py-2.5 mb-4">{message}</p>
             )}
 
             <button
@@ -85,7 +85,7 @@ export default function VerifyPage() {
     return (
         <Suspense fallback={
             <section className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-5">
+                <div className="mx-auto w-16 h-16 rounded-full bg-warm-red/10 flex items-center justify-center mb-5">
                     <svg className="animate-spin h-6 w-6 text-accent" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />

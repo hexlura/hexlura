@@ -30,7 +30,7 @@ const STATUS_BADGE: Record<string, string> = {
     requested: 'text-warm-yellowText bg-warm-yellow/15',
     processing: 'text-blue-600 bg-blue-500/10',
     paid: 'text-warm-green bg-warm-green/10',
-    failed: 'text-accent bg-accent/10',
+    failed: 'text-accent bg-warm-red/10',
 }
 
 function fmtDate(iso: string | null) {
@@ -133,7 +133,7 @@ export function PayoutsClient({
                             <tr><td colSpan={6} className="text-center text-muted text-xs py-12">No payouts yet</td></tr>
                         )}
                         {history.map(p => (
-                            <tr key={p.id} className="border-b border-border last:border-0 hover:bg-background/60 transition-colors">
+                            <tr key={p.id} className="border-b border-border last:border-0 hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3.5 px-6 font-mono text-xs text-accent">{p.reference || p.id.slice(0, 8).toUpperCase()}</td>
                                 <td className="py-3.5 px-4 font-semibold text-warm-green">{formatPence(p.net_pence)}</td>
                                 <td className="py-3.5 px-4 text-xs">{p.payout_method === 'bank_transfer' ? 'Bank transfer' : p.payout_method === 'stripe_connect' ? 'Stripe' : '—'}</td>

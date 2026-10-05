@@ -109,7 +109,7 @@ export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
         }
     }
 
-    const inputClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+    const inputClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
     const labelClass = "text-xs font-semibold text-muted mb-1.5 block"
 
     return (
@@ -129,7 +129,7 @@ export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
                                 onChange={() => { setOrgType(t.value); setTypeError('') }}
                                 className="peer sr-only"
                             />
-                            <div className="h-full rounded-2xl border border-border bg-background p-4 text-center transition hover:border-accent peer-checked:border-accent peer-checked:bg-warm-red/5 peer-checked:shadow-card peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40">
+                            <div className="h-full rounded-2xl border border-border bg-background p-4 text-center transition hover:border-accent peer-checked:border-accent peer-checked:bg-warm-red/5 peer-checked:shadow-card peer-focus-visible:ring-2 peer-focus-visible:ring-warm-red/40">
                                 <div className="w-11 h-11 mx-auto rounded-full bg-card border border-border flex items-center justify-center text-xl">{t.emoji}</div>
                                 <p className="font-bold text-sm mt-2.5">{t.name}</p>
                                 <p className="text-xs text-muted mt-1">{t.description}</p>

@@ -150,7 +150,7 @@ export function UserNotificationsInbox({ initial }: { initial: NotificationRow[]
                         return (
                             <div
                                 key={n.id}
-                                className={`flex items-start gap-3 bg-card rounded-xl border shadow-soft p-4 relative ${n.is_read ? 'border-border' : 'border-accent/30'}`}
+                                className={`flex items-start gap-3 bg-card rounded-xl border shadow-soft p-4 relative ${n.is_read ? 'border-border' : 'border-warm-red/30'}`}
                             >
                                 {!n.is_read && <span aria-hidden className="absolute top-4 right-12 w-2 h-2 rounded-full bg-accent" />}
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${v.chip}`}>{v.icon}</div>

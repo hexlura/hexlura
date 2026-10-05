@@ -93,7 +93,7 @@ function AcceptContent() {
     if (state === 'invalid') {
         return (
             <div className={cardClass}>
-                {icon('bg-accent/10 text-accent', cross)}
+                {icon('bg-warm-red/10 text-accent', cross)}
                 <h1 className="font-heading text-3xl tracking-wide mb-2">INVALID INVITATION</h1>
                 <p className="text-sm text-muted mb-5">This invitation link is invalid or has expired.</p>
                 <Link href="/" className="text-sm text-accent font-semibold hover:underline">Return to homepage</Link>
@@ -143,7 +143,7 @@ function AcceptContent() {
     if (state === 'error') {
         return (
             <div className={cardClass}>
-                {icon('bg-accent/10 text-accent', cross)}
+                {icon('bg-warm-red/10 text-accent', cross)}
                 <h1 className="font-heading text-3xl tracking-wide mb-2">SOMETHING WENT WRONG</h1>
                 <p className="text-sm text-muted mb-5">Failed to accept the invitation. Please try again.</p>
                 <button onClick={() => setState('ready')} className={primaryClass}>Try again</button>
@@ -154,7 +154,7 @@ function AcceptContent() {
     // ready or accepting
     return (
         <div className={cardClass}>
-            {icon('bg-accent/10 text-accent', <><circle cx="12" cy="8" r="3.5" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></>)}
+            {icon('bg-warm-red/10 text-accent', <><circle cx="12" cy="8" r="3.5" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></>)}
             <h1 className="font-heading text-3xl tracking-wide mb-2">TEAM INVITATION</h1>
             <p className="text-sm text-muted leading-relaxed mb-5">
                 You&apos;ve been invited to join <strong className="text-text">{orgName}</strong> as <strong className="text-text">{PRIVILEGE_LABELS[privilege] || privilege}</strong>.

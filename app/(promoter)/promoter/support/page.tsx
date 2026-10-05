@@ -80,7 +80,7 @@ export default async function PromoterSupportPage() {
                                 const lastActivity = t.last_reply_at ?? t.created_at
                                 const needsReply = t.last_reply_by_admin && t.status !== 'closed' && t.status !== 'resolved'
                                 return (
-                                    <tr key={t.id} className="border-b border-border last:border-0 hover:bg-background/60 transition-colors">
+                                    <tr key={t.id} className="border-b border-border last:border-0 hover:bg-[#FAF6F3]/60 transition-colors">
                                         <td className="py-3.5 px-6">
                                             <Link href={`${BASE}/${t.id}`} className="font-medium hover:underline">{t.subject}</Link>
                                             <p className="text-xs text-muted">{categoryLabel(t.category)}</p>

@@ -156,7 +156,7 @@ export default async function PromoterDashboardPage() {
                                     <tr><td colSpan={3} className="text-center text-muted text-xs py-8">No sales yet — share your links to start earning</td></tr>
                                 )}
                                 {recent.map((r, i) => (
-                                    <tr key={r.id} className={`${i === recent.length - 1 ? '' : 'border-b border-border'} hover:bg-background/60`}>
+                                    <tr key={r.id} className={`${i === recent.length - 1 ? '' : 'border-b border-border'} hover:bg-[#FAF6F3]/60`}>
                                         <td className="py-3.5 px-6 font-medium truncate max-w-[200px]">{r.event?.title || '—'}</td>
                                         <td className="py-3.5 px-4 text-right font-semibold text-warm-green">+{formatPence(r.commission_pence)}</td>
                                         <td className="py-3.5 px-6 text-right text-xs text-muted whitespace-nowrap">{fmtDate(r.created_at)}</td>

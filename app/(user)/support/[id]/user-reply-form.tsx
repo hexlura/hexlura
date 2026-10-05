@@ -51,7 +51,7 @@ export function UserReplyForm({ ticketId }: { ticketId: string }) {
                 maxLength={5000}
                 rows={3}
                 placeholder="Type your reply…"
-                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 resize-none mb-3"
+                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 resize-none mb-3"
                 required
             />
             {error && <p className="text-sm font-semibold text-accent mb-3">{error}</p>}

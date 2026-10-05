@@ -126,7 +126,7 @@ export function AdminTicketControls({ ticketId, initialStatus, initialPriority }
                     rows={6}
                     placeholder="Reply to the user…"
                     disabled={status === 'closed'}
-                    className="w-full bg-background border border-border text-text text-sm px-3.5 py-2.5 focus:outline-none focus:border-accent resize-y disabled:opacity-60 focus:ring-2 focus:ring-accent/25"
+                    className="w-full bg-background border border-border text-text text-sm px-3.5 py-2.5 focus:outline-none focus:border-accent resize-y disabled:opacity-60 focus:ring-2 focus:ring-warm-red/25"
                 />
                 <div className="flex items-center justify-between gap-3">
                     <p className="text-xs text-muted">{reply.length} / 5000</p>

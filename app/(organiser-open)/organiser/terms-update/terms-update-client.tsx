@@ -59,7 +59,7 @@ export function TermsUpdateClient({ orgName, contentHtml, version }: Props) {
         >
             <div className="w-full max-w-2xl bg-card rounded-3xl border border-border shadow-card p-8 md:p-10">
                 <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-warm-red/10 flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M9 13h6M9 17h6" /></svg>
                     </div>
                     <p className="text-xs font-bold tracking-widest text-accent">ACTION NEEDED</p>

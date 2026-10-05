@@ -99,7 +99,7 @@ function LoginContent() {
                         type="email"
                         required
                         placeholder="you@example.com"
-                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
@@ -117,7 +117,7 @@ function LoginContent() {
                             type={showPassword ? 'text' : 'password'}
                             required
                             placeholder="Your password"
-                            className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 pr-11"
+                            className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 pr-11"
                         />
                         <button
                             type="button"
@@ -142,7 +142,7 @@ function LoginContent() {
                 </div>
 
                 {error && (
-                    <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
+                    <p className="text-sm text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5">{error}</p>
                 )}
 
                 <button

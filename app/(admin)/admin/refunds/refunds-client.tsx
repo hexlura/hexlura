@@ -166,7 +166,7 @@ export function AdminRefundsClient({
     return (
         <div>
             {/* Stats Bar */}
-            <div className="flex gap-4 mb-7 overflow-x-auto hide-scrollbar pb-2">
+            <div className="flex gap-4 mb-7 overflow-x-auto overflow-y-hidden pb-2">
                 {[
                     { label: 'Awaiting Review', value: String(awaitingCount), color: '#F5A623' },
                     { label: 'Pending Organiser', value: String(pendingOrgCount), color: '#3B6FD4' },
@@ -184,7 +184,7 @@ export function AdminRefundsClient({
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-[#C0C0C8] mb-5 overflow-x-auto hide-scrollbar">
+            <div className="flex border-b border-border mb-5 overflow-x-auto overflow-y-hidden">
                 {tabs.map(t => (
                     <button
                         key={t.key}

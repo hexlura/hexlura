@@ -49,7 +49,7 @@ export default async function PromoterInviteAcceptPage({
     return (
         <FocusShell>
             <div className="w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-8 md:p-10">
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-warm-red/10 flex items-center justify-center mb-4">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></svg>
                 </div>
                 <h1 className="font-heading text-4xl tracking-wide mb-2">PROMOTER INVITATION</h1>

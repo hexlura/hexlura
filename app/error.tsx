@@ -38,7 +38,7 @@ export default function ErrorPage({
                         >
                             Try again
                         </button>
-                        <Link href="/" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-card border border-border text-sm font-semibold hover:border-text/30 transition">
+                        <Link href="/" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-card border border-border text-sm font-semibold hover:border-[#1A0E0C]/30 transition">
                             Back to home
                         </Link>
                     </div>
@@ -47,7 +47,7 @@ export default function ErrorPage({
                         <a href="mailto:support@hexlura.com" className="text-accent font-semibold hover:underline">support@hexlura.com</a>
                     </p>
                     {error.digest && (
-                        <p className="text-[11px] text-muted/70 font-mono mt-3">Reference: {error.digest}</p>
+                        <p className="text-[11px] text-[#6B5D56]/70 font-mono mt-3">Reference: {error.digest}</p>
                     )}
                 </div>
             </main>

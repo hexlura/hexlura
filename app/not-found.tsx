@@ -14,7 +14,7 @@ export default function NotFound() {
             </header>
             <main className="flex-1 flex items-center justify-center px-6 pb-16">
                 <div className="text-center max-w-lg">
-                    <p className="font-heading text-[9rem] leading-none text-accent/90 tracking-wider">404</p>
+                    <p className="font-heading text-[9rem] leading-none text-warm-red/90 tracking-wider">404</p>
                     <h1 className="font-heading text-4xl tracking-wide -mt-2 mb-3">THIS PAGE HAS LEFT THE BUILDING</h1>
                     <p className="text-muted mb-8">
                         The page you&apos;re looking for doesn&apos;t exist, or the event has moved. Try searching for what you wanted.
@@ -24,14 +24,14 @@ export default function NotFound() {
                         <input
                             name="q"
                             placeholder="Search events…"
-                            className="w-full pl-11 pr-4 py-3.5 rounded-full bg-card border border-border text-sm shadow-soft focus:outline-none focus:ring-2 focus:ring-accent/25"
+                            className="w-full pl-11 pr-4 py-3.5 rounded-full bg-card border border-border text-sm shadow-soft focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                         />
                     </form>
                     <div className="flex flex-wrap justify-center gap-3">
                         <Link href="/" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition">
                             Back to home
                         </Link>
-                        <Link href="/events" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-card border border-border text-sm font-semibold hover:border-text/30 transition">
+                        <Link href="/events" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-card border border-border text-sm font-semibold hover:border-[#1A0E0C]/30 transition">
                             Browse events
                         </Link>
                     </div>

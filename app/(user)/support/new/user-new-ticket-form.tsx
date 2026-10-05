@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { SUPPORT_CATEGORIES, type SupportCategory } from '@/lib/support'
 
-const fieldClass = 'w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25'
+const fieldClass = 'w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25'
 const labelClass = 'text-xs font-semibold text-muted mb-1.5 block'
 
 // Customer version of the new-ticket form. The original new-ticket-form.tsx is
@@ -94,7 +94,7 @@ export function UserNewTicketForm({ basePath = '/support' }: { basePath?: string
                 <p className="text-xs text-muted mt-1 text-right">{message.length} / 5000</p>
             </div>
 
-            {error && <p className="text-sm font-semibold text-accent bg-accent/10 rounded-lg px-3.5 py-2.5 mb-4">{error}</p>}
+            {error && <p className="text-sm font-semibold text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5 mb-4">{error}</p>}
 
             <button
                 type="submit"

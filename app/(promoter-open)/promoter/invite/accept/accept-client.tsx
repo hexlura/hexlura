@@ -71,7 +71,7 @@ export function AcceptClient({ token, isPromoter, alreadyAccepted, orgName, even
                 </p>
             )}
 
-            {error && <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5 mb-4">{error}</p>}
+            {error && <p className="text-sm text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5 mb-4">{error}</p>}
 
             <button
                 onClick={handleAccept}

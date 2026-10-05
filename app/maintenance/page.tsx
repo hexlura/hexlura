@@ -17,7 +17,7 @@ export default function MaintenancePage() {
             </header>
             <main className="flex-1 flex items-center justify-center px-6 pb-16">
                 <div className="text-center max-w-md">
-                    <div className="w-20 h-20 mx-auto rounded-3xl bg-accent/10 flex items-center justify-center mb-6">
+                    <div className="w-20 h-20 mx-auto rounded-3xl bg-warm-red/10 flex items-center justify-center mb-6">
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3z" /></svg>
                     </div>
                     <h1 className="font-heading text-5xl tracking-wide mb-3">WE&apos;LL BE RIGHT BACK</h1>

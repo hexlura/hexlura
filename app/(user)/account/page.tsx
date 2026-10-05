@@ -38,7 +38,7 @@ export default async function AccountPage() {
     const email = user.email || ''
 
     const quickLinks = [
-        { href: '/bookings', title: 'My Bookings', sub: 'View tickets & booking history', tint: 'bg-accent/10', color: '#E63950', icon: <path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10" /> },
+        { href: '/bookings', title: 'My Bookings', sub: 'View tickets & booking history', tint: 'bg-warm-red/10', color: '#E63950', icon: <path d="M4 4h16v4H4zM4 12h10M4 16h16M4 20h10" /> },
         { href: '/favourites', title: 'Favourites', sub: 'Saved events & followed organisers', tint: 'bg-warm-orange/10', color: '#FF7A3D', icon: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /> },
         { href: '/notifications', title: 'Notifications', sub: 'Booking & event updates', tint: 'bg-warm-amber/10', color: '#F5A623', icon: <><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></> },
         { href: '/support', title: 'Help & Support', sub: 'Support tickets & contact', tint: 'bg-warm-green/10', color: '#1B9C63', icon: <><circle cx="12" cy="12" r="10" /><path d="M9.5 9a2.5 2.5 0 0 1 4.8 1c0 1.5-2.3 1.8-2.3 3.5" /><path d="M12 17h.01" /></> },
@@ -82,7 +82,7 @@ export default async function AccountPage() {
                     className="bg-text rounded-2xl p-5 mb-6 flex items-center justify-between gap-4 group hover:brightness-110 transition"
                 >
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-warm-red/20 flex items-center justify-center shrink-0">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 10h18" /></svg>
                         </div>
                         <div>
