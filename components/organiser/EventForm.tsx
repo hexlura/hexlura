@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { compressImage } from '@/lib/compress-image'
-import { Button } from '@/components/ui/Button'
-import { calculateBookingFeePerTicket, formatPence } from '@/lib/fees'
-import { useFeeConfig } from '@/lib/use-fee-config'
 import type { Event, TicketType } from '@/types'
 import dynamic from 'next/dynamic'
 import { CATEGORIES } from '@/lib/config/categories'
@@ -17,9 +14,18 @@ import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 const RichTextEditor = dynamic(
     () => import('@/components/editor/RichTextEditor').then(m => m.RichTextEditor),
-    { ssr: false, loading: () => <div className="h-48 bg-surface border border-border animate-pulse" /> }
+    { ssr: false, loading: () => <div className="h-48 bg-background border border-border rounded-xl animate-pulse" /> }
 )
 const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']
+
+function SectionTitle({ num, title, badge, inline = false }: { num: string; title: string; badge: string; inline?: boolean }) {
+    return (
+        <div className={`flex items-center gap-3 ${inline ? '' : 'mb-5'}`}>
+            <span className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${badge}`}>{num}</span>
+            <h2 className="font-heading text-xl tracking-wide">{title}</h2>
+        </div>
+    )
+}
 
 interface TicketTypeRow {
     id?: string
@@ -42,6 +48,8 @@ interface EventFormProps {
     organiserId: string
     event?: Event
     ticketTypes?: TicketType[]
+    /** When false, shows the "Connect Stripe first" banner and disables Publish (drafts still save). Defaults to true. */
+    stripeReady?: boolean
 }
 
 // Convert UTC ISO string → "YYYY-MM-DDTHH:mm" in Europe/London time for datetime-local inputs
@@ -102,9 +110,8 @@ function friendlyDbError(error: { code?: string; message?: string } | null | und
     return `${action} failed: ${error.message || 'unexpected error'}. Your changes have NOT been saved.`
 }
 
-export function EventForm({ organiserId, event, ticketTypes: initTickets }: EventFormProps) {
+export function EventForm({ organiserId, event, ticketTypes: initTickets, stripeReady = true }: EventFormProps) {
     const router = useRouter()
-    const feeConfig = useFeeConfig()
     const isEdit = !!event
     // Once an event has left draft, its slug may already be shared publicly
     // (social posts, flyers). Lock it so a save can't silently break those
@@ -168,7 +175,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const [maxTicketsPerOrder] = useState(event?.max_tickets_per_order || 10)
     const [minAge, setMinAge] = useState(event?.min_age || 0)
     const [refundPolicy, setRefundPolicy] = useState(event?.refund_policy || REFUND_POLICIES[2])
-    const [status, setStatus] = useState<'draft' | 'published'>(event?.status === 'published' ? 'published' : 'draft')
     const [ticketAvailability, setTicketAvailability] = useState<'on_sale' | 'coming_soon'>(event?.ticket_availability || 'on_sale')
 
     const [showTicketPresetModal, setShowTicketPresetModal] = useState(false)
@@ -178,7 +184,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
     const [saveError, setSaveError] = useState('')
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
-    const [openSections, setOpenSections] = useState<Set<number>>(new Set())
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
     // Remembers an event created mid-session so a failed save can be retried
     // without inserting a duplicate event (the `event` prop only updates after
@@ -222,7 +227,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
             if (title) saveDraft()
         }, 30000)
         return () => { if (autoSaveRef.current) clearInterval(autoSaveRef.current) }
-    }, [title, description, tickets, status, saveDraft])
+    }, [title, description, tickets, saveDraft])
 
     function buildEventPayload(slugValue: string) {
         return {
@@ -383,14 +388,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         return errs
     }
 
-    function toggleSection(n: number) {
-        setOpenSections(prev => {
-            const next = new Set(prev)
-            if (next.has(n)) { next.delete(n) } else { next.add(n) }
-            return next
-        })
-    }
-
     async function handlePublish() {
         const errs = validate()
         if (errs.length) { setErrors(errs); return }
@@ -435,7 +432,6 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         }
         if (effectiveSlug !== slug) setSlug(effectiveSlug)
 
-        setStatus('published')
         setPublishing(false)
 
         // Fire-and-forget the "your event is live" notification + email.
@@ -533,436 +529,392 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
         }
     }
 
-    const inputClass = "w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-    const labelClass = "text-xs text-muted block mb-1.5"
-
-    function SectionHeader({ num, title: sTitle, open, onToggle }: { num: string; title: string; open: boolean; onToggle: () => void }) {
-        return (
-            <button type="button" onClick={onToggle} className="w-full flex items-center justify-between py-4">
-                <div className="flex items-center gap-3">
-                    <span className="font-mono text-accent text-sm">{num}</span>
-                    <h2 className="font-heading text-xl text-text tracking-wide">{sTitle}</h2>
-                </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`}>
-                    <polyline points="6 9 12 15 18 9" />
-                </svg>
-            </button>
-        )
-    }
+    const inputClass = 'w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
+    const ticketInput = 'w-full bg-card border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25'
+    const labelClass = 'text-xs text-muted block mb-1.5'
+    const cardClass = 'bg-card rounded-2xl shadow-card p-6 mb-6'
 
     return (
         <div>
             {/* Save indicator */}
             <div className="fixed top-4 right-4 z-40 flex flex-col gap-2 items-end">
-                {saved && <span className="text-success text-xs bg-success/10 border border-success/20 px-3 py-1.5 rounded-full">Saved ✓</span>}
-                {saving && <span className="text-muted text-xs">Saving...</span>}
+                {saved && <span className="text-warm-green text-xs font-semibold bg-card shadow-hover rounded-xl px-3 py-2">Saved ✓</span>}
+                {saving && <span className="text-muted text-xs bg-card shadow-hover rounded-xl px-3 py-2">Saving...</span>}
                 {saveError && !saving && (
-                    <span className="text-accent text-xs border border-accent/40 px-3 py-1.5 rounded max-w-sm text-right" style={{ background: '#FFF5F6' }}>
+                    <span className="text-warm-red text-xs bg-card shadow-hover border border-warm-red/30 rounded-xl px-3 py-2 max-w-sm text-right">
                         {saveError}
                     </span>
                 )}
             </div>
 
-            {/* Section 1 — Basic Info */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
-                <SectionHeader num="01" title="Basic Info" open={openSections.has(1)} onToggle={() => toggleSection(1)} />
-                {openSections.has(1) && (
-                    <div className="pb-6">
-                        <div className="space-y-4">
-                            <div>
-                                <label className={labelClass}>Event Title *</label>
-                                <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={100} className={inputClass} placeholder="Your event name" required />
-                                <p className="text-xs text-muted mt-1 text-right">{title.length}/100</p>
-                            </div>
-                            <div>
-                                <label className={labelClass}>Category *</label>
-                                <ThemedSelect value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
-                                    <option value="">Select category...</option>
-                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                </ThemedSelect>
-                            </div>
-                            <div>
-                                <label className={labelClass}>Tags (comma-separated)</label>
-                                <input type="text" value={tags} onChange={e => setTags(e.target.value)} className={inputClass} placeholder="e.g. live music, outdoor, family" />
-                                {tags && (
-                                    <div className="flex flex-wrap gap-1.5 mt-2">
-                                        {tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
-                                            <span key={tag} className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">{tag}</span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <label className={labelClass}>Description</label>
-                                {typeof window !== 'undefined' && (
-                                    <RichTextEditor content={description} onChange={setDescription} />
-                                )}
-                            </div>
-                            <div>
-                                <label className={labelClass}>Banner Images <span style={{ fontWeight: 400, color: '#666677' }}>(up to 4)</span></label>
-                                {bannerImages.length > 0 && (
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                                        {bannerImages.map((url, i) => (
-                                            <div key={url} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                                                <Image src={url} alt={`Banner ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '2px', border: '1px solid #E0E0E8' }} />
-                                                {i === 0 && (
-                                                    <span style={{ position: 'absolute', bottom: '3px', left: '3px', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '9px', padding: '1px 4px', borderRadius: '3px' }}>MAIN</span>
-                                                )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setBannerImages(prev => prev.filter((_, idx) => idx !== i))}
-                                                    style={{ position: 'absolute', top: '3px', right: '3px', background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', lineHeight: 1 }}
-                                                    aria-label="Remove image"
-                                                >×</button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                {bannerImages.length < 4 && (
-                                    <label className="block w-full border-2 border-dashed border-border p-8 text-center cursor-pointer hover:border-accent/50 transition-colors">
-                                        <p className="text-muted text-sm">{bannerUploading ? 'Uploading...' : `Click to upload image ${bannerImages.length + 1} of 4`}</p>
-                                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
-                                    </label>
-                                )}
-                                {bannerError && <p className="text-accent text-xs mt-1">{bannerError}</p>}
-                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Portrait format 800×1200px (2:3 ratio). Max 5MB each. JPG, PNG or WebP. First image is the main banner.</p>
-                            </div>
-                            <div>
-                                <label className={labelClass}>Promo Video (YouTube URL)</label>
-                                <input
-                                    type="text"
-                                    value={youtubeUrl}
-                                    onChange={e => setYoutubeUrl(e.target.value)}
-                                    className={inputClass}
-                                    placeholder="https://www.youtube.com/watch?v=..."
-                                />
-                                <p className="text-xs mt-1" style={{ color: '#666677' }}>Paste a YouTube link to show a promo video on your event page.</p>
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-4">
-                            <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
-                            >{saving ? 'Saving...' : 'Save'}</button>
-                        </div>
+            {/* Section 01 — Basic Info */}
+            <div className={cardClass}>
+                <SectionTitle num="01" title="BASIC INFO" badge="bg-accent text-white" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Event Title *</label>
+                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={100} className={inputClass} placeholder="Your event name" required />
+                        <p className="text-xs text-muted mt-1 text-right">{title.length}/100</p>
                     </div>
-                )}
+                    <div>
+                        <label className={labelClass}>Category *</label>
+                        <ThemedSelect value={category} onChange={e => setCategory(e.target.value)} className={inputClass}>
+                            <option value="">Select category...</option>
+                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </ThemedSelect>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Tags (comma-separated)</label>
+                        <input type="text" value={tags} onChange={e => setTags(e.target.value)} className={inputClass} placeholder="e.g. live music, outdoor, family" />
+                        {tags && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                {tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
+                                    <span key={tag} className="text-xs bg-background border border-border px-2 py-0.5 rounded-full text-muted">{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Description</label>
+                        {typeof window !== 'undefined' && (
+                            <div className="rounded-xl overflow-hidden">
+                                <RichTextEditor content={description} onChange={setDescription} />
+                            </div>
+                        )}
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Banner Images <span className="text-muted font-normal">(up to 4)</span></label>
+                        {bannerImages.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {bannerImages.map((url, i) => (
+                                    <div key={url} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
+                                        <Image src={url} alt={`Banner ${i + 1}`} fill sizes="80px" className="object-cover" />
+                                        {i === 0 && (
+                                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">MAIN</span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setBannerImages(prev => prev.filter((_, idx) => idx !== i))}
+                                            className="absolute top-1 right-1 bg-black/55 rounded-full w-[18px] h-[18px] flex items-center justify-center text-white text-[11px] leading-none"
+                                            aria-label="Remove image"
+                                        >×</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {bannerImages.length < 4 && (
+                            <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-warm-red/50 transition-colors">
+                                <p className="text-sm text-muted">{bannerUploading ? 'Uploading...' : bannerImages.length === 0 ? 'Click to upload or drag images here' : `Click to upload image ${bannerImages.length + 1} of 4`}</p>
+                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
+                            </label>
+                        )}
+                        {bannerError && <p className="text-warm-red text-xs mt-1">{bannerError}</p>}
+                        <p className="text-xs text-muted mt-1.5">Portrait format 800×1200px (2:3 ratio). Max 5MB each. JPG, PNG or WebP. First image is the main banner.</p>
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Promo Video (YouTube URL)</label>
+                        <input
+                            type="text"
+                            value={youtubeUrl}
+                            onChange={e => setYoutubeUrl(e.target.value)}
+                            className={inputClass}
+                            placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                        <p className="text-xs text-muted mt-1.5">Paste a YouTube link to show a promo video on your event page.</p>
+                    </div>
+                </div>
             </div>
 
-            {/* Section 2 — Date & Venue */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
-                <SectionHeader num="02" title="Date & Venue" open={openSections.has(2)} onToggle={() => toggleSection(2)} />
-                {openSections.has(2) && (
-                    <div className="pb-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelClass}>Start Date & Time *</label>
-                                <DateTimePicker value={startAt} onChange={setStartAt} min={new Date().toISOString().slice(0, 16)} placeholder="Select start date & time" required className={inputClass} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>End Date & Time *</label>
-                                <DateTimePicker value={endAt} onChange={setEndAt} min={startAt || new Date().toISOString().slice(0, 16)} placeholder="Select end date & time" required className={inputClass} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Check-in Opens</label>
-                                <DateTimePicker value={checkinStartAt} onChange={setCheckinStartAt} placeholder="Select check-in open time" className={inputClass} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Check-in Closes</label>
-                                <DateTimePicker value={checkinEndAt} onChange={setCheckinEndAt} min={checkinStartAt || undefined} placeholder="Select check-in close time" className={inputClass} />
-                                {checkinTimesInvalid && (
-                                    <p className="text-accent text-xs mt-1">Check-in closing time must be after the check-in opening time — otherwise the door scanner will reject every ticket.</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className={labelClass}>Timezone</label>
-                                <input type="text" value="Europe/London (UK Time)" readOnly className={`${inputClass} opacity-60`} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Event Slug</label>
-                                <input
-                                    type="text"
-                                    value={slug}
-                                    onChange={e => setSlug(e.target.value)}
-                                    onBlur={e => setSlug(toSlug(e.target.value))}
-                                    className={slugLocked ? `${inputClass} opacity-60 cursor-not-allowed` : inputClass}
-                                    placeholder="your-event-slug"
-                                    disabled={slugLocked}
-                                    readOnly={slugLocked}
-                                />
-                                {slugLocked && (
-                                    <p className="text-muted text-xs mt-1">
-                                        Locked once published — changing it would break any links already shared. Contact support if you need it changed.
-                                    </p>
-                                )}
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <label className={labelClass}>Venue Name *</label>
-                                <input type="text" value={venueName} onChange={e => setVenueName(e.target.value)} className={inputClass} placeholder="e.g. The O2 Arena" required />
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <label className={labelClass}>Address Line 1</label>
-                                <input type="text" value={venueAddress} onChange={e => setVenueAddress(e.target.value)} className={inputClass} placeholder="Street address" />
-                            </div>
-                            <div>
-                                <label className={labelClass}>City *</label>
-                                <input
-                                    type="text"
-                                    value={venueCity}
-                                    onChange={e => setVenueCity(e.target.value)}
-                                    placeholder="e.g. Manchester"
-                                    list="uk-cities"
-                                    className={inputClass}
-                                    required
-                                />
-                                <datalist id="uk-cities">
-                                    {UK_CITIES.map(c => <option key={c} value={c} />)}
-                                </datalist>
-                            </div>
-                            <div>
-                                <label className={labelClass}>Postcode *</label>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <input
-                                        type="text"
-                                        value={venuePostcode}
-                                        onChange={e => setVenuePostcode(e.target.value.toUpperCase())}
-                                        onBlur={lookupPostcode}
-                                        className={inputClass}
-                                        placeholder="SW1A 1AA"
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={lookupPostcode}
-                                        style={{
-                                            border: '1px solid #C0C0C8',
-                                            color: '#666677',
-                                            padding: '4px 10px',
-                                            fontSize: 12,
-                                            borderRadius: 2,
-                                            marginLeft: 8,
-                                            background: 'transparent',
-                                            cursor: 'pointer',
-                                            whiteSpace: 'nowrap',
-                                            flexShrink: 0,
-                                        }}
-                                        onMouseEnter={e => (e.currentTarget.style.borderColor = '#E63950')}
-                                        onMouseLeave={e => (e.currentTarget.style.borderColor = '#C0C0C8')}
-                                    >
-                                        Look Up
-                                    </button>
-                                </div>
-                                {postcodeMsg && (
-                                    <p style={{
-                                        fontSize: 12,
-                                        marginTop: 4,
-                                        color: postcodeStatus === 'success' ? '#00C48A' : postcodeStatus === 'error' ? '#E63950' : '#666677',
-                                    }}>{postcodeMsg}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-4">
-                            <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
-                            >{saving ? 'Saving...' : 'Save'}</button>
-                        </div>
+            {/* Section 02 — Date & Location */}
+            <div className={cardClass}>
+                <SectionTitle num="02" title="DATE & LOCATION" badge="bg-warm-orange text-white" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className={labelClass}>Start Date &amp; Time *</label>
+                        <DateTimePicker value={startAt} onChange={setStartAt} min={new Date().toISOString().slice(0, 16)} placeholder="Select start date & time" required className={inputClass} />
                     </div>
-                )}
+                    <div>
+                        <label className={labelClass}>End Date &amp; Time *</label>
+                        <DateTimePicker value={endAt} onChange={setEndAt} min={startAt || new Date().toISOString().slice(0, 16)} placeholder="Select end date & time" required className={inputClass} />
+                        <p className="text-xs text-muted mt-1">All times are UK time (Europe/London).</p>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Check-in Opens</label>
+                        <DateTimePicker value={checkinStartAt} onChange={setCheckinStartAt} placeholder="Select check-in open time" className={inputClass} />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Check-in Closes</label>
+                        <DateTimePicker value={checkinEndAt} onChange={setCheckinEndAt} min={checkinStartAt || undefined} placeholder="Select check-in close time" className={inputClass} />
+                        {checkinTimesInvalid && (
+                            <p className="text-warm-red text-xs mt-1">Check-in closing time must be after the check-in opening time — otherwise the door scanner will reject every ticket.</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className={labelClass}>Venue Name *</label>
+                        <input type="text" value={venueName} onChange={e => setVenueName(e.target.value)} className={inputClass} placeholder="e.g. The O2 Arena" required />
+                    </div>
+                    <div>
+                        <label className={labelClass}>City *</label>
+                        <input
+                            type="text"
+                            value={venueCity}
+                            onChange={e => setVenueCity(e.target.value)}
+                            placeholder="e.g. Manchester"
+                            list="uk-cities"
+                            className={inputClass}
+                            required
+                        />
+                        <datalist id="uk-cities">
+                            {UK_CITIES.map(c => <option key={c} value={c} />)}
+                        </datalist>
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Address Line 1</label>
+                        <input type="text" value={venueAddress} onChange={e => setVenueAddress(e.target.value)} className={inputClass} placeholder="Street address" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Postcode *</label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={venuePostcode}
+                                onChange={e => setVenuePostcode(e.target.value.toUpperCase())}
+                                onBlur={lookupPostcode}
+                                className={inputClass}
+                                placeholder="SW1A 1AA"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={lookupPostcode}
+                                className="shrink-0 whitespace-nowrap bg-card border border-border rounded-xl px-3 py-2.5 text-xs font-medium text-muted hover:text-text hover:border-warm-red transition-colors"
+                            >
+                                Look Up
+                            </button>
+                        </div>
+                        {postcodeMsg && (
+                            <p className={`text-xs mt-1 ${postcodeStatus === 'success' ? 'text-warm-green' : postcodeStatus === 'error' ? 'text-warm-red' : 'text-muted'}`}>{postcodeMsg}</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className={labelClass}>Event Slug</label>
+                        <input
+                            type="text"
+                            value={slug}
+                            onChange={e => setSlug(e.target.value)}
+                            onBlur={e => setSlug(toSlug(e.target.value))}
+                            className={slugLocked ? `${inputClass} opacity-60 cursor-not-allowed` : inputClass}
+                            placeholder="your-event-slug"
+                            disabled={slugLocked}
+                            readOnly={slugLocked}
+                        />
+                        {slugLocked && (
+                            <p className="text-muted text-xs mt-1">
+                                Locked once published — changing it would break any links already shared. Contact support if you need it changed.
+                            </p>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            {/* Section 3 — Ticket Types */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
-                <SectionHeader num="03" title="Ticket Types" open={openSections.has(3)} onToggle={() => toggleSection(3)} />
-                {openSections.has(3) && (
-                    <div className="pb-6">
-                        <div className="space-y-4">
-                            {tickets.map((tt, i) => (
-                                <div key={i} className="bg-surface border border-border p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-xs text-muted font-mono">Ticket {i + 1}</span>
-                                        <div className="flex gap-2">
-                                            {i > 0 && <button type="button" onClick={() => moveTicket(i, -1)} className="text-xs text-muted hover:text-text">↑</button>}
-                                            {i < tickets.length - 1 && <button type="button" onClick={() => moveTicket(i, 1)} className="text-xs text-muted hover:text-text">↓</button>}
-                                            <button type="button" onClick={() => removeTicket(i)} className="text-xs text-accent hover:underline">Remove</button>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className={labelClass}>Name</label>
-                                            <input type="text" value={tt.name} onChange={e => updateTicket(i, { name: e.target.value })} className={inputClass} />
-                                        </div>
-                                        <div>
-                                            <label className={labelClass}>Price (£)</label>
-                                            <input
-                                                type="text"
-                                                inputMode="decimal"
-                                                pattern="[0-9]*\.?[0-9]{0,2}"
-                                                value={tt.priceStr}
-                                                onChange={e => updateTicket(i, { priceStr: e.target.value, price_pence: priceToPence(e.target.value) })}
-                                                className={inputClass}
-                                            />
-                                            <p className="text-xs text-muted mt-1">
-                                                Buyer pays {formatPence(tt.price_pence + calculateBookingFeePerTicket(tt.price_pence, feeConfig))} (incl. {formatPence(calculateBookingFeePerTicket(tt.price_pence, feeConfig))} booking fee)
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <label className={labelClass}>Description (optional)</label>
-                                            <input type="text" value={tt.description} onChange={e => updateTicket(i, { description: e.target.value })} className={inputClass} />
-                                        </div>
-                                        <div>
-                                            <label className={labelClass}>Total Quantity</label>
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                value={tt.qtyStr}
-                                                onChange={e => {
-                                                    const val = e.target.value.replace(/\D/g, '')
-                                                    updateTicket(i, { qtyStr: val, quantity_total: parseInt(val) || 1 })
-                                                }}
-                                                placeholder="e.g. 200"
-                                                className={inputClass}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className={labelClass}>Max per Order</label>
-                                            <input type="number" min="1" max="100" value={tt.max_per_order} onChange={e => updateTicket(i, { max_per_order: parseInt(e.target.value) || 10 })} className={inputClass} />
-                                        </div>
-                                        <div className="flex items-center justify-between pt-4">
-                                            <span className="text-sm text-text">Visible</span>
-                                            <div onClick={() => updateTicket(i, { is_visible: !tt.is_visible })} className={`w-10 h-6 rounded-full relative transition-colors cursor-pointer ${tt.is_visible ? 'bg-accent' : 'bg-border'}`}>
-                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${tt.is_visible ? 'translate-x-5' : 'translate-x-1'}`} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Group size (shown only for group tickets) */}
-                                    {tt.is_group && (
-                                        <div className="border-t border-border mt-2 pt-3">
-                                            <label className={labelClass}>Group Size</label>
-                                            <p className="text-xs text-muted mb-1.5">Each purchase generates one QR code per person in the group</p>
-                                            <input
-                                                type="number"
-                                                min={2}
-                                                max={50}
-                                                value={tt.group_size}
-                                                onChange={e => updateTicket(i, { group_size: Math.min(50, Math.max(2, parseInt(e.target.value) || 2)) })}
-                                                className={inputClass}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                            <Button type="button" variant="outline" size="md" onClick={() => setShowTicketPresetModal(true)}>+ Add Ticket Type</Button>
-                        </div>
-                        <div className="flex justify-end mt-4">
-                            <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
-                            >{saving ? 'Saving...' : 'Save'}</button>
-                        </div>
-                    </div>
+            {/* Section 03 — Ticket Types */}
+            <div className={cardClass}>
+                <div className="flex items-center justify-between mb-5">
+                    <SectionTitle num="03" title="TICKET TYPES" badge="bg-warm-yellow text-text" inline />
+                    <button type="button" onClick={() => setShowTicketPresetModal(true)} className="text-xs text-accent font-semibold hover:underline">+ Add Ticket Type</button>
+                </div>
+                {tickets.length === 0 && (
+                    <p className="text-sm text-muted text-center py-6">No ticket types yet. Add one to start selling.</p>
                 )}
+                {tickets.map((tt, i) => (
+                    <div key={i} className="bg-background rounded-xl p-4 mb-3 last:mb-0">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs text-muted">Ticket {i + 1}{tt.is_group ? ' · Group' : ''}</span>
+                            <div className="flex gap-3 text-xs">
+                                {i > 0 && <button type="button" onClick={() => moveTicket(i, -1)} aria-label="Move up" className="text-muted hover:text-text">↑</button>}
+                                {i < tickets.length - 1 && <button type="button" onClick={() => moveTicket(i, 1)} aria-label="Move down" className="text-muted hover:text-text">↓</button>}
+                                <button type="button" onClick={() => removeTicket(i)} className="text-accent font-medium hover:underline">Remove</button>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <div className="sm:col-span-2">
+                                <label className={labelClass}>Name</label>
+                                <input type="text" value={tt.name} onChange={e => updateTicket(i, { name: e.target.value })} className={ticketInput} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Price (£)</label>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    pattern="[0-9]*\.?[0-9]{0,2}"
+                                    value={tt.priceStr}
+                                    onChange={e => updateTicket(i, { priceStr: e.target.value, price_pence: priceToPence(e.target.value) })}
+                                    className={ticketInput}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Total Quantity</label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={tt.qtyStr}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '')
+                                        updateTicket(i, { qtyStr: val, quantity_total: parseInt(val) || 1 })
+                                    }}
+                                    placeholder="e.g. 200"
+                                    className={ticketInput}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-3">
+                            <div className="sm:col-span-2">
+                                <label className={labelClass}>Description (optional)</label>
+                                <input type="text" value={tt.description} onChange={e => updateTicket(i, { description: e.target.value })} className={ticketInput} />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Max per Order</label>
+                                <input type="number" min="1" max="100" value={tt.max_per_order} onChange={e => updateTicket(i, { max_per_order: parseInt(e.target.value) || 10 })} className={ticketInput} />
+                            </div>
+                            <div className="flex items-center justify-between sm:justify-start sm:gap-3 pt-5">
+                                <span className="text-sm">Visible</span>
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={tt.is_visible}
+                                    aria-label="Ticket visible"
+                                    onClick={() => updateTicket(i, { is_visible: !tt.is_visible })}
+                                    className={`w-10 h-6 rounded-full relative transition-colors ${tt.is_visible ? 'bg-accent' : 'bg-border'}`}
+                                >
+                                    <span className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${tt.is_visible ? 'right-1' : 'left-1'}`} />
+                                </button>
+                            </div>
+                        </div>
+                        {/* Group size (shown only for group tickets) */}
+                        {tt.is_group && (
+                            <div className="border-t border-border mt-3 pt-3">
+                                <label className={labelClass}>Group Size</label>
+                                <p className="text-xs text-muted mb-1.5">Each purchase generates one QR code per person in the group</p>
+                                <input
+                                    type="number"
+                                    min={2}
+                                    max={50}
+                                    value={tt.group_size}
+                                    onChange={e => updateTicket(i, { group_size: Math.min(50, Math.max(2, parseInt(e.target.value) || 2)) })}
+                                    className={`${ticketInput} sm:w-40`}
+                                />
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
 
-            {/* Section 4 — Settings */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: '0 28px', marginBottom: 16 }}>
-                <SectionHeader num="04" title="Settings" open={openSections.has(4)} onToggle={() => toggleSection(4)} />
-                {openSections.has(4) && (
-                    <div className="pb-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelClass}>Minimum Age</label>
-                                <ThemedSelect value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
-                                    <option value={0}>All ages</option>
-                                    <option value={16}>16+</option>
-                                    <option value={18}>18+</option>
-                                </ThemedSelect>
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <label className={labelClass}>Refund Policy</label>
-                                <ThemedSelect value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
-                                    {REFUND_POLICIES.map(p => <option key={p} value={p}>{p}</option>)}
-                                </ThemedSelect>
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <label className={labelClass}>Event Visibility</label>
-                                <ThemedSelect value={status} onChange={e => setStatus(e.target.value as 'draft' | 'published')} className={inputClass}>
-                                    <option value="draft">Draft — not visible to public</option>
-                                    <option value="published">Published — visible and bookable</option>
-                                </ThemedSelect>
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <label className={labelClass}>Ticket Availability</label>
-                                <ThemedSelect value={ticketAvailability} onChange={e => setTicketAvailability(e.target.value as 'on_sale' | 'coming_soon')} className={inputClass}>
-                                    <option value="on_sale">On Sale — tickets available now</option>
-                                    <option value="coming_soon">Coming Soon — tickets not yet released</option>
-                                </ThemedSelect>
-                                <p className="text-xs mt-1" style={{ color: '#666677' }}>
-                                    Choose &ldquo;Coming Soon&rdquo; if you haven&apos;t added tickets yet. Visitors will see &ldquo;Tickets Coming Soon&rdquo; instead of &ldquo;Sold Out&rdquo;.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-4">
-                            <button type="button" onClick={saveDraft} disabled={saving}
-                                style={{ background: '#0A0A0F', border: 'none', color: '#FFFFFF', padding: '8px 20px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, opacity: saving ? 0.6 : 1 }}
-                                onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#333333' }}
-                                onMouseLeave={e => { if (!saving) e.currentTarget.style.background = '#0A0A0F' }}
-                            >{saving ? 'Saving...' : 'Save'}</button>
-                        </div>
+            {/* Section 04 — Additional Settings */}
+            <div className="bg-card rounded-2xl shadow-card p-6 mb-8">
+                <SectionTitle num="04" title="ADDITIONAL SETTINGS" badge="bg-warm-green text-white" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className={labelClass}>Minimum Age</label>
+                        <ThemedSelect value={minAge} onChange={e => setMinAge(parseInt(e.target.value))} className={inputClass}>
+                            <option value={0}>No restriction</option>
+                            <option value={16}>16+</option>
+                            <option value={18}>18+</option>
+                        </ThemedSelect>
                     </div>
-                )}
+                    <div>
+                        <label className={labelClass}>Ticket Availability</label>
+                        <ThemedSelect value={ticketAvailability} onChange={e => setTicketAvailability(e.target.value as 'on_sale' | 'coming_soon')} className={inputClass}>
+                            <option value="on_sale">On Sale — tickets available now</option>
+                            <option value="coming_soon">Coming Soon — tickets not yet released</option>
+                        </ThemedSelect>
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className={labelClass}>Refund Policy</label>
+                        <ThemedSelect value={refundPolicy} onChange={e => setRefundPolicy(e.target.value)} className={inputClass}>
+                            {REFUND_POLICIES.map(p => <option key={p} value={p}>{p}</option>)}
+                        </ThemedSelect>
+                    </div>
+                </div>
+                <p className="text-xs text-muted mt-3">
+                    Choose &ldquo;Coming Soon&rdquo; if you haven&apos;t added tickets yet. Visitors will see &ldquo;Tickets Coming Soon&rdquo; instead of &ldquo;Sold Out&rdquo;.
+                </p>
             </div>
+
+            {/* Stripe not connected — blocks publish, drafts still allowed (only shown when the page passes stripeReady={false}) */}
+            {!stripeReady && (
+                <div className="flex items-start gap-3 bg-warm-yellow/10 rounded-xl p-4 mb-4">
+                    <span className="w-9 h-9 rounded-lg bg-warm-yellow/20 flex items-center justify-center text-warm-yellowText shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
+                    </span>
+                    <div>
+                        <p className="text-sm font-medium">Connect Stripe to publish and start selling tickets.</p>
+                        <p className="text-xs text-muted mt-1">You can still save this event as a draft. Publishing (and ticket sales) unlocks once Stripe Connect is set up.</p>
+                    </div>
+                </div>
+            )}
 
             {/* Action bar */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 28 }}>
-                {event?.slug && (
-                    <div className="mb-4">
-                        <a href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-text transition-colors">
-                            Preview event →
-                        </a>
-                    </div>
-                )}
-                {errors.length > 0 && (
-                    <div className="mb-6 bg-accent/10 border border-accent/30 p-4">
-                        <p className="text-accent text-sm font-medium mb-2">Please fix the following:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                            {errors.map(e => <li key={e} className="text-accent text-xs">{e}</li>)}
-                        </ul>
-                    </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                    <button
-                        type="button"
-                        onClick={saveDraft}
-                        disabled={saving}
-                        style={{ background: 'transparent', border: '1px solid #C0C0C8', color: '#666677', padding: '12px 24px', borderRadius: 2, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, opacity: saving ? 0.6 : 1 }}
-                        onMouseEnter={e => { if (!saving) { e.currentTarget.style.borderColor = '#0A0A0F'; e.currentTarget.style.color = '#0A0A0F' } }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#C0C0C8'; e.currentTarget.style.color = '#666677' }}
-                    >{saving ? 'Saving...' : 'Save Draft'}</button>
+            {event?.slug && (
+                <div className="mb-4 text-right">
+                    <a href={`/events/${event.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-text transition-colors">
+                        Preview event →
+                    </a>
+                </div>
+            )}
+            {errors.length > 0 && (
+                <div className="mb-4 bg-warm-red/10 rounded-xl p-4">
+                    <p className="text-warm-red text-sm font-medium mb-2">Please fix the following:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                        {errors.map(e => <li key={e} className="text-warm-red text-xs">{e}</li>)}
+                    </ul>
+                </div>
+            )}
+            <div className="flex items-center justify-end gap-3">
+                <button
+                    type="button"
+                    onClick={saveDraft}
+                    disabled={saving}
+                    className="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-background transition-colors disabled:opacity-60"
+                >
+                    {saving ? 'Saving...' : 'Save as Draft'}
+                </button>
+                {stripeReady ? (
                     <button
                         type="button"
                         onClick={handlePublish}
                         disabled={publishing}
-                        style={{ background: '#0A0A0F', color: '#fff', padding: '12px 32px', borderRadius: 2, cursor: publishing ? 'not-allowed' : 'pointer', fontSize: 14, border: 'none', opacity: publishing ? 0.7 : 1 }}
-                        onMouseEnter={e => { if (!publishing) e.currentTarget.style.background = '#333333' }}
-                        onMouseLeave={e => { if (!publishing) e.currentTarget.style.background = '#0A0A0F' }}
-                    >{publishing ? 'Publishing...' : 'Publish Event'}</button>
-                </div>
+                        className="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                    >
+                        {publishing ? 'Publishing...' : 'Publish Event'}
+                    </button>
+                ) : (
+                    <a
+                        href="/organiser/settings"
+                        title="Connect Stripe to publish"
+                        className="bg-background text-muted border border-border px-5 py-3 rounded-xl text-sm font-semibold"
+                    >
+                        Publish Event (Connect Stripe first)
+                    </a>
+                )}
             </div>
 
             {/* Ticket type preset modal */}
             {showTicketPresetModal && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div style={{ background: '#FFFFFF', border: '1px solid #C0C0C8', borderRadius: 2, padding: 24, width: '100%', maxWidth: 500 }}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div onClick={() => setShowTicketPresetModal(false)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                    <div className="relative bg-card rounded-2xl shadow-hover p-6 w-full max-w-lg">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 style={{ fontFamily: 'var(--font-bebas-neue, Bebas Neue, sans-serif)', fontSize: 20, color: '#0A0A0F', letterSpacing: '0.05em' }}>Choose Ticket Type</h3>
-                            <button type="button" onClick={() => setShowTicketPresetModal(false)} className="text-muted hover:text-text text-lg leading-none">✕</button>
+                            <h3 className="font-heading text-2xl tracking-wide">CHOOSE TICKET TYPE</h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowTicketPresetModal(false)}
+                                aria-label="Close"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-background hover:text-text transition-colors"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                            </button>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {[
                                 { name: 'General Admission', description: 'Standard entry to the event', icon: '🎟️' },
                                 { name: 'VIP', description: 'Premium experience with exclusive access', icon: '⭐' },
@@ -984,28 +936,17 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets }: Even
                                             preset.name === 'Group Ticket' ? true : undefined,
                                         )
                                     }}
-                                    style={{
-                                        background: '#FFFFFF',
-                                        border: '1px solid #C0C0C8',
-                                        borderRadius: 12,
-                                        padding: 16,
-                                        cursor: 'pointer',
-                                        textAlign: 'center',
-                                        transition: 'border-color 0.15s, background 0.15s',
-                                    }}
-                                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#E63950' }}
-                                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#C0C0C8' }}
+                                    className="bg-card border border-border rounded-xl p-4 text-center hover:border-warm-red hover:shadow-soft transition-all"
                                 >
-                                    <div style={{ fontSize: 24, marginBottom: 8 }}>{preset.icon}</div>
-                                    <div style={{ fontWeight: 700, color: '#0A0A0F', fontSize: 14, marginBottom: 4 }}>{preset.name}</div>
-                                    <div style={{ color: '#666677', fontSize: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{preset.description}</div>
+                                    <div className="text-2xl mb-2">{preset.icon}</div>
+                                    <div className="font-bold text-sm mb-1">{preset.name}</div>
+                                    <div className="text-xs text-muted line-clamp-2">{preset.description}</div>
                                 </button>
                             ))}
                         </div>
                     </div>
                 </div>
             )}
-
         </div>
     )
 }

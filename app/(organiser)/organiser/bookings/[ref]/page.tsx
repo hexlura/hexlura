@@ -10,6 +10,20 @@ interface PageProps {
     params: { ref: string }
 }
 
+const STATUS_PILL: Record<string, string> = {
+    confirmed: 'text-warm-green bg-warm-green/10',
+    pending: 'text-warm-yellowText bg-warm-yellow/10',
+    cancelled: 'text-warm-red bg-warm-red/10',
+    refunded: 'text-muted bg-border',
+}
+
+const BackLink = () => (
+    <Link href="/organiser/bookings" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-text transition-colors mb-4">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
+        Back to Bookings
+    </Link>
+)
+
 export default async function BookingDetailPage({ params }: PageProps) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -21,38 +35,30 @@ export default async function BookingDetailPage({ params }: PageProps) {
     if (!organiserId) redirect('/organiser/pending')
 
     // Security: only fetch the booking if it belongs to one of this organiser's events
-    const { data: events } = await adminClient
+    const { data: events, error: eventsErr } = await adminClient
         .from('events').select('id').eq('organiser_id', organiserId)
+    if (eventsErr) throw eventsErr
     const eventIds = (events || []).map(e => e.id)
 
     const notFoundUI = (
-        <div className="max-w-3xl">
-            <div className="mb-6">
-                <Link
-                    href="/organiser/bookings"
-                    style={{ fontSize: 13, color: '#8888AA', textDecoration: 'none' }}
-                >
-                    ← Back to Bookings
-                </Link>
-            </div>
-            <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 48, textAlign: 'center' }}>
-                <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0F', marginBottom: 8 }}>Booking not found</p>
-                <p style={{ fontSize: 13, color: '#8888AA' }}>
-                    This booking reference does not exist or does not belong to your organisation.
-                </p>
+        <div className="max-w-7xl">
+            <BackLink />
+            <div className="bg-card rounded-2xl shadow-card p-12 text-center">
+                <p className="text-base font-semibold mb-2">Booking not found</p>
+                <p className="text-sm text-muted">This booking reference does not exist or does not belong to your organisation.</p>
             </div>
         </div>
     )
 
     if (!eventIds.length) return notFoundUI
 
-    const { data: bookingRaw } = await adminClient
+    const { data: bookingRaw, error: bookingErr } = await adminClient
         .from('bookings')
-        .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, created_at, confirmed_at, user_id, event:events(id, title, start_at)')
+        .select('id, booking_ref, status, is_complimentary, ticket_subtotal_pence, discount_pence, created_at, confirmed_at, user_id, event:events(id, title, start_at, venue_city)')
         .eq('booking_ref', params.ref)
         .in('event_id', eventIds)
-        .single()
-
+        .maybeSingle()
+    if (bookingErr) throw bookingErr
     if (!bookingRaw) return notFoundUI
 
     const booking = bookingRaw as unknown as {
@@ -61,19 +67,20 @@ export default async function BookingDetailPage({ params }: PageProps) {
         status: string
         is_complimentary: boolean | null
         ticket_subtotal_pence: number | null
+        discount_pence: number | null
         created_at: string
         confirmed_at: string | null
         user_id: string | null
-        event: { id: string; title: string; start_at: string } | null
+        event: { id: string; title: string; start_at: string; venue_city: string | null } | null
     }
 
-    // Get buyer profile (name + phone from profiles; email from auth)
+    // Buyer profile (name + phone from profiles; email from auth)
     const { data: profile } = booking.user_id
         ? await adminClient
             .from('profiles')
             .select('full_name, phone')
             .eq('id', booking.user_id)
-            .single()
+            .maybeSingle()
         : { data: null }
 
     let buyerEmail = ''
@@ -82,11 +89,12 @@ export default async function BookingDetailPage({ params }: PageProps) {
         buyerEmail = buyerUser?.email || ''
     }
 
-    // Get booking items (group tickets are stored as one row per member)
-    const { data: itemsRaw } = await adminClient
+    // Booking items (group tickets are stored as one row per member)
+    const { data: itemsRaw, error: itemsErr } = await adminClient
         .from('booking_items')
         .select('id, quantity, unit_price_pence, attendee_name, attendee_email, ticket_type_id, ticket_type:ticket_types(name, is_group, group_size)')
         .eq('booking_id', booking.id)
+    if (itemsErr) throw itemsErr
 
     const items = (itemsRaw || []) as unknown as {
         id: string
@@ -101,174 +109,137 @@ export default async function BookingDetailPage({ params }: PageProps) {
     // Collapse group-ticket member rows into a single line per ticket type.
     const displayItems = aggregateBookingItems(items)
 
-    // Derive email: prefer auth email, fall back to attendee_email on first raw item
+    // Prefer auth email, fall back to attendee_email on the first raw item
     const displayEmail = buyerEmail || items[0]?.attendee_email || ''
 
-    const statusStyles: Record<string, { text: string; bg: string; border: string }> = {
-        confirmed: { text: '#00C48A', bg: 'rgba(0,196,138,0.08)', border: 'rgba(0,196,138,0.25)' },
-        pending:   { text: '#F5A623', bg: 'rgba(245,166,35,0.08)', border: 'rgba(245,166,35,0.25)' },
-        cancelled: { text: '#E63950', bg: 'rgba(230,57,80,0.08)',  border: 'rgba(230,57,80,0.25)' },
-        refunded:  { text: '#8888AA', bg: 'rgba(136,136,170,0.08)', border: 'rgba(136,136,170,0.25)' },
-    }
-    const sc = statusStyles[booking.status] || { text: '#8888AA', bg: 'transparent', border: '#E0E0E0' }
-
     const eventDate = booking.event?.start_at
-        ? new Date(booking.event.start_at).toLocaleDateString('en-GB', {
-              day: 'numeric', month: 'long', year: 'numeric',
-          })
+        ? new Date(booking.event.start_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/London' })
         : '—'
 
     const bookedDate = new Date(booking.created_at).toLocaleString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
     })
 
+    // Ticket revenue only — what the organiser earns, after any promo-code discount
+    const subtotalPence = booking.ticket_subtotal_pence || 0
+    const discountPence = booking.discount_pence || 0
+    const earningsPence = subtotalPence - discountPence
+
+    const statusLabel = booking.status.charAt(0).toUpperCase() + booking.status.slice(1)
+    const labelClass = 'text-xs text-muted uppercase tracking-wider'
+
     return (
-        <div className="max-w-3xl">
-            {/* Back + Download */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-                <Link
-                    href="/organiser/bookings"
-                    style={{ fontSize: 13, color: '#8888AA', textDecoration: 'none' }}
-                >
-                    ← Back to Bookings
-                </Link>
-                <a
-                    href={`/api/tickets/${booking.booking_ref}/pdf`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                        display: 'inline-block',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: '#FFFFFF',
-                        background: '#0A0A0F',
-                        padding: '8px 18px',
-                        textDecoration: 'none',
-                        border: '1px solid #0A0A0F',
-                        letterSpacing: '0.3px',
-                    }}
-                >
-                    ↓ Download Tickets
-                </a>
-            </div>
+        <div className="max-w-7xl">
+            <BackLink />
 
             {/* Header */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 32 }}>
+            <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
                 <div>
-                    <p style={{ fontSize: 11, color: '#8888AA', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 4 }}>Booking Reference</p>
-                    <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 42, color: '#0A0A0F', letterSpacing: '1px', lineHeight: 1 }}>
-                        {booking.booking_ref}
-                    </h1>
+                    <p className={`${labelClass} mb-1`}>Booking Reference</p>
+                    <h1 className="font-heading text-5xl tracking-wide">{booking.booking_ref}</h1>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8 }}>
+                <div className="flex items-center gap-2 pt-2">
                     {booking.is_complimentary && (
-                        <span style={{
-                            fontSize: 10, fontWeight: 700, padding: '3px 10px',
-                            border: '1px solid rgba(0,196,138,0.3)', background: 'rgba(0,196,138,0.08)',
-                            color: '#00C48A', letterSpacing: '1px', textTransform: 'uppercase',
-                        }}>
-                            Complimentary
-                        </span>
+                        <span className="text-xs font-semibold text-warm-green bg-warm-green/10 px-3 py-1.5 rounded-full">Complimentary</span>
                     )}
-                    <span style={{
-                        fontSize: 12, fontWeight: 600, padding: '4px 14px',
-                        border: `1px solid ${sc.border}`, background: sc.bg, color: sc.text,
-                    }}>
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                    <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${STATUS_PILL[booking.status] || 'text-muted bg-border'}`}>
+                        {statusLabel}
                     </span>
+                    <a
+                        href={`/api/tickets/${booking.booking_ref}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-text text-white px-4 py-2 rounded-xl text-xs font-semibold"
+                    >
+                        ↓ Download Tickets
+                    </a>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
+            <div className="flex flex-col gap-5">
                 {/* Event */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24 }}>
-                    <p style={{ fontSize: 11, color: '#8888AA', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 10 }}>Event</p>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0F', marginBottom: 4 }}>{booking.event?.title || '—'}</p>
-                    <p style={{ fontSize: 13, color: '#666677' }}>{eventDate}</p>
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <p className={`${labelClass} mb-2`}>Event</p>
+                    <p className="text-base font-semibold">{booking.event?.title || '—'}</p>
+                    <p className="text-sm text-muted mt-0.5">
+                        {eventDate}{booking.event?.venue_city ? ` · ${booking.event.venue_city}` : ''}
+                    </p>
                 </div>
 
                 {/* Buyer */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24 }}>
-                    <p style={{ fontSize: 11, color: '#8888AA', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 14 }}>Buyer</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <p className={`${labelClass} mb-4`}>Buyer</p>
+                    <div className="grid grid-cols-2 gap-5">
                         <div>
-                            <p style={{ fontSize: 11, color: '#8888AA', marginBottom: 3 }}>Name</p>
-                            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0F' }}>{profile?.full_name || '—'}</p>
+                            <p className="text-xs text-muted mb-1">Name</p>
+                            <p className="text-sm font-semibold">{profile?.full_name || '—'}</p>
                         </div>
                         <div>
-                            <p style={{ fontSize: 11, color: '#8888AA', marginBottom: 3 }}>Email</p>
-                            <p style={{ fontSize: 14, color: '#0A0A0F' }}>{displayEmail || '—'}</p>
+                            <p className="text-xs text-muted mb-1">Email</p>
+                            <p className="text-sm break-all">{displayEmail || '—'}</p>
                         </div>
                         {profile?.phone && (
                             <div>
-                                <p style={{ fontSize: 11, color: '#8888AA', marginBottom: 3 }}>Phone</p>
-                                <p style={{ fontSize: 14, color: '#0A0A0F' }}>{profile.phone}</p>
+                                <p className="text-xs text-muted mb-1">Phone</p>
+                                <p className="text-sm">{profile.phone}</p>
                             </div>
                         )}
                         <div>
-                            <p style={{ fontSize: 11, color: '#8888AA', marginBottom: 3 }}>Booked On</p>
-                            <p style={{ fontSize: 14, color: '#0A0A0F' }}>{bookedDate}</p>
+                            <p className="text-xs text-muted mb-1">Booked On</p>
+                            <p className="text-sm">{bookedDate}</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Tickets table */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24 }}>
-                    <p style={{ fontSize: 11, color: '#8888AA', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 14 }}>Tickets</p>
-
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                {/* Tickets */}
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <p className={`${labelClass} mb-4`}>Tickets</p>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
                             <thead>
-                                <tr style={{ borderBottom: '1px solid #E0E0E0' }}>
-                                    <th style={{ textAlign: 'left', color: '#8888AA', fontWeight: 400, paddingBottom: 8, paddingRight: 16 }}>Ticket Type</th>
-                                    <th style={{ textAlign: 'right', color: '#8888AA', fontWeight: 400, paddingBottom: 8, paddingRight: 16, whiteSpace: 'nowrap' }}>Qty</th>
-                                    <th style={{ textAlign: 'right', color: '#8888AA', fontWeight: 400, paddingBottom: 8, paddingRight: 16, whiteSpace: 'nowrap' }}>Unit Price</th>
-                                    <th style={{ textAlign: 'right', color: '#8888AA', fontWeight: 400, paddingBottom: 8, whiteSpace: 'nowrap' }}>Subtotal</th>
+                                <tr className="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                                    <th className="font-medium pb-2">Ticket Type</th>
+                                    <th className="font-medium pb-2 text-right">Qty</th>
+                                    <th className="font-medium pb-2 text-right">Unit Price</th>
+                                    <th className="font-medium pb-2 text-right">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {displayItems.map(row => (
-                                    <tr key={row.key} style={{ borderBottom: '1px solid #F5F5F7' }}>
-                                        <td style={{ padding: '10px 16px 10px 0', color: '#0A0A0F', fontWeight: 500 }}>
+                                    <tr key={row.key} className="border-b border-border last:border-0">
+                                        <td className="py-3">
                                             {row.name}
                                             {row.is_group && row.group_size > 1 && (
-                                                <span style={{ display: 'block', fontSize: 11, color: '#8888AA', fontWeight: 400, marginTop: 2 }}>
-                                                    Admits {row.group_size} per ticket
-                                                </span>
+                                                <span className="block text-xs text-muted mt-0.5">Admits {row.group_size} per ticket</span>
                                             )}
                                             {row.attendee_name && (
-                                                <span style={{ display: 'block', fontSize: 11, color: '#8888AA', fontWeight: 400, marginTop: 2 }}>
-                                                    {row.attendee_name}
-                                                </span>
+                                                <span className="block text-xs text-muted mt-0.5">{row.attendee_name}</span>
                                             )}
                                         </td>
-                                        <td style={{ padding: '10px 16px 10px 0', textAlign: 'right', color: '#0A0A0F' }}>
-                                            {row.quantity}
-                                        </td>
-                                        <td style={{ padding: '10px 16px 10px 0', textAlign: 'right', color: '#666677' }}>
-                                            {booking.is_complimentary ? '—' : formatPence(row.unit_price_pence)}
-                                        </td>
-                                        <td style={{ padding: '10px 0', textAlign: 'right', color: '#0A0A0F', fontWeight: 600 }}>
-                                            {booking.is_complimentary ? '—' : formatPence(row.subtotal_pence)}
-                                        </td>
+                                        <td className="py-3 text-right">{row.quantity}</td>
+                                        <td className="py-3 text-right text-muted">{booking.is_complimentary ? '—' : formatPence(row.unit_price_pence)}</td>
+                                        <td className="py-3 text-right font-medium">{booking.is_complimentary ? '—' : formatPence(row.subtotal_pence)}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Totals */}
                     {!booking.is_complimentary && (
-                        <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #E0E0E0' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, fontWeight: 700, color: '#0A0A0F' }}>
-                                <span>Amount</span>
-                                <span>{formatPence(booking.ticket_subtotal_pence || 0)}</span>
+                        <div className="border-t border-border mt-4 pt-4 space-y-2">
+                            {discountPence > 0 && (
+                                <div className="flex justify-between text-sm text-muted">
+                                    <span>Promo discount</span>
+                                    <span>−{formatPence(discountPence)}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between items-baseline text-base">
+                                <span className="font-semibold">Your Earnings</span>
+                                <span className="font-heading text-xl">{formatPence(earningsPence)}</span>
                             </div>
                         </div>
                     )}
                 </div>
-
             </div>
         </div>
     )

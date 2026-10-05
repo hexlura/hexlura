@@ -122,13 +122,13 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                 className={className}
                 style={{ textAlign: 'left', cursor: 'pointer' }}
             >
-                {displayText || <span style={{ color: '#8888AA' }}>{placeholder ?? 'Select date & time'}</span>}
+                {displayText || <span style={{ color: '#6B5D56' }}>{placeholder ?? 'Select date & time'}</span>}
             </button>
 
             {/* Popup */}
             {open && (
                 <div
-                    className="absolute z-50 mt-1 left-0 right-0 sm:right-auto bg-surface border border-border rounded-sm shadow-xl"
+                    className="absolute z-50 mt-1 left-0 right-0 sm:right-auto bg-card border border-border rounded-2xl shadow-hover"
                     style={{ minWidth: 'min(280px, 100%)' }}
                 >
                     <div className="p-4 space-y-4">
@@ -141,7 +141,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                 min={minDate}
                                 onChange={e => setDraftDate(e.target.value)}
                                 required={required}
-                                className="w-full bg-background border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                                className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                             />
                         </div>
 
@@ -153,7 +153,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                 <ThemedSelect
                                     value={draftHour}
                                     onChange={e => setDraftHour(parseInt(e.target.value, 10))}
-                                    className="bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
+                                    className="bg-background border border-border rounded-xl px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                                 >
                                     {HOURS.map(h => (
                                         <option key={h} value={h}>{h}</option>
@@ -164,21 +164,21 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                 <ThemedSelect
                                     value={draftMinute}
                                     onChange={e => setDraftMinute(parseInt(e.target.value, 10))}
-                                    className="bg-background border border-border rounded-sm px-2 py-2 text-sm text-text text-center font-mono focus:outline-none focus:border-accent"
+                                    className="bg-background border border-border rounded-xl px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                                 >
                                     {MINUTES.map(m => (
                                         <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
                                     ))}
                                 </ThemedSelect>
                                 {/* AM/PM */}
-                                <div className="flex border border-border rounded-sm overflow-hidden ml-1">
+                                <div className="flex border border-border rounded-xl overflow-hidden ml-1">
                                     <button
                                         type="button"
                                         onClick={() => setDraftAmPm('AM')}
                                         className="px-3 py-2 text-sm font-semibold transition-colors"
                                         style={{
                                             background: draftAmPm === 'AM' ? '#E63950' : 'transparent',
-                                            color: draftAmPm === 'AM' ? '#fff' : '#8888AA',
+                                            color: draftAmPm === 'AM' ? '#fff' : '#6B5D56',
                                         }}
                                     >
                                         AM
@@ -189,7 +189,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                         className="px-3 py-2 text-sm font-semibold transition-colors"
                                         style={{
                                             background: draftAmPm === 'PM' ? '#E63950' : 'transparent',
-                                            color: draftAmPm === 'PM' ? '#fff' : '#8888AA',
+                                            color: draftAmPm === 'PM' ? '#fff' : '#6B5D56',
                                         }}
                                     >
                                         PM
@@ -211,7 +211,7 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
                                 type="button"
                                 onClick={handleOK}
                                 disabled={!draftDate}
-                                className="px-5 py-2 bg-[#0A0A0F] text-white text-sm font-semibold rounded-sm disabled:opacity-40 hover:bg-[#2a2a3f] transition-colors"
+                                className="px-5 py-2 bg-text text-white text-sm font-semibold rounded-xl disabled:opacity-40 hover:opacity-90 transition-opacity"
                             >
                                 OK
                             </button>
