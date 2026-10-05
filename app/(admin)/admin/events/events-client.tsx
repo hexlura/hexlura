@@ -36,10 +36,11 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    published: 'text-success bg-warm-green/10 border-warm-green/20',
-    draft: 'text-muted bg-border border-border',
-    cancelled: 'text-accent bg-warm-red/10 border-warm-red/20',
-    archived: 'text-muted bg-border border-border',
+    published: 'text-warm-green bg-warm-green/10',
+    draft: 'text-muted bg-border',
+    ended: 'text-muted bg-border',
+    cancelled: 'text-warm-red bg-warm-red/10',
+    archived: 'text-muted bg-border',
 }
 
 
@@ -132,15 +133,57 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 </div>
             )}
 
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-heading text-4xl text-text tracking-wide">EVENTS</h1>
                     <p className="text-muted text-sm mt-1">Moderate and manage events</p>
                 </div>
+
+                {/* Search + Filters */}
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="relative w-64">
+                        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                        <input
+                            type="search"
+                            placeholder="Search by title…"
+                            defaultValue={searchParams.get('q') ?? ''}
+                            onChange={e => {
+                                const v = e.target.value
+                                clearTimeout((window as Window & { _st?: ReturnType<typeof setTimeout> })._st)
+                                ;(window as Window & { _st?: ReturnType<typeof setTimeout> })._st = setTimeout(() => updateParam('q', v), 300)
+                            }}
+                            className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-text placeholder:text-muted shadow-soft focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                        />
+                    </div>
+                    <ThemedSelect
+                        value={searchParams.get('category') ?? ''}
+                        onChange={e => updateParam('category', e.target.value)}
+                    >
+                        <option value="">All Categories</option>
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </ThemedSelect>
+                    <ThemedSelect
+                        value={searchParams.get('status') ?? ''}
+                        onChange={e => updateParam('status', e.target.value)}
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                        <option value="ended">Ended</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="archived">Archived</option>
+                    </ThemedSelect>
+                    <ThemedSelect
+                        value={pageSize}
+                        onChange={e => updateParam('pageSize', e.target.value)}
+                    >
+                        {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
+                    </ThemedSelect>
+                </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 mb-4 border-b border-border overflow-x-auto overflow-y-hidden">
+            <div className="flex gap-1 mb-5 border-b border-border overflow-x-auto overflow-y-hidden">
                 {tabs.map(t => (
                     <button
                         key={t.value}
@@ -150,45 +193,6 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                         {t.label}
                     </button>
                 ))}
-            </div>
-
-            {/* Search + Filters */}
-            <div className="flex flex-wrap gap-3 mb-6">
-                <input
-                    type="search"
-                    placeholder="Search by title..."
-                    defaultValue={searchParams.get('q') ?? ''}
-                    onChange={e => {
-                        const v = e.target.value
-                        clearTimeout((window as Window & { _st?: ReturnType<typeof setTimeout> })._st)
-                        ;(window as Window & { _st?: ReturnType<typeof setTimeout> })._st = setTimeout(() => updateParam('q', v), 300)
-                    }}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-warm-red/25"
-                />
-                <ThemedSelect
-                    value={searchParams.get('category') ?? ''}
-                    onChange={e => updateParam('category', e.target.value)}
-                >
-                    <option value="">All Categories</option>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </ThemedSelect>
-                <ThemedSelect
-                    value={searchParams.get('status') ?? ''}
-                    onChange={e => updateParam('status', e.target.value)}
-                >
-                    <option value="">All Statuses</option>
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                    <option value="ended">Ended</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="archived">Archived</option>
-                </ThemedSelect>
-                <ThemedSelect
-                    value={pageSize}
-                    onChange={e => updateParam('pageSize', e.target.value)}
-                >
-                    {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
-                </ThemedSelect>
             </div>
 
             {/* Table */}
@@ -210,20 +214,20 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                 <td className="py-3 px-3">
                                     <div className="flex items-center gap-2">
                                         {e.is_featured && <span className="text-warm-amberText text-xs">★</span>}
-                                        <p className="text-text font-medium text-sm truncate max-w-[200px]">{e.title}</p>
+                                        <p className="text-text font-medium text-sm max-w-[240px]">{e.title}</p>
                                     </div>
                                 </td>
                                 <td className="py-3 px-3 text-muted text-xs">{e.organiser_name}</td>
                                 <td className="py-3 px-3 text-muted text-xs">{e.category}</td>
                                 <td className="py-3 px-3 text-muted text-xs whitespace-nowrap">{fmt(e.start_at)}</td>
                                 <td className="py-3 px-3">
-                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[e.status] || STATUS_BADGE.draft}`}>
+                                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full capitalize whitespace-nowrap ${STATUS_BADGE[e.status] || STATUS_BADGE.draft}`}>
                                         {e.status}
                                     </span>
                                 </td>
                                 <td className="py-3 px-3 text-text text-xs">{e.tickets_sold}</td>
                                 <td className="py-3 px-3 text-text text-xs whitespace-nowrap">{formatPence(e.gross_pence)}</td>
-                                <td className="py-3 px-3 text-warm-amberText text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
+                                <td className="py-3 px-3 text-text text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
                                 <td className="py-3 px-3">
                                     <div className="flex items-center gap-2">
                                         <button
@@ -257,7 +261,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                     </div>
                                 </td>
                                 <td className="py-3 px-3">
-                                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                                    <div className="flex items-center gap-2 flex-nowrap whitespace-nowrap text-xs">
                                         <Link href={`/events/${e.slug}`} target="_blank" className="text-muted hover:text-text">View</Link>
                                         <span className="text-border">·</span>
                                         <Link href={`/admin/events/${e.id}/settlement`} className="text-muted hover:text-text">Settlement</Link>
