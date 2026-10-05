@@ -92,9 +92,9 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
             <div
                 role="status"
                 aria-live="polite"
-                className="contact-fade-up bg-card border border-success/30 shadow-[0_0_0_1px_rgba(0,196,138,0.08),0_20px_40px_-24px_rgba(0,196,138,0.35)] p-10 text-center flex flex-col items-center gap-4"
+                className="contact-fade-up bg-card rounded-3xl border border-border shadow-card p-10 text-center flex flex-col items-center gap-4"
             >
-                <span className="contact-success-pop flex items-center justify-center w-14 h-14 rounded-full bg-success/10 border border-success/30 text-success">
+                <span className="contact-success-pop flex items-center justify-center w-14 h-14 rounded-full bg-warm-green/10 text-warm-green">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 6L9 17l-5-5" />
                     </svg>
@@ -108,7 +108,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                 <button
                     type="button"
                     onClick={resetForm}
-                    className="mt-2 text-sm text-accent hover:underline font-medium"
+                    className="mt-2 text-sm text-accent hover:underline font-semibold"
                 >
                     Send another enquiry
                 </button>
@@ -119,10 +119,10 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="contact-fade-up bg-card border border-border p-6 sm:p-8 space-y-5"
+            className="contact-fade-up bg-card rounded-3xl border border-border shadow-card p-6 sm:p-8 space-y-5"
         >
             <div className="space-y-1 mb-2">
-                <h2 className="font-heading text-2xl sm:text-3xl text-text">Tell us about your event</h2>
+                <h2 className="font-heading text-3xl tracking-wide text-text">TELL US ABOUT YOUR EVENT</h2>
                 <p className="text-sm text-muted">Share a few details and our team will get back to you.</p>
             </div>
 
@@ -142,7 +142,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
 
             <div className="grid sm:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="contact-name" className="text-xs text-muted uppercase tracking-wider">
+                    <label htmlFor="contact-name" className="text-xs font-semibold text-muted">
                         Name <span className="text-accent">*</span>
                     </label>
                     <input
@@ -154,11 +154,11 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                         placeholder="Your name"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent transition"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 transition"
                     />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="contact-email" className="text-xs text-muted uppercase tracking-wider">
+                    <label htmlFor="contact-email" className="text-xs font-semibold text-muted">
                         Email <span className="text-accent">*</span>
                     </label>
                     <input
@@ -170,14 +170,14 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                         placeholder="you@example.com"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent transition"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 transition"
                     />
                 </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="contact-org" className="text-xs text-muted uppercase tracking-wider">
+                    <label htmlFor="contact-org" className="text-xs font-semibold text-muted">
                         Organization name <span className="text-accent">*</span>
                     </label>
                     <input
@@ -189,12 +189,12 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                         placeholder="Your company or event name"
                         value={organizationName}
                         onChange={e => setOrganizationName(e.target.value)}
-                        className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent transition"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 transition"
                     />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="contact-phone" className="text-xs text-muted uppercase tracking-wider">
-                        Phone number <span className="normal-case text-muted/70">(optional)</span>
+                    <label htmlFor="contact-phone" className="text-xs font-semibold text-muted">
+                        Phone number <span className="font-normal">(optional)</span>
                     </label>
                     <input
                         id="contact-phone"
@@ -204,13 +204,13 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                         placeholder="+44 7000 000000"
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
-                        className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent transition"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 transition"
                     />
                 </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-                <label htmlFor="contact-topic" className="text-xs text-muted uppercase tracking-wider">
+                <label htmlFor="contact-topic" className="text-xs font-semibold text-muted">
                     What&apos;s this about? <span className="text-accent">*</span>
                 </label>
                 <select
@@ -220,7 +220,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                     disabled={!!lockedTopic}
                     value={topic}
                     onChange={e => setTopic(e.target.value as ContactTopic)}
-                    className="h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     <option value="" disabled>Select a topic</option>
                     {CONTACT_TOPICS.map(t => (
@@ -230,7 +230,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
             </div>
 
             <div className="flex flex-col gap-1.5">
-                <label htmlFor="contact-details" className="text-xs text-muted uppercase tracking-wider">
+                <label htmlFor="contact-details" className="text-xs font-semibold text-muted">
                     Tell us about your event <span className="text-accent">*</span>
                 </label>
                 <textarea
@@ -242,7 +242,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                     placeholder="Tell us about your event, expected attendance, date, venue, or anything else that can help us understand your requirements..."
                     value={eventDetails}
                     onChange={e => setEventDetails(e.target.value)}
-                    className="w-full rounded-sm border border-border bg-background px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent transition resize-y"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25 transition resize-y"
                 />
                 <p className="text-xs text-muted text-right">{eventDetails.length} / {MAX_DETAILS}</p>
             </div>
@@ -251,7 +251,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
                 <p
                     role="alert"
                     aria-live="assertive"
-                    className="contact-shake text-sm text-accent bg-accent/10 border border-accent/20 rounded-sm px-4 py-2.5"
+                    className="contact-shake text-sm font-semibold text-accent bg-warm-red/10 rounded-lg px-3.5 py-2.5"
                 >
                     {error}
                 </p>
@@ -260,7 +260,7 @@ export function ContactForm({ lockedTopic }: { lockedTopic?: ContactTopic }) {
             <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="group w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] hover:-translate-y-px active:translate-y-0 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
+                className="group w-full py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {status === 'loading' ? (
                     <>

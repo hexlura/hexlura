@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getStaticPageMetadata } from '@/lib/seo'
 import type { Metadata } from 'next'
 
@@ -7,76 +8,67 @@ export async function generateMetadata(): Promise<Metadata> {
     return getStaticPageMetadata('/how-it-works')
 }
 
+type Step = { title: string; body: string }
+
+const BUYER_STEPS: Step[] = [
+    { title: 'Find an event', body: 'Browse events by city or category. Use the Find Events page to discover what’s on near you.' },
+    { title: 'Select your tickets', body: 'Choose your ticket type and quantity. See the full price breakdown including booking fee before you pay.' },
+    { title: 'Pay securely', body: 'Pay by card through our secure Stripe-powered checkout. Your payment is protected.' },
+    { title: 'Get your tickets', body: 'Receive a confirmation email with your PDF ticket containing your unique QR code. Download and save it to your phone.' },
+    { title: 'Show up and enjoy', body: 'Show your QR code at the door. Each QR code is valid for one scan only.' },
+]
+
+const ORGANISER_STEPS: Step[] = [
+    { title: 'Create an account', body: 'Register and select “I want to sell tickets” to set up your organiser profile.' },
+    { title: 'Connect Stripe', body: 'Connect your Stripe account to receive payouts directly to your bank account.' },
+    { title: 'Create your event', body: 'Add your event details, upload a banner, set ticket types and prices.' },
+    { title: 'Share and sell', body: 'Your event goes live instantly. Share your event link and start selling tickets.' },
+    { title: 'Manage attendees', body: 'Use your organiser dashboard to track sales, manage attendees, and check in guests on the door using our QR scanner.' },
+    { title: 'Get paid', body: 'Receive your payout 2 business days after your event ends.' },
+]
+
+function Steps({ steps, circle }: { steps: Step[]; circle: string }) {
+    return (
+        <div className="space-y-6">
+            {steps.map((step, i) => (
+                <div key={step.title} className="flex gap-5">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-heading text-lg shrink-0 ${circle}`}>{i + 1}</div>
+                    <div>
+                        <p className="font-semibold mb-1">{step.title}</p>
+                        <p className="text-white/60 text-sm leading-relaxed">{step.body}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
 export default function HowItWorksPage() {
-  return (
-    <div style={{ background: '#0A0A0F', minHeight: '100vh' }}>
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px' }}>
-        <h1 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 48, color: '#F0F0F8', marginBottom: 8 }}>
-          HOW IT WORKS
-        </h1>
-        <p style={{ fontSize: 11, color: '#8888AA', marginBottom: 40 }}>Last updated: March 2026</p>
+    return (
+        <div style={{ background: '#1A0E0C' }} className="text-white">
+            <div className="max-w-3xl mx-auto px-6 lg:px-10 py-16">
+                <h1 className="font-heading text-5xl lg:text-6xl tracking-wide mb-2 text-center">HOW IT WORKS</h1>
+                <p className="text-xs text-white/40 text-center mb-14">Last updated: March 2026</p>
 
-        <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>For Ticket Buyers</h2>
+                <section className="mb-20">
+                    <h2 className="font-heading text-3xl text-accent tracking-wide mb-8">FOR TICKET BUYERS</h2>
+                    <Steps steps={BUYER_STEPS} circle="bg-accent text-white" />
+                </section>
 
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>1. Find an event</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Browse events by city or category. Use the Find Events page to discover what&apos;s on near you.
-        </p>
+                <section>
+                    <h2 className="font-heading text-3xl text-accent tracking-wide mb-8">FOR EVENT ORGANISERS</h2>
+                    <Steps steps={ORGANISER_STEPS} circle="bg-warm-orange text-[#1A0E0C]" />
+                </section>
 
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>2. Select your tickets</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Choose your ticket type and quantity. See the full price breakdown including booking fee before you pay.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>3. Pay securely</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Pay by card through our secure Stripe-powered checkout. Your payment is protected.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>4. Get your tickets</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Receive a confirmation email with your PDF ticket containing your unique QR code. Download and save it to your phone.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>5. Show up and enjoy</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Show your QR code at the door. Each QR code is valid for one scan only.
-        </p>
-
-        <div style={{ borderTop: '1px solid #2A2A3A', margin: '40px 0' }} />
-
-        <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>For Event Organisers</h2>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>1. Create an account</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Register and select &quot;I want to sell tickets&quot; to set up your organiser profile.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>2. Connect Stripe</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Connect your Stripe account to receive payouts directly to your bank account.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>3. Create your event</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Add your event details, upload a banner, set ticket types and prices.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>4. Share and sell</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Your event goes live instantly. Share your event link and start selling tickets.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>5. Manage attendees</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Use your organiser dashboard to track sales, manage attendees, and check in guests on the door using our QR scanner.
-        </p>
-
-        <h3 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#F0F0F8', fontWeight: 600, marginTop: 24 }}>6. Get paid</h3>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#8888AA', lineHeight: 1.8, marginBottom: 16 }}>
-          Receive your payout 2 business days after your event ends.
-        </p>
-      </div>
-    </div>
-  )
+                <div className="text-center mt-16">
+                    <Link
+                        href="/business"
+                        className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition"
+                    >
+                        Start Selling Tickets →
+                    </Link>
+                </div>
+            </div>
+        </div>
+    )
 }

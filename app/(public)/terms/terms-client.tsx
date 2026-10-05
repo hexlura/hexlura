@@ -5,22 +5,22 @@ import { useState } from 'react'
 const sectionStyle: React.CSSProperties = {
     fontSize: '20px',
     fontWeight: 700,
-    color: '#0A0A0F',
+    color: '#1A0E0C',
     margin: '48px 0 16px',
     paddingTop: '48px',
-    borderTop: '1px solid #EEEEEE',
+    borderTop: '1px solid #F1E7E2',
 }
 
 const subStyle: React.CSSProperties = {
     fontSize: '15px',
     fontWeight: 600,
-    color: '#0A0A0F',
+    color: '#1A0E0C',
     margin: '24px 0 8px',
 }
 
 const bodyStyle: React.CSSProperties = {
     fontSize: '15px',
-    color: '#333333',
+    color: '#6B5D56',
     lineHeight: 1.9,
     margin: '0 0 16px',
 }
@@ -29,7 +29,7 @@ const liStyle: React.CSSProperties = {
     marginBottom: '8px',
     lineHeight: 1.8,
     fontSize: '15px',
-    color: '#333333',
+    color: '#6B5D56',
 }
 
 export default function TermsClient() {
@@ -42,39 +42,39 @@ export default function TermsClient() {
     }
 
     const activeTabStyle: React.CSSProperties = {
-        background: '#0A0A0F',
+        background: '#1A0E0C',
         color: '#FFFFFF',
-        border: '1px solid #0A0A0F',
+        border: '1px solid #1A0E0C',
         padding: '10px 24px',
         fontSize: '14px',
         fontWeight: 600,
         cursor: 'pointer',
-        borderRadius: '2px',
+        borderRadius: 999,
     }
 
     const inactiveTabStyle: React.CSSProperties = {
         background: 'transparent',
-        color: '#666677',
-        border: '1px solid #E0E0E0',
+        color: '#6B5D56',
+        border: '1px solid #F1E7E2',
         padding: '10px 24px',
         fontSize: '14px',
         fontWeight: 600,
         cursor: 'pointer',
-        borderRadius: '2px',
+        borderRadius: 999,
     }
 
     return (
-        <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
+        <div >
             <div style={{ maxWidth: '860px', margin: '0 auto', padding: '60px 24px' }}>
 
                 {/* Header */}
-                <h1 style={{ fontFamily: '"Bebas Neue", "Arial Black", sans-serif', fontSize: '48px', color: '#0A0A0F', marginBottom: '8px' }}>
+                <h1 style={{ fontFamily: '"Bebas Neue", "Arial Black", sans-serif', fontSize: '48px', color: '#1A0E0C', marginBottom: '8px' }}>
                     Terms &amp; Privacy Policy
                 </h1>
-                <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '4px' }}>
+                <p style={{ fontSize: '13px', color: '#6B5D56', marginBottom: '4px' }}>
                     Hexlura Ltd · Company No. 17102803 · Registered in England &amp; Wales
                 </p>
-                <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '8px' }}>
+                <p style={{ fontSize: '13px', color: '#6B5D56', marginBottom: '8px' }}>
                     Last updated: July 2026
                 </p>
                 <div style={{ borderTop: '3px solid #E63950', margin: '24px 0 40px' }} />
@@ -97,7 +97,7 @@ export default function TermsClient() {
 
                 {/* ── TERMS OF SERVICE ── */}
                 <div id="terms">
-                    <h2 style={{ fontFamily: '"Bebas Neue", "Arial Black", sans-serif', fontSize: '32px', color: '#0A0A0F', margin: '0 0 24px' }}>
+                    <h2 style={{ fontFamily: '"Bebas Neue", "Arial Black", sans-serif', fontSize: '32px', color: '#1A0E0C', margin: '0 0 24px' }}>
                         Terms of Service
                     </h2>
 
@@ -123,8 +123,8 @@ export default function TermsClient() {
                             ['"Content"', 'means all text, images, data and other materials appearing on the Platform'],
                         ].map(([term, def]) => (
                             <div key={term} style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-                                <dt style={{ fontWeight: 600, color: '#0A0A0F', fontSize: '15px', minWidth: '140px', flexShrink: 0 }}>{term}</dt>
-                                <dd style={{ fontSize: '15px', color: '#333333', lineHeight: 1.7, margin: 0 }}>{def}</dd>
+                                <dt style={{ fontWeight: 600, color: '#1A0E0C', fontSize: '15px', minWidth: '140px', flexShrink: 0 }}>{term}</dt>
+                                <dd style={{ fontSize: '15px', color: '#6B5D56', lineHeight: 1.7, margin: 0 }}>{def}</dd>
                             </div>
                         ))}
                     </dl>
@@ -257,10 +257,10 @@ export default function TermsClient() {
                 {/* ── PRIVACY POLICY ── */}
                 <div
                     id="privacy"
-                    style={{ background: '#F5F5F7', padding: '20px 32px', margin: '60px 0 0', borderRadius: '2px' }}
+                    style={{ background: '#F5F5F7', padding: '20px 32px', margin: '60px 0 0', borderRadius: 999 }}
                 >
-                    <p style={{ fontSize: '20px', fontWeight: 700, color: '#0A0A0F', margin: '0 0 4px' }}>Privacy Policy</p>
-                    <p style={{ fontSize: '13px', color: '#8888AA', margin: 0 }}>How we collect, use and protect your personal data</p>
+                    <p style={{ fontSize: '20px', fontWeight: 700, color: '#1A0E0C', margin: '0 0 4px' }}>Privacy Policy</p>
+                    <p style={{ fontSize: '13px', color: '#6B5D56', margin: 0 }}>How we collect, use and protect your personal data</p>
                 </div>
 
                 <h3 style={sectionStyle}>13. Who We Are</h3>

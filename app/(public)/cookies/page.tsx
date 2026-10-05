@@ -12,15 +12,15 @@ export async function generateMetadata(): Promise<Metadata> {
 const sectionStyle: React.CSSProperties = {
     fontSize: '20px',
     fontWeight: 700,
-    color: '#0A0A0F',
+    color: '#1A0E0C',
     margin: '48px 0 16px',
     paddingTop: '48px',
-    borderTop: '1px solid #EEEEEE',
+    borderTop: '1px solid #F1E7E2',
 }
 
 const bodyStyle: React.CSSProperties = {
     fontSize: '15px',
-    color: '#333333',
+    color: '#6B5D56',
     lineHeight: 1.9,
     margin: '0 0 16px',
 }
@@ -29,13 +29,13 @@ const liStyle: React.CSSProperties = {
     marginBottom: '8px',
     lineHeight: 1.8,
     fontSize: '15px',
-    color: '#333333',
+    color: '#6B5D56',
 }
 
 const tableHeaderStyle: React.CSSProperties = {
     fontSize: '12px',
     fontWeight: 700,
-    color: '#0A0A0F',
+    color: '#1A0E0C',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     padding: '10px 14px',
@@ -47,7 +47,7 @@ const tableHeaderStyle: React.CSSProperties = {
 
 const tableCellStyle: React.CSSProperties = {
     fontSize: '14px',
-    color: '#333333',
+    color: '#6B5D56',
     padding: '12px 14px',
     borderBottom: '1px solid #F0F0F0',
     verticalAlign: 'top',
@@ -59,7 +59,7 @@ const typeBadge = (type: string): React.CSSProperties => ({
     fontSize: '11px',
     fontWeight: 700,
     padding: '2px 8px',
-    borderRadius: '2px',
+    borderRadius: 999,
     background: type === 'Essential' ? '#E8F5E9' : type === 'Functional' ? '#E3F2FD' : '#FFF3E0',
     color: type === 'Essential' ? '#2E7D32' : type === 'Functional' ? '#1565C0' : '#E65100',
 })
@@ -78,17 +78,17 @@ export default async function CookiesPage() {
     const doc = await getLatestLegalDocument('cookies')
     if (doc) return <PublishedLegalDocument doc={doc} title="Cookie Policy" />
     return (
-        <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
+        <div >
             <div style={{ maxWidth: '860px', margin: '0 auto', padding: '60px 24px' }}>
 
                 {/* Header */}
-                <h1 style={{ fontFamily: '"Bebas Neue", "Arial Black", sans-serif', fontSize: '48px', color: '#0A0A0F', marginBottom: '8px' }}>
+                <h1 style={{ fontFamily: '"Bebas Neue", "Arial Black", sans-serif', fontSize: '48px', color: '#1A0E0C', marginBottom: '8px' }}>
                     Cookie Policy
                 </h1>
-                <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '4px' }}>
+                <p style={{ fontSize: '13px', color: '#6B5D56', marginBottom: '4px' }}>
                     How we use cookies and similar technologies on hexlura.com
                 </p>
-                <p style={{ fontSize: '13px', color: '#8888AA', marginBottom: '8px' }}>
+                <p style={{ fontSize: '13px', color: '#6B5D56', marginBottom: '8px' }}>
                     Last updated: March 2026
                 </p>
                 <div style={{ borderTop: '3px solid #E63950', margin: '24px 0 40px' }} />
@@ -114,7 +114,7 @@ export default async function CookiesPage() {
                         <tbody>
                             {cookies.map((c, i) => (
                                 <tr key={c.name} style={{ background: i % 2 === 1 ? '#FAFAFA' : '#FFFFFF' }}>
-                                    <td style={{ ...tableCellStyle, fontWeight: 600, color: '#0A0A0F' }}>{c.name}</td>
+                                    <td style={{ ...tableCellStyle, fontWeight: 600, color: '#1A0E0C' }}>{c.name}</td>
                                     <td style={tableCellStyle}>
                                         <span style={typeBadge(c.type)}>{c.type}</span>
                                     </td>
