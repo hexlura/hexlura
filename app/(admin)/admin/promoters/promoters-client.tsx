@@ -110,28 +110,28 @@ export function PromotersClient({ active, suspended, defaultTab }: Props) {
             </div>
 
             {/* Tabs + search */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => changeTab('active')}
-                        className={`text-sm px-4 py-2 border whitespace-nowrap ${tab === 'active' ? 'border-accent text-accent bg-warm-red/5' : 'border-border text-muted hover:text-text'}`}
-                    >
-                        Active ({active.length})
-                    </button>
-                    <button
-                        onClick={() => changeTab('suspended')}
-                        className={`text-sm px-4 py-2 border whitespace-nowrap ${tab === 'suspended' ? 'border-accent text-accent bg-warm-red/5' : 'border-border text-muted hover:text-text'}`}
-                    >
-                        Suspended ({suspended.length})
-                    </button>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-5 gap-3 border-b border-border">
+                <div className="flex gap-1 overflow-x-auto overflow-y-hidden whitespace-nowrap">
+                    {([['active', 'Active', active.length], ['suspended', 'Suspended', suspended.length]] as const).map(([key, label, count]) => (
+                        <button
+                            key={key}
+                            onClick={() => changeTab(key)}
+                            className={`px-4 py-2.5 text-sm transition-colors -mb-px border-b-2 ${tab === key ? 'text-text font-semibold border-accent' : 'text-muted border-transparent hover:text-text'}`}
+                        >
+                            {label} ({count})
+                        </button>
+                    ))}
                 </div>
-                <input
-                    type="text"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search by name, code or email…"
-                    className="bg-card border border-border rounded-xl shadow-soft px-3.5 py-2.5 text-sm text-text focus:outline-none w-full sm:w-72 focus:ring-2 focus:ring-warm-red/25"
-                />
+                <div className="relative w-full sm:w-72 mb-2">
+                    <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search by name, code or email…"
+                        className="w-full bg-card border border-border rounded-xl shadow-soft pl-10 pr-4 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                    />
+                </div>
             </div>
 
             <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
@@ -156,21 +156,19 @@ export function PromotersClient({ active, suspended, defaultTab }: Props) {
                                     <div className="text-[11px] text-muted">{p.profiles?.email ?? '—'}</div>
                                 </td>
                                 <td className="py-3 px-4">
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-400/20 font-mono">
-                                        {p.referral_code}
-                                    </span>
+                                    <span className="font-mono text-xs text-accent">{p.referral_code}</span>
                                 </td>
                                 <td className="py-3 px-4 text-text text-xs">{p.sales_count}</td>
                                 <td className="py-3 px-4 text-text text-xs font-medium">{formatPence(p.lifetime_gross_pence)}</td>
-                                <td className="py-3 px-4 text-warm-amberText text-xs">{formatPence(p.available_pence)}</td>
-                                <td className="py-3 px-4 text-success text-xs">{formatPence(p.paid_pence)}</td>
+                                <td className="py-3 px-4 text-text text-xs">{formatPence(p.available_pence)}</td>
+                                <td className="py-3 px-4 text-text text-xs">{formatPence(p.paid_pence)}</td>
                                 <td className="py-3 px-4 text-muted text-xs">{fmt(p.created_at)}</td>
                                 <td className="py-3 px-4">
                                     {tab === 'active' ? (
                                         <button
                                             onClick={() => { setSuspendModal(p); setReasonInput('') }}
                                             disabled={loading === p.id}
-                                            className="text-[11px] text-accent hover:underline px-2 py-1 disabled:opacity-50"
+                                            className="text-xs font-semibold text-accent hover:underline px-2 py-1 disabled:opacity-50"
                                         >
                                             Suspend
                                         </button>
@@ -178,7 +176,7 @@ export function PromotersClient({ active, suspended, defaultTab }: Props) {
                                         <button
                                             onClick={() => handleReinstate(p)}
                                             disabled={loading === p.id}
-                                            className="text-[11px] text-success hover:underline px-2 py-1 disabled:opacity-50"
+                                            className="text-xs font-semibold text-warm-green hover:underline px-2 py-1 disabled:opacity-50"
                                         >
                                             {loading === p.id ? '...' : 'Reinstate'}
                                         </button>
