@@ -65,7 +65,7 @@ function VerificationBadge({ status }: { status: IdentityStatus }) {
         case 'processing':
             return <span className="text-xs text-blue-500">⏳ Processing</span>
         case 'requires_input':
-            return <span className="text-xs text-gold">⚠ Action needed</span>
+            return <span className="text-xs text-warm-amberText">⚠ Action needed</span>
         case 'canceled':
             return <span className="text-xs text-muted">✗ Canceled</span>
         default:
@@ -157,7 +157,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -177,7 +177,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                     >
                         {t.label}
                         {t.count > 0 && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${t.value === 'pending' && t.count > 0 ? 'bg-gold text-black' : 'bg-muted/20 text-muted'}`}>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${t.value === 'pending' && t.count > 0 ? 'bg-gold text-black' : 'bg-border text-muted'}`}>
                                 {t.count}
                             </span>
                         )}
@@ -189,13 +189,13 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             {tab === 'pending' && (
                 <div>
                     {pending.length === 0 ? (
-                        <div className="bg-card border border-border rounded-none p-16 text-center">
+                        <div className="bg-card shadow-card rounded-2xl p-16 text-center">
                             <p className="text-muted text-sm">Organiser signups are now instant. This tab shows manually flagged accounts only.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
                             {pending.map(org => (
-                                <div key={org.id} className="bg-card border border-border rounded-none p-6">
+                                <div key={org.id} className="bg-card shadow-card rounded-2xl p-6">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
                                             <h3 className="font-heading text-2xl text-text">{org.org_name}</h3>
@@ -219,7 +219,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                                                 size="md"
                                                 onClick={() => handleApprove(org.id)}
                                                 disabled={loading === org.id}
-                                                className="bg-success hover:bg-success/80 border-success"
+                                                className="bg-success hover:bg-warm-green/80 border-success"
                                             >
                                                 {loading === org.id ? 'Approving...' : 'Approve'}
                                             </Button>
@@ -241,12 +241,12 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
 
             {/* Active Tab */}
             {tab === 'active' && (
-                <div className="bg-card border border-border rounded-none overflow-x-auto">
+                <div className="bg-card shadow-card rounded-2xl overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
                                 {['Org Name', 'Type', 'Organiser', 'Email', 'Events', 'Revenue', 'Stripe', 'Verified', 'Joined', 'Actions'].map(h => (
-                                    <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                    <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -255,7 +255,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                                 <tr><td colSpan={10} className="text-center text-muted text-xs py-12">No active organisers</td></tr>
                             )}
                             {active.map(org => (
-                                <tr key={org.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                                <tr key={org.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                     <td className="py-3 px-4 text-text font-medium">
                                         <Link href={`/admin/organisers/${org.id}`} className="hover:text-accent hover:underline">
                                             {org.org_name}
@@ -271,7 +271,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                                     <td className="py-3 px-4">
                                         {org.stripe_account_id
                                             ? <span className="text-xs text-success">✓ Connected</span>
-                                            : <span className="text-xs text-gold">⚠ Not connected</span>
+                                            : <span className="text-xs text-warm-amberText">⚠ Not connected</span>
                                         }
                                     </td>
                                     <td className="py-3 px-4 whitespace-nowrap">
@@ -300,12 +300,12 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
 
             {/* Suspended Tab */}
             {tab === 'suspended' && (
-                <div className="bg-card border border-border rounded-none overflow-x-auto">
+                <div className="bg-card shadow-card rounded-2xl overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-border">
                                 {['Org Name', 'Organiser', 'Email', 'Suspended Date', 'Actions'].map(h => (
-                                    <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                    <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -314,7 +314,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                                 <tr><td colSpan={5} className="text-center text-muted text-xs py-12">No suspended organisers</td></tr>
                             )}
                             {suspended.map(org => (
-                                <tr key={org.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                                <tr key={org.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                     <td className="py-3 px-4 text-text font-medium">{org.org_name}</td>
                                     <td className="py-3 px-4 text-muted text-xs">{org.profiles?.full_name ?? '—'}</td>
                                     <td className="py-3 px-4 text-muted text-xs">{org.profiles?.email ?? '—'}</td>
@@ -338,7 +338,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             {/* Reject Modal */}
             {rejectModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Reject Application</h3>
                         <p className="text-sm text-muted mb-4">{rejectModal.org_name}</p>
                         <textarea
@@ -346,7 +346,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                             onChange={e => setRejectReason(e.target.value)}
                             placeholder="Rejection reason (required)"
                             rows={3}
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4 focus:ring-2 focus:ring-accent/25"
                         />
                         <div className="flex gap-3">
                             <Button variant="danger" size="md" onClick={handleReject} disabled={!rejectReason.trim() || !!loading}>
@@ -361,7 +361,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             {/* Suspend Modal */}
             {suspendModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Suspend Organiser</h3>
                         <p className="text-sm text-muted mb-4">{suspendModal.org_name}</p>
                         <textarea
@@ -369,7 +369,7 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                             onChange={e => setSuspendReason(e.target.value)}
                             placeholder="Suspension reason (required)"
                             rows={3}
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4 focus:ring-2 focus:ring-accent/25"
                         />
                         <div className="flex gap-3">
                             <Button variant="danger" size="md" onClick={handleSuspend} disabled={!suspendReason.trim() || !!loading}>

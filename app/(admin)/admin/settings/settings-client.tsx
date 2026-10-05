@@ -187,7 +187,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
         router.refresh()
     }
 
-    const sectionClass = "bg-card border border-border rounded-none p-6 mb-6"
+    const sectionClass = "bg-card shadow-card rounded-2xl p-6 mb-6"
     const labelClass = "text-xs text-muted block mb-1"
     const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
 
@@ -201,7 +201,7 @@ export function SettingsClient({ settings, promoCodes }: Props) {
             {/* Fees */}
             <div className={sectionClass}>
                 <h2 className="text-sm font-medium text-text mb-4">Platform Fees</h2>
-                <p className="text-xs text-gold mb-4">Note: Fee changes apply to new bookings only</p>
+                <p className="text-xs text-warm-amberText mb-4">Note: Fee changes apply to new bookings only</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className={labelClass}>Booking Fee % (per ticket)</label>
@@ -337,13 +337,13 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                             <thead>
                                 <tr className="border-b border-border">
                                     {['Code', 'Discount', 'Uses', 'Valid To'].map(h => (
-                                        <th key={h} className="text-left text-xs text-muted py-2 font-normal">{h}</th>
+                                        <th key={h} className="text-left text-xs text-muted py-2 font-medium uppercase tracking-wider">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {promoCodes.map(p => (
-                                    <tr key={p.id} className="border-b border-border/50">
+                                    <tr key={p.id} className="border-b border-border">
                                         <td className="py-2 font-mono text-accent text-xs">{p.code}</td>
                                         <td className="py-2 text-text text-xs">
                                             {p.discount_type === 'percent' ? `${p.discount_value}%` : `£${(p.discount_value / 100).toFixed(2)}`}

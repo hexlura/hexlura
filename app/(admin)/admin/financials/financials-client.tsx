@@ -13,7 +13,7 @@ interface Props {
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string; color?: string }[]; label?: string }) {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-card border border-border rounded-none px-3 py-2 text-xs">
+            <div className="bg-card shadow-card rounded-2xl px-3 py-2 text-xs">
                 <p className="text-muted mb-1">{label}</p>
                 {payload.map((p, i) => (
                     <p key={i} style={{ color: p.color }} className="font-medium">
@@ -29,23 +29,23 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 export function FinancialsClient({ monthlyData, cumulativeData }: Props) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-card border border-border rounded-none p-6">
+            <div className="bg-card shadow-card rounded-2xl p-6">
                 <h2 className="text-sm font-medium text-text mb-1">GMV vs Platform Revenue</h2>
                 <p className="text-xs text-muted mb-4">Last 12 months</p>
                 <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#C0C0C8" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F1E7E2" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#6B5D56', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#6B5D56', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Legend wrapperStyle={{ fontSize: 11, color: '#666677' }} />
+                        <Legend wrapperStyle={{ fontSize: 11, color: '#6B5D56' }} />
                         <Bar dataKey="gmv" name="GMV" fill="#E63950" radius={[3, 3, 0, 0]} />
                         <Bar dataKey="revenue" name="Revenue" fill="#F5A623" radius={[3, 3, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
 
-            <div className="bg-card border border-border rounded-none p-6">
+            <div className="bg-card shadow-card rounded-2xl p-6">
                 <h2 className="text-sm font-medium text-text mb-1">Cumulative GMV</h2>
                 <p className="text-xs text-muted mb-4">All time</p>
                 <ResponsiveContainer width="100%" height={220}>
@@ -56,9 +56,9 @@ export function FinancialsClient({ monthlyData, cumulativeData }: Props) {
                                 <stop offset="95%" stopColor="#E63950" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#C0C0C8" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#666677', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F1E7E2" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#6B5D56', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#6B5D56', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `£${v}`} width={48} />
                         <Tooltip content={<ChartTooltip />} />
                         <Area type="monotone" dataKey="cumulative" name="Cumulative GMV" stroke="#E63950" strokeWidth={2} fill="url(#gmvGrad)" />
                     </AreaChart>

@@ -146,7 +146,7 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
             {toast && (
                 <div
                     role="alert"
-                    className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-none text-sm border ${toast.ok ? 'bg-success/20 border-success/40 text-success' : 'bg-accent/10 border-accent/40 text-accent'}`}
+                    className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-xl text-sm border ${toast.ok ? 'bg-warm-green/20 border-warm-green/40 text-success' : 'bg-warm-red/10 border-warm-red/40 text-accent'}`}
                 >
                     {toast.msg}
                 </div>
@@ -168,7 +168,7 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
                         className={`px-4 py-2.5 text-sm transition-colors -mb-px border-b-2 ${docType === t ? 'text-text border-accent' : 'text-muted border-transparent hover:text-text'}`}
                     >
                         {LEGAL_DOC_LABELS[t]}
-                        {dirtyByType[t] && <span className="text-gold ml-1" title="Unpublished changes">*</span>}
+                        {dirtyByType[t] && <span className="text-warm-amberText ml-1" title="Unpublished changes">*</span>}
                     </button>
                 ))}
             </div>
@@ -180,18 +180,18 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
                         Live version: <span className="text-text font-medium">{latest.version}</span> (published {fmtDateTime(latest.published_at)})
                     </span>
                 ) : (
-                    <span className="text-gold">
+                    <span className="text-warm-amberText">
                         No published version yet — the site is showing the built-in page. Tip: open{' '}
                         <a href={PUBLIC_URLS[docType]} target="_blank" rel="noopener noreferrer" className="underline">{PUBLIC_URLS[docType]}</a>,
                         select all, copy, and paste here to start from the current text.
                     </span>
                 )}
                 <a href={PUBLIC_URLS[docType]} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">View public page →</a>
-                {hasUnsavedChanges && <span className="text-gold">Unpublished changes</span>}
+                {hasUnsavedChanges && <span className="text-warm-amberText">Unpublished changes</span>}
             </div>
 
             {/* Editor / preview */}
-            <div role="tabpanel" className="bg-card border border-border p-4 mb-4">
+            <div role="tabpanel" className="bg-card shadow-card p-4 mb-4 rounded-2xl">
                 {showPreview ? (
                     <div
                         className={`legal-preview px-4 py-3 text-sm text-text max-w-none ${LEGAL_CONTENT_CLASSES}`}
@@ -225,10 +225,10 @@ export function LegalEditorClient({ documents }: { documents: DocVersion[] }) {
                     <p className="text-muted text-xs p-6 text-center">No versions published yet</p>
                 )}
                 {currentVersions.map((v, i) => (
-                    <div key={v.id} className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-border/50 last:border-b-0">
+                    <div key={v.id} className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-border last:border-b-0">
                         <span className="text-sm text-text font-mono">{v.version}</span>
                         <span className="text-xs text-muted">{fmtDateTime(v.published_at)}</span>
-                        {i === 0 && <span className="text-xs text-success bg-success/10 border border-success/20 px-2 py-0.5 rounded-full">Live</span>}
+                        {i === 0 && <span className="text-xs text-success bg-warm-green/10 border border-warm-green/20 px-2 py-0.5 rounded-full">Live</span>}
                         <span className="flex-1" />
                         <button onClick={() => loadVersion(v)} className="text-xs text-accent hover:underline">
                             Load into editor

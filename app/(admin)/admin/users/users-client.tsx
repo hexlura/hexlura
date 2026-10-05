@@ -29,9 +29,9 @@ interface Props {
 }
 
 const ROLE_BADGE: Record<UserRole, string> = {
-    user: 'bg-muted/20 text-muted border-muted/30',
-    organiser: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    admin: 'bg-accent/20 text-accent border-accent/30',
+    user: 'bg-border text-muted border-border',
+    organiser: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
+    admin: 'bg-warm-red/20 text-accent border-warm-red/30',
 }
 
 function fmt(d: string) {
@@ -153,7 +153,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
         <div className="max-w-7xl">
             {/* Toast */}
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -172,12 +172,12 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                     placeholder="Search by name or email..."
                     value={searchValue}
                     onChange={e => handleSearchChange(e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-64"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-64 focus:ring-2 focus:ring-accent/25"
                 />
                 <select
                     value={searchParams.get('role') ?? 'all'}
                     onChange={e => updateParam('role', e.target.value === 'all' ? '' : e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     <option value="all">All Roles</option>
                     <option value="user">User</option>
@@ -187,7 +187,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                 <select
                     value={searchParams.get('status') ?? 'all'}
                     onChange={e => updateParam('status', e.target.value === 'all' ? '' : e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -196,7 +196,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                 <select
                     value={searchParams.get('joined') ?? 'any'}
                     onChange={e => updateParam('joined', e.target.value === 'any' ? '' : e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     <option value="any">Any Time</option>
                     <option value="7d">Last 7 Days</option>
@@ -206,12 +206,12 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
             </div>
 
             {/* Table */}
-            <div className="bg-card border border-border rounded-none overflow-x-auto mb-4">
+            <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             {['Name', 'Email', 'Role', 'Joined', 'Bookings', 'Spent', 'Status', 'Actions'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -220,7 +220,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                             <tr><td colSpan={8} className="text-center text-muted text-xs py-12">No users found</td></tr>
                         )}
                         {users.map(u => (
-                            <tr key={u.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={u.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3 px-4">
                                     <p className="text-text font-medium text-sm">{u.full_name ?? '—'}</p>
                                 </td>
@@ -249,7 +249,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                                                     : <button onClick={() => openModal(u, 'suspend')} className="text-xs text-accent hover:underline">Suspend</button>
                                                 }
                                                 <span className="text-border">·</span>
-                                                <button onClick={() => openModal(u, 'impersonate')} className="text-xs text-gold hover:underline">Impersonate</button>
+                                                <button onClick={() => openModal(u, 'impersonate')} className="text-xs text-warm-amberText hover:underline">Impersonate</button>
                                             </>
                                         )}
                                         <span className="text-border">·</span>
@@ -270,13 +270,13 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                         <button
                             disabled={page <= 1}
                             onClick={() => updateParam('page', String(page - 1))}
-                            className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40"
+                            className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40"
                         >← Prev</button>
                         <span className="text-xs px-3 py-1.5 text-muted">Page {page} of {totalPages}</span>
                         <button
                             disabled={page >= totalPages}
                             onClick={() => updateParam('page', String(page + 1))}
-                            className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40"
+                            className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40"
                         >Next →</button>
                     </div>
                 </div>
@@ -326,13 +326,13 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
             {/* Change Role Modal */}
             {modal === 'role' && selectedUser && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Change Role</h3>
                         <p className="text-sm text-muted mb-4">{selectedUser.full_name} · {selectedUser.email}</p>
                         <select
                             value={newRole}
                             onChange={e => setNewRole(e.target.value as UserRole)}
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none mb-4"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none mb-4 focus:ring-2 focus:ring-accent/25"
                         >
                             <option value="user">User</option>
                             <option value="organiser">Organiser</option>
@@ -351,7 +351,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
             {/* Suspend Modal */}
             {modal === 'suspend' && selectedUser && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Suspend Account</h3>
                         <p className="text-sm text-muted mb-4">{selectedUser.full_name} · {selectedUser.email}</p>
                         <textarea
@@ -359,7 +359,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                             onChange={e => setSuspendReason(e.target.value)}
                             placeholder="Reason for suspension (required)"
                             rows={3}
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none mb-4 focus:ring-2 focus:ring-accent/25"
                         />
                         <div className="flex gap-3">
                             <Button variant="danger" size="md" onClick={handleSuspend} disabled={loading || !suspendReason.trim()}>
@@ -374,7 +374,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
             {/* Unsuspend Modal */}
             {modal === 'unsuspend' && selectedUser && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Reinstate Account</h3>
                         <p className="text-sm text-muted mb-6">Reinstate {selectedUser.full_name}? They will be able to log in again.</p>
                         <div className="flex gap-3">
@@ -390,7 +390,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
             {/* Impersonate Modal */}
             {modal === 'impersonate' && selectedUser && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Impersonate User</h3>
                         <p className="text-sm text-muted mb-4">
                             You will view the site as <strong className="text-text">{selectedUser.full_name}</strong>.

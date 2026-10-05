@@ -106,7 +106,7 @@ export default async function AdminFinancialsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 {kpis.map(k => (
-                    <div key={k.label} className="bg-card border border-border rounded-none p-5">
+                    <div key={k.label} className="bg-card shadow-card rounded-2xl p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{k.label}</p>
                         <p className="font-heading text-3xl text-text">{k.value}</p>
                     </div>
@@ -116,7 +116,7 @@ export default async function AdminFinancialsPage() {
             <FinancialsClient monthlyData={monthlyData} cumulativeData={cumulativeData} />
 
             {/* Monthly Breakdown Table */}
-            <div className="mt-8 bg-card border border-border rounded-none overflow-x-auto">
+            <div className="mt-8 bg-card shadow-card rounded-2xl overflow-x-auto">
                 <div className="p-6 border-b border-border">
                     <h2 className="text-sm font-medium text-text">Monthly Breakdown</h2>
                 </div>
@@ -124,13 +124,13 @@ export default async function AdminFinancialsPage() {
                     <thead>
                         <tr className="border-b border-border">
                             {['Month', 'GMV (£)', 'Platform Revenue (£)', 'Payouts Sent (£)', 'Bookings Count'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {monthlyData.map(m => (
-                            <tr key={m.month} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={m.month} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3 px-4 text-text text-sm font-medium">{m.month}</td>
                                 <td className="py-3 px-4 text-text text-sm">£{m.gmv.toFixed(2)}</td>
                                 <td className="py-3 px-4 text-text text-sm">£{m.revenue.toFixed(2)}</td>

@@ -73,10 +73,10 @@ interface BookingDetail {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    pending: 'text-gold bg-gold/10 border-gold/20',
-    confirmed: 'text-success bg-success/10 border-success/20',
-    cancelled: 'text-muted bg-muted/10 border-muted/20',
-    refunded: 'text-accent bg-accent/10 border-accent/20',
+    pending: 'text-warm-amberText bg-warm-amber/15 border-warm-amber/20',
+    confirmed: 'text-success bg-warm-green/10 border-warm-green/20',
+    cancelled: 'text-muted bg-border border-border',
+    refunded: 'text-accent bg-warm-red/10 border-warm-red/20',
 }
 
 const REFUND_STATUS_LABEL: Record<string, string> = {
@@ -204,7 +204,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -225,7 +225,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                         placeholder="Booking ref…"
                         value={filterQ}
                         onChange={e => setFilterQ(e.target.value)}
-                        className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-accent/25"
                     />
                 </div>
 
@@ -234,7 +234,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     <select
                         value={filterStatus}
                         onChange={e => setFilterStatus(e.target.value)}
-                        className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                     >
                         <option value="">All</option>
                         <option value="pending">Pending</option>
@@ -249,7 +249,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     <select
                         value={filterOrganiserId}
                         onChange={e => setFilterOrganiserId(e.target.value)}
-                        className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent max-w-[220px]"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[220px] focus:ring-2 focus:ring-accent/25"
                     >
                         <option value="">All organisers</option>
                         {organisers.map(o => (
@@ -263,7 +263,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     <select
                         value={filterEventId}
                         onChange={e => setFilterEventId(e.target.value)}
-                        className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent max-w-[260px]"
+                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[260px] focus:ring-2 focus:ring-accent/25"
                     >
                         <option value="">All events</option>
                         {visibleEvents.map(ev => (
@@ -274,7 +274,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
 
                 <button
                     type="submit"
-                    className="px-4 py-2 bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
+                    className="px-4 py-2 bg-accent text-white text-sm font-semibold hover:bg-warm-red/90 transition-colors"
                 >
                     Apply
                 </button>
@@ -290,12 +290,12 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                 )}
             </form>
 
-            <div className="bg-card border border-border rounded-none overflow-x-auto mb-4">
+            <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             {['Ref', 'Buyer', 'Event', 'Subtotal', 'Fee', 'Total', 'Payment', 'Status', 'Date', 'Actions'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-3 font-normal">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -304,7 +304,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                             <tr><td colSpan={10} className="text-center text-muted text-xs py-12">No bookings found</td></tr>
                         )}
                         {bookings.map(b => (
-                            <tr key={b.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={b.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-2.5 px-3">
                                     <button
                                         onClick={() => setDetailId(b.id)}
@@ -346,8 +346,8 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                 <div className="flex items-center justify-between">
                     <p className="text-xs text-muted">Page {page} of {totalPages}</p>
                     <div className="flex gap-2">
-                        <button disabled={page <= 1} onClick={() => gotoPage(page - 1)} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
-                        <button disabled={page >= totalPages} onClick={() => gotoPage(page + 1)} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
+                        <button disabled={page <= 1} onClick={() => gotoPage(page - 1)} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
+                        <button disabled={page >= totalPages} onClick={() => gotoPage(page + 1)} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
                     </div>
                 </div>
             )}
@@ -359,7 +359,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                     onClick={() => setDetailId(null)}
                 >
                     <div
-                        className="bg-card border border-border rounded-none p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                        className="bg-card shadow-card rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex items-start justify-between mb-4">
@@ -432,7 +432,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                                                     const buyerEmail = detail.items.find(it => it.ticket_type_id === row.key && it.attendee_email)?.attendee_email
                                                         ?? detail.items[0]?.attendee_email
                                                     return (
-                                                        <tr key={row.key} className="border-b border-border/50 last:border-0">
+                                                        <tr key={row.key} className="border-b border-border last:border-0">
                                                             <td className="py-2 px-3 text-text">
                                                                 {row.name}
                                                                 {row.is_group && row.group_size > 1 && (
@@ -475,7 +475,7 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                                 {detail.refundRequest && (
                                     <section>
                                         <h4 className="text-xs uppercase tracking-wider text-muted mb-2">Refund Request</h4>
-                                        <div className="bg-surface border border-border p-3 text-xs">
+                                        <div className="bg-card shadow-card p-3 text-xs rounded-2xl">
                                             <div className="flex justify-between mb-1">
                                                 <span className="text-text">{REFUND_STATUS_LABEL[detail.refundRequest.status] || detail.refundRequest.status}</span>
                                                 <span className="text-muted">{fmtDateTime(detail.refundRequest.created_at)}</span>

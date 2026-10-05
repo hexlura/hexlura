@@ -79,7 +79,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
     return (
         <div className="max-w-3xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -92,7 +92,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                 </p>
             </div>
 
-            <div className="bg-card border border-border rounded-none p-6 mb-6">
+            <div className="bg-card shadow-card rounded-2xl p-6 mb-6">
                 <h2 className="font-heading text-xl text-text mb-4">Account</h2>
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -114,7 +114,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                 </dl>
             </div>
 
-            <div className="bg-card border border-border rounded-none p-6">
+            <div className="bg-card shadow-card rounded-2xl p-6">
                 <h2 className="font-heading text-xl text-text mb-2">Stripe Connect</h2>
                 <p className="text-xs text-muted mb-4">
                     Bank transfer is the default payout method for every organiser — payouts are gated by the
@@ -149,7 +149,7 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                 )}
             </div>
 
-            <div className="bg-card border border-border rounded-none p-6 mt-6">
+            <div className="bg-card shadow-card rounded-2xl p-6 mt-6">
                 <h2 className="font-heading text-xl text-text mb-2">Fee waivers</h2>
                 <p className="text-xs text-muted mb-4">
                     Waive the booking fee and/or order processing fee for this organiser&apos;s events — independently,

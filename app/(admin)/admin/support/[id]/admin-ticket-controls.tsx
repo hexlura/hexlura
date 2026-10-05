@@ -91,7 +91,7 @@ export function AdminTicketControls({ ticketId, initialStatus, initialPriority }
 
     return (
         <>
-            <div className="bg-card border border-border p-4 space-y-3">
+            <div className="bg-card shadow-card p-4 space-y-3 rounded-2xl">
                 <div>
                     <label className="block text-xs text-muted uppercase tracking-wider mb-1">Status</label>
                     <select
@@ -117,7 +117,7 @@ export function AdminTicketControls({ ticketId, initialStatus, initialPriority }
                 {metaError && <p className="text-xs text-accent">{metaError}</p>}
             </div>
 
-            <form onSubmit={handleReply} className="bg-card border border-border p-4 space-y-3">
+            <form onSubmit={handleReply} className="bg-card shadow-card p-4 space-y-3 rounded-2xl">
                 <label className="block text-xs text-muted uppercase tracking-wider">Admin reply</label>
                 <textarea
                     value={reply}
@@ -126,14 +126,14 @@ export function AdminTicketControls({ ticketId, initialStatus, initialPriority }
                     rows={6}
                     placeholder="Reply to the user…"
                     disabled={status === 'closed'}
-                    className="w-full bg-background border border-border text-text text-sm px-3 py-2 focus:outline-none focus:border-accent resize-y disabled:opacity-60"
+                    className="w-full bg-background border border-border text-text text-sm px-3.5 py-2.5 focus:outline-none focus:border-accent resize-y disabled:opacity-60 focus:ring-2 focus:ring-accent/25"
                 />
                 <div className="flex items-center justify-between gap-3">
                     <p className="text-xs text-muted">{reply.length} / 5000</p>
                     <button
                         type="submit"
                         disabled={sending || reply.trim().length === 0 || status === 'closed'}
-                        className="px-4 py-2 bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-accent text-white text-sm font-semibold hover:bg-warm-red/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {sending ? 'Sending…' : 'Send'}
                     </button>

@@ -33,9 +33,9 @@ function fmt(d: string) {
 
 function priorityChip(p: SupportPriority): string {
     switch (p) {
-        case 'urgent': return 'text-accent bg-accent/10 border-accent/30'
-        case 'high': return 'text-gold bg-gold/10 border-gold/30'
-        case 'normal': return 'text-muted bg-muted/10 border-border'
+        case 'urgent': return 'text-accent bg-warm-red/10 border-warm-red/30'
+        case 'high': return 'text-warm-amberText bg-warm-amber/15 border-warm-amber/30'
+        case 'normal': return 'text-muted bg-border border-border'
         case 'low': return 'text-muted bg-transparent border-border'
     }
 }
@@ -71,11 +71,11 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
     const tickets = (ticketsRaw || []) as unknown as TicketRow[]
 
     return (
-        <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', margin: '0 0 8px 0' }}>
+        <div style={{ maxWidth: '1200px' }}>
+            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#1A0E0C', margin: '0 0 8px 0' }}>
                 SUPPORT
             </h1>
-            <p style={{ fontSize: '13px', color: '#666677', margin: '0 0 24px 0' }}>
+            <p style={{ fontSize: '13px', color: '#6B5D56', margin: '0 0 24px 0' }}>
                 {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} shown
             </p>
 
@@ -90,12 +90,12 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
             </div>
 
             {/* Tickets table */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', overflow: 'hidden' }}>
+            <div style={{ background: '#FFFFFF', border: 'none', borderRadius: 16, boxShadow: '0 6px 24px -4px rgba(60,20,10,0.08)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                        <tr style={{ borderBottom: '1px solid #E0E0E0', background: '#F8F8FA' }}>
+                        <tr style={{ borderBottom: '1px solid #F1E7E2', background: '#FAF6F3' }}>
                             {['Subject', 'User', 'Category', 'Priority', 'Status', 'Updated'].map(h => (
-                                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#666677', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#6B5D56', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                                     {h}
                                 </th>
                             ))}
@@ -104,7 +104,7 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
                     <tbody>
                         {tickets.length === 0 && (
                             <tr>
-                                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#8888AA', fontSize: '14px' }}>
+                                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#6B5D56', fontSize: '14px' }}>
                                     No tickets match the current filters.
                                 </td>
                             </tr>
@@ -124,11 +124,11 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
                                             </span>
                                         )}
                                     </td>
-                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#0A0A0F' }}>
+                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#1A0E0C' }}>
                                         <div className="truncate max-w-[180px]">{t.user?.full_name || '—'}</div>
                                         <div className="text-xs text-muted truncate max-w-[180px]">{t.user?.email || ''}</div>
                                     </td>
-                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#0A0A0F' }}>
+                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#1A0E0C' }}>
                                         {categoryLabel(t.category)}
                                     </td>
                                     <td style={{ padding: '12px 16px' }}>
@@ -141,7 +141,7 @@ export default async function AdminSupportPage({ searchParams }: PageProps) {
                                             {statusLabel(t.status)}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#666677' }}>
+                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#6B5D56' }}>
                                         {fmt(lastActivity)}
                                     </td>
                                 </tr>

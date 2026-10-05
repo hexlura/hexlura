@@ -67,7 +67,7 @@ export default async function AdminSupportTicketPage({ params }: { params: { id:
     const messages = (messagesData || []) as unknown as Message[]
 
     return (
-        <div style={{ padding: '32px', maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1100px' }}>
             <Link href="/admin/support" className="text-xs text-muted hover:text-text transition-colors">← Back to tickets</Link>
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 mt-3">
@@ -89,7 +89,7 @@ export default async function AdminSupportTicketPage({ params }: { params: { id:
                         {messages.map(m => (
                             <div
                                 key={m.id}
-                                className={`border p-4 ${m.is_admin ? 'bg-accent/5 border-accent/30' : 'bg-card border-border'}`}
+                                className={`border p-4 ${m.is_admin ? 'bg-warm-red/5 border-warm-red/30' : 'bg-card border-border'}`}
                             >
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -105,7 +105,7 @@ export default async function AdminSupportTicketPage({ params }: { params: { id:
 
                 {/* Sidebar — controls */}
                 <div className="space-y-4">
-                    <div className="bg-card border border-border p-4">
+                    <div className="bg-card shadow-card p-4 rounded-2xl">
                         <p className="text-xs text-muted uppercase tracking-wider mb-2">User</p>
                         <p className="text-sm text-text font-medium">{ticket.user?.full_name || '—'}</p>
                         <p className="text-xs text-muted truncate">{ticket.user?.email}</p>

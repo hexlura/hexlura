@@ -35,10 +35,10 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    published: 'text-success bg-success/10 border-success/20',
-    draft: 'text-muted bg-muted/10 border-muted/20',
-    cancelled: 'text-accent bg-accent/10 border-accent/20',
-    archived: 'text-muted bg-muted/10 border-muted/20',
+    published: 'text-success bg-warm-green/10 border-warm-green/20',
+    draft: 'text-muted bg-border border-border',
+    cancelled: 'text-accent bg-warm-red/10 border-warm-red/20',
+    archived: 'text-muted bg-border border-border',
 }
 
 
@@ -126,7 +126,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -162,12 +162,12 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                         clearTimeout((window as Window & { _st?: ReturnType<typeof setTimeout> })._st)
                         ;(window as Window & { _st?: ReturnType<typeof setTimeout> })._st = setTimeout(() => updateParam('q', v), 300)
                     }}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-accent/25"
                 />
                 <select
                     defaultValue={searchParams.get('category') ?? ''}
                     onChange={e => updateParam('category', e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     <option value="">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -175,7 +175,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <select
                     defaultValue={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     <option value="">All Statuses</option>
                     <option value="published">Published</option>
@@ -187,19 +187,19 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <select
                     value={pageSize}
                     onChange={e => updateParam('pageSize', e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
                 </select>
             </div>
 
             {/* Table */}
-            <div className="bg-card border border-border rounded-none overflow-x-auto mb-4">
+            <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             {['Title', 'Organiser', 'Category', 'Date', 'Status', 'Tickets', 'Gross Sales', 'Platform Fee', 'Featured', 'Actions'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -208,10 +208,10 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                             <tr><td colSpan={10} className="text-center text-muted text-xs py-12">No events found</td></tr>
                         )}
                         {events.map(e => (
-                            <tr key={e.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={e.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-2">
-                                        {e.is_featured && <span className="text-gold text-xs">★</span>}
+                                        {e.is_featured && <span className="text-warm-amberText text-xs">★</span>}
                                         <p className="text-text font-medium text-sm truncate max-w-[200px]">{e.title}</p>
                                     </div>
                                 </td>
@@ -225,7 +225,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                                 </td>
                                 <td className="py-3 px-4 text-text text-xs">{e.tickets_sold}</td>
                                 <td className="py-3 px-4 text-text text-xs whitespace-nowrap">{formatPence(e.gross_pence)}</td>
-                                <td className="py-3 px-4 text-gold text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
+                                <td className="py-3 px-4 text-warm-amberText text-xs whitespace-nowrap">{formatPence(e.fee_pence)}</td>
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-2">
                                         <button
@@ -295,9 +295,9 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                 <div className="flex items-center justify-between">
                     <p className="text-xs text-muted">Showing {((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, totalRows)} of {totalRows}</p>
                     <div className="flex gap-2">
-                        <button disabled={page <= 1} onClick={() => updateParam('page', String(page - 1))} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
+                        <button disabled={page <= 1} onClick={() => updateParam('page', String(page - 1))} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
                         <span className="text-xs px-3 py-1.5 text-muted">Page {page} of {totalPages}</span>
-                        <button disabled={page >= totalPages} onClick={() => updateParam('page', String(page + 1))} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
+                        <button disabled={page >= totalPages} onClick={() => updateParam('page', String(page + 1))} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
                     </div>
                 </div>
             )}
@@ -305,7 +305,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
             {/* Cancel Event Modal */}
             {cancelModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-md w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-md w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Cancel Event?</h3>
                         <p className="text-sm text-muted mb-4">
                             This will cancel the event and trigger automatic refunds for ALL confirmed bookings.
@@ -317,7 +317,7 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                             value={cancelConfirmTitle}
                             onChange={e => setCancelConfirmTitle(e.target.value)}
                             placeholder="Event title..."
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent mb-4"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent mb-4 focus:ring-2 focus:ring-accent/25"
                         />
                         <div className="flex gap-3">
                             <Button

@@ -83,12 +83,12 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
 
             {/* Integrity checks */}
             {s.issues.length === 0 ? (
-                <div className="border border-success/30 bg-card px-4 py-3 mb-6 text-sm text-success">
+                <div className="border border-warm-green/30 bg-card px-4 py-3 mb-6 text-sm text-success">
                     ✓ All checks passed — every booking&rsquo;s routing in Stripe matches its payout flag, and the payout rows add up.
                 </div>
             ) : (
-                <div className={`border bg-card px-4 py-3 mb-6 ${errors.length ? 'border-accent/50' : 'border-gold/40'}`}>
-                    <p className={`text-sm font-medium ${errors.length ? 'text-accent' : 'text-gold'}`}>
+                <div className={`border bg-card px-4 py-3 mb-6 ${errors.length ? 'border-warm-red/50' : 'border-warm-amber/40'}`}>
+                    <p className={`text-sm font-medium ${errors.length ? 'text-accent' : 'text-warm-amberText'}`}>
                         {errors.length > 0 && `${errors.length} problem${errors.length === 1 ? '' : 's'} need attention`}
                         {errors.length > 0 && warnings.length > 0 && ' · '}
                         {warnings.length > 0 && `${warnings.length} warning${warnings.length === 1 ? '' : 's'}`}
@@ -96,7 +96,7 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
                     <ul className="mt-2 space-y-1.5 text-sm text-text">
                         {[...errors, ...warnings].map((i, idx) => (
                             <li key={idx} className="flex gap-2">
-                                <span className={i.severity === 'error' ? 'text-accent' : 'text-gold'}>{i.severity === 'error' ? '✕' : '!'}</span>
+                                <span className={i.severity === 'error' ? 'text-accent' : 'text-warm-amberText'}>{i.severity === 'error' ? '✕' : '!'}</span>
                                 <span>
                                     {i.bookingRef && <span className="font-mono text-[12px] mr-1.5">{i.bookingRef}</span>}
                                     {i.message}
@@ -109,24 +109,24 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
 
             {/* KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <div className="bg-card border border-border p-4">
+                <div className="bg-card shadow-card p-4 rounded-2xl">
                     <p className="text-[11px] uppercase tracking-wider text-muted">Buyers paid</p>
                     <p className="font-heading text-3xl text-text mt-1">{formatPence(totals.buyersPaidPence)}</p>
                     <p className="text-xs text-muted mt-1">Matches &ldquo;Gross Sales&rdquo;</p>
                 </div>
-                <div className="bg-card border border-border p-4">
+                <div className="bg-card shadow-card p-4 rounded-2xl">
                     <p className="text-[11px] uppercase tracking-wider text-muted">Owed to organiser</p>
                     <p className="font-heading text-3xl text-text mt-1">{formatPence(totals.owedPence)}</p>
                     <p className="text-xs text-muted mt-1">100% of ticket price</p>
                 </div>
-                <div className="bg-card border border-border p-4">
+                <div className="bg-card shadow-card p-4 rounded-2xl">
                     <p className="text-[11px] uppercase tracking-wider text-muted">Already received</p>
                     <p className="font-heading text-3xl text-success mt-1">{formatPence(paidOutPence)}</p>
                     <p className="text-xs text-muted mt-1">
                         {s.settled.length} via Stripe{totals.bankPaidPence > 0 ? `, ${formatPence(totals.bankPaidPence)} by bank transfer` : ''}
                     </p>
                 </div>
-                <div className="bg-card border border-accent p-4">
+                <div className="bg-card border border-accent p-4 rounded-2xl">
                     <p className="text-[11px] uppercase tracking-wider text-accent">Still to pay</p>
                     <p className="font-heading text-3xl text-accent mt-1">{formatPence(totals.duePence)}</p>
                     <p className="text-xs text-muted mt-1">{totals.duePence > 0 ? `${s.held.length} booking${s.held.length === 1 ? '' : 's'} held by platform` : 'Nothing outstanding'}</p>
@@ -135,7 +135,7 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
 
             {/* Progress + fee split */}
             <div className="grid lg:grid-cols-3 gap-3 mb-8">
-                <div className="lg:col-span-2 bg-card border border-border p-4">
+                <div className="lg:col-span-2 bg-card shadow-card p-4 rounded-2xl">
                     <div className="flex items-baseline justify-between mb-2">
                         <h2 className="text-[11px] uppercase tracking-wider text-muted">Settlement progress</h2>
                         <p className="text-sm font-medium text-text">{pctSettled}% settled</p>
@@ -154,7 +154,7 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
                         </p>
                     )}
                 </div>
-                <div className="bg-card border border-border p-4">
+                <div className="bg-card shadow-card p-4 rounded-2xl">
                     <h2 className="text-[11px] uppercase tracking-wider text-muted mb-2">Where the money went</h2>
                     <dl className="text-sm space-y-1.5">
                         <div className="flex justify-between"><dt className="text-muted">Ticket revenue</dt><dd className="text-text">{formatPence(totals.owedPence)}</dd></div>
@@ -169,7 +169,7 @@ export default async function AdminEventSettlementPage({ params }: { params: { i
             {/* Payout rows */}
             <section className="mb-8">
                 <h2 className="text-sm font-medium text-text mb-2">Payout rows ({s.payouts.length})</h2>
-                <div className="bg-card border border-border overflow-x-auto">
+                <div className="bg-card shadow-card overflow-x-auto rounded-2xl">
                     <table className="w-full text-sm min-w-[720px]">
                         <thead>
                             <tr className="text-left text-[11px] uppercase tracking-wider text-muted border-b border-border">
@@ -264,7 +264,7 @@ function BookingsTable({
                 <h2 className="text-sm font-medium text-text">{title} ({rows.length})</h2>
                 <p className="text-xs text-muted">{subtitle}</p>
             </div>
-            <div className="bg-card border border-border overflow-x-auto">
+            <div className="bg-card shadow-card overflow-x-auto rounded-2xl">
                 <table className={`w-full text-sm ${settled ? 'min-w-[1400px]' : 'min-w-[980px]'}`}>
                     <thead>
                         <tr className="text-left text-[11px] uppercase tracking-wider text-muted border-b border-border">
@@ -297,7 +297,7 @@ function BookingsTable({
                                 <td className="py-2.5 px-3 text-muted text-xs whitespace-nowrap">{fmtDate(b.createdAt)}</td>
                                 <td className="py-2.5 px-3 text-xs whitespace-nowrap">
                                     {b.stripeError
-                                        ? <span className="text-gold">lookup failed</span>
+                                        ? <span className="text-warm-amberText">lookup failed</span>
                                         : <span className="text-muted">{ROUTE_LABEL[b.route]}</span>}
                                 </td>
                                 <td className="py-2.5 px-3 text-right text-text">{formatPence(b.ticketPence)}</td>

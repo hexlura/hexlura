@@ -34,9 +34,9 @@ function fmtDate(d: string): string {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    pending: 'text-accent bg-accent/10 border-accent/20',
-    approved: 'text-success bg-success/10 border-success/20',
-    rejected: 'text-muted bg-muted/10 border-muted/20',
+    pending: 'text-accent bg-warm-red/10 border-warm-red/20',
+    approved: 'text-success bg-warm-green/10 border-warm-green/20',
+    rejected: 'text-muted bg-border border-border',
 }
 
 export default function EventDeletionRequestsPage() {
@@ -107,7 +107,7 @@ export default function EventDeletionRequestsPage() {
             ) : (
                 <div className="space-y-4 mb-12">
                     {pending.map(r => (
-                        <div key={r.id} className="bg-surface border border-border rounded-none p-5">
+                        <div key={r.id} className="bg-card shadow-card rounded-2xl p-5">
                             <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
                                 <div>
                                     <p className="font-semibold text-text">{r.event_title}</p>
@@ -120,7 +120,7 @@ export default function EventDeletionRequestsPage() {
                                 <span className="text-text">{fmtPence(r.revenue_pence)} revenue</span>
                             </div>
                             {isPastEvent(r) && (
-                                <div className="border border-gold/40 bg-gold/10 p-3 mb-4 text-sm text-text">
+                                <div className="border border-warm-amber/40 bg-warm-amber/15 p-3 mb-4 text-sm text-text">
                                     <strong>This event has already taken place.</strong> Approving retires it without refunding anyone — its bookings and payouts stay as they are.
                                 </div>
                             )}
@@ -132,14 +132,14 @@ export default function EventDeletionRequestsPage() {
                                 <button
                                     onClick={() => handleApprove(r)}
                                     disabled={actionLoading === r.id}
-                                    className="h-9 px-5 rounded-sm bg-accent text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
+                                    className="h-9 px-5 rounded-full bg-accent text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-50 shadow-glow"
                                 >
                                     {actionLoading === r.id ? 'Working…' : 'Approve'}
                                 </button>
                                 <button
                                     onClick={() => { setRejectModal(r); setRejectNotes('') }}
                                     disabled={actionLoading === r.id}
-                                    className="h-9 px-5 rounded-sm border border-border text-text text-sm hover:bg-card transition disabled:opacity-50"
+                                    className="h-9 px-5 rounded-full border border-border text-text text-sm hover:bg-background transition disabled:opacity-50"
                                 >
                                     Reject
                                 </button>
@@ -154,7 +154,7 @@ export default function EventDeletionRequestsPage() {
                     <h2 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">History</h2>
                     <div className="space-y-2">
                         {resolved.map(r => (
-                            <div key={r.id} className="bg-surface border border-border rounded-none p-4">
+                            <div key={r.id} className="bg-card shadow-card rounded-2xl p-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <p className="font-semibold text-text truncate">{r.event_title}</p>
                                     <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[r.status]}`}>{r.status}</span>
@@ -171,7 +171,7 @@ export default function EventDeletionRequestsPage() {
 
             {rejectModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Reject Deletion Request?</h3>
                         <p className="text-sm text-muted mb-3">The event will go back to its previous status. Optionally tell the organiser why.</p>
                         <textarea
@@ -179,13 +179,13 @@ export default function EventDeletionRequestsPage() {
                             onChange={e => setRejectNotes(e.target.value)}
                             rows={3}
                             placeholder="Reason (optional)"
-                            className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-4"
+                            className="w-full border border-border rounded-lg px-3.5 py-2.5 text-sm bg-background text-text outline-none focus:border-accent resize-y mb-4 focus:ring-2 focus:ring-accent/25"
                         />
                         <div className="flex gap-3">
-                            <button onClick={handleReject} disabled={actionLoading === rejectModal.id} className="h-10 px-5 rounded-sm bg-accent text-white text-sm font-semibold disabled:opacity-50">
+                            <button onClick={handleReject} disabled={actionLoading === rejectModal.id} className="h-10 px-5 rounded-full bg-accent text-white text-sm font-semibold disabled:opacity-50 shadow-glow">
                                 {actionLoading === rejectModal.id ? 'Working…' : 'Confirm Reject'}
                             </button>
-                            <button onClick={() => setRejectModal(null)} className="h-10 px-5 rounded-sm border border-border text-text text-sm">Cancel</button>
+                            <button onClick={() => setRejectModal(null)} className="h-10 px-5 rounded-full border border-border text-text text-sm">Cancel</button>
                         </div>
                     </div>
                 </div>

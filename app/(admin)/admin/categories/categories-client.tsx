@@ -179,10 +179,10 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
     }
 
     const inputStyle: React.CSSProperties = {
-        border: '1px solid #E0E0E0',
+        border: '1px solid #F1E7E2', borderRadius: 8, background: '#FAF6F3',
         padding: '8px 12px',
         fontSize: '14px',
-        color: '#0A0A0F',
+        color: '#1A0E0C',
         outline: 'none',
         width: '100%',
         boxSizing: 'border-box',
@@ -190,20 +190,20 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
 
     const labelStyle: React.CSSProperties = {
         fontSize: '12px',
-        color: '#666677',
+        color: '#6B5D56',
         marginBottom: '4px',
         display: 'block',
     }
 
     return (
-        <div style={{ padding: '32px', maxWidth: '1100px', margin: '0 auto' }}>
-            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', margin: '0 0 32px 0' }}>
+        <div style={{ maxWidth: '1100px' }}>
+            <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#1A0E0C', margin: '0 0 32px 0' }}>
                 CATEGORIES
             </h1>
 
             {/* Add Category */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', padding: '24px', marginBottom: '32px' }}>
-                <p style={{ fontSize: '16px', color: '#0A0A0F', fontWeight: 600, marginBottom: '16px', margin: '0 0 16px 0' }}>
+            <div style={{ background: '#FFFFFF', border: 'none', borderRadius: 16, boxShadow: '0 6px 24px -4px rgba(60,20,10,0.08)', padding: '24px', marginBottom: '32px' }}>
+                <p style={{ fontSize: '16px', color: '#1A0E0C', fontWeight: 600, marginBottom: '16px', margin: '0 0 16px 0' }}>
                     Add New Category
                 </p>
                 <form onSubmit={handleAdd}>
@@ -238,7 +238,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                             placeholder="https://..."
                             style={inputStyle}
                         />
-                        <p style={{ fontSize: '11px', color: '#8888AA', margin: '4px 0 0 0' }}>
+                        <p style={{ fontSize: '11px', color: '#6B5D56', margin: '4px 0 0 0' }}>
                             Paste an image URL or upload below
                         </p>
                     </div>
@@ -250,7 +250,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                             ref={fileRef}
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
-                            style={{ fontSize: '13px', color: '#0A0A0F' }}
+                            style={{ fontSize: '13px', color: '#1A0E0C' }}
                         />
                     </div>
 
@@ -276,7 +276,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                     height: '24px',
                                     borderRadius: '12px',
                                     border: 'none',
-                                    background: isActive ? '#22C55E' : '#C0C0C8',
+                                    background: isActive ? '#22C55E' : '#D9CCC6',
                                     cursor: 'pointer',
                                     position: 'relative',
                                     transition: 'background 0.2s',
@@ -304,12 +304,12 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                         type="submit"
                         disabled={adding || addUploading}
                         style={{
-                            background: '#0A0A0F',
+                            background: '#1A0E0C',
                             color: '#FFFFFF',
                             padding: '10px 24px',
                             fontSize: '14px',
                             fontWeight: 600,
-                            border: 'none',
+                            border: 'none', borderRadius: 999,
                             cursor: adding || addUploading ? 'not-allowed' : 'pointer',
                             opacity: adding || addUploading ? 0.6 : 1,
                         }}
@@ -320,12 +320,12 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
             </div>
 
             {/* Categories Table */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E0E0E0' }}>
+            <div style={{ background: '#FFFFFF', border: 'none', borderRadius: 16, boxShadow: '0 6px 24px -4px rgba(60,20,10,0.08)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                        <tr style={{ borderBottom: '1px solid #E0E0E0', background: '#F8F8FA' }}>
+                        <tr style={{ borderBottom: '1px solid #F1E7E2', background: '#FAF6F3' }}>
                             {['Image', 'Name', 'Slug', 'Order', 'Active', 'Actions'].map(h => (
-                                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#666677', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 700, color: '#6B5D56', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                                     {h}
                                 </th>
                             ))}
@@ -334,7 +334,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                     <tbody>
                         {categories.length === 0 && (
                             <tr>
-                                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#8888AA', fontSize: '14px' }}>
+                                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#6B5D56', fontSize: '14px' }}>
                                     No categories yet. Add one above.
                                 </td>
                             </tr>
@@ -342,14 +342,14 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                         {categories.map(cat => (
                             editId === cat.id ? (
                                 // Inline edit row
-                                <tr key={cat.id} style={{ borderBottom: '1px solid #E0E0E0', background: '#FFFBF0' }}>
+                                <tr key={cat.id} style={{ borderBottom: '1px solid #F1E7E2', background: '#FFF8E8' }}>
                                     <td style={{ padding: '12px 16px' }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#E0E0E8', flexShrink: 0 }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#F1E7E2', flexShrink: 0 }}>
                                             {(editData.image_url || cat.image_url) ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={editData.image_url || cat.image_url || ''} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             ) : (
-                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700, color: '#8888AA' }}>
+                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700, color: '#6B5D56' }}>
                                                     {cat.name.charAt(0)}
                                                 </div>
                                             )}
@@ -383,7 +383,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                             onClick={() => setEditData(d => ({ ...d, is_active: !(d.is_active ?? cat.is_active) }))}
                                             style={{
                                                 width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-                                                background: (editData.is_active ?? cat.is_active) ? '#22C55E' : '#C0C0C8',
+                                                background: (editData.is_active ?? cat.is_active) ? '#22C55E' : '#D9CCC6',
                                                 cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                                             }}
                                         >
@@ -407,7 +407,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                                 type="file"
                                                 accept="image/jpeg,image/png,image/webp"
                                                 onChange={e => setEditFile(e.target.files?.[0] ?? null)}
-                                                style={{ fontSize: '12px', color: '#0A0A0F' }}
+                                                style={{ fontSize: '12px', color: '#1A0E0C' }}
                                             />
                                             {editError && (
                                                 <p style={{ fontSize: '12px', color: '#E63950', margin: '0 0 4px 0' }}>{editError}</p>
@@ -416,13 +416,13 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                                 <button
                                                     onClick={() => handleEditSave(cat)}
                                                     disabled={saving || editUploading}
-                                                    style={{ padding: '6px 16px', background: '#0A0A0F', color: '#FFFFFF', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: 600, opacity: (saving || editUploading) ? 0.6 : 1 }}
+                                                    style={{ padding: '6px 16px', background: '#1A0E0C', color: '#FFFFFF', border: 'none', borderRadius: 999, fontSize: '13px', cursor: 'pointer', fontWeight: 600, opacity: (saving || editUploading) ? 0.6 : 1 }}
                                                 >
                                                     {editUploading ? 'Uploading...' : saving ? 'Saving...' : 'Save'}
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditId(null); setEditData({}); setEditFile(null); setEditError('') }}
-                                                    style={{ padding: '6px 16px', background: 'transparent', color: '#0A0A0F', border: '1px solid #C0C0C8', fontSize: '13px', cursor: 'pointer' }}
+                                                    style={{ padding: '6px 16px', background: 'transparent', color: '#1A0E0C', border: '1px solid #F1E7E2', fontSize: '13px', cursor: 'pointer' }}
                                                 >
                                                     Cancel
                                                 </button>
@@ -432,21 +432,21 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                 </tr>
                             ) : deleteConfirm === cat.id ? (
                                 // Delete confirm row
-                                <tr key={cat.id} style={{ borderBottom: '1px solid #E0E0E0', background: '#FFF5F5' }}>
+                                <tr key={cat.id} style={{ borderBottom: '1px solid #F1E7E2', background: '#FFF5F5' }}>
                                     <td colSpan={6} style={{ padding: '16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                            <span style={{ fontSize: '14px', color: '#0A0A0F' }}>
+                                            <span style={{ fontSize: '14px', color: '#1A0E0C' }}>
                                                 Are you sure you want to delete <strong>{cat.name}</strong>?
                                             </span>
                                             <button
                                                 onClick={() => handleDelete(cat.id)}
-                                                style={{ padding: '6px 16px', background: '#E63950', color: '#FFFFFF', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: 600 }}
+                                                style={{ padding: '6px 16px', background: '#E63950', color: '#FFFFFF', border: 'none', borderRadius: 999, fontSize: '13px', cursor: 'pointer', fontWeight: 600 }}
                                             >
                                                 Delete
                                             </button>
                                             <button
                                                 onClick={() => setDeleteConfirm(null)}
-                                                style={{ padding: '6px 16px', background: 'transparent', color: '#0A0A0F', border: '1px solid #C0C0C8', fontSize: '13px', cursor: 'pointer' }}
+                                                style={{ padding: '6px 16px', background: 'transparent', color: '#1A0E0C', border: '1px solid #F1E7E2', fontSize: '13px', cursor: 'pointer' }}
                                             >
                                                 Cancel
                                             </button>
@@ -457,21 +457,21 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                 // Normal row
                                 <tr key={cat.id} style={{ borderBottom: '1px solid #F0F0F0' }}>
                                     <td style={{ padding: '12px 16px' }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#E0E0E8' }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#F1E7E2' }}>
                                             {cat.image_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={cat.image_url} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             ) : (
-                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700, color: '#8888AA', fontFamily: '"Bebas Neue", sans-serif' }}>
+                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700, color: '#6B5D56', fontFamily: '"Bebas Neue", sans-serif' }}>
                                                     {cat.name.charAt(0)}
                                                 </div>
                                             )}
                                         </div>
                                     </td>
-                                    <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, color: '#0A0A0F' }}>
+                                    <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 600, color: '#1A0E0C' }}>
                                         {cat.name}
                                     </td>
-                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#8888AA', fontFamily: 'JetBrains Mono, monospace' }}>
+                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: '#6B5D56', fontFamily: 'JetBrains Mono, monospace' }}>
                                         {cat.slug}
                                     </td>
                                     <td style={{ padding: '12px 16px' }}>
@@ -483,7 +483,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                                 setCategories(prev => prev.map(c => c.id === cat.id ? { ...c, display_order: val } : c))
                                                 handleOrderBlur(cat.id, val)
                                             }}
-                                            style={{ width: '60px', border: '1px solid #E0E0E0', padding: '4px 8px', fontSize: '13px', textAlign: 'center', color: '#0A0A0F', outline: 'none' }}
+                                            style={{ width: '60px', border: '1px solid #F1E7E2', padding: '4px 8px', fontSize: '13px', textAlign: 'center', color: '#1A0E0C', outline: 'none' }}
                                         />
                                     </td>
                                     <td style={{ padding: '12px 16px' }}>
@@ -492,7 +492,7 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                             onClick={() => handleToggleActive(cat)}
                                             style={{
                                                 width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-                                                background: cat.is_active ? '#22C55E' : '#C0C0C8',
+                                                background: cat.is_active ? '#22C55E' : '#D9CCC6',
                                                 cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
                                             }}
                                         >
@@ -508,13 +508,13 @@ export function CategoriesClient({ categories: initialCategories }: CategoriesCl
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <button
                                                 onClick={() => { setEditId(cat.id); setEditData({}); setEditFile(null) }}
-                                                style={{ padding: '5px 14px', background: 'transparent', color: '#0A0A0F', border: '1px solid #0A0A0F', fontSize: '13px', cursor: 'pointer' }}
+                                                style={{ padding: '5px 14px', background: 'transparent', color: '#1A0E0C', border: '1px solid #1A0E0C', borderRadius: 999, fontSize: '13px', cursor: 'pointer' }}
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => setDeleteConfirm(cat.id)}
-                                                style={{ padding: '5px 14px', background: 'transparent', color: '#E63950', border: '1px solid #E63950', fontSize: '13px', cursor: 'pointer' }}
+                                                style={{ padding: '5px 14px', background: 'transparent', color: '#E63950', border: '1px solid #E63950', borderRadius: 999, fontSize: '13px', cursor: 'pointer' }}
                                             >
                                                 Delete
                                             </button>

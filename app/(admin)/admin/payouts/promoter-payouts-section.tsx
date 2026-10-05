@@ -33,11 +33,11 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    pending: 'text-gold bg-gold/10 border-gold/20',
-    requested: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    processing: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    paid: 'text-success bg-success/10 border-success/20',
-    failed: 'text-accent bg-accent/10 border-accent/20',
+    pending: 'text-warm-amberText bg-warm-amber/15 border-warm-amber/20',
+    requested: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+    processing: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+    paid: 'text-success bg-warm-green/10 border-warm-green/20',
+    failed: 'text-accent bg-warm-red/10 border-warm-red/20',
 }
 
 function fmt(d: string) {
@@ -111,7 +111,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
     return (
         <div className="mt-12 max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -123,18 +123,18 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
 
             {/* Due Promoter Payouts */}
             {duePayouts.length > 0 && (
-                <div className="bg-amber-50 border border-gold/30 rounded-none p-6 mb-8">
+                <div className="bg-amber-50 border border-warm-amber/30 rounded-lg p-6 mb-8">
                     <div className="mb-4">
-                        <h3 className="text-sm font-medium text-gold">Promoter Payouts Due</h3>
-                        <p className="text-xs text-gold/60 mt-0.5">{duePayouts.length} request{duePayouts.length !== 1 ? 's' : ''} awaiting processing</p>
+                        <h3 className="text-sm font-medium text-warm-amberText">Promoter Payouts Due</h3>
+                        <p className="text-xs text-warm-amberText/60 mt-0.5">{duePayouts.length} request{duePayouts.length !== 1 ? 's' : ''} awaiting processing</p>
                     </div>
                     <div className="flex flex-col gap-3">
                         {duePayouts.map(p => (
-                            <div key={p.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card rounded-none px-4 py-3">
+                            <div key={p.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card rounded-lg px-4 py-3">
                                 <div>
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <p className="text-sm text-text font-medium">{p.promoter_profiles?.display_name ?? '—'}</p>
-                                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-400/20 font-mono">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-400/20 font-mono">
                                             {p.promoter_profiles?.referral_code}
                                         </span>
                                     </div>
@@ -166,12 +166,12 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
             )}
 
             {/* All Promoter Payouts Table */}
-            <div className="bg-card border border-border rounded-none overflow-x-auto mb-4">
+            <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
                 <table className="w-full min-w-[680px] text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             {['Promoter', 'Code', 'Amount', 'Status', 'Date', 'Actions'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -180,7 +180,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                             <tr><td colSpan={6} className="text-center text-muted text-xs py-12">No promoter payouts</td></tr>
                         )}
                         {allPayouts.map(p => (
-                            <tr key={p.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={p.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3 px-4 text-text text-sm">
                                     <div>{p.promoter_profiles?.display_name ?? '—'}</div>
                                     {p.reference && (
@@ -224,7 +224,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                                     setConfirmModal(p)
                                                 }}
                                                 disabled={loading === p.id}
-                                                className="text-[11px] text-white bg-accent hover:bg-accent/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
+                                                className="text-[11px] text-white bg-accent hover:bg-warm-red/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
                                             >
                                                 {loading === p.id ? '...' : 'Process'}
                                             </button>
@@ -240,7 +240,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
             {/* Confirm Process Modal */}
             {confirmModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="font-heading text-xl text-text mb-3">Process Promoter Payout</h3>
                         <p className="text-sm text-muted mb-2">{confirmModal.promoter_profiles?.display_name} ({confirmModal.promoter_profiles?.referral_code})</p>
                         <p className="text-sm text-muted mb-1">Amount: <span className="text-text font-medium">{formatPence(confirmModal.net_pence)}</span></p>
@@ -257,7 +257,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(confirmModal.id)}
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text font-mono focus:outline-none"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. Sent to the promoter in their commission email.</p>
                             </div>
@@ -275,7 +275,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
             {/* Bank Details Modal */}
             {bankModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="font-heading text-xl text-text mb-4">Promoter Payout Details</h3>
                         <p className="text-sm text-text font-medium mb-3">{bankModal.promoter_profiles?.display_name}</p>
                         {(bankModal.payout_method ?? bankModal.promoter_profiles?.payout_method) === 'stripe_connect' ? (
@@ -319,7 +319,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
             {/* Change Status Modal */}
             {statusModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="font-heading text-xl text-text mb-3">Change Payout Status</h3>
                         <p className="text-sm text-muted mb-1">{statusModal.promoter_profiles?.display_name}</p>
                         <p className="text-sm text-muted mb-4">Amount: {formatPence(statusModal.net_pence)}</p>
@@ -328,7 +328,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                             <select
                                 value={selectedStatus}
                                 onChange={e => setSelectedStatus(e.target.value)}
-                                className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="requested">Requested</option>
@@ -345,7 +345,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(statusModal.id)}
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text font-mono focus:outline-none"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference.</p>
                             </div>

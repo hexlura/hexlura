@@ -47,11 +47,11 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    pending: 'text-gold bg-gold/10 border-gold/20',
-    requested: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    processing: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    paid: 'text-success bg-success/10 border-success/20',
-    failed: 'text-accent bg-accent/10 border-accent/20',
+    pending: 'text-warm-amberText bg-warm-amber/15 border-warm-amber/20',
+    requested: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+    processing: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+    paid: 'text-success bg-warm-green/10 border-warm-green/20',
+    failed: 'text-accent bg-warm-red/10 border-warm-red/20',
 }
 
 function fmt(d: string) {
@@ -192,7 +192,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
     return (
         <div className="max-w-7xl">
             {toastMsg && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">
+                <div className="fixed top-4 right-4 z-50 bg-warm-green/20 border border-warm-green/40 text-success px-4 py-2 rounded-lg text-sm">
                     {toastMsg}
                 </div>
             )}
@@ -204,11 +204,11 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
 
             {/* Due Payouts */}
             {duePayouts.length > 0 && (
-                <div className="bg-amber-50 border border-gold/30 rounded-none p-6 mb-8">
+                <div className="bg-amber-50 border border-warm-amber/30 rounded-lg p-6 mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h2 className="text-sm font-medium text-gold">Payouts Due</h2>
-                            <p className="text-xs text-gold/60 mt-0.5">{duePayouts.length} payout{duePayouts.length !== 1 ? 's' : ''} ready to process</p>
+                            <h2 className="text-sm font-medium text-warm-amberText">Payouts Due</h2>
+                            <p className="text-xs text-warm-amberText/60 mt-0.5">{duePayouts.length} payout{duePayouts.length !== 1 ? 's' : ''} ready to process</p>
                         </div>
                         <Button
                             variant="primary"
@@ -227,19 +227,19 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                     </div>
                     <div className="flex flex-col gap-3">
                         {duePayouts.map(p => (
-                            <div key={p.id} className="flex items-center justify-between bg-card rounded-none px-4 py-3">
+                            <div key={p.id} className="flex items-center justify-between bg-card rounded-lg px-4 py-3">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm text-text font-medium">{p.organiser_profiles?.org_name ?? '—'}</p>
                                         {p.status === 'requested' && (
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-400/20 font-medium">
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-400/20 font-medium">
                                                 Withdrawal Requested
                                             </span>
                                         )}
                                         {p.organiser_profiles?.identity_verified_at ? (
-                                            <span className="text-[10px] text-success bg-success/10 border border-success/20 px-1.5 py-0.5 rounded-full">✓ Verified</span>
+                                            <span className="text-[10px] text-success bg-warm-green/10 border border-warm-green/20 px-1.5 py-0.5 rounded-full">✓ Verified</span>
                                         ) : (
-                                            <span className="text-[10px] text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full">⚠ Unverified</span>
+                                            <span className="text-[10px] text-accent bg-warm-red/10 border border-warm-red/20 px-1.5 py-0.5 rounded-full">⚠ Unverified</span>
                                         )}
                                     </div>
                                     {p.event_id ? (
@@ -282,7 +282,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 <select
                     defaultValue={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-card border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                 >
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
@@ -293,12 +293,12 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 </select>
             </div>
 
-            <div className="bg-card border border-border rounded-none overflow-x-auto mb-4">
+            <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
                             {['Organiser', 'Event', 'Amount', 'Method', 'Status', 'Date', 'Actions'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal">{h}</th>
+                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-medium uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -307,14 +307,14 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             <tr><td colSpan={7} className="text-center text-muted text-xs py-12">No payouts</td></tr>
                         )}
                         {allPayouts.map(p => (
-                            <tr key={p.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={p.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3 px-4 text-text text-sm">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span>{p.organiser_profiles?.org_name ?? '—'}</span>
                                         {p.organiser_profiles?.identity_verified_at ? (
-                                            <span className="text-[10px] text-success bg-success/10 border border-success/20 px-1.5 py-0.5 rounded-full">✓ Verified</span>
+                                            <span className="text-[10px] text-success bg-warm-green/10 border border-warm-green/20 px-1.5 py-0.5 rounded-full">✓ Verified</span>
                                         ) : (
-                                            <span className="text-[10px] text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full">⚠ Unverified</span>
+                                            <span className="text-[10px] text-accent bg-warm-red/10 border border-warm-red/20 px-1.5 py-0.5 rounded-full">⚠ Unverified</span>
                                         )}
                                     </div>
                                     {p.reference && (
@@ -371,7 +371,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                                     setConfirmModal(p)
                                                 }}
                                                 disabled={loading === p.id}
-                                                className="text-[11px] text-white bg-accent hover:bg-accent/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
+                                                className="text-[11px] text-white bg-accent hover:bg-warm-red/80 px-2 py-1 rounded-sm transition-colors disabled:opacity-50"
                                             >
                                                 {loading === p.id ? '...' : 'Process'}
                                             </button>
@@ -388,8 +388,8 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                 <div className="flex items-center justify-between">
                     <p className="text-xs text-muted">Page {page} of {totalPages}</p>
                     <div className="flex gap-2">
-                        <button disabled={page <= 1} onClick={() => updateParam('page', String(page - 1))} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
-                        <button disabled={page >= totalPages} onClick={() => updateParam('page', String(page + 1))} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
+                        <button disabled={page <= 1} onClick={() => updateParam('page', String(page - 1))} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
+                        <button disabled={page >= totalPages} onClick={() => updateParam('page', String(page + 1))} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
                     </div>
                 </div>
             )}
@@ -397,7 +397,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             {/* Confirm Process Modal */}
             {confirmModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Process Payout</h3>
                         <p className="text-sm text-muted mb-2">{confirmModal.organiser_profiles?.org_name}</p>
                         <p className="text-sm text-muted mb-1">Amount: <span className="text-text font-medium">{formatPence(confirmModal.net_pence || 0)}</span></p>
@@ -414,13 +414,13 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(confirmModal.id)}
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text font-mono focus:outline-none"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. This is shown to the organiser.</p>
                             </div>
                         )}
                         {!confirmModal.organiser_profiles?.identity_verified_at && (
-                            <div className="mb-4 bg-accent/5 border border-accent/30 p-3 rounded-sm">
+                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-sm">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
                                 <label className="text-[11px] text-muted block mb-1.5">Override reason (audit-logged, required)</label>
                                 <textarea
@@ -428,7 +428,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     onChange={e => setOverrideReason(e.target.value)}
                                     rows={2}
                                     placeholder="e.g. legacy organiser, payout already processed externally"
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-xs text-text focus:outline-none focus:border-accent"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-xs text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                                 />
                             </div>
                         )}
@@ -445,7 +445,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             {/* Bank Details Modal */}
             {bankModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Bank Details</h3>
                         <p className="text-sm text-text font-medium mb-3">{bankModal.organiser_profiles?.org_name}</p>
                         {bankModal.organiser_profiles?.payout_method === 'stripe_connect' ? (
@@ -489,7 +489,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             {/* Change Status Modal */}
             {statusModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-card border border-border rounded-none p-6 max-w-sm w-full">
+                    <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-3">Change Payout Status</h3>
                         <p className="text-sm text-muted mb-1">{statusModal.organiser_profiles?.org_name}</p>
                         <p className="text-sm text-muted mb-4">Amount: {formatPence(statusModal.net_pence || 0)}</p>
@@ -498,7 +498,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             <select
                                 value={selectedStatus}
                                 onChange={e => setSelectedStatus(e.target.value)}
-                                className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none"
+                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="requested">Requested</option>
@@ -515,13 +515,13 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     value={referenceInput}
                                     onChange={e => setReferenceInput(e.target.value)}
                                     placeholder={deriveReference(statusModal.id)}
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text font-mono focus:outline-none"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text font-mono focus:outline-none focus:ring-2 focus:ring-accent/25"
                                 />
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. Sent to the organiser in their payout email.</p>
                             </div>
                         )}
                         {((selectedStatus === 'paid' && statusModal.status !== 'paid') || (selectedStatus === 'requested' && statusModal.status !== 'requested')) && !statusModal.organiser_profiles?.identity_verified_at && (
-                            <div className="mb-4 bg-accent/5 border border-accent/30 p-3 rounded-sm">
+                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-sm">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
                                 <label className="text-[11px] text-muted block mb-1.5">Override reason (audit-logged, required)</label>
                                 <textarea
@@ -529,7 +529,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                     onChange={e => setOverrideReason(e.target.value)}
                                     rows={2}
                                     placeholder="e.g. legacy organiser, payout already processed externally"
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-xs text-text focus:outline-none focus:border-accent"
+                                    className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-xs text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                                 />
                             </div>
                         )}

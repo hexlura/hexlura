@@ -169,7 +169,7 @@ export default async function AdminDashboardPage() {
             {/* KPI Row 1 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 {kpis1.map(kpi => (
-                    <div key={kpi.label} className="bg-card border border-border rounded-none p-5">
+                    <div key={kpi.label} className="bg-card shadow-card rounded-2xl p-5">
                         <p className="text-xs text-muted uppercase tracking-wider mb-1">{kpi.label}</p>
                         <p className="font-heading text-3xl text-text">{kpi.value}</p>
                         <p className="text-xs text-muted mt-2">{kpi.sub}</p>
@@ -180,10 +180,10 @@ export default async function AdminDashboardPage() {
             {/* KPI Row 2 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {kpis2.map(kpi => (
-                    <div key={kpi.label} className={`border rounded-none p-5 ${kpi.amber ? 'bg-amber-50 border-gold/40' : 'bg-card border-border'}`}>
-                        <p className={`text-xs uppercase tracking-wider mb-1 ${kpi.amber ? 'text-gold' : 'text-muted'}`}>{kpi.label}</p>
-                        <p className={`font-heading text-3xl ${kpi.amber ? 'text-gold' : 'text-text'}`}>{kpi.value}</p>
-                        <p className={`text-xs mt-2 ${kpi.amber ? 'text-gold/60' : 'text-muted'}`}>{kpi.sub}</p>
+                    <div key={kpi.label} className={`rounded-2xl p-5 ${kpi.amber ? 'bg-warm-amber/10 border border-warm-amber/30' : 'bg-card shadow-card'}`}>
+                        <p className={`text-xs uppercase tracking-wider mb-1 ${kpi.amber ? 'text-warm-amberText' : 'text-muted'}`}>{kpi.label}</p>
+                        <p className={`font-heading text-3xl ${kpi.amber ? 'text-warm-amberText' : 'text-text'}`}>{kpi.value}</p>
+                        <p className={`text-xs mt-2 ${kpi.amber ? 'text-warm-amberText/60' : 'text-muted'}`}>{kpi.sub}</p>
                     </div>
                 ))}
             </div>
@@ -194,7 +194,7 @@ export default async function AdminDashboardPage() {
             {/* Quick Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
                 {/* Pending Applications */}
-                <div className="bg-card border border-border rounded-none p-6">
+                <div className="bg-card shadow-card rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Pending Organiser Applications</h2>
                         <Link href="/admin/organisers" className="text-xs text-accent hover:underline">View All →</Link>
@@ -204,17 +204,17 @@ export default async function AdminDashboardPage() {
                     ) : (
                         <div className="flex flex-col gap-3">
                             {pendingOrgList.map(org => (
-                                <div key={org.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                                <div key={org.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                                     <div>
                                         <p className="text-sm text-text font-medium">{org.org_name}</p>
                                         <p className="text-xs text-muted">{org.profiles?.full_name ?? '—'} · {relativeDate(org.created_at)}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <form action={`/api/admin/organisers/${org.id}/approve`} method="POST">
-                                            <button type="submit" className="text-xs px-2.5 py-1 rounded bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors">Approve</button>
+                                            <button type="submit" className="text-xs font-semibold px-3 py-1 rounded-full bg-warm-green/10 text-warm-green border border-warm-green/20 hover:bg-warm-green/20 transition-colors">Approve</button>
                                         </form>
                                         <form action={`/api/admin/organisers/${org.id}/reject`} method="POST">
-                                            <button type="submit" className="text-xs px-2.5 py-1 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors">Reject</button>
+                                            <button type="submit" className="text-xs font-semibold px-3 py-1 rounded-full bg-warm-red/10 text-warm-red border border-warm-red/20 hover:bg-warm-red/20 transition-colors">Reject</button>
                                         </form>
                                     </div>
                                 </div>
@@ -224,7 +224,7 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 {/* Recent Refund Requests */}
-                <div className="bg-card border border-border rounded-none p-6">
+                <div className="bg-card shadow-card rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-medium text-text">Recent Refund Requests</h2>
                         <Link href="/admin/refunds" className="text-xs text-accent hover:underline">View All →</Link>
@@ -234,12 +234,12 @@ export default async function AdminDashboardPage() {
                     ) : (
                         <div className="flex flex-col gap-3">
                             {refundList.map(r => (
-                                <div key={r.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                                <div key={r.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                                     <div>
                                         <p className="text-sm font-mono text-accent">{r.booking?.booking_ref ?? '—'}</p>
                                         <p className="text-xs text-muted">{formatPence(r.booking?.total_pence || 0)} · {relativeDate(r.created_at)}</p>
                                     </div>
-                                    <span className="text-xs px-2 py-0.5 rounded-full border bg-gold/10 text-gold border-gold/20">
+                                    <span className="text-xs px-2 py-0.5 rounded-full border bg-warm-amber/15 text-warm-amberText border-warm-amber/20">
                                         {r.status}
                                     </span>
                                 </div>

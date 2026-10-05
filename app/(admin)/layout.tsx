@@ -64,17 +64,19 @@ export default async function AdminLayout({
         impersonatedName = imp?.full_name ?? 'Unknown User'
     }
 
+    const adminName = profile.full_name ?? 'Admin'
+
     return (
-        <div className="flex min-h-screen" style={{ background: '#F5F5F7' }}>
+        <div className="warm-theme flex min-h-screen">
             {impersonatedName && <ImpersonationBanner impersonatedName={impersonatedName} />}
             <AdminSidebar
-                adminName={profile.full_name ?? 'Admin'}
+                adminName={adminName}
                 userId={user.id}
                 pendingOrganisers={pendingCount ?? 0}
                 openSupportTickets={openSupportCount ?? 0}
             />
             <main
-                className="flex-1 overflow-auto px-8 pb-24 pt-14 lg:pt-8 lg:pb-8 lg:ml-[240px]"
+                className="flex-1 min-w-0 overflow-auto px-5 sm:px-8 lg:px-10 pb-24 pt-14 lg:pt-8 lg:pb-8 lg:ml-64"
                 style={impersonatedName ? { paddingTop: '56px' } : undefined}
             >
                 {children}

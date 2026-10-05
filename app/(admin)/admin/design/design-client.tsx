@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation'
 const COLORS = [
     { key: 'design_color_accent',     label: 'Accent / Brand',  cssVar: '--accent',     default: '#E63950' },
     { key: 'design_color_gold',       label: 'Gold / Secondary', cssVar: '--gold',       default: '#F5A623' },
-    { key: 'design_color_success',    label: 'Success',          cssVar: '--success',    default: '#00C48A' },
-    { key: 'design_color_text',       label: 'Primary Text',     cssVar: '--text',       default: '#0A0A0F' },
-    { key: 'design_color_muted',      label: 'Muted Text',       cssVar: '--muted',      default: '#8888AA' },
+    { key: 'design_color_success',    label: 'Success',          cssVar: '--success',    default: '#1B9C63' },
+    { key: 'design_color_text',       label: 'Primary Text',     cssVar: '--text',       default: '#1A0E0C' },
+    { key: 'design_color_muted',      label: 'Muted Text',       cssVar: '--muted',      default: '#6B5D56' },
     { key: 'design_color_background', label: 'Background',       cssVar: '--background', default: '#FFFFFF' },
-    { key: 'design_color_surface',    label: 'Surface',          cssVar: '--surface',    default: '#F5F5F7' },
+    { key: 'design_color_surface',    label: 'Surface',          cssVar: '--surface',    default: '#FAF6F3' },
     { key: 'design_color_card',       label: 'Card',             cssVar: '--card',       default: '#FFFFFF' },
-    { key: 'design_color_border',     label: 'Border',           cssVar: '--border',     default: '#C0C0C8' },
+    { key: 'design_color_border',     label: 'Border',           cssVar: '--border',     default: '#F1E7E2' },
 ]
 
 const HEADING_FONTS = ['Bebas Neue', 'Oswald', 'Anton', 'Montserrat', 'Playfair Display']
@@ -76,45 +76,45 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
 
     // ── Styles ────────────────────────────────────────────────────
     const section: React.CSSProperties = {
-        background: '#FFFFFF', border: '1px solid #E0E0E0', padding: '28px', marginBottom: '24px',
+        background: '#FFFFFF', border: 'none', borderRadius: 16, boxShadow: '0 6px 24px -4px rgba(60,20,10,0.08)', padding: '28px', marginBottom: '24px',
     }
     const sectionTitle: React.CSSProperties = {
-        fontFamily: '"Bebas Neue", sans-serif', fontSize: '22px', color: '#0A0A0F',
+        fontFamily: '"Bebas Neue", sans-serif', fontSize: '22px', color: '#1A0E0C',
         margin: '0 0 4px 0', letterSpacing: '1px',
     }
     const sectionDesc: React.CSSProperties = {
-        fontSize: '13px', color: '#8888AA', margin: '0 0 24px 0',
+        fontSize: '13px', color: '#6B5D56', margin: '0 0 24px 0',
     }
     const label: React.CSSProperties = {
-        fontSize: '11px', color: '#666677', marginBottom: '6px', display: 'block',
+        fontSize: '11px', color: '#6B5D56', marginBottom: '6px', display: 'block',
         fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
     }
     const selectStyle: React.CSSProperties = {
-        width: '100%', border: '1px solid #E0E0E0', padding: '8px 12px',
-        fontSize: '14px', color: '#0A0A0F', outline: 'none', background: '#FFFFFF', cursor: 'pointer',
+        width: '100%', border: 'none', borderRadius: 16, boxShadow: '0 6px 24px -4px rgba(60,20,10,0.08)', padding: '8px 12px',
+        fontSize: '14px', color: '#1A0E0C', outline: 'none', background: '#FFFFFF', cursor: 'pointer',
     }
     const previewBox: React.CSSProperties = {
-        marginTop: '16px', padding: '16px', border: '1px solid #E0E0E0', background: '#FAFAFA',
+        marginTop: '16px', padding: '16px', border: '1px solid #F1E7E2', background: '#FAFAFA',
     }
 
     return (
-        <div style={{ padding: '32px', maxWidth: '960px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '960px' }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
-                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F', margin: 0 }}>
+                <h1 style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#1A0E0C', margin: 0 }}>
                     DESIGN SETTINGS
                 </h1>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <button
                         onClick={handleReset}
-                        style={{ padding: '8px 16px', background: 'transparent', color: '#666677', border: '1px solid #C0C0C8', fontSize: '13px', cursor: 'pointer' }}
+                        style={{ padding: '8px 16px', background: 'transparent', color: '#6B5D56', border: '1px solid #F1E7E2', fontSize: '13px', cursor: 'pointer' }}
                     >
                         Reset to Defaults
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        style={{ padding: '10px 28px', background: '#0A0A0F', color: '#FFFFFF', border: 'none', fontSize: '14px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
+                        style={{ padding: '10px 28px', background: '#1A0E0C', color: '#FFFFFF', border: 'none', borderRadius: 999, fontSize: '14px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
                     >
                         {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save Changes'}
                     </button>
@@ -122,7 +122,7 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
             </div>
 
             {error && (
-                <div style={{ background: '#FFF5F5', border: '1px solid #E63950', padding: '12px 16px', marginBottom: '24px', fontSize: '14px', color: '#E63950' }}>
+                <div style={{ background: '#FFF5F5', border: '1px solid #E63950', borderRadius: 999, padding: '12px 16px', marginBottom: '24px', fontSize: '14px', color: '#E63950' }}>
                     {error}
                 </div>
             )}
@@ -140,7 +140,7 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                                 <label style={label}>{color.label}</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     {/* Color swatch — clicking it opens the native color picker */}
-                                    <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0, border: '1px solid #E0E0E0', borderRadius: '4px', overflow: 'hidden', cursor: 'pointer' }}>
+                                    <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0, border: '1px solid #F1E7E2', borderRadius: '4px', overflow: 'hidden', cursor: 'pointer' }}>
                                         <div style={{ position: 'absolute', inset: 0, background: value }} />
                                         <input
                                             type="color"
@@ -158,9 +158,9 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                                                 const v = e.target.value
                                                 if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) set(color.key, v)
                                             }}
-                                            style={{ width: '100%', border: '1px solid #E0E0E0', padding: '6px 8px', fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', color: '#0A0A0F', outline: 'none', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', border: '1px solid #F1E7E2', padding: '6px 8px', fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', color: '#1A0E0C', outline: 'none', boxSizing: 'border-box' }}
                                         />
-                                        <div style={{ fontSize: '11px', color: '#8888AA', marginTop: '3px' }}>{color.cssVar}</div>
+                                        <div style={{ fontSize: '11px', color: '#6B5D56', marginTop: '3px' }}>{color.cssVar}</div>
                                     </div>
                                 </div>
                             </div>
@@ -169,8 +169,8 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                 </div>
 
                 {/* Live color preview */}
-                <div style={{ marginTop: '28px', padding: '20px', border: '1px solid #E0E0E0', background: get('design_color_surface') }}>
-                    <p style={{ fontSize: '11px', color: '#8888AA', margin: '0 0 12px 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Live Preview</p>
+                <div style={{ marginTop: '28px', padding: '20px', border: '1px solid #F1E7E2', background: get('design_color_surface') }}>
+                    <p style={{ fontSize: '11px', color: '#6B5D56', margin: '0 0 12px 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Live Preview</p>
                     <div style={{ background: get('design_color_card'), border: `1px solid ${get('design_color_border')}`, padding: '20px', borderRadius: '2px' }}>
                         <p style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '26px', color: get('design_color_text'), margin: '0 0 4px 0', lineHeight: 1 }}>
                             UPCOMING EVENTS IN MANCHESTER
@@ -204,14 +204,14 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                             {HEADING_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                         </select>
                         <div style={previewBox}>
-                            <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '32px', margin: 0, color: '#0A0A0F', lineHeight: 1 }}>
+                            <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '32px', margin: 0, color: '#1A0E0C', lineHeight: 1 }}>
                                 HEXLURA EVENTS
                             </p>
-                            <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '18px', margin: '8px 0 0', color: '#8888AA', lineHeight: 1 }}>
+                            <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '18px', margin: '8px 0 0', color: '#6B5D56', lineHeight: 1 }}>
                                 DISCOVER WHAT&apos;S ON NEAR YOU
                             </p>
                         </div>
-                        <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '8px' }}>Used for: headings, hero text, section titles</p>
+                        <p style={{ fontSize: '11px', color: '#6B5D56', marginTop: '8px' }}>Used for: headings, hero text, section titles</p>
                     </div>
 
                     {/* Body font */}
@@ -225,25 +225,25 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                             {BODY_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                         </select>
                         <div style={previewBox}>
-                            <p style={{ fontFamily: `'${get('design_font_body')}', sans-serif`, fontSize: '15px', margin: 0, color: '#0A0A0F', lineHeight: 1.65 }}>
+                            <p style={{ fontFamily: `'${get('design_font_body')}', sans-serif`, fontSize: '15px', margin: 0, color: '#1A0E0C', lineHeight: 1.65 }}>
                                 Find and book the best events near you. Browse clubs, gigs, festivals, comedy nights, and more — all in one place.
                             </p>
-                            <p style={{ fontFamily: `'${get('design_font_body')}', sans-serif`, fontSize: '13px', margin: '10px 0 0', color: '#8888AA' }}>
+                            <p style={{ fontFamily: `'${get('design_font_body')}', sans-serif`, fontSize: '13px', margin: '10px 0 0', color: '#6B5D56' }}>
                                 From £5.00 · Manchester · Sat 14 Jun 2025
                             </p>
                         </div>
-                        <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '8px' }}>Used for: body copy, labels, descriptions, navigation</p>
+                        <p style={{ fontSize: '11px', color: '#6B5D56', marginTop: '8px' }}>Used for: body copy, labels, descriptions, navigation</p>
                     </div>
                 </div>
             </div>
 
             {/* Bottom save row */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '16px' }}>
-                {saved && <span style={{ fontSize: '14px', color: '#00C48A', fontWeight: 600 }}>Changes saved — site updated.</span>}
+                {saved && <span style={{ fontSize: '14px', color: '#1B9C63', fontWeight: 600 }}>Changes saved — site updated.</span>}
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    style={{ padding: '10px 32px', background: '#0A0A0F', color: '#FFFFFF', border: 'none', fontSize: '14px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
+                    style={{ padding: '10px 32px', background: '#1A0E0C', color: '#FFFFFF', border: 'none', borderRadius: 999, fontSize: '14px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
                 >
                     {saving ? 'Saving...' : 'Save Changes'}
                 </button>

@@ -174,7 +174,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
 
     const hasExistingEntry = seoEntries.some(e => e.page_path === activePath)
 
-    const sectionClass = "bg-card border border-border rounded-none p-6 mb-6"
+    const sectionClass = "bg-card shadow-card rounded-2xl p-6 mb-6"
     const labelClass = "text-xs text-muted block mb-1"
     const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2 text-sm text-text focus:outline-none focus:border-accent"
 
@@ -265,7 +265,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                 )}
 
                 {hasExistingEntry && (
-                    <div className="mb-4 px-3 py-2 bg-accent/10 border border-accent/30 text-xs text-accent">
+                    <div className="mb-4 px-3 py-2 bg-warm-red/10 border border-warm-red/30 text-xs text-accent">
                         This page has custom SEO overrides configured.
                     </div>
                 )}
@@ -360,7 +360,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                         <thead>
                             <tr className="border-b border-border">
                                 {['Page', 'Title', 'Robots', 'Updated'].map(h => (
-                                    <th key={h} className="text-left text-xs text-muted py-2 font-normal">{h}</th>
+                                    <th key={h} className="text-left text-xs text-muted py-2 font-medium uppercase tracking-wider">{h}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -368,7 +368,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                             {seoEntries.map(entry => (
                                 <tr
                                     key={entry.page_path}
-                                    className="border-b border-border/50 cursor-pointer hover:bg-surface/50"
+                                    className="border-b border-border cursor-pointer hover:bg-[#FAF6F3]/60"
                                     onClick={() => {
                                         const known = KNOWN_PAGES.find(p => p.path === entry.page_path)
                                         if (known) {

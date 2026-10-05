@@ -32,12 +32,12 @@ export default async function PageControlsPage() {
             </div>
 
             {groups.size === 0 ? (
-                <div className="bg-card border border-border rounded-none p-6 text-sm text-muted">
+                <div className="bg-card shadow-card rounded-2xl p-6 text-sm text-muted">
                     No page controls configured yet.
                 </div>
             ) : (
                 Array.from(groups.entries()).map(([pageKey, sections]) => (
-                    <div key={pageKey} className="bg-card border border-border rounded-none p-6 mb-6">
+                    <div key={pageKey} className="bg-card shadow-card rounded-2xl p-6 mb-6">
                         <h2 className="text-sm font-medium text-text mb-4 uppercase tracking-wide">
                             {PAGE_LABELS[pageKey] ?? pageKey}
                         </h2>

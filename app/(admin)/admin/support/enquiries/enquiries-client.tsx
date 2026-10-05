@@ -47,7 +47,7 @@ function toDatetimeLocalValue(iso: string): string {
 
 function Badge({ active, activeLabel, inactiveLabel }: { active: boolean; activeLabel: string; inactiveLabel: string }) {
     return (
-        <span className={`text-xs px-2 py-0.5 rounded-full border ${active ? 'text-success bg-success/10 border-success/30' : 'text-muted bg-muted/10 border-border'}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full border ${active ? 'text-success bg-warm-green/10 border-warm-green/30' : 'text-muted bg-border border-border'}`}>
             {active ? activeLabel : inactiveLabel}
         </span>
     )
@@ -55,9 +55,9 @@ function Badge({ active, activeLabel, inactiveLabel }: { active: boolean; active
 
 function priorityBadgeClasses(p: string | null): string {
     switch (p) {
-        case 'high': return 'text-accent bg-accent/10 border-accent/30'
-        case 'medium': return 'text-gold bg-gold/10 border-gold/30'
-        case 'low': return 'text-muted bg-muted/10 border-border'
+        case 'high': return 'text-accent bg-warm-red/10 border-warm-red/30'
+        case 'medium': return 'text-warm-amberText bg-warm-amber/15 border-warm-amber/30'
+        case 'low': return 'text-muted bg-border border-border'
         default: return 'text-muted bg-transparent border-border'
     }
 }
@@ -233,7 +233,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                 <div
                     role="status"
                     aria-live="polite"
-                    className={`fixed top-4 right-4 z-50 border px-4 py-2 rounded-sm text-sm ${toastMsg.tone === 'success' ? 'bg-success/20 border-success/40 text-success' : 'bg-accent/20 border-accent/40 text-accent'}`}
+                    className={`fixed top-4 right-4 z-50 border px-4 py-2 rounded-sm text-sm ${toastMsg.tone === 'success' ? 'bg-warm-green/20 border-warm-green/40 text-success' : 'bg-warm-red/20 border-warm-red/40 text-accent'}`}
                 >
                     {toastMsg.text}
                 </div>
@@ -254,7 +254,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                             placeholder="Name or email…"
                             value={filterSearch}
                             onChange={e => setFilterSearch(e.target.value)}
-                            className="w-full bg-card border border-border rounded-sm px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25"
                         />
                     </div>
 
@@ -322,7 +322,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                 </div>
 
                 <div className="flex items-center gap-3 mt-3">
-                    <button type="submit" className="px-4 py-2 bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors">
+                    <button type="submit" className="px-4 py-2 bg-accent text-white text-sm font-semibold hover:bg-warm-red/90 transition-colors">
                         Apply
                     </button>
                     {hasActiveFilters && (
@@ -334,19 +334,19 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
             </form>
 
             {loadError && (
-                <div className="bg-accent/10 border border-accent/30 text-accent text-sm px-4 py-3 rounded-sm mb-4">
+                <div className="bg-warm-red/10 border border-warm-red/30 text-accent text-sm px-4 py-3 rounded-sm mb-4">
                     Something went wrong loading enquiries. Try refreshing the page.
                 </div>
             )}
 
-            <div className="bg-card border border-border rounded-none overflow-x-auto mb-4">
+            <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-border">
-                            <th scope="col" className="text-left text-xs text-muted py-3 px-3 font-normal">Contact</th>
-                            <th scope="col" className="text-left text-xs text-muted py-3 px-3 font-normal">Organization</th>
+                            <th scope="col" className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">Contact</th>
+                            <th scope="col" className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">Organization</th>
                             {SORT_HEADERS.map(h => (
-                                <th key={h.key} scope="col" className="text-left text-xs text-muted py-3 px-3 font-normal">
+                                <th key={h.key} scope="col" className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">
                                     <button
                                         type="button"
                                         onClick={() => toggleSort(h.key)}
@@ -358,7 +358,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                     </button>
                                 </th>
                             ))}
-                            <th scope="col" className="text-left text-xs text-muted py-3 px-3 font-normal">Actions</th>
+                            <th scope="col" className="text-left text-xs text-muted py-3 px-3 font-medium uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -370,7 +370,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                             </tr>
                         )}
                         {enquiries.map(e => (
-                            <tr key={e.id} className="border-b border-border/50 hover:bg-surface transition-colors">
+                            <tr key={e.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-2.5 px-3">
                                     <div className={`text-xs text-text ${e.is_read ? '' : 'font-semibold'}`}>{e.name}</div>
                                     <div className="text-xs text-muted">{e.email}</div>
@@ -406,8 +406,8 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                 {totalPages > 1 && (
                     <div className="flex items-center gap-2">
                         <p className="text-xs text-muted">Page {page} of {totalPages}</p>
-                        <button disabled={page <= 1} onClick={() => gotoPage(page - 1)} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
-                        <button disabled={page >= totalPages} onClick={() => gotoPage(page + 1)} className="text-xs px-3 py-1.5 rounded bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
+                        <button disabled={page <= 1} onClick={() => gotoPage(page - 1)} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">← Prev</button>
+                        <button disabled={page >= totalPages} onClick={() => gotoPage(page + 1)} className="text-xs px-3 py-1.5 rounded-full bg-card border border-border text-muted hover:text-text disabled:opacity-40">Next →</button>
                     </div>
                 )}
             </div>
@@ -415,7 +415,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
             {detail && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setDetailId(null)}>
                     <div
-                        className="bg-card border border-border rounded-none p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+                        className="bg-card shadow-card rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                         role="dialog"
                         aria-modal="true"
@@ -448,7 +448,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         <p className="text-text text-xs"><span className="text-muted">Created:</span> {fmtDateTime(detail.created_at)}</p>
                                         <p className="text-text text-xs"><span className="text-muted">Updated:</span> {fmtDateTime(detail.updated_at)}</p>
                                     </div>
-                                    <div className="bg-surface border border-border p-3 text-xs text-text whitespace-pre-wrap break-words">
+                                    <div className="bg-card shadow-card p-3 text-xs text-text whitespace-pre-wrap break-words rounded-2xl">
                                         {detail.event_details}
                                     </div>
                                 </section>
@@ -463,7 +463,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         onClick={() => setEditIsRead(v => !v)}
                                         disabled={saving}
                                         aria-pressed={editIsRead}
-                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${editIsRead ? 'text-success bg-success/10 border-success/30' : 'text-muted bg-muted/10 border-border'}`}
+                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${editIsRead ? 'text-success bg-warm-green/10 border-warm-green/30' : 'text-muted bg-border border-border'}`}
                                     >
                                         Read {editIsRead ? '✓' : ''}
                                     </button>
@@ -472,7 +472,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         onClick={() => setEditIsConnected(v => !v)}
                                         disabled={saving}
                                         aria-pressed={editIsConnected}
-                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${editIsConnected ? 'text-success bg-success/10 border-success/30' : 'text-muted bg-muted/10 border-border'}`}
+                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${editIsConnected ? 'text-success bg-warm-green/10 border-warm-green/30' : 'text-muted bg-border border-border'}`}
                                     >
                                         Connected {editIsConnected ? '✓' : ''}
                                     </button>
@@ -481,7 +481,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         onClick={() => setEditIsConverted(v => !v)}
                                         disabled={saving}
                                         aria-pressed={editIsConverted}
-                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${editIsConverted ? 'text-success bg-success/10 border-success/30' : 'text-muted bg-muted/10 border-border'}`}
+                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${editIsConverted ? 'text-success bg-warm-green/10 border-warm-green/30' : 'text-muted bg-border border-border'}`}
                                     >
                                         Converted {editIsConverted ? '✓' : ''}
                                     </button>
@@ -525,7 +525,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         rows={4}
                                         placeholder="Add internal notes about this lead…"
                                         disabled={saving}
-                                        className="w-full bg-white border border-border text-text text-sm px-3 py-2 focus:outline-none focus:border-accent resize-y disabled:opacity-60"
+                                        className="w-full bg-white border border-border text-text text-sm px-3.5 py-2.5 focus:outline-none focus:border-accent resize-y disabled:opacity-60 focus:ring-2 focus:ring-accent/25"
                                     />
                                 </div>
 
@@ -537,7 +537,7 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                         type="button"
                                         onClick={handleSaveChanges}
                                         disabled={saving || !hasUnsavedChanges}
-                                        className="px-4 py-1.5 bg-accent text-white text-xs font-semibold hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-4 py-1.5 bg-accent text-white text-xs font-semibold hover:bg-warm-red/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {saving ? 'Saving…' : 'Save'}
                                     </button>
