@@ -30,11 +30,12 @@ function OrgTypeBadge({ type }: { type: string | null }) {
     return (
         <span style={{
             background: `${TYPE_COLOURS[key] ?? TYPE_COLOURS.individual}22`,
-            border: `1px solid ${TYPE_COLOURS[key] ?? TYPE_COLOURS.individual}55`,
+            border: 'none',
             color: TYPE_COLOURS[key] ?? TYPE_COLOURS.individual,
             fontSize: '11px',
-            borderRadius: '4px',
-            padding: '2px 8px',
+            fontWeight: 600,
+            borderRadius: '999px',
+            padding: '3px 10px',
             whiteSpace: 'nowrap',
         }}>
             {TYPE_LABELS[key] ?? 'Individual'}
@@ -61,15 +62,15 @@ interface ActiveOrg {
 function VerificationBadge({ status }: { status: IdentityStatus }) {
     switch (status) {
         case 'verified':
-            return <span className="text-xs text-success">✓ Verified</span>
+            return <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-warm-green bg-warm-green/10">Verified</span>
         case 'processing':
-            return <span className="text-xs text-blue-500">⏳ Processing</span>
+            return <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-blue-600 bg-blue-500/10">Processing</span>
         case 'requires_input':
-            return <span className="text-xs text-warm-amberText">⚠ Action needed</span>
+            return <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-warm-amberText bg-warm-amber/15">Action needed</span>
         case 'canceled':
-            return <span className="text-xs text-muted">✗ Canceled</span>
+            return <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-muted bg-border">Canceled</span>
         default:
-            return <span className="text-xs text-muted">— Not started</span>
+            return <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-muted bg-border">Not started</span>
     }
 }
 interface SuspendedOrg {
@@ -168,19 +169,14 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 mb-6 border-b border-border overflow-x-auto hide-scrollbar">
+            <div className="flex gap-1 mb-6 border-b border-border overflow-x-auto hide-scrollbar whitespace-nowrap">
                 {tabs.map(t => (
                     <button
                         key={t.value}
                         onClick={() => setTab(t.value)}
                         className={`flex items-center gap-2 px-4 py-2.5 text-sm transition-colors -mb-px border-b-2 ${tab === t.value ? 'text-text border-accent' : 'text-muted border-transparent hover:text-text'}`}
                     >
-                        {t.label}
-                        {t.count > 0 && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${t.value === 'pending' && t.count > 0 ? 'bg-gold text-black' : 'bg-border text-muted'}`}>
-                                {t.count}
-                            </span>
-                        )}
+                        {t.label} ({t.count})
                     </button>
                 ))}
             </div>
@@ -270,8 +266,8 @@ export function OrganisersClient({ pending, active, suspended, defaultTab }: Pro
                                     <td className="py-3 px-4 text-text text-xs">{formatPence(org.revenue_pence)}</td>
                                     <td className="py-3 px-4">
                                         {org.stripe_account_id
-                                            ? <span className="text-xs text-success">✓ Connected</span>
-                                            : <span className="text-xs text-warm-amberText">⚠ Not connected</span>
+                                            ? <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-warm-green bg-warm-green/10">Connected</span>
+                                            : <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap text-muted bg-border">Not connected</span>
                                         }
                                     </td>
                                     <td className="py-3 px-4 whitespace-nowrap">

@@ -29,9 +29,9 @@ interface Props {
 }
 
 const ROLE_BADGE: Record<UserRole, string> = {
-    user: 'bg-border text-muted border-border',
-    organiser: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
-    admin: 'bg-warm-red/20 text-accent border-warm-red/30',
+    user: 'bg-border text-muted border-transparent',
+    organiser: 'bg-blue-500/10 text-blue-600 border-transparent',
+    admin: 'bg-warm-red/10 text-warm-red border-transparent',
 }
 
 function fmt(d: string) {
@@ -222,7 +222,7 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                         {users.map(u => (
                             <tr key={u.id} className="border-b border-border hover:bg-[#FAF6F3]/60 transition-colors">
                                 <td className="py-3 px-4">
-                                    <p className="text-text font-medium text-sm">{u.full_name ?? '—'}</p>
+                                    <p className="text-text font-medium text-sm">{u.full_name || '—'}</p>
                                 </td>
                                 <td className="py-3 px-4 text-muted text-xs">{u.email ?? '—'}</td>
                                 <td className="py-3 px-4">
@@ -234,7 +234,9 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                                 <td className="py-3 px-4 text-text text-xs">{u.bookings_count}</td>
                                 <td className="py-3 px-4 text-text text-xs">{formatPence(u.total_spent_pence)}</td>
                                 <td className="py-3 px-4">
-                                    <span className={`inline-block w-2 h-2 rounded-full ${u.is_suspended ? 'bg-accent' : 'bg-success'}`} />
+                                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${u.is_suspended ? 'text-warm-red bg-warm-red/10' : 'text-warm-green bg-warm-green/10'}`}>
+                                        {u.is_suspended ? 'Suspended' : 'Active'}
+                                    </span>
                                 </td>
                                 <td className="py-3 px-4">
                                     <div className="flex items-center gap-2 flex-wrap">
