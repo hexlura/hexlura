@@ -213,11 +213,14 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
 
     const listingFees = await getListingFees();
 
+    const h2 = 'font-heading text-2xl lg:text-3xl tracking-wide'
+    const countPill = 'ml-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-border align-middle'
+
     return (
         <FeeProvider fees={listingFees}>
-        <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
+        <div>
 
-            {/* ─── SECTION 1: ORGANISER BADGE ─── */}
+            {/* ─── ORGANISER BADGE ─── */}
             <OrganiserBadge
                 organiser={organiser}
                 organiserEventCount={totalEventsCount ?? 0}
@@ -231,166 +234,64 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
                 }
             />
 
-            {/* ─── SECTION 3: UPCOMING EVENTS ─── */}
-            <div style={{ maxWidth: 1200, margin: '40px auto 0', padding: '0 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-                    <h2 style={{
-                        fontFamily: "'Bebas Neue', sans-serif",
-                        fontSize: 26,
-                        color: '#0A0A0F',
-                        letterSpacing: '1px',
-                        margin: 0,
-                        lineHeight: 1,
-                    }}>
-                        UPCOMING EVENTS
-                    </h2>
-                    <span style={{
-                        background: '#F0F0F0',
-                        color: '#0A0A0F',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        padding: '3px 10px',
-                        marginLeft: 8,
-                    }}>
-                        {upcomingEvents.length}
-                    </span>
-                    <Link
-                        href={`/events?organiser=${organiser.slug}`}
-                        style={{
-                            marginLeft: 'auto',
-                            fontSize: 13,
-                            color: '#E63950',
-                            fontWeight: 600,
-                            textDecoration: 'none',
-                        }}
-                    >
-                        See All →
-                    </Link>
-                </div>
+            <div className="max-w-7xl mx-auto px-6 lg:px-10 pb-6">
 
-                {upcomingEvents.length > 0 ? (
-                    <div
-                        className="hide-scrollbar"
-                        style={{
-                            display: 'flex',
-                            overflowX: 'auto',
-                            gap: 16,
-                            paddingBottom: 8,
-                            scrollbarWidth: 'none',
-                            msOverflowStyle: 'none',
-                        }}
-                    >
-                        {upcomingEvents.map(event => (
-                            <div key={event.id} style={{ width: 200, flexShrink: 0 }}>
-                                <EventCard event={event} />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '40px 0', color: '#8888AA', fontSize: 14 }}>
-                        No upcoming events at the moment. Check back soon!
-                    </div>
-                )}
-            </div>
-
-            {/* ─── SECTION 4: PAST EVENTS ─── */}
-            {pastEvents.length > 0 && (
-                <div style={{ maxWidth: 1200, margin: '40px auto 0', padding: '0 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-                        <h2 style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 26,
-                            color: '#0A0A0F',
-                            letterSpacing: '1px',
-                            margin: 0,
-                            lineHeight: 1,
-                        }}>
-                            PAST EVENTS
-                        </h2>
-                        <span style={{
-                            background: '#F0F0F0',
-                            color: '#0A0A0F',
-                            fontSize: 12,
-                            fontWeight: 600,
-                            padding: '3px 10px',
-                            marginLeft: 8,
-                        }}>
-                            {pastEvents.length}
-                        </span>
+                {/* ─── UPCOMING EVENTS ─── */}
+                <section className="mb-14">
+                    <div className="flex items-center mb-5">
+                        <h2 className={h2}>UPCOMING EVENTS<span className={countPill}>{upcomingEvents.length}</span></h2>
+                        <Link href={`/events?organiser=${organiser.slug}`} className="ml-auto text-sm font-semibold text-accent hover:underline">
+                            See All →
+                        </Link>
                     </div>
 
-                    <div
-                        style={{
-                            display: 'flex',
-                            overflowX: 'auto',
-                            gap: 16,
-                            paddingBottom: 8,
-                            scrollbarWidth: 'none',
-                            msOverflowStyle: 'none',
-                        }}
-                    >
-                        {pastEvents.map(event => (
-                            <div key={event.id} style={{ width: 200, flexShrink: 0, opacity: 0.85 }}>
-                                <div style={{ position: 'relative' }}>
-                                    <EventCard event={event} />
-                                    {/* ENDED overlay badge */}
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            top: 8,
-                                            right: 8,
-                                            background: 'rgba(0,0,0,0.6)',
-                                            color: '#FFFFFF',
-                                            fontSize: 10,
-                                            fontWeight: 700,
-                                            padding: '3px 8px',
-                                            pointerEvents: 'none',
-                                            zIndex: 2,
-                                            letterSpacing: '0.5px',
-                                        }}
-                                    >
-                                        ENDED
-                                    </div>
+                    {upcomingEvents.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+                            {upcomingEvents.map(event => (
+                                <EventCard key={event.id} event={event} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-10 text-sm text-muted bg-card rounded-2xl border border-dashed border-border">
+                            No upcoming events at the moment. Check back soon!
+                        </div>
+                    )}
+                </section>
+
+                {/* ─── PAST EVENTS ─── */}
+                {pastEvents.length > 0 && (
+                    <section className="mb-14">
+                        <h2 className={`${h2} mb-4`}>PAST EVENTS<span className={countPill}>{pastEvents.length}</span></h2>
+                        <div className="flex gap-5 overflow-x-auto overflow-y-hidden pb-2" style={{ scrollbarWidth: 'none' }}>
+                            {pastEvents.map(event => (
+                                <div key={event.id} className="shrink-0 w-40 sm:w-44 opacity-80">
+                                    <EventCard event={event} compact />
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                            ))}
+                        </div>
+                    </section>
+                )}
 
-            {/* ─── SECTION 5: PORTFOLIO ─── */}
-            {portfolio.length > 0 && (
-                <div style={{ maxWidth: 1200, margin: '40px auto 0', padding: '0 24px' }}>
-                    <h2 style={{
-                        fontFamily: "'Bebas Neue', sans-serif",
-                        fontSize: 26,
-                        color: '#0A0A0F',
-                        letterSpacing: '1px',
-                        margin: '0 0 16px',
-                        lineHeight: 1,
-                    }}>
-                        PORTFOLIO
-                    </h2>
-                    <PortfolioSection items={portfolio} />
-                </div>
-            )}
+                {/* ─── PORTFOLIO ─── */}
+                {portfolio.length > 0 && (
+                    <section className="mb-14">
+                        <h2 className={`${h2} mb-4`}>PORTFOLIO</h2>
+                        <PortfolioSection items={portfolio} />
+                    </section>
+                )}
 
-            {/* ─── SECTION 6: REVIEWS ─── */}
-            <div style={{
-                maxWidth: 1200,
-                margin: '40px auto 60px',
-                padding: '40px 24px 0',
-                borderTop: '1px solid #E0E0E0',
-            }}>
-                <ReviewsSection
-                    organiserId={organiser.id}
-                    reviews={reviews.slice(0, 5)}
-                    averageRating={averageRating}
-                    reviewCount={reviewCount}
-                    canReview={canReview}
-                    hasReviewed={hasReviewed}
-                    isLoggedIn={!!user}
-                />
+                {/* ─── REVIEWS ─── */}
+                <section className="mb-10">
+                    <ReviewsSection
+                        organiserId={organiser.id}
+                        reviews={reviews.slice(0, 5)}
+                        averageRating={averageRating}
+                        reviewCount={reviewCount}
+                        canReview={canReview}
+                        hasReviewed={hasReviewed}
+                        isLoggedIn={!!user}
+                    />
+                </section>
             </div>
 
         </div>

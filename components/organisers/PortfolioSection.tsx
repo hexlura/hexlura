@@ -89,7 +89,7 @@ export default function PortfolioSection({ items }: { items: PortfolioItem[] }) 
                                 overflow: 'hidden',
                                 position: 'relative',
                                 cursor: 'pointer',
-                                background: '#F0F0F0',
+                                background: '#F1E7E2',
                             }}
                             className="portfolio-item-hover"
                         >
