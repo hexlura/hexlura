@@ -366,7 +366,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         setTimeout(() => setSaved(false), 2000)
 
         // Navigate to edit page if just created
-        if (!event?.id) router.replace(`/organiser/events/${created.id}`)
+        if (!event?.id) router.replace(`/organiser/events/${created.id}/edit`)
     }
 
     // Check-in close must be after check-in open — a close time before open
