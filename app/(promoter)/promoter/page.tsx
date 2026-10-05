@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { resolvePromoterId } from '@/lib/promoter-access'
@@ -78,42 +79,53 @@ export default async function PromoterDashboardPage() {
     }
     const recent = (recentRes.data || []) as unknown as RecentRow[]
 
-    const kpis = [
-        { label: 'Total Earned', value: formatPence(totalEarnedPence), color: '#F5A623', sub: 'All time' },
-        { label: 'Tickets Sold', value: String(ticketsSold), color: '#0A0A0F', sub: 'Via your links' },
-        { label: 'Link Clicks', value: totalClicks.toLocaleString('en-GB'), color: '#6B9FFF', sub: 'Total visits' },
-        { label: 'Pending Payout', value: formatPence(pendingPayoutPence), color: '#00C48A', sub: 'Ready to request' },
-    ]
+    const dashHeader = (
+        <div className="mb-6">
+            <h1 className="font-heading text-4xl tracking-wide">DASHBOARD</h1>
+            <p className="text-muted text-sm mt-1">Track your referrals, sales and payouts.</p>
+        </div>
+    )
 
     return (
         <div className="max-w-7xl">
-            <h1 className="font-heading text-4xl text-text tracking-wide mb-2">DASHBOARD</h1>
-            <p className="text-muted text-sm mb-8">Track your referrals, sales and payouts.</p>
+            {dashHeader}
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {kpis.map(k => (
-                    <div key={k.label} className="bg-card border border-border p-5">
-                        <div className="text-xs uppercase tracking-wider text-muted mb-2">{k.label}</div>
-                        <div className="font-heading text-3xl" style={{ color: k.color }}>{k.value}</div>
-                        <div className="text-xs text-muted mt-2">{k.sub}</div>
-                    </div>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div className="bg-gradient-to-br from-accent to-warm-orange rounded-2xl shadow-glow p-6 text-white">
+                    <p className="text-xs uppercase tracking-wider mb-2 opacity-90">Total Earned</p>
+                    <p className="font-heading text-4xl">{formatPence(totalEarnedPence)}</p>
+                    <p className="text-xs mt-2 opacity-90">All time</p>
+                </div>
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <p className="text-xs text-muted uppercase tracking-wider mb-2">Tickets Sold</p>
+                    <p className="font-heading text-4xl">{ticketsSold}</p>
+                    <p className="text-xs text-muted mt-2">Via your links</p>
+                </div>
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <p className="text-xs text-muted uppercase tracking-wider mb-2">Link Clicks</p>
+                    <p className="font-heading text-4xl">{totalClicks.toLocaleString('en-GB')}</p>
+                    <p className="text-xs text-muted mt-2">Total visits</p>
+                </div>
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <p className="text-xs text-muted uppercase tracking-wider mb-2">Pending Payout</p>
+                    <p className="font-heading text-4xl">{formatPence(pendingPayoutPence)}</p>
+                    <Link href="/promoter/payouts" className="text-xs text-warm-green font-semibold mt-2 inline-block">Ready to request →</Link>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue last 7 days */}
-                <div className="bg-card border border-border p-5">
-                    <h2 className="text-sm font-medium text-text mb-1">Revenue — Last 7 Days</h2>
+                <div className="bg-card rounded-2xl shadow-card p-6">
+                    <h2 className="text-sm font-semibold">Revenue — last 7 days</h2>
                     <p className="text-xs text-muted mb-4">Daily commission earnings</p>
-                    <div className="flex items-end gap-2 h-40 mt-6">
+                    <div className="flex items-end gap-3 h-44">
                         {days.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                            <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
                                 <div
-                                    className="w-full bg-accent/80 rounded-t-sm transition-all"
+                                    className="w-full rounded-t-lg bg-gradient-to-t from-accent to-warm-orange transition-all"
                                     style={{
-                                        height: `${(d.pence / maxPence) * 100}%`,
-                                        minHeight: d.pence > 0 ? 8 : 4,
+                                        height: `${Math.max((d.pence / maxPence) * 100, 4)}%`,
                                         opacity: d.pence > 0 ? 1 : 0.15,
                                     }}
                                     title={formatPence(d.pence)}
@@ -125,27 +137,29 @@ export default async function PromoterDashboardPage() {
                 </div>
 
                 {/* Recent sales */}
-                <div className="bg-card border border-border p-5">
-                    <h2 className="text-sm font-medium text-text mb-1">Recent Sales</h2>
-                    <p className="text-xs text-muted mb-4">Latest bookings via your links</p>
+                <div className="bg-card rounded-2xl shadow-card overflow-hidden">
+                    <div className="px-6 py-4 border-b border-border">
+                        <h2 className="text-sm font-semibold">Recent sales</h2>
+                        <p className="text-xs text-muted">Latest bookings via your links</p>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="text-xs text-muted uppercase tracking-wider">
-                                    <th className="text-left font-normal pb-2">Event</th>
-                                    <th className="text-right font-normal pb-2">Commission</th>
-                                    <th className="text-right font-normal pb-2">Date</th>
+                                <tr className="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                                    <th className="font-medium py-3 px-6">Event</th>
+                                    <th className="font-medium py-3 px-4 text-right">Commission</th>
+                                    <th className="font-medium py-3 px-6 text-right">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recent.length === 0 && (
-                                    <tr><td colSpan={3} className="text-center text-muted text-xs py-6">No sales yet — share your links to start earning</td></tr>
+                                    <tr><td colSpan={3} className="text-center text-muted text-xs py-8">No sales yet — share your links to start earning</td></tr>
                                 )}
-                                {recent.map(r => (
-                                    <tr key={r.id} className="border-t border-border/50">
-                                        <td className="py-2 text-text truncate max-w-[180px]">{r.event?.title || '—'}</td>
-                                        <td className="py-2 text-right text-success">+{formatPence(r.commission_pence)}</td>
-                                        <td className="py-2 text-right text-muted text-xs whitespace-nowrap">{fmtDate(r.created_at)}</td>
+                                {recent.map((r, i) => (
+                                    <tr key={r.id} className={`${i === recent.length - 1 ? '' : 'border-b border-border'} hover:bg-background/60`}>
+                                        <td className="py-3.5 px-6 font-medium truncate max-w-[200px]">{r.event?.title || '—'}</td>
+                                        <td className="py-3.5 px-4 text-right font-semibold text-warm-green">+{formatPence(r.commission_pence)}</td>
+                                        <td className="py-3.5 px-6 text-right text-xs text-muted whitespace-nowrap">{fmtDate(r.created_at)}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/Button'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { TERMS_VERSION } from '@/lib/terms'
 
 interface ApplyFormProps {
@@ -109,92 +109,108 @@ export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
         }
     }
 
-    const inputClass = "w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+    const inputClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+    const labelClass = "text-xs font-semibold text-muted mb-1.5 block"
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
             {/* Organiser Type Selection */}
             <div>
-                <p className="text-sm font-semibold text-text mb-1">What type of organiser are you?</p>
-                <p className="text-xs text-muted mb-3">This helps us personalise your experience</p>
-                <div className="grid grid-cols-3 gap-3">
+                <p className="text-sm font-bold mb-0.5">What type of organiser are you?</p>
+                <p className="text-xs text-muted mb-3">This helps us personalise your experience.</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {ORG_TYPES.map(t => (
-                        <div
-                            key={t.value}
-                            onClick={() => { setOrgType(t.value); setTypeError('') }}
-                            style={{
-                                background: orgType === t.value ? 'rgba(230,57,80,0.1)' : '#1A1A24',
-                                border: `1px solid ${orgType === t.value ? '#E63950' : '#2A2A3A'}`,
-                                borderRadius: '12px',
-                                padding: '20px 16px',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={e => {
-                                if (orgType !== t.value) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(230,57,80,0.5)'
-                            }}
-                            onMouseLeave={e => {
-                                if (orgType !== t.value) (e.currentTarget as HTMLDivElement).style.borderColor = '#2A2A3A'
-                            }}
-                        >
-                            <div style={{ fontSize: '28px' }}>{t.emoji}</div>
-                            <div style={{ fontWeight: 'bold', color: 'white', fontSize: '14px', marginTop: '8px' }}>{t.name}</div>
-                            <div style={{ color: '#8888AA', fontSize: '12px', marginTop: '4px' }}>{t.description}</div>
-                        </div>
+                        <label key={t.value} className="cursor-pointer">
+                            <input
+                                type="radio"
+                                name="organiser_type"
+                                value={t.value}
+                                checked={orgType === t.value}
+                                onChange={() => { setOrgType(t.value); setTypeError('') }}
+                                className="peer sr-only"
+                            />
+                            <div className="h-full rounded-2xl border border-border bg-background p-4 text-center transition hover:border-accent peer-checked:border-accent peer-checked:bg-warm-red/5 peer-checked:shadow-card peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40">
+                                <div className="w-11 h-11 mx-auto rounded-full bg-card border border-border flex items-center justify-center text-xl">{t.emoji}</div>
+                                <p className="font-bold text-sm mt-2.5">{t.name}</p>
+                                <p className="text-xs text-muted mt-1">{t.description}</p>
+                            </div>
+                        </label>
                     ))}
                 </div>
-                {typeError && <p className="text-accent text-xs mt-2">{typeError}</p>}
+                {typeError && <p className="text-accent text-xs font-semibold mt-2">{typeError}</p>}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                    <label className={labelClass}>Organisation name *</label>
+                    <input type="text" required value={orgName} onChange={e => setOrgName(e.target.value)} className={inputClass} placeholder="Your company or event brand name" />
+                </div>
+                <div>
+                    <label className={labelClass}>Your role / title</label>
+                    <input type="text" value={role} onChange={e => setRole(e.target.value)} className={inputClass} placeholder="e.g. Event Manager, Promoter" />
+                </div>
+                <div>
+                    <label className={labelClass}>Website</label>
+                    <input type="url" value={website} onChange={e => setWebsite(e.target.value)} className={inputClass} placeholder="https://" />
+                </div>
             </div>
 
             <div>
-                <label className="text-xs text-muted block mb-1.5">Organisation Name *</label>
-                <input type="text" required value={orgName} onChange={e => setOrgName(e.target.value)} className={inputClass} placeholder="Your company or event brand name" />
+                <label className={labelClass}>What kind of events do you run? *</label>
+                <textarea required value={description} onChange={e => setDescription(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="Tell us about your events…" />
             </div>
+
             <div>
-                <label className="text-xs text-muted block mb-1.5">Your Role / Title</label>
-                <input type="text" value={role} onChange={e => setRole(e.target.value)} className={inputClass} placeholder="e.g. Event Manager, Promoter" />
-            </div>
-            <div>
-                <label className="text-xs text-muted block mb-1.5">Website URL</label>
-                <input type="url" value={website} onChange={e => setWebsite(e.target.value)} className={inputClass} placeholder="https://" />
-            </div>
-            <div>
-                <label className="text-xs text-muted block mb-1.5">What kind of events do you run? *</label>
-                <textarea required value={description} onChange={e => setDescription(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="Tell us about your events..." />
-            </div>
-            <div>
-                <label className="text-xs text-muted block mb-1.5">Expected monthly events *</label>
-                <select required value={monthlyEvents} onChange={e => setMonthlyEvents(e.target.value)} className={inputClass}>
-                    <option value="">Select...</option>
+                <label className={labelClass}>Expected monthly events *</label>
+                <ThemedSelect required value={monthlyEvents} onChange={e => setMonthlyEvents(e.target.value)} className="w-full">
+                    <option value="">Select…</option>
                     <option value="1-2">1–2 events</option>
                     <option value="3-5">3–5 events</option>
                     <option value="6-10">6–10 events</option>
                     <option value="10+">10+ events</option>
-                </select>
+                </ThemedSelect>
             </div>
-            <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-text">VAT Registered</span>
-                <div onClick={() => setVatRegistered(!vatRegistered)} className={`w-10 h-6 rounded-sm relative transition-colors cursor-pointer ${vatRegistered ? 'bg-accent' : 'bg-border'}`}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${vatRegistered ? 'translate-x-5' : 'translate-x-1'}`} />
+
+            <div className="rounded-2xl border border-border bg-background p-4">
+                <div className="flex items-center justify-between gap-4">
+                    <div>
+                        <p className="text-sm font-bold">VAT registered</p>
+                        <p className="text-xs text-muted">Switch on if your organisation is registered for VAT.</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={vatRegistered}
+                        onClick={() => setVatRegistered(!vatRegistered)}
+                        className={`w-11 h-6 rounded-full relative shrink-0 transition-colors ${vatRegistered ? 'bg-accent' : 'bg-border'}`}
+                    >
+                        <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all ${vatRegistered ? 'left-[23px]' : 'left-[3px]'}`} />
+                    </button>
                 </div>
+                {vatRegistered && (
+                    <div className="mt-4">
+                        <label className={labelClass}>VAT number</label>
+                        <input type="text" value={vatNumber} onChange={e => setVatNumber(e.target.value)} className={`${inputClass} font-mono bg-card`} placeholder="GB123456789" />
+                    </div>
+                )}
             </div>
-            {vatRegistered && (
-                <div>
-                    <label className="text-xs text-muted block mb-1.5">VAT Number</label>
-                    <input type="text" value={vatNumber} onChange={e => setVatNumber(e.target.value)} className={inputClass} placeholder="GB123456789" />
-                </div>
-            )}
+
             <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" checked={agreedTerms} onChange={e => setAgreedTerms(e.target.checked)} className="mt-0.5 accent-accent" />
-                <span className="text-sm text-muted">
-                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Terms &amp; Conditions</a> (including the Event Organiser and Attendee Data Protection sections) and confirm I am authorised to create events on behalf of this organisation.
+                <input type="checkbox" checked={agreedTerms} onChange={e => setAgreedTerms(e.target.checked)} className="mt-1 w-4 h-4 accent-[#E63950]" />
+                <span className="text-sm text-muted leading-relaxed">
+                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent font-semibold hover:underline">Terms &amp; Conditions</a> (including the Event Organiser and Attendee Data Protection sections) and confirm I am authorised to create events on behalf of this organisation.
                 </span>
             </label>
-            {error && <p className="text-accent text-xs">{error}</p>}
-            <Button type="submit" variant="primary" size="lg" disabled={submitting} className="w-full">
+
+            {error && <p className="text-xs font-semibold text-accent">{error}</p>}
+
+            <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none"
+            >
                 {submitting ? 'Creating Account...' : 'Create Organiser Account'}
-            </Button>
+            </button>
         </form>
     )
 }

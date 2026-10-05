@@ -30,7 +30,7 @@ function formatEventDate(iso: string) {
 export default async function CheckinLandingPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/checkin/login')
+    if (!user) redirect('/auth/login?next=/checkin')
 
     const serviceClient = createServiceClient()
 
@@ -73,7 +73,7 @@ export default async function CheckinLandingPage() {
         organiserIds = teamRows?.map((r: { organiser_id: string }) => r.organiser_id) ?? []
 
         // Not authorised in any system
-        if (organiserIds.length === 0) redirect('/checkin/login')
+        if (organiserIds.length === 0) redirect('/auth/login?next=/checkin')
     }
 
     type EventRow = {
@@ -100,68 +100,48 @@ export default async function CheckinLandingPage() {
     }
 
     return (
-        <div style={{ background: '#0A0A0F', minHeight: '100vh', padding: '24px 16px' }}>
-            <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-                <p style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: '32px',
-                    color: '#F0F0F8',
-                    marginBottom: '24px',
-                    letterSpacing: '2px',
-                }}>
-                    SELECT EVENT
-                </p>
+        <div className="warm-theme min-h-screen">
+            <header className="flex items-center justify-between px-5 py-4 max-w-md mx-auto">
+                <Link href="/" className="font-heading text-3xl text-accent tracking-wider">
+                    HEXLURA<sup className="text-[0.4em] align-super tracking-normal">®</sup>
+                </Link>
+                <Link href="/account" className="text-sm font-semibold text-muted hover:text-text">My account</Link>
+            </header>
+            <main className="px-5 pb-12 max-w-md mx-auto">
+                <h1 className="font-heading text-4xl tracking-wide mt-2">SELECT EVENT</h1>
+                <p className="text-sm text-muted mb-5">Choose the event you&apos;re working tonight.</p>
 
                 {events.length === 0 ? (
-                    <p style={{ color: '#8888AA', fontSize: '14px', textAlign: 'center', marginTop: '48px' }}>
-                        No upcoming events yet. Your organiser hasn&apos;t published any events.
-                    </p>
+                    <div className="bg-card rounded-2xl border border-dashed border-border py-12 px-6 text-center">
+                        <p className="text-sm text-muted">No upcoming events yet. Your organiser hasn&apos;t published any events.</p>
+                    </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="flex flex-col gap-4">
                         {events.map((event) => (
-                            <div key={event.id} style={{
-                                background: '#1A1A24',
-                                border: '1px solid #2A2A3A',
-                                padding: '20px',
-                                borderRadius: '0',
-                            }}>
-                                <p style={{ fontSize: '18px', color: '#F0F0F8', fontWeight: '600', margin: '0 0 4px 0', wordBreak: 'break-word' }}>
-                                    {event.title}
-                                </p>
-                                <p style={{ fontSize: '13px', color: '#8888AA', margin: '0 0 8px 0', wordBreak: 'break-word' }}>
+                            <div key={event.id} className="bg-card rounded-2xl border border-border shadow-card p-5">
+                                <p className="text-lg font-bold leading-snug break-words">{event.title}</p>
+                                <p className="text-sm text-muted mt-1 break-words">
                                     {formatEventDate(event.start_at)}
                                     {event.venue_name ? ` · ${event.venue_name}` : ''}
                                 </p>
                                 {(event.checkin_start_at || event.checkin_end_at) && (
-                                    <p style={{ fontSize: '12px', color: '#00E5A0', margin: '0 0 16px 0', flexShrink: 0 }}>
-                                        Doors:{' '}
-                                        {event.checkin_start_at ? formatTime(event.checkin_start_at) : '—'}
-                                        {' — '}
-                                        {event.checkin_end_at ? formatTime(event.checkin_end_at) : '—'}
+                                    <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-warm-green bg-warm-green/10 rounded-full px-3 py-1 mt-3">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                                        Doors {event.checkin_start_at ? formatTime(event.checkin_start_at) : '—'} — {event.checkin_end_at ? formatTime(event.checkin_end_at) : '—'}
                                     </p>
                                 )}
                                 <Link
                                     href={`/organiser/events/${event.id}/checkin`}
-                                    style={{
-                                        display: 'block',
-                                        background: '#E63950',
-                                        color: 'white',
-                                        padding: '12px 20px',
-                                        borderRadius: '2px',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        textDecoration: 'none',
-                                        textAlign: 'center',
-                                        marginTop: '16px',
-                                    }}
+                                    className="mt-4 w-full py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition flex items-center justify-center gap-2"
                                 >
-                                    Start Scanning
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M7 12h10" /></svg>
+                                    Start scanning
                                 </Link>
                             </div>
                         ))}
                     </div>
                 )}
-            </div>
+            </main>
         </div>
     )
 }

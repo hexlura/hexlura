@@ -34,9 +34,9 @@ export function ApplyForm({ defaultName }: Props) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-                <label className="text-xs uppercase tracking-wider text-muted block mb-2">Display name</label>
+                <label className="text-xs font-semibold text-muted mb-1.5 block">Display name</label>
                 <input
                     type="text"
                     value={displayName}
@@ -45,38 +45,38 @@ export function ApplyForm({ defaultName }: Props) {
                     minLength={2}
                     maxLength={50}
                     required
-                    className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
                 />
-                <p className="text-xs text-muted mt-1">Used to generate your referral code (e.g. DJAZEER).</p>
+                <p className="text-xs text-muted mt-1.5">Used to generate your referral code (e.g. DJAZEER).</p>
             </div>
 
             <div>
-                <label className="text-xs uppercase tracking-wider text-muted block mb-2">Short bio <span className="text-muted/60 normal-case tracking-normal">(optional)</span></label>
+                <label className="text-xs font-semibold text-muted mb-1.5 block">Short bio <span className="font-normal">(optional)</span></label>
                 <textarea
                     value={bio}
                     onChange={e => setBio(e.target.value)}
                     placeholder="A line about who you are and what you promote."
                     rows={3}
                     maxLength={300}
-                    className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 resize-none"
                 />
             </div>
 
             {error && (
-                <p className="text-sm text-accent bg-accent/10 border border-accent/30 px-3 py-2 rounded-sm">{error}</p>
+                <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
             )}
 
             <button
                 type="submit"
                 disabled={submitting || displayName.trim().length < 2}
-                className="bg-accent text-white font-bold uppercase tracking-wider text-sm py-3 px-6 hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                className="w-full py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none"
             >
                 {submitting ? 'Setting you up…' : 'Become a Promoter'}
             </button>
 
             <p className="text-xs text-muted text-center">
                 By continuing you agree to the Hexlura{' '}
-                <a href="/terms" className="text-accent hover:underline">Terms of Service</a>.
+                <a href="/terms" className="text-accent font-semibold hover:underline">Terms of Service</a>.
             </p>
         </form>
     )

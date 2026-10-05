@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { PromoterSidebar } from '@/components/layout/PromoterSidebar'
+import { PromoterTopBar } from '@/components/layout/PromoterTopBar'
 import MobileBottomNav from '@/components/layout/MobileBottomNav'
 
 export default async function PromoterLayout({ children }: { children: React.ReactNode }) {
@@ -25,18 +26,22 @@ export default async function PromoterLayout({ children }: { children: React.Rea
     const isSuspended = promoterRes.data?.status === 'suspended'
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div className="warm-theme flex min-h-screen">
             <PromoterSidebar userName={userName} referralCode={referralCode} userId={user.id} />
-            <main className="flex-1 min-h-screen px-4 sm:px-8 pb-8 pt-14 lg:pt-8 lg:ml-[220px]">
-                {isSuspended && (
-                    <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 4, padding: '12px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        <p style={{ color: '#DC2626', fontSize: 14, margin: 0 }}>
-                            Your promoter account has been suspended. You can view your data but cannot make changes or request payouts. Contact <a href="mailto:support@hexlura.com" style={{ textDecoration: 'underline' }}>support@hexlura.com</a> for help.
-                        </p>
-                    </div>
-                )}
-                {children}
+            <main className="flex-1 min-w-0 min-h-screen lg:ml-64">
+                <PromoterTopBar userId={user.id} userName={userName} />
+                <div className="px-4 sm:px-8 lg:px-10 pb-8 pt-14 lg:pt-8">
+                    {isSuspended && (
+                        <div className="bg-warm-red/10 border border-warm-red/30 rounded-2xl px-4 py-3 mb-6 flex items-start gap-3">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                            <p className="text-sm text-accent">
+                                Your promoter account has been suspended. You can view your data but cannot make changes or request payouts. Contact{' '}
+                                <a href="mailto:support@hexlura.com" className="underline font-semibold">support@hexlura.com</a> for help.
+                            </p>
+                        </div>
+                    )}
+                    {children}
+                </div>
             </main>
             <MobileBottomNav role="promoter" />
         </div>

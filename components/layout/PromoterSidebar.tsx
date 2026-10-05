@@ -12,77 +12,50 @@ interface PromoterSidebarProps {
     userId: string
 }
 
+const ico = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', className: 'w-4 h-4' } as const
+
 const navLinks = [
     {
         href: '/promoter',
         label: 'Dashboard',
         exact: true,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M2 11l8-8 8 8v9H13v-6H7v6H2V11z" />
-            </svg>
-        ),
+        icon: <svg {...ico}><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg>,
     },
     {
         href: '/promoter/links',
         label: 'My Links',
         exact: false,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
-            </svg>
-        ),
+        icon: <svg {...ico}><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></svg>,
     },
     {
         href: '/promoter/events',
         label: 'Events',
         exact: false,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z" />
-            </svg>
-        ),
+        icon: <svg {...ico}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 10h18" /></svg>,
     },
     {
         href: '/promoter/payouts',
         label: 'Payouts',
         exact: false,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
-            </svg>
-        ),
+        icon: <svg {...ico}><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M2 10h20" /></svg>,
     },
     {
         href: '/promoter/settings',
         label: 'Settings',
         exact: false,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-            </svg>
-        ),
+        icon: <svg {...ico}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1z" /></svg>,
     },
     {
         href: '/promoter/support',
         label: 'Help & Support',
         exact: false,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-        ),
+        icon: <svg {...ico}><circle cx="12" cy="12" r="10" /><path d="M9.5 9a2.5 2.5 0 0 1 4.8 1c0 1.5-2.3 1.8-2.3 3.5" /><path d="M12 17h.01" /></svg>,
     },
     {
         href: '/promoter/notifications',
         label: 'Notifications',
         exact: false,
-        icon: (
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-            </svg>
-        ),
+        icon: <svg {...ico}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>,
     },
 ]
 
@@ -134,45 +107,34 @@ export function PromoterSidebar({ userName, referralCode, userId }: PromoterSide
 
     return (
         <>
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#C0C0C8] flex items-center justify-between px-4">
-                <Link href="/" className="font-heading text-accent tracking-widest text-lg">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></Link>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setIsOpen(true)}
-                        className="text-[#0A0A0F] p-2 -mr-2"
-                    type="button"
-                    aria-label="Open menu"
-                >
+            {/* Mobile header bar */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-card border-b border-border flex items-center justify-between px-4">
+                <Link href="/" className="font-heading text-accent tracking-wider text-xl">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></Link>
+                <button onClick={() => setIsOpen(true)} className="text-text p-2 -mr-2" type="button" aria-label="Open menu">
                     <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="3" y1="6" x2="21" y2="6" />
                         <line x1="3" y1="12" x2="21" y2="12" />
                         <line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
-                </div>
             </div>
 
             {isOpen && (
-                <div
-                    onClick={() => setIsOpen(false)}
-                    className="fixed inset-0 bg-black/60 z-40 lg:hidden"
-                    aria-hidden="true"
-                />
+                <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/60 z-40 lg:hidden" aria-hidden="true" />
             )}
 
             <aside
                 className={[
-                    'fixed inset-y-0 z-50 flex flex-col bg-surface border-l border-border',
+                    'fixed inset-y-0 z-50 flex flex-col bg-white/80 backdrop-blur border-l border-border w-64',
                     'transform transition-transform duration-300 ease-in-out',
                     'lg:left-0 lg:border-r lg:border-l-0 lg:translate-x-0',
                     'right-0',
                     isOpen ? 'translate-x-0' : 'translate-x-full',
                 ].join(' ')}
-                style={{ width: '220px' }}
             >
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden absolute top-4 right-4 text-[#666677] hover:text-[#0A0A0F] transition-colors"
+                    className="lg:hidden absolute top-4 right-4 text-muted hover:text-text transition-colors"
                     type="button"
                     aria-label="Close menu"
                 >
@@ -182,12 +144,12 @@ export function PromoterSidebar({ userName, referralCode, userId }: PromoterSide
                     </svg>
                 </button>
 
-                <Link href="/" className="block px-6 py-5 border-b border-border hover:bg-card transition-colors">
-                    <div className="font-heading text-xl text-accent tracking-widest">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></div>
-                    <div className="text-xs text-muted mt-0.5">Promoter Portal</div>
+                <Link href="/" className="block shrink-0 px-7 pt-5 pb-4">
+                    <div className="font-heading text-2xl text-accent tracking-wider">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></div>
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-muted mt-0.5">Promoter Portal</div>
                 </Link>
 
-                <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto [padding-bottom:max(7rem,env(safe-area-inset-bottom,7rem))]">
+                <nav className="flex-1 min-h-0 px-5 pb-4 flex flex-col gap-0.5 overflow-y-auto">
                     {navLinks.map((link) => {
                         const active = isActive(link.href, link.exact)
                         const loading = loadingPath === link.href
@@ -196,17 +158,13 @@ export function PromoterSidebar({ userName, referralCode, userId }: PromoterSide
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => handleNavClick(link.href)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors relative text-left ${
-                                    active ? 'text-text bg-card font-medium' : 'text-muted hover:text-text hover:bg-card'
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-left ${
+                                    active
+                                        ? 'bg-text text-white font-medium shadow-[0_6px_18px_-4px_rgba(26,14,12,0.35)]'
+                                        : 'text-muted hover:text-text hover:bg-background'
                                 }`}
                             >
-                                {active && (
-                                    <span
-                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-accent"
-                                        style={{ borderLeft: '2px solid #E63950' }}
-                                    />
-                                )}
-                                <span className={active ? 'text-accent' : ''}>{link.icon}</span>
+                                <span className="shrink-0">{link.icon}</span>
                                 {link.label}
                                 <span className="ml-auto flex items-center gap-1.5">
                                     {link.href === '/promoter/notifications' && unreadNotifications > 0 && (
@@ -225,42 +183,49 @@ export function PromoterSidebar({ userName, referralCode, userId }: PromoterSide
                         )
                     })}
 
-                    <div style={{ borderTop: '1px solid #C0C0C8', margin: '8px 0 0', paddingTop: '8px' }}>
+                    <div className="border-t border-border mt-2 pt-2">
                         <Link
                             href="/account"
-                            onClick={() => handleNavClick('/account')}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
-                            style={{ fontSize: '14px', color: '#666677' }}
+                            onClick={() => setIsOpen(false)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition-colors text-muted hover:text-text hover:bg-background"
                         >
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+                                <circle cx="12" cy="8" r="3.5" />
+                                <path d="M4 21c1-4 4-6 8-6s7 2 8 6" />
                             </svg>
                             My Account
                         </Link>
                     </div>
 
-                    <div className="px-3 pt-4 pb-2 border-t border-border mt-2">
+                    {/* Name + sign out live in the desktop top bar; shown here on mobile only */}
+                    <div className="lg:hidden pt-3 pb-2 mt-2 border-t border-border">
                         <div className="text-xs text-muted mb-0.5 truncate font-mono">{referralCode}</div>
-                        <div className="text-sm text-text font-medium truncate mb-3">{userName}</div>
+                        <div className="text-sm text-text font-medium truncate mb-2">{userName}</div>
                         <button
                             onClick={handleSignOut}
                             disabled={signingOut}
                             className="flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {signingOut ? (
-                                <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                            ) : (
-                                <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                                    <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                                </svg>
-                            )}
                             {signingOut ? 'Signing out...' : 'Sign Out'}
                         </button>
                     </div>
                 </nav>
+
+                {/* Referral code card — pinned to the bottom, pb-20 on mobile clears the bottom nav */}
+                <div className="shrink-0 p-5 pt-3 pb-20 lg:pb-5 border-t border-border">
+                    <div className="bg-gradient-to-br from-accent via-accent to-warm-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
+                        <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Your referral code</p>
+                        <p className="font-mono text-lg font-semibold mt-1.5 relative">{referralCode}</p>
+                        <Link
+                            href="/promoter/links"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl mt-4 hover:bg-white/90 transition-colors relative"
+                        >
+                            Get my links →
+                        </Link>
+                    </div>
+                </div>
             </aside>
         </>
     )

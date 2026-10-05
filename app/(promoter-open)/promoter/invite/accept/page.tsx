@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { AcceptClient } from './accept-client'
+import { FocusShell } from '@/components/layout/FocusShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,36 +47,33 @@ export default async function PromoterInviteAcceptPage({
         .maybeSingle()
 
     return (
-        <div className="min-h-screen bg-background">
-            <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></a>
-            </header>
-
-            <div className="flex items-center justify-center p-6 py-12">
-                <div className="max-w-md w-full bg-card border border-border p-8">
-                    <h1 className="font-heading text-3xl text-text tracking-wide mb-2">PROMOTER INVITATION</h1>
-
-                    {!a && (
-                        <p className="text-sm text-accent mt-4">This invitation link is invalid or has expired.</p>
-                    )}
-
-                    {a && a.status === 'removed' && (
-                        <p className="text-sm text-accent mt-4">This invitation has been withdrawn by the organiser.</p>
-                    )}
-
-                    {a && a.status !== 'removed' && (
-                        <AcceptClient
-                            token={token}
-                            isPromoter={!!promoter}
-                            alreadyAccepted={a.status === 'active'}
-                            orgName={a.organiser?.org_name || 'An organiser'}
-                            eventName={a.event?.title || 'this event'}
-                            eventDate={a.event?.start_at || ''}
-                            commissionPercent={a.commission_percent}
-                        />
-                    )}
+        <FocusShell>
+            <div className="w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-8 md:p-10">
+                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></svg>
                 </div>
+                <h1 className="font-heading text-4xl tracking-wide mb-2">PROMOTER INVITATION</h1>
+
+                {!a && (
+                    <p className="text-sm font-semibold text-accent mt-4">This invitation link is invalid or has expired.</p>
+                )}
+
+                {a && a.status === 'removed' && (
+                    <p className="text-sm font-semibold text-accent mt-4">This invitation has been withdrawn by the organiser.</p>
+                )}
+
+                {a && a.status !== 'removed' && (
+                    <AcceptClient
+                        token={token}
+                        isPromoter={!!promoter}
+                        alreadyAccepted={a.status === 'active'}
+                        orgName={a.organiser?.org_name || 'An organiser'}
+                        eventName={a.event?.title || 'this event'}
+                        eventDate={a.event?.start_at || ''}
+                        commissionPercent={a.commission_percent}
+                    />
+                )}
             </div>
-        </div>
+        </FocusShell>
     )
 }

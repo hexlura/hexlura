@@ -11,13 +11,13 @@ function fmtDate(d: string) {
 }
 
 function statusFor(eventStatus: string, startAt: string): { label: string; className: string } {
-    if (eventStatus === 'cancelled') return { label: 'Cancelled', className: 'text-muted bg-muted/10 border-muted/20' }
+    if (eventStatus === 'cancelled') return { label: 'Cancelled', className: 'text-muted bg-border' }
     const now = new Date()
     const start = new Date(startAt)
-    if (start < now) return { label: 'Ended', className: 'text-muted bg-muted/10 border-muted/20' }
+    if (start < now) return { label: 'Ended', className: 'text-muted bg-border' }
     const daysAway = (start.getTime() - now.getTime()) / 86400000
-    if (daysAway > 7) return { label: 'Upcoming', className: 'text-gold bg-gold/10 border-gold/20' }
-    return { label: 'Active', className: 'text-success bg-success/10 border-success/20' }
+    if (daysAway > 7) return { label: 'Upcoming', className: 'text-warm-amberText bg-warm-amber/15' }
+    return { label: 'Active', className: 'text-warm-green bg-warm-green/10' }
 }
 
 export default async function PromoterEventsPage() {
@@ -74,15 +74,17 @@ export default async function PromoterEventsPage() {
 
     return (
         <div className="max-w-7xl">
-            <h1 className="font-heading text-4xl text-text tracking-wide mb-2">ASSIGNED EVENTS</h1>
-            <p className="text-muted text-sm mb-8">Events you have been assigned to promote.</p>
+            <div className="mb-6">
+                <h1 className="font-heading text-4xl tracking-wide">ASSIGNED EVENTS</h1>
+                <p className="text-muted text-sm mt-1">Events you have been assigned to promote.</p>
+            </div>
 
-            <div className="bg-card border border-border overflow-x-auto">
+            <div className="bg-card rounded-2xl shadow-card overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="border-b border-border">
-                            {['Event', 'Date', 'Organiser', 'Commission', 'Sales', 'Earned', 'Status'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal uppercase tracking-wider">{h}</th>
+                        <tr className="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                            {['Event', 'Date', 'Organiser', 'Commission', 'Sales', 'Earned', 'Status'].map((h, i) => (
+                                <th key={h} className={`font-medium py-3 ${i === 0 || i === 6 ? 'px-6' : 'px-4'}`}>{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -94,23 +96,23 @@ export default async function PromoterEventsPage() {
                             if (!r.event) return null
                             const stats = salesByEvent[r.event.id] || { count: 0, earnedPence: 0 }
                             const status = r.status === 'invited'
-                                ? { label: 'Invite Pending', className: 'text-gold bg-gold/10 border-gold/20' }
+                                ? { label: 'Invite pending', className: 'text-warm-yellowText bg-warm-yellow/15' }
                                 : statusFor(r.event.status, r.event.start_at)
                             return (
-                                <tr key={r.id} className="border-b border-border/50 hover:bg-surface transition-colors">
-                                    <td className="py-3 px-4">
-                                        <div className="text-text font-medium">{r.event.title}</div>
-                                        <div className="text-xs text-muted">{r.event.venue_name || ''}</div>
+                                <tr key={r.id} className="border-b border-border last:border-0 hover:bg-background/60 transition-colors">
+                                    <td className="py-3.5 px-6">
+                                        <p className="font-medium">{r.event.title}</p>
+                                        <p className="text-xs text-muted">{r.event.venue_name || ''}</p>
                                     </td>
-                                    <td className="py-3 px-4 text-xs text-muted whitespace-nowrap">{fmtDate(r.event.start_at)}</td>
-                                    <td className="py-3 px-4 text-xs text-text">{r.event.organiser?.org_name || '—'}</td>
-                                    <td className="py-3 px-4">
-                                        <span className="text-xs text-accent bg-accent/10 px-2 py-0.5 rounded-full">{r.commission_percent}%</span>
+                                    <td className="py-3.5 px-4 text-xs text-muted whitespace-nowrap">{fmtDate(r.event.start_at)}</td>
+                                    <td className="py-3.5 px-4 text-xs">{r.event.organiser?.org_name || '—'}</td>
+                                    <td className="py-3.5 px-4">
+                                        <span className="text-xs font-semibold text-accent bg-accent/10 px-2.5 py-1 rounded-full">{r.commission_percent}%</span>
                                     </td>
-                                    <td className="py-3 px-4 text-text">{stats.count}</td>
-                                    <td className="py-3 px-4 text-success font-medium">{formatPence(stats.earnedPence)}</td>
-                                    <td className="py-3 px-4">
-                                        <span className={`text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${status.className}`}>
+                                    <td className="py-3.5 px-4">{stats.count}</td>
+                                    <td className="py-3.5 px-4 font-semibold text-warm-green">{formatPence(stats.earnedPence)}</td>
+                                    <td className="py-3.5 px-6">
+                                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${status.className}`}>
                                             {status.label}
                                         </span>
                                     </td>

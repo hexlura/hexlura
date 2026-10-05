@@ -45,15 +45,24 @@ interface CheckinClientProps {
     initialCheckedIn: number
 }
 
-const RESULT_STYLES: Record<string, { bg: string; border: string; color: string; icon: string; title: string }> = {
-    SUCCESS:          { bg: 'rgba(0,229,160,0.1)',  border: '#00E5A0', color: '#00E5A0', icon: '\u2713', title: 'CHECK IN SUCCESSFUL' },
-    ALREADY_SCANNED:  { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'ALREADY CHECKED IN' },
-    WRONG_EVENT:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'WRONG EVENT' },
-    TOO_EARLY:        { bg: 'rgba(245,166,35,0.1)', border: '#F5A623', color: '#F5A623', icon: '\u26A0', title: 'TOO EARLY' },
-    EVENT_ENDED:      { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'EVENT ENDED' },
-    CANCELLED:        { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'EVENT CANCELLED' },
-    CANCELLED_TICKET: { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'TICKET CANCELLED' },
-    INVALID:          { bg: 'rgba(230,57,80,0.1)',  border: '#E63950', color: '#E63950', icon: '\u2717', title: 'INVALID TICKET' },
+type ResultStyle = { bg: string; icon: 'tick' | 'cross' | 'warn'; title: string }
+
+// Full-colour result screens so a scan can be read at arm's length in a dark venue.
+const RESULT_STYLES: Record<string, ResultStyle> = {
+    SUCCESS:          { bg: 'bg-warm-green', icon: 'tick',  title: 'CHECKED IN' },
+    ALREADY_SCANNED:  { bg: 'bg-warm-red',   icon: 'cross', title: 'ALREADY CHECKED IN' },
+    WRONG_EVENT:      { bg: 'bg-warm-red',   icon: 'cross', title: 'WRONG EVENT' },
+    TOO_EARLY:        { bg: 'bg-warm-amber', icon: 'warn',  title: 'TOO EARLY' },
+    EVENT_ENDED:      { bg: 'bg-warm-red',   icon: 'cross', title: 'EVENT ENDED' },
+    CANCELLED:        { bg: 'bg-warm-red',   icon: 'cross', title: 'EVENT CANCELLED' },
+    CANCELLED_TICKET: { bg: 'bg-warm-red',   icon: 'cross', title: 'TICKET CANCELLED' },
+    INVALID:          { bg: 'bg-warm-red',   icon: 'cross', title: 'INVALID TICKET' },
+}
+
+const RESULT_ICONS: Record<ResultStyle['icon'], string> = {
+    tick: 'm5 12 5 5L20 7',
+    cross: 'M18 6 6 18M6 6l12 12',
+    warn: 'M12 8v5M12 17h.01',
 }
 
 function formatTime(date: Date) {
@@ -151,168 +160,161 @@ export function CheckinClient({ eventId, eventTitle, eventDate, totalTickets, in
     const cardStyle = result ? (RESULT_STYLES[result.code] ?? RESULT_STYLES.INVALID) : null
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            {/* Header */}
-            <div className="bg-surface border-b border-border px-4 py-3 flex items-center justify-between">
-                <div>
-                    <h1 className="font-heading text-lg text-text tracking-wide">{eventTitle}</h1>
-                    <p className="text-xs text-muted">{eventDate} · Check-in</p>
-                </div>
-                <div className="text-right">
-                    <p className="font-heading text-2xl text-text">{checkedIn}</p>
-                    <p className="text-xs text-muted">of {totalTickets} checked in</p>
-                </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="h-1 bg-border">
-                <div
-                    className="h-full bg-accent transition-all duration-300"
-                    style={{ width: `${totalTickets > 0 ? (checkedIn / totalTickets) * 100 : 0}%` }}
-                />
-            </div>
-
-            {/* Scanner */}
-            <div className="flex-1 flex flex-col items-center px-4 py-6 max-w-sm mx-auto w-full">
-                <div className="w-full bg-surface border border-border rounded-none overflow-hidden mb-4">
-                    <QrScanner onScan={handleScan} />
-                </div>
-                <p className="text-xs text-muted text-center mb-6">Point camera at attendee QR code</p>
-
-                {/* Manual lookup */}
-                <div className="w-full bg-card border border-border rounded-none p-4">
-                    <p className="text-xs text-muted mb-2">Enter booking ref manually</p>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={manualRef}
-                            onChange={e => setManualRef(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleManualLookup()}
-                            placeholder="HXL-XXXXXX"
-                            className="flex-1 bg-surface border border-border rounded-sm px-3 py-2.5 text-sm font-mono text-text placeholder:text-muted focus:outline-none focus:border-accent uppercase"
-                        />
-                        <button
-                            onClick={handleManualLookup}
-                            disabled={lookingUp || !manualRef}
-                            className="px-4 py-2.5 bg-[#0A0A0F] text-white text-sm rounded-sm disabled:opacity-50 hover:bg-[#2a2a3f] transition-colors"
-                        >
-                            {lookingUp ? '...' : 'Search'}
-                        </button>
+        <div className="warm-theme min-h-screen">
+            <div className="max-w-md mx-auto">
+                {/* Header */}
+                <header className="bg-card border-b border-border px-5 py-4 flex items-center justify-between">
+                    <div className="min-w-0">
+                        <Link href="/checkin" className="text-xs font-semibold text-muted flex items-center gap-1 mb-0.5">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6" /></svg>
+                            Events
+                        </Link>
+                        <h1 className="font-heading text-2xl tracking-wide truncate">{eventTitle}</h1>
+                        <p className="text-xs text-muted">{eventDate} · Check-in</p>
                     </div>
+                    <div className="text-right shrink-0 pl-4">
+                        <p className="font-heading text-4xl leading-none">{checkedIn}</p>
+                        <p className="text-xs text-muted">of {totalTickets} in</p>
+                    </div>
+                </header>
+
+                {/* Progress bar */}
+                <div className="h-1.5 bg-border">
+                    <div
+                        className="h-full bg-gradient-to-r from-accent to-warm-orange rounded-r-full transition-all duration-300"
+                        style={{ width: `${totalTickets > 0 ? (checkedIn / totalTickets) * 100 : 0}%` }}
+                    />
                 </div>
 
-                {/* Multi-ticket booking panel */}
-                {bookingItems && (
-                    <div className="w-full mt-4 bg-card border border-border rounded-none">
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                            <p className="text-sm font-semibold text-text">
-                                {lookupRef} — {bookingItems.length} ticket{bookingItems.length !== 1 ? 's' : ''}
-                            </p>
+                <main className="px-5 py-5">
+                    {/* Camera */}
+                    <div className="relative rounded-3xl overflow-hidden bg-text shadow-card">
+                        <QrScanner onScan={handleScan} />
+                    </div>
+                    <p className="text-xs font-semibold text-muted text-center mt-3">Point camera at attendee QR code</p>
+
+                    {/* Manual lookup */}
+                    <div className="bg-card rounded-2xl border border-border shadow-soft p-4 mt-4">
+                        <p className="text-xs font-semibold text-muted mb-2">Or enter booking ref</p>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={manualRef}
+                                onChange={e => setManualRef(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleManualLookup()}
+                                placeholder="HXL-XXXXXX"
+                                className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-background border border-border text-base font-mono uppercase placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                            />
                             <button
-                                onClick={() => { setBookingItems(null); setLookupRef('') }}
-                                className="text-xs text-muted hover:text-text transition-colors"
+                                onClick={handleManualLookup}
+                                disabled={lookingUp || !manualRef}
+                                className="px-5 rounded-xl bg-text text-white text-sm font-semibold disabled:opacity-50 transition"
                             >
-                                Close
+                                {lookingUp ? '...' : 'Search'}
                             </button>
                         </div>
-                        <div className="divide-y divide-border">
-                            {bookingItems.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                                    <div className="min-w-0">
-                                        <p className="text-sm text-text font-medium truncate">
-                                            {item.ticket_type}
-                                            {item.quantity > 1 && (
-                                                <span className="ml-1.5 text-xs font-normal text-muted">x{item.quantity}</span>
-                                            )}
-                                        </p>
-                                        {item.attendee_name && (
-                                            <p className="text-xs text-muted truncate">{item.attendee_name}</p>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        {item.checked_in ? (
-                                            <span className="text-xs font-semibold px-2 py-1 rounded-sm" style={{ background: 'rgba(0,229,160,0.1)', color: '#00E5A0' }}>
-                                                {item.quantity > 1 ? `All ${item.quantity} in` : `In${item.checked_in_at ? ` · ${item.checked_in_at}` : ''}`}
-                                            </span>
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                {item.quantity > 1 && item.scanned_count > 0 && (
-                                                    <span className="text-xs font-semibold px-2 py-1 rounded-sm" style={{ background: 'rgba(245,166,35,0.1)', color: '#F5A623' }}>
-                                                        {item.scanned_count}/{item.quantity} in
-                                                    </span>
+                    </div>
+
+                    {/* Multi-ticket booking panel */}
+                    {bookingItems && (
+                        <div className="bg-card rounded-2xl border border-border shadow-soft mt-4 overflow-hidden">
+                            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                                <p className="text-sm font-bold">
+                                    <span className="font-mono text-accent">{lookupRef}</span> — {bookingItems.length} ticket{bookingItems.length !== 1 ? 's' : ''}
+                                </p>
+                                <button
+                                    onClick={() => { setBookingItems(null); setLookupRef('') }}
+                                    className="text-xs font-semibold text-muted hover:text-text transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <div className="divide-y divide-border">
+                                {bookingItems.map((item) => (
+                                    <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold truncate">
+                                                {item.ticket_type}
+                                                {item.quantity > 1 && (
+                                                    <span className="ml-1.5 text-xs font-normal text-muted">x{item.quantity}</span>
                                                 )}
-                                                <button
-                                                    onClick={() => handleItemCheckin(item)}
-                                                    disabled={checkingItemId === item.id}
-                                                    className="text-xs font-semibold px-3 py-1.5 text-white rounded-sm disabled:opacity-50 transition-opacity"
-                                                    style={{ background: '#E63950' }}
-                                                >
-                                                    {checkingItemId === item.id ? '...' : 'Check In'}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Scan history log */}
-                {scanLog.length > 0 && (
-                    <div className="w-full mt-4 bg-card border border-border rounded-none">
-                        <div className="px-4 py-2.5 border-b border-border">
-                            <p className="text-xs font-semibold text-muted uppercase tracking-wider">
-                                Recent Scans ({scanLog.length})
-                            </p>
-                        </div>
-                        <div className="max-h-[200px] overflow-y-auto divide-y divide-border">
-                            {scanLog.map((entry) => (
-                                <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
-                                    <div
-                                        className="w-2 h-2 rounded-full shrink-0"
-                                        style={{ background: entry.success ? '#00E5A0' : '#E63950' }}
-                                    />
-                                    <div className="min-w-0 flex-1">
-                                        {entry.success ? (
-                                            <p className="text-sm text-text truncate">
-                                                {entry.name}{entry.ticketType ? ` — ${entry.ticketType}` : ''}
                                             </p>
-                                        ) : (
-                                            <p className="text-sm truncate" style={{ color: '#E63950' }}>
-                                                {entry.message}
-                                            </p>
-                                        )}
+                                            {item.attendee_name && (
+                                                <p className="text-xs text-muted truncate">{item.attendee_name}</p>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            {item.checked_in ? (
+                                                <span className="text-xs font-bold text-warm-green bg-warm-green/10 px-3 py-1.5 rounded-full">
+                                                    {item.quantity > 1 ? `All ${item.quantity} in` : `In${item.checked_in_at ? ` · ${item.checked_in_at}` : ''}`}
+                                                </span>
+                                            ) : (
+                                                <>
+                                                    {item.quantity > 1 && item.scanned_count > 0 && (
+                                                        <span className="text-xs font-bold text-warm-amberText bg-warm-amber/15 px-2.5 py-1.5 rounded-full">
+                                                            {item.scanned_count}/{item.quantity} in
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleItemCheckin(item)}
+                                                        disabled={checkingItemId === item.id}
+                                                        className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-white shadow-glow disabled:opacity-50 disabled:shadow-none transition"
+                                                    >
+                                                        {checkingItemId === item.id ? '...' : 'Check in'}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                    <span className="text-xs text-muted shrink-0">{entry.time}</span>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <Link href={`/organiser/events/${eventId}/attendees`} className="mt-4 text-xs text-muted hover:text-accent transition-colors">
-                    View all attendees
-                </Link>
+                    {/* Scan history log */}
+                    {scanLog.length > 0 && (
+                        <div className="bg-card rounded-2xl border border-border shadow-soft mt-4 overflow-hidden">
+                            <div className="px-4 py-3 border-b border-border">
+                                <p className="text-xs font-bold text-muted uppercase tracking-wider">
+                                    Recent scans ({scanLog.length})
+                                </p>
+                            </div>
+                            <div className="max-h-[220px] overflow-y-auto divide-y divide-border">
+                                {scanLog.map((entry) => (
+                                    <div key={entry.id} className="flex items-center gap-3 px-4 py-3">
+                                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${entry.success ? 'bg-warm-green' : 'bg-accent'}`} />
+                                        <p className={`flex-1 min-w-0 truncate text-sm ${entry.success ? '' : 'font-semibold text-accent'}`}>
+                                            {entry.success
+                                                ? `${entry.name}${entry.ticketType ? ` — ${entry.ticketType}` : ''}`
+                                                : entry.message}
+                                        </p>
+                                        <span className="text-xs text-muted shrink-0">{entry.time}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <Link href={`/organiser/events/${eventId}/attendees`} className="block text-center text-xs font-semibold text-muted hover:text-accent transition-colors mt-5">
+                        View all attendees
+                    </Link>
+                </main>
             </div>
 
             {/* Result overlay */}
             {result && cardStyle && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
-                    <div
-                        style={{
-                            background: cardStyle.bg,
-                            border: `1px solid ${cardStyle.border}`,
-                            color: cardStyle.color,
-                        }}
-                        className="w-full max-w-sm rounded-none p-8 text-center"
-                    >
-                        <div className="text-6xl mb-4">{cardStyle.icon}</div>
-                        <h2 className="font-heading text-2xl tracking-widest mb-3">{cardStyle.title}</h2>
-                        <p className="text-base mb-4">{result.message}</p>
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-5">
+                    <div className={`w-full max-w-sm rounded-3xl p-8 text-center text-white shadow-hover ${cardStyle.bg}`}>
+                        <div className="w-20 h-20 mx-auto rounded-full bg-white/25 flex items-center justify-center mb-4">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <path d={RESULT_ICONS[cardStyle.icon]} />
+                            </svg>
+                        </div>
+                        <h2 className="font-heading text-4xl tracking-wider mb-2">{cardStyle.title}</h2>
+                        <p className="text-base font-medium">{result.message}</p>
                         {result.success && result.data && (
-                            <div className="text-sm space-y-1 opacity-80 border-t pt-4 mt-2" style={{ borderColor: cardStyle.border }}>
-                                <p className="font-semibold">{result.data.attendee_name}</p>
+                            <div className="border-t border-white/30 mt-5 pt-4 text-sm space-y-0.5">
+                                <p className="font-bold text-lg">{result.data.attendee_name}</p>
                                 <p>{result.data.ticket_type}</p>
                                 <p>{result.data.checked_in_at}</p>
                             </div>

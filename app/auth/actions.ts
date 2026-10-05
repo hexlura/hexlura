@@ -128,6 +128,23 @@ export async function signIn(formData: FormData) {
     // Return redirectTo — client uses router.push(), never call redirect() here
     if (role === 'admin') return { redirectTo: '/admin' }
     if (role === 'organiser') return { redirectTo: '/organiser' }
+
+    // Door staff (legacy profile role, or an active door_staff seat on an organiser team)
+    // go straight to the scanner — same rule the middleware applies to signed-in visitors.
+    if (role === 'door_staff') return { redirectTo: '/checkin' }
+    const { data: teamRows, error: teamError } = await serviceClient
+        .from('organiser_team')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('privilege', 'door_staff')
+        .eq('status', 'active')
+        .limit(1)
+    if (teamError) {
+        console.error('signIn: organiser_team lookup failed — sending to /account:', teamError.message)
+    } else if (teamRows && teamRows.length > 0) {
+        return { redirectTo: '/checkin' }
+    }
+
     return { redirectTo: '/account' }
 }
 

@@ -1,7 +1,8 @@
+import { redirect } from 'next/navigation'
+
 export const dynamic = 'force-dynamic'
 
-import { LoginForm } from './login-form'
-
+// Door staff now sign in on the main login page; this keeps old links and bookmarks working.
 export default function DoorStaffLoginPage() {
-    return <LoginForm />
+    redirect('/auth/login?next=/checkin')
 }

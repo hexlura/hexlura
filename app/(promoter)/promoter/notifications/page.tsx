@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { NotificationsInbox, type NotificationRow } from '@/components/notifications/NotificationsInbox'
+import { type NotificationRow } from '@/components/notifications/NotificationsInbox'
+import { OrganiserNotificationsInbox } from '@/components/organiser/OrganiserNotificationsInbox'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,5 +17,6 @@ export default async function PromoterNotificationsPage() {
         .order('created_at', { ascending: false })
         .limit(200)
 
-    return <NotificationsInbox initial={(notifications || []) as NotificationRow[]} />
+    // The warm inbox built for the organiser portal is generic — reused as-is here.
+    return <OrganiserNotificationsInbox initial={(notifications || []) as NotificationRow[]} />
 }

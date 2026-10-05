@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { FocusShell } from '@/components/layout/FocusShell'
 
 export default async function OrganiserPendingPage() {
     const supabase = createClient()
@@ -15,57 +16,50 @@ export default async function OrganiserPendingPage() {
 
     if (organiser?.is_approved) redirect('/organiser')
 
+    async function signOutAction() {
+        'use server'
+        const { createClient: createServerClient } = await import('@/lib/supabase/server')
+        const { redirect: redirectTo } = await import('next/navigation')
+        const supabaseClient = createServerClient()
+        await supabaseClient.auth.signOut()
+        redirectTo('/')
+    }
+
     return (
-        <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <a href="/" className="font-heading text-2xl text-accent tracking-widest">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></a>
-                <a href="/account" className="flex items-center gap-1.5 text-sm text-muted hover:text-text transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    Back to Dashboard
-                </a>
-            </header>
-
-            <div className="flex items-center justify-center p-6 py-12">
-                <div className="max-w-md w-full text-center">
-                    <div className="bg-card border border-border rounded-none p-10">
-                        <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-                        <h1 className="font-heading text-3xl text-text tracking-wide mb-4">APPLICATION UNDER REVIEW</h1>
-                        <p className="text-muted text-sm leading-relaxed mb-2">
-                            Your organiser account is currently being reviewed by our team.
-                        </p>
-                        <p className="text-gold text-xs mb-6">Usually within 24 hours</p>
-                        <p className="text-muted text-sm leading-relaxed mb-6">
-                            We&apos;ll send you an email to <strong className="text-text">{user.email}</strong> once approved.
-                        </p>
-
-                        <div className="bg-surface border border-border rounded-none p-4 mb-8 text-left">
-                            <p className="text-xs text-muted mb-1">Need help?</p>
-                            <a href="mailto:support@hexlura.com" className="text-accent text-sm hover:underline font-medium">
-                                support@hexlura.com
-                            </a>
-                        </div>
-
-                        <form action={async () => {
-                            'use server'
-                            const { createClient } = await import('@/lib/supabase/server')
-                            const { redirect } = await import('next/navigation')
-                            const supabase = createClient()
-                            await supabase.auth.signOut()
-                            redirect('/')
-                        }}>
-                            <button
-                                type="submit"
-                                className="px-6 py-2.5 bg-surface border border-border rounded-sm text-sm text-muted hover:text-text transition-colors"
-                            >
-                                Sign Out
-                            </button>
-                        </form>
-                    </div>
+        <FocusShell
+            right={
+                <form action={signOutAction}>
+                    <button type="submit" className="text-sm font-semibold text-muted hover:text-text transition">Sign out</button>
+                </form>
+            }
+        >
+            <div className="w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-10 text-center">
+                <div className="w-16 h-16 rounded-full bg-warm-amber/15 flex items-center justify-center mx-auto mb-6">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9C6900" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                 </div>
+                <h1 className="font-heading text-4xl tracking-wide mb-3">APPLICATION UNDER REVIEW</h1>
+                <p className="text-sm text-muted leading-relaxed mb-3">Your organiser account is being reviewed by our team.</p>
+                <span className="inline-block text-xs font-bold text-warm-amberText bg-warm-amber/15 rounded-full px-3 py-1 mb-5">Usually within 24 hours</span>
+                <p className="text-sm text-muted leading-relaxed mb-7">
+                    We&apos;ll email <strong className="text-text">{user.email}</strong> as soon as you&apos;re approved.
+                </p>
+
+                <div className="rounded-2xl border border-border bg-background p-4 text-left mb-7">
+                    <p className="text-xs text-muted mb-0.5">Need help?</p>
+                    <a href="mailto:support@hexlura.com" className="text-sm font-semibold text-accent hover:underline">
+                        support@hexlura.com
+                    </a>
+                </div>
+
+                <form action={signOutAction}>
+                    <button
+                        type="submit"
+                        className="px-7 py-2.5 rounded-full border border-border bg-card text-sm font-semibold text-muted hover:text-text transition"
+                    >
+                        Sign out
+                    </button>
+                </form>
             </div>
-        </div>
+        </FocusShell>
     )
 }

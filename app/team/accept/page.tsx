@@ -6,6 +6,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { FocusShell } from '@/components/layout/FocusShell'
 
 const PRIVILEGE_LABELS: Record<string, string> = {
     door_staff: 'Door Staff',
@@ -69,43 +70,47 @@ function AcceptContent() {
         setState('success')
     }
 
-    const containerStyle: React.CSSProperties = {
-        maxWidth: 480, margin: '80px auto', padding: '0 24px', textAlign: 'center',
-    }
+    const cardClass = 'w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-8 text-center'
+    const primaryClass = 'block w-full py-3.5 rounded-full bg-accent text-white font-semibold text-center shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none'
+    const icon = (tint: string, path: React.ReactNode) => (
+        <div className={`w-14 h-14 rounded-2xl ${tint} flex items-center justify-center mx-auto mb-4`}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">{path}</svg>
+        </div>
+    )
+    const tick = <path d="m5 12 5 5L20 7" />
+    const cross = <path d="M18 6 6 18M6 6l12 12" />
+    const warn = <><path d="M12 8v5" /><path d="M12 17h.01" /></>
+    const signInAgain = `/auth/login?next=${encodeURIComponent(`/team/accept?token=${token}`)}`
 
     if (state === 'loading') {
         return (
-            <div style={containerStyle}>
-                <p style={{ color: '#8888AA', fontSize: 15 }}>Verifying invitation...</p>
+            <div className={cardClass}>
+                <p className="text-muted text-sm">Verifying invitation...</p>
             </div>
         )
     }
 
     if (state === 'invalid') {
         return (
-            <div style={containerStyle}>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Invalid Invitation</h1>
-                <p style={{ color: '#8888AA', fontSize: 15, marginBottom: 24 }}>This invitation link is invalid or has expired.</p>
-                <Link href="/" style={{ color: '#0A0A0F', fontSize: 14, textDecoration: 'underline' }}>Return to homepage</Link>
+            <div className={cardClass}>
+                {icon('bg-accent/10 text-accent', cross)}
+                <h1 className="font-heading text-3xl tracking-wide mb-2">INVALID INVITATION</h1>
+                <p className="text-sm text-muted mb-5">This invitation link is invalid or has expired.</p>
+                <Link href="/" className="text-sm text-accent font-semibold hover:underline">Return to homepage</Link>
             </div>
         )
     }
 
     if (state === 'wrong_account') {
         return (
-            <div style={containerStyle}>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Wrong Account</h1>
-                <p style={{ color: '#555', fontSize: 15, marginBottom: 8 }}>
-                    This invitation was sent to <strong>{invitedEmail}</strong>.
+            <div className={cardClass}>
+                {icon('bg-warm-amber/15 text-warm-amberText', warn)}
+                <h1 className="font-heading text-3xl tracking-wide mb-2">WRONG ACCOUNT</h1>
+                <p className="text-sm text-muted leading-relaxed mb-5">
+                    This invitation was sent to <strong className="text-text">{invitedEmail}</strong>. Please sign in with that account to accept it.
                 </p>
-                <p style={{ color: '#8888AA', fontSize: 13, marginBottom: 24 }}>
-                    Please sign in with the correct account to accept it.
-                </p>
-                <button
-                    onClick={() => router.replace(`/auth/login?next=${encodeURIComponent(`/team/accept?token=${token}`)}`)}
-                    style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                >
-                    Sign In with Correct Account
+                <button onClick={() => router.replace(signInAgain)} className={primaryClass}>
+                    Sign in with correct account
                 </button>
             </div>
         )
@@ -113,63 +118,50 @@ function AcceptContent() {
 
     if (state === 'already_accepted') {
         return (
-            <div style={containerStyle}>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Already Accepted</h1>
-                <p style={{ color: '#8888AA', fontSize: 15, marginBottom: 24 }}>You have already accepted this invitation.</p>
-                <Link href="/checkin" style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-                    Go to Check-in Scanner
-                </Link>
+            <div className={cardClass}>
+                {icon('bg-warm-green/10 text-warm-green', tick)}
+                <h1 className="font-heading text-3xl tracking-wide mb-2">ALREADY ACCEPTED</h1>
+                <p className="text-sm text-muted mb-5">You have already accepted this invitation.</p>
+                <Link href="/checkin" className={primaryClass}>Go to check-in scanner</Link>
             </div>
         )
     }
 
-
     if (state === 'success') {
         return (
-            <div style={containerStyle}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Welcome to the team!</h1>
-                <p style={{ color: '#555', fontSize: 15, marginBottom: 32 }}>
-                    You have joined <strong>{orgName}</strong> as <strong>Door Staff</strong>.
+            <div className={cardClass}>
+                {icon('bg-warm-green/10 text-warm-green', tick)}
+                <h1 className="font-heading text-3xl tracking-wide mb-2">WELCOME TO THE TEAM!</h1>
+                <p className="text-sm text-muted leading-relaxed mb-5">
+                    You have joined <strong className="text-text">{orgName}</strong> as <strong className="text-text">Door Staff</strong>.
                 </p>
-                <Link
-                    href="/checkin"
-                    style={{ display: 'inline-block', background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}
-                >
-                    Go to Check-in Scanner
-                </Link>
+                <Link href="/checkin" className={primaryClass}>Go to check-in scanner</Link>
             </div>
         )
     }
 
     if (state === 'error') {
         return (
-            <div style={containerStyle}>
-                <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#E63950', marginBottom: 12 }}>Something went wrong</h1>
-                <p style={{ color: '#8888AA', fontSize: 15, marginBottom: 24 }}>Failed to accept the invitation. Please try again.</p>
-                <button onClick={() => setState('ready')} style={{ background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-                    Try Again
-                </button>
+            <div className={cardClass}>
+                {icon('bg-accent/10 text-accent', cross)}
+                <h1 className="font-heading text-3xl tracking-wide mb-2">SOMETHING WENT WRONG</h1>
+                <p className="text-sm text-muted mb-5">Failed to accept the invitation. Please try again.</p>
+                <button onClick={() => setState('ready')} className={primaryClass}>Try again</button>
             </div>
         )
     }
 
     // ready or accepting
     return (
-        <div style={containerStyle}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 32, color: '#0A0A0F', marginBottom: 12 }}>Team Invitation</h1>
-            <p style={{ color: '#555', fontSize: 15, marginBottom: 8 }}>
-                You&apos;ve been invited to join <strong>{orgName}</strong> as <strong>{PRIVILEGE_LABELS[privilege] || privilege}</strong>.
-            </p>
-            <p style={{ color: '#8888AA', fontSize: 13, marginBottom: 32 }}>
+        <div className={cardClass}>
+            {icon('bg-accent/10 text-accent', <><circle cx="12" cy="8" r="3.5" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></>)}
+            <h1 className="font-heading text-3xl tracking-wide mb-2">TEAM INVITATION</h1>
+            <p className="text-sm text-muted leading-relaxed mb-5">
+                You&apos;ve been invited to join <strong className="text-text">{orgName}</strong> as <strong className="text-text">{PRIVILEGE_LABELS[privilege] || privilege}</strong>.
                 You will have access to the ticket scanner for check-in.
             </p>
-            <button
-                onClick={handleAccept}
-                disabled={state === 'accepting'}
-                style={{ background: '#0A0A0F', color: '#fff', padding: '12px 28px', fontSize: 14, fontWeight: 600, border: 'none', cursor: state === 'accepting' ? 'not-allowed' : 'pointer', opacity: state === 'accepting' ? 0.7 : 1 }}
-            >
-                {state === 'accepting' ? 'Accepting...' : 'Accept Invitation'}
+            <button onClick={handleAccept} disabled={state === 'accepting'} className={primaryClass}>
+                {state === 'accepting' ? 'Accepting...' : 'Accept invitation'}
             </button>
         </div>
     )
@@ -177,12 +169,14 @@ function AcceptContent() {
 
 export default function TeamAcceptPage() {
     return (
-        <Suspense fallback={
-            <div style={{ maxWidth: 480, margin: '80px auto', padding: '0 24px', textAlign: 'center' }}>
-                <p style={{ color: '#8888AA' }}>Loading...</p>
-            </div>
-        }>
-            <AcceptContent />
-        </Suspense>
+        <FocusShell>
+            <Suspense fallback={
+                <div className="w-full max-w-md bg-card rounded-3xl border border-border shadow-card p-8 text-center">
+                    <p className="text-muted text-sm">Loading...</p>
+                </div>
+            }>
+                <AcceptContent />
+            </Suspense>
+        </FocusShell>
     )
 }

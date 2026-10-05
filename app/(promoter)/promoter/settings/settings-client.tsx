@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SaveFeedback } from '@/components/ui/SaveFeedback'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
 interface Initial {
     displayName: string
@@ -55,113 +56,101 @@ export function SettingsClient({ initial }: { initial: Initial }) {
         router.refresh()
     }
 
+    const fieldClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+    const labelClass = "text-xs font-semibold text-muted mb-1.5 block"
+
     return (
-        <div className="max-w-3xl">
-            <h1 className="font-heading text-4xl text-text tracking-wide mb-2">SETTINGS</h1>
-            <p className="text-muted text-sm mb-8">Profile and payout preferences.</p>
+        <div className="max-w-7xl">
+            <div className="mb-6">
+                <h1 className="font-heading text-4xl tracking-wide">SETTINGS</h1>
+                <p className="text-muted text-sm mt-1">Profile and payout preferences.</p>
+            </div>
 
-            <form onSubmit={handleSave} className="flex flex-col gap-8">
+            <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                 {/* Profile */}
-                <section className="bg-card border border-border p-6">
-                    <h2 className="text-sm font-medium text-text mb-4">Profile</h2>
-
-                    <div className="mb-4">
-                        <label className="text-xs uppercase tracking-wider text-muted block mb-2">Display name</label>
-                        <input
-                            type="text"
-                            value={displayName}
-                            onChange={e => setDisplayName(e.target.value)}
-                            minLength={2}
-                            maxLength={50}
-                            required
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none focus:border-accent"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="text-xs uppercase tracking-wider text-muted block mb-2">Referral code</label>
-                        <code className="block bg-surface border border-border px-3 py-2.5 text-sm text-accent font-mono">{initial.referralCode}</code>
-                        <p className="text-xs text-muted mt-1">Cannot be changed.</p>
-                    </div>
-
-                    <div>
-                        <label className="text-xs uppercase tracking-wider text-muted block mb-2">Short bio</label>
-                        <textarea
-                            value={bio}
-                            onChange={e => setBio(e.target.value)}
-                            rows={3}
-                            maxLength={300}
-                            className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none focus:border-accent resize-none"
-                        />
+                <section className="bg-card rounded-2xl shadow-card p-7 h-full">
+                    <h2 className="text-sm font-semibold mb-5">Profile</h2>
+                    <div className="space-y-4">
+                        <div>
+                            <label className={labelClass}>Display name</label>
+                            <input
+                                type="text"
+                                value={displayName}
+                                onChange={e => setDisplayName(e.target.value)}
+                                minLength={2}
+                                maxLength={50}
+                                required
+                                className={fieldClass}
+                            />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Referral code</label>
+                            <div className="flex items-center gap-2">
+                                <code className="flex-1 font-mono text-sm text-accent bg-background border border-border rounded-lg px-3.5 py-2.5">{initial.referralCode}</code>
+                                <span className="text-xs text-muted">Cannot be changed</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label className={labelClass}>Short bio</label>
+                            <textarea
+                                value={bio}
+                                onChange={e => setBio(e.target.value)}
+                                rows={3}
+                                maxLength={300}
+                                className={`${fieldClass} resize-none`}
+                            />
+                            <p className="text-xs text-muted mt-1 text-right">{bio.length} / 300</p>
+                        </div>
                     </div>
                 </section>
 
                 {/* Payout */}
-                <section className="bg-card border border-border p-6">
-                    <h2 className="text-sm font-medium text-text mb-1">Payout method</h2>
-                    <p className="text-xs text-muted mb-4">How you&apos;d like to receive your commission.</p>
+                <section className="bg-card rounded-2xl shadow-card p-7 h-full">
+                    <h2 className="text-sm font-semibold">Payout method</h2>
+                    <p className="text-xs text-muted mb-5">How you&apos;d like to receive your commission.</p>
 
-                    <div className="mb-4">
-                        <label className="text-xs uppercase tracking-wider text-muted block mb-2">Method</label>
-                        <select
-                            value={payoutMethod}
-                            onChange={e => setPayoutMethod(e.target.value)}
-                            className="bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none"
-                        >
-                            <option value="">Select…</option>
-                            <option value="bank_transfer">Bank Transfer (UK)</option>
-                            <option value="stripe_connect">Stripe Connect</option>
-                        </select>
-                    </div>
-
-                    {payoutMethod === 'bank_transfer' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="md:col-span-2">
-                                <label className="text-xs uppercase tracking-wider text-muted block mb-2">Account name</label>
-                                <input
-                                    type="text"
-                                    value={bankName}
-                                    onChange={e => setBankName(e.target.value)}
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none focus:border-accent"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs uppercase tracking-wider text-muted block mb-2">Sort code</label>
-                                <input
-                                    type="text"
-                                    value={bankSort}
-                                    onChange={e => setBankSort(e.target.value)}
-                                    placeholder="00-00-00"
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none focus:border-accent"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs uppercase tracking-wider text-muted block mb-2">Account number</label>
-                                <input
-                                    type="text"
-                                    value={bankNumber}
-                                    onChange={e => setBankNumber(e.target.value)}
-                                    placeholder="12345678"
-                                    className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm text-text focus:outline-none focus:border-accent"
-                                />
-                            </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className={labelClass}>Method</label>
+                            <ThemedSelect value={payoutMethod} onChange={e => setPayoutMethod(e.target.value)} className="w-full">
+                                <option value="">Select…</option>
+                                <option value="bank_transfer">Bank Transfer (UK)</option>
+                                <option value="stripe_connect">Stripe Connect</option>
+                            </ThemedSelect>
                         </div>
-                    )}
 
-                    {payoutMethod === 'stripe_connect' && (
-                        <p className="text-xs text-muted bg-surface border border-border px-3 py-2.5">
-                            Stripe Connect onboarding is coming soon. For now, please use bank transfer.
-                        </p>
-                    )}
+                        {payoutMethod === 'bank_transfer' && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2">
+                                    <label className={labelClass}>Account name</label>
+                                    <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} className={fieldClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Sort code</label>
+                                    <input type="text" value={bankSort} onChange={e => setBankSort(e.target.value)} placeholder="00-00-00" className={`${fieldClass} font-mono`} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Account number</label>
+                                    <input type="text" value={bankNumber} onChange={e => setBankNumber(e.target.value)} placeholder="12345678" className={`${fieldClass} font-mono`} />
+                                </div>
+                            </div>
+                        )}
+
+                        {payoutMethod === 'stripe_connect' && (
+                            <p className="text-xs text-muted bg-background border border-border rounded-lg px-3.5 py-2.5">
+                                Stripe Connect onboarding is coming soon. For now, please use bank transfer.
+                            </p>
+                        )}
+                    </div>
                 </section>
 
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="lg:col-span-2 flex items-center gap-4 flex-wrap">
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="bg-accent text-white font-bold uppercase tracking-wider text-sm py-3 px-6 hover:bg-accent/90 disabled:opacity-50"
+                        className="px-8 py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none"
                     >
-                        {submitting ? 'Saving…' : 'Save Changes'}
+                        {submitting ? 'Saving…' : 'Save changes'}
                     </button>
                     <SaveFeedback message={feedback?.message ?? null} tone={feedback?.tone ?? 'success'} />
                 </div>

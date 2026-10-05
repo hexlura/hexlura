@@ -26,11 +26,11 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-    pending: 'text-muted bg-muted/10 border-muted/20',
-    requested: 'text-gold bg-gold/10 border-gold/20',
-    processing: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
-    paid: 'text-success bg-success/10 border-success/20',
-    failed: 'text-accent bg-accent/10 border-accent/20',
+    pending: 'text-muted bg-border',
+    requested: 'text-warm-yellowText bg-warm-yellow/15',
+    processing: 'text-blue-600 bg-blue-500/10',
+    paid: 'text-warm-green bg-warm-green/10',
+    failed: 'text-accent bg-accent/10',
 }
 
 function fmtDate(iso: string | null) {
@@ -71,51 +71,60 @@ export function PayoutsClient({
     return (
         <div className="max-w-7xl">
             {toast && (
-                <div className="fixed top-4 right-4 z-50 bg-success/20 border border-success/40 text-success px-4 py-2 rounded-none text-sm">{toast}</div>
+                <div className="fixed top-4 right-4 z-50 bg-card border border-border shadow-hover text-text px-4 py-3 rounded-xl text-sm font-semibold">{toast}</div>
             )}
 
-            <h1 className="font-heading text-4xl text-text tracking-wide mb-6">PAYOUTS</h1>
+            <div className="mb-6">
+                <h1 className="font-heading text-4xl tracking-wide">PAYOUTS</h1>
+                <p className="text-muted text-sm mt-1">Request your available commission and track past payouts.</p>
+            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
                 {/* Available balance — hero card */}
-                <div className="lg:col-span-2 bg-accent text-white p-6 relative overflow-hidden">
-                    <div className="text-xs uppercase tracking-wider opacity-90 mb-2">Available Balance</div>
-                    <div className="font-heading text-5xl mb-4">{formatPence(availablePence)}</div>
+                <div className="lg:col-span-2 bg-gradient-to-br from-accent to-warm-orange rounded-2xl shadow-glow p-7 text-white relative overflow-hidden">
+                    <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10" />
+                    <p className="text-xs uppercase tracking-wider opacity-90 mb-2 relative">Available balance</p>
+                    <p className="font-heading text-6xl mb-5 relative">{formatPence(availablePence)}</p>
                     <button
                         onClick={handleRequest}
                         disabled={submitting || availablePence <= 0}
-                        className="bg-white text-accent font-bold px-5 py-2.5 text-sm uppercase tracking-wider hover:bg-white/90 disabled:opacity-50"
+                        className="bg-white text-text font-bold text-sm px-6 py-3 rounded-full hover:bg-white/90 transition relative disabled:opacity-60"
                     >
-                        {submitting ? 'Requesting…' : 'Request Payout →'}
+                        {submitting ? 'Requesting…' : 'Request payout →'}
                     </button>
-                    <p className="text-xs mt-3 opacity-80">{payoutMethod ? `${payoutMethod === 'bank_transfer' ? 'Bank transfer' : 'Stripe Connect'} · 2–5 business days` : 'Set a payout method in Settings to request a withdrawal'}</p>
+                    <p className="text-xs mt-3 opacity-90 relative">
+                        {payoutMethod
+                            ? `${payoutMethod === 'bank_transfer' ? 'Bank transfer' : 'Stripe Connect'} · 2–5 business days`
+                            : 'Set a payout method in Settings to request a withdrawal'}
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 lg:flex lg:flex-col">
-                    <div className="bg-card border border-border p-4">
-                        <div className="text-xs uppercase tracking-wider text-muted mb-1">Total Earned</div>
-                        <div className="font-heading text-2xl text-gold">{formatPence(totalEarnedPence)}</div>
+                <div className="grid grid-cols-3 lg:grid-cols-1 gap-5">
+                    <div className="bg-card rounded-2xl shadow-card p-5">
+                        <p className="text-xs text-muted uppercase tracking-wider mb-1">Total earned</p>
+                        <p className="font-heading text-3xl">{formatPence(totalEarnedPence)}</p>
                     </div>
-                    <div className="bg-card border border-border p-4">
-                        <div className="text-xs uppercase tracking-wider text-muted mb-1">Total Paid Out</div>
-                        <div className="font-heading text-2xl text-success">{formatPence(totalPaidPence)}</div>
+                    <div className="bg-card rounded-2xl shadow-card p-5">
+                        <p className="text-xs text-muted uppercase tracking-wider mb-1">Total paid out</p>
+                        <p className="font-heading text-3xl text-warm-green">{formatPence(totalPaidPence)}</p>
                     </div>
-                    <div className="bg-card border border-border p-4 col-span-2 lg:col-span-1">
-                        <div className="text-xs uppercase tracking-wider text-muted mb-1">This Month</div>
-                        <div className="font-heading text-2xl text-text">{formatPence(thisMonthPence)}</div>
+                    <div className="bg-card rounded-2xl shadow-card p-5">
+                        <p className="text-xs text-muted uppercase tracking-wider mb-1">This month</p>
+                        <p className="font-heading text-3xl">{formatPence(thisMonthPence)}</p>
                     </div>
                 </div>
             </div>
 
-            <h2 className="text-sm font-medium text-text mb-1">Payout History</h2>
-            <p className="text-xs text-muted mb-4">Your commission payouts</p>
-
-            <div className="bg-card border border-border overflow-x-auto">
+            <div className="bg-card rounded-2xl shadow-card overflow-x-auto">
+                <div className="px-6 py-4 border-b border-border">
+                    <h2 className="text-sm font-semibold">Payout history</h2>
+                    <p className="text-xs text-muted">Your commission payouts</p>
+                </div>
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="border-b border-border">
-                            {['Reference', 'Amount', 'Method', 'Status', 'Requested', 'Paid'].map(h => (
-                                <th key={h} className="text-left text-xs text-muted py-3 px-4 font-normal uppercase tracking-wider">{h}</th>
+                        <tr className="text-left text-xs text-muted uppercase tracking-wider border-b border-border">
+                            {['Reference', 'Amount', 'Method', 'Status', 'Requested', 'Paid'].map((h, i) => (
+                                <th key={h} className={`font-medium py-3 ${i === 0 || i === 5 ? 'px-6' : 'px-4'}`}>{h}</th>
                             ))}
                         </tr>
                     </thead>
@@ -124,17 +133,17 @@ export function PayoutsClient({
                             <tr><td colSpan={6} className="text-center text-muted text-xs py-12">No payouts yet</td></tr>
                         )}
                         {history.map(p => (
-                            <tr key={p.id} className="border-b border-border/50">
-                                <td className="py-3 px-4 font-mono text-xs text-accent">{p.reference || p.id.slice(0, 8).toUpperCase()}</td>
-                                <td className="py-3 px-4 text-success font-medium">{formatPence(p.net_pence)}</td>
-                                <td className="py-3 px-4 text-xs text-text">{p.payout_method === 'bank_transfer' ? 'Bank Transfer' : p.payout_method === 'stripe_connect' ? 'Stripe' : '—'}</td>
-                                <td className="py-3 px-4">
-                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[p.status] || STATUS_BADGE.pending}`}>
+                            <tr key={p.id} className="border-b border-border last:border-0 hover:bg-background/60 transition-colors">
+                                <td className="py-3.5 px-6 font-mono text-xs text-accent">{p.reference || p.id.slice(0, 8).toUpperCase()}</td>
+                                <td className="py-3.5 px-4 font-semibold text-warm-green">{formatPence(p.net_pence)}</td>
+                                <td className="py-3.5 px-4 text-xs">{p.payout_method === 'bank_transfer' ? 'Bank transfer' : p.payout_method === 'stripe_connect' ? 'Stripe' : '—'}</td>
+                                <td className="py-3.5 px-4">
+                                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full capitalize ${STATUS_BADGE[p.status] || STATUS_BADGE.pending}`}>
                                         {p.status}
                                     </span>
                                 </td>
-                                <td className="py-3 px-4 text-xs text-muted whitespace-nowrap">{fmtDate(p.requested_at)}</td>
-                                <td className="py-3 px-4 text-xs text-muted whitespace-nowrap">{fmtDate(p.paid_at)}</td>
+                                <td className="py-3.5 px-4 text-xs text-muted whitespace-nowrap">{fmtDate(p.requested_at)}</td>
+                                <td className="py-3.5 px-6 text-xs text-muted whitespace-nowrap">{fmtDate(p.paid_at)}</td>
                             </tr>
                         ))}
                     </tbody>
