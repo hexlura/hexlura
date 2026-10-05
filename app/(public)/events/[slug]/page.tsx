@@ -258,6 +258,15 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             />
                         </div>
 
+                        {/* Tags */}
+                        {event.tags?.length > 0 && (
+                            <div className="flex gap-2 flex-wrap mb-8">
+                                {event.tags.map((tag: string) => (
+                                    <span key={tag} className="inline-block px-3 py-1.5 rounded-xl bg-border text-muted text-xs font-medium leading-relaxed break-words max-w-full">{tag}</span>
+                                ))}
+                            </div>
+                        )}
+
                         {/* YouTube Embed */}
                         {youtubeId && (
                             <div className="mb-8 rounded-2xl overflow-hidden shadow-soft" style={{ aspectRatio: '16/9', width: '100%' }}>
@@ -335,13 +344,10 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     {/* ============ RIGHT: title, meta, tickets ============ */}
                     <div className="order-1 lg:order-2 lg:sticky lg:top-24 h-fit">
 
-                        <div className="flex gap-2 flex-wrap mb-3">
+                        <div className="mb-3">
                             <span className="inline-block px-3 py-1 rounded-full bg-text text-white text-xs font-semibold" style={{ background: '#1A0E0C' }}>
                                 {event.category}
                             </span>
-                            {event.tags?.map((tag: string) => (
-                                <span key={tag} className="inline-block px-3 py-1 rounded-full bg-border text-muted text-xs font-semibold">{tag}</span>
-                            ))}
                         </div>
 
                         <h1 className="font-heading text-4xl leading-none uppercase mb-4">{event.title}</h1>
@@ -381,6 +387,12 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             })()}
                         </div>
 
+                        {/* Booking widget */}
+                        <div id="booking-widget">
+                            <BookingWidget event={event} ticketTypes={ticketTypes} feeConfig={bookingFeeConfig} />
+                        </div>
+
+                        <div className="mt-5">
                         {/* Refund policy badge */}
                         {refundPolicy && (
                             <div className="mb-4">
@@ -398,7 +410,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                         )}
 
                         {/* Favourite & Share buttons */}
-                        <div className="flex items-center gap-2 mb-6 flex-wrap">
+                        <div className="flex items-center gap-2 mt-4 flex-wrap">
                             <LikeButton
                                 eventId={event.id}
                                 initialLiked={userLiked}
@@ -409,9 +421,6 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             <EventQRButton />
                         </div>
 
-                        {/* Booking widget */}
-                        <div id="booking-widget">
-                            <BookingWidget event={event} ticketTypes={ticketTypes} feeConfig={bookingFeeConfig} />
                         </div>
                     </div>
 
