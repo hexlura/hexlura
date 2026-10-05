@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/WarmButton'
@@ -164,18 +165,16 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                     }}
                     className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-warm-red/25"
                 />
-                <select
-                    defaultValue={searchParams.get('category') ?? ''}
+                <ThemedSelect
+                    value={searchParams.get('category') ?? ''}
                     onChange={e => updateParam('category', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <select
-                    defaultValue={searchParams.get('status') ?? ''}
+                </ThemedSelect>
+                <ThemedSelect
+                    value={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Statuses</option>
                     <option value="published">Published</option>
@@ -183,14 +182,13 @@ export function AdminEventsClient({ events, totalRows, page, pageSize, defaultTa
                     <option value="ended">Ended</option>
                     <option value="cancelled">Cancelled</option>
                     <option value="archived">Archived</option>
-                </select>
-                <select
+                </ThemedSelect>
+                <ThemedSelect
                     value={pageSize}
                     onChange={e => updateParam('pageSize', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n} per page</option>)}
-                </select>
+                </ThemedSelect>
             </div>
 
             {/* Table */}

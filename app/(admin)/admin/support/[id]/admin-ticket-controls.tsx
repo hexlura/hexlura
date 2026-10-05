@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useState } from 'react'
 import {
     SUPPORT_STATUSES, SUPPORT_PRIORITIES,
@@ -94,25 +95,25 @@ export function AdminTicketControls({ ticketId, initialStatus, initialPriority }
             <div className="bg-card shadow-card p-4 space-y-3 rounded-2xl">
                 <div>
                     <label className="block text-xs text-muted uppercase tracking-wider mb-1">Status</label>
-                    <select
+                    <ThemedSelect
                         value={status}
                         onChange={e => handleStatusChange(e.target.value as SupportStatus)}
                         disabled={savingMeta}
                         className={selectClass}
                     >
                         {SUPPORT_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
+                    </ThemedSelect>
                 </div>
                 <div>
                     <label className="block text-xs text-muted uppercase tracking-wider mb-1">Priority</label>
-                    <select
+                    <ThemedSelect
                         value={priority}
                         onChange={e => handlePriorityChange(e.target.value as SupportPriority)}
                         disabled={savingMeta}
                         className={selectClass}
                     >
                         {SUPPORT_PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                    </select>
+                    </ThemedSelect>
                 </div>
                 {metaError && <p className="text-xs text-accent">{metaError}</p>}
             </div>

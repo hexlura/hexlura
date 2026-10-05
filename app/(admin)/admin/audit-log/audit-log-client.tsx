@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -64,36 +65,33 @@ export function AuditLogClient({ logs, totalRows, page, pageSize, distinctAction
 
             {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-6">
-                <select
-                    defaultValue={searchParams.get('admin') ?? ''}
+                <ThemedSelect
+                    value={searchParams.get('admin') ?? ''}
                     onChange={e => updateParam('admin', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Admins</option>
                     {admins.map(a => (
                         <option key={a.id} value={a.id}>{a.full_name ?? a.id}</option>
                     ))}
-                </select>
-                <select
-                    defaultValue={searchParams.get('action') ?? ''}
+                </ThemedSelect>
+                <ThemedSelect
+                    value={searchParams.get('action') ?? ''}
                     onChange={e => updateParam('action', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Actions</option>
                     {distinctActions.map(a => (
                         <option key={a} value={a}>{a}</option>
                     ))}
-                </select>
-                <select
-                    defaultValue={searchParams.get('entity') ?? ''}
+                </ThemedSelect>
+                <ThemedSelect
+                    value={searchParams.get('entity') ?? ''}
                     onChange={e => updateParam('entity', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Entity Types</option>
                     {['user', 'organiser', 'event', 'booking', 'payout'].map(e => (
                         <option key={e} value={e}>{e}</option>
                     ))}
-                </select>
+                </ThemedSelect>
                 <input
                     type="date"
                     defaultValue={searchParams.get('from') ?? ''}

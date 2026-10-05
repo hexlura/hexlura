@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
@@ -325,17 +326,16 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                         <p className="text-sm text-muted mb-4">Amount: {formatPence(statusModal.net_pence)}</p>
                         <div className="mb-4">
                             <label className="text-xs text-muted block mb-1.5">New Status</label>
-                            <select
+                            <ThemedSelect
                                 value={selectedStatus}
-                                onChange={e => setSelectedStatus(e.target.value)}
-                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                                onChange={e => setSelectedStatus(e.target.value)} className="w-full"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="requested">Requested</option>
                                 <option value="processing">Processing</option>
                                 <option value="paid">Paid</option>
                                 <option value="failed">Failed</option>
-                            </select>
+                            </ThemedSelect>
                         </div>
                         {selectedStatus === 'paid' && (
                             <div className="mb-4">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter } from 'next/navigation'
 
 const COLORS = [
@@ -196,13 +197,13 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                     {/* Heading font */}
                     <div>
                         <label style={label}>Heading Font</label>
-                        <select
+                        <ThemedSelect
                             value={get('design_font_heading')}
                             onChange={e => set('design_font_heading', e.target.value)}
                             style={selectStyle}
                         >
                             {HEADING_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-                        </select>
+                        </ThemedSelect>
                         <div style={previewBox}>
                             <p style={{ fontFamily: `'${get('design_font_heading')}', sans-serif`, fontSize: '32px', margin: 0, color: '#1A0E0C', lineHeight: 1 }}>
                                 HEXLURA EVENTS
@@ -217,13 +218,13 @@ export function DesignClient({ initialSettings }: DesignClientProps) {
                     {/* Body font */}
                     <div>
                         <label style={label}>Body Font</label>
-                        <select
+                        <ThemedSelect
                             value={get('design_font_body')}
                             onChange={e => set('design_font_body', e.target.value)}
                             style={selectStyle}
                         >
                             {BODY_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-                        </select>
+                        </ThemedSelect>
                         <div style={previewBox}>
                             <p style={{ fontFamily: `'${get('design_font_body')}', sans-serif`, fontSize: '15px', margin: 0, color: '#1A0E0C', lineHeight: 1.65 }}>
                                 Find and book the best events near you. Browse clubs, gigs, festivals, comedy nights, and more — all in one place.

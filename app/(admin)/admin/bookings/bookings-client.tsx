@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { aggregateBookingItems } from '@/lib/booking-aggregation'
@@ -225,51 +226,48 @@ export function AdminBookingsClient({ bookings, totalRows, page, pageSize, event
                         placeholder="Booking ref…"
                         value={filterQ}
                         onChange={e => setFilterQ(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-warm-red/25"
+                        className="bg-card border border-border rounded-xl shadow-soft px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-56 focus:ring-2 focus:ring-warm-red/25"
                     />
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[11px] uppercase tracking-wider text-muted">Status</label>
-                    <select
+                    <ThemedSelect
                         value={filterStatus}
                         onChange={e => setFilterStatus(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
                     >
                         <option value="">All</option>
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
                         <option value="cancelled">Cancelled</option>
                         <option value="refunded">Refunded</option>
-                    </select>
+                    </ThemedSelect>
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[11px] uppercase tracking-wider text-muted">Organiser</label>
-                    <select
+                    <ThemedSelect
                         value={filterOrganiserId}
-                        onChange={e => setFilterOrganiserId(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[220px] focus:ring-2 focus:ring-warm-red/25"
+                        onChange={e => setFilterOrganiserId(e.target.value)} className="max-w-[220px]"
                     >
                         <option value="">All organisers</option>
                         {organisers.map(o => (
                             <option key={o.id} value={o.id}>{o.org_name}</option>
                         ))}
-                    </select>
+                    </ThemedSelect>
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label className="text-[11px] uppercase tracking-wider text-muted">Event</label>
-                    <select
+                    <ThemedSelect
                         value={filterEventId}
-                        onChange={e => setFilterEventId(e.target.value)}
-                        className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:border-accent max-w-[260px] focus:ring-2 focus:ring-warm-red/25"
+                        onChange={e => setFilterEventId(e.target.value)} className="max-w-[260px]"
                     >
                         <option value="">All events</option>
                         {visibleEvents.map(ev => (
                             <option key={ev.id} value={ev.id}>{ev.title}</option>
                         ))}
-                    </select>
+                    </ThemedSelect>
                 </div>
 
                 <button

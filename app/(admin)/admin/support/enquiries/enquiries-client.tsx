@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
     CONTACT_TOPICS, ENQUIRY_PRIORITIES, ENQUIRIES_UPDATED_EVENT, topicLabel, priorityLabel,
@@ -254,70 +255,70 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                             placeholder="Name or email…"
                             value={filterSearch}
                             onChange={e => setFilterSearch(e.target.value)}
-                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
+                            className="w-full bg-card border border-border rounded-xl shadow-soft px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent focus:ring-2 focus:ring-warm-red/25"
                         />
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-topic">Topic</label>
-                        <select id="enq-topic" value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-topic" value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             {CONTACT_TOPICS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-source">Source</label>
-                        <select id="enq-source" value={filterSource} onChange={e => setFilterSource(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-source" value={filterSource} onChange={e => setFilterSource(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             {availableSources.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-read">Read</label>
-                        <select id="enq-read" value={filterIsRead} onChange={e => setFilterIsRead(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-read" value={filterIsRead} onChange={e => setFilterIsRead(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             <option value="true">Read</option>
                             <option value="false">Unread</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-connected">Connected</label>
-                        <select id="enq-connected" value={filterIsConnected} onChange={e => setFilterIsConnected(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-connected" value={filterIsConnected} onChange={e => setFilterIsConnected(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             <option value="true">Connected</option>
                             <option value="false">Not connected</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-converted">Converted</label>
-                        <select id="enq-converted" value={filterIsConverted} onChange={e => setFilterIsConverted(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-converted" value={filterIsConverted} onChange={e => setFilterIsConverted(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             <option value="true">Converted</option>
                             <option value="false">Not converted</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-schedule">Schedule</label>
-                        <select id="enq-schedule" value={filterSchedule} onChange={e => setFilterSchedule(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-schedule" value={filterSchedule} onChange={e => setFilterSchedule(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             <option value="scheduled">Scheduled</option>
                             <option value="not_scheduled">Not scheduled</option>
                             <option value="upcoming">Upcoming</option>
                             <option value="past">Past</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-[11px] uppercase tracking-wider text-muted" htmlFor="enq-priority">Priority</label>
-                        <select id="enq-priority" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className={`${selectClass} w-full`}>
+                        <ThemedSelect id="enq-priority" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className={`${selectClass} w-full`}>
                             <option value="">All</option>
                             {ENQUIRY_PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                        </select>
+                        </ThemedSelect>
                     </div>
                 </div>
 
@@ -490,16 +491,15 @@ export function EnquiriesClient({ enquiries, totalRows, page, pageSize, availabl
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <label className="block text-xs text-muted uppercase tracking-wider mb-1" htmlFor="enq-priority-edit">Priority</label>
-                                        <select
+                                        <ThemedSelect
                                             id="enq-priority-edit"
                                             value={editPriority}
                                             onChange={e => setEditPriority(e.target.value)}
-                                            disabled={saving}
-                                            className="w-full bg-white border border-border text-text text-sm px-2 py-1.5 focus:outline-none focus:border-accent disabled:opacity-60"
+                                            disabled={saving} className="w-full"
                                         >
                                             <option value="">None</option>
                                             {ENQUIRY_PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                                        </select>
+                                        </ThemedSelect>
                                     </div>
 
                                     <div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
@@ -279,10 +280,9 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             {/* All Payouts Table */}
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-medium text-text">All Payouts</h2>
-                <select
-                    defaultValue={searchParams.get('status') ?? ''}
+                <ThemedSelect
+                    value={searchParams.get('status') ?? ''}
                     onChange={e => updateParam('status', e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
                 >
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
@@ -290,7 +290,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                     <option value="processing">Processing</option>
                     <option value="paid">Paid</option>
                     <option value="failed">Failed</option>
-                </select>
+                </ThemedSelect>
             </div>
 
             <div className="bg-card shadow-card rounded-2xl overflow-x-auto mb-4">
@@ -495,17 +495,16 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                         <p className="text-sm text-muted mb-4">Amount: {formatPence(statusModal.net_pence || 0)}</p>
                         <div className="mb-4">
                             <label className="text-xs text-muted block mb-1.5">New Status</label>
-                            <select
+                            <ThemedSelect
                                 value={selectedStatus}
-                                onChange={e => setSelectedStatus(e.target.value)}
-                                className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                                onChange={e => setSelectedStatus(e.target.value)} className="w-full"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="requested">Requested</option>
                                 <option value="processing">Processing</option>
                                 <option value="paid">Paid</option>
                                 <option value="failed">Failed</option>
-                            </select>
+                            </ThemedSelect>
                         </div>
                         {selectedStatus === 'paid' && (
                             <div className="mb-4">

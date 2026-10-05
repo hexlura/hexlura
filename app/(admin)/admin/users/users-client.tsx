@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
@@ -158,51 +159,51 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                 </div>
             )}
 
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-heading text-4xl text-text tracking-wide">USERS</h1>
                     <p className="text-muted text-sm mt-1">{totalCount.toLocaleString()} total accounts</p>
                 </div>
-            </div>
 
-            {/* Search + Filters */}
-            <div className="flex flex-wrap gap-3 mb-6">
-                <input
-                    type="search"
-                    placeholder="Search by name or email..."
-                    value={searchValue}
-                    onChange={e => handleSearchChange(e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent w-64 focus:ring-2 focus:ring-warm-red/25"
-                />
-                <select
-                    value={searchParams.get('role') ?? 'all'}
-                    onChange={e => updateParam('role', e.target.value === 'all' ? '' : e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
-                >
-                    <option value="all">All Roles</option>
-                    <option value="user">User</option>
-                    <option value="organiser">Organiser</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <select
-                    value={searchParams.get('status') ?? 'all'}
-                    onChange={e => updateParam('status', e.target.value === 'all' ? '' : e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
-                >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
-                </select>
-                <select
-                    value={searchParams.get('joined') ?? 'any'}
-                    onChange={e => updateParam('joined', e.target.value === 'any' ? '' : e.target.value)}
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-warm-red/25"
-                >
-                    <option value="any">Any Time</option>
-                    <option value="7d">Last 7 Days</option>
-                    <option value="30d">Last 30 Days</option>
-                    <option value="90d">Last 90 Days</option>
-                </select>
+                {/* Search + Filters */}
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="relative w-72">
+                        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                        <input
+                            type="search"
+                            placeholder="Search by name or email…"
+                            value={searchValue}
+                            onChange={e => handleSearchChange(e.target.value)}
+                            className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-text placeholder:text-muted shadow-soft focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                        />
+                    </div>
+                    <ThemedSelect
+                        value={searchParams.get('role') ?? 'all'}
+                        onChange={e => updateParam('role', e.target.value === 'all' ? '' : e.target.value)}
+                    >
+                        <option value="all">All roles</option>
+                        <option value="user">User</option>
+                        <option value="organiser">Organiser</option>
+                        <option value="admin">Admin</option>
+                    </ThemedSelect>
+                    <ThemedSelect
+                        value={searchParams.get('status') ?? 'all'}
+                        onChange={e => updateParam('status', e.target.value === 'all' ? '' : e.target.value)}
+                    >
+                        <option value="all">All statuses</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </ThemedSelect>
+                    <ThemedSelect
+                        value={searchParams.get('joined') ?? 'any'}
+                        onChange={e => updateParam('joined', e.target.value === 'any' ? '' : e.target.value)}
+                    >
+                        <option value="any">Any time</option>
+                        <option value="7d">Last 7 days</option>
+                        <option value="30d">Last 30 days</option>
+                        <option value="90d">Last 90 days</option>
+                    </ThemedSelect>
+                </div>
             </div>
 
             {/* Table */}
@@ -331,15 +332,14 @@ export function UsersClient({ users, totalCount, page, pageSize, totalRows, curr
                     <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Change Role</h3>
                         <p className="text-sm text-muted mb-4">{selectedUser.full_name} · {selectedUser.email}</p>
-                        <select
+                        <ThemedSelect
                             value={newRole}
-                            onChange={e => setNewRole(e.target.value as UserRole)}
-                            className="w-full bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none mb-4 focus:ring-2 focus:ring-warm-red/25"
+                            onChange={e => setNewRole(e.target.value as UserRole)} className="w-full mb-4"
                         >
                             <option value="user">User</option>
                             <option value="organiser">Organiser</option>
                             <option value="admin">Admin</option>
-                        </select>
+                        </ThemedSelect>
                         <div className="flex gap-3">
                             <Button variant="primary" size="md" onClick={handleChangeRole} disabled={loading || newRole === selectedUser.role}>
                                 {loading ? 'Saving...' : 'Save Role'}

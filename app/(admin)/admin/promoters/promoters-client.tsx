@@ -130,7 +130,7 @@ export function PromotersClient({ active, suspended, defaultTab }: Props) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search by name, code or email…"
-                    className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-sm text-text focus:outline-none w-full sm:w-72 focus:ring-2 focus:ring-warm-red/25"
+                    className="bg-card border border-border rounded-xl shadow-soft px-3.5 py-2.5 text-sm text-text focus:outline-none w-full sm:w-72 focus:ring-2 focus:ring-warm-red/25"
                 />
             </div>
 

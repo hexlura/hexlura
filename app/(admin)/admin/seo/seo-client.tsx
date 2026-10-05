@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { SaveFeedback } from '@/components/ui/SaveFeedback'
@@ -224,7 +225,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                 <div className="mb-4">
                     <label className={labelClass}>Select Page</label>
                     <div className="flex gap-2">
-                        <select
+                        <ThemedSelect
                             value={useCustomPath ? '__custom__' : selectedPage}
                             onChange={e => {
                                 if (e.target.value === '__custom__') {
@@ -242,7 +243,7 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                                 </option>
                             ))}
                             <option value="__custom__">Custom path...</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
                 </div>
 
@@ -294,10 +295,10 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                         </div>
                         <div>
                             <label className={labelClass}>Twitter Card Type</label>
-                            <select value={twitterCard} onChange={e => setTwitterCard(e.target.value as 'summary' | 'summary_large_image')} className={inputClass}>
+                            <ThemedSelect value={twitterCard} onChange={e => setTwitterCard(e.target.value as 'summary' | 'summary_large_image')} className={inputClass}>
                                 <option value="summary_large_image">Large Image</option>
                                 <option value="summary">Summary</option>
-                            </select>
+                            </ThemedSelect>
                         </div>
                     </div>
                     <div>
@@ -319,12 +320,12 @@ export function SeoClient({ seoEntries, globalDefaults }: Props) {
                         </div>
                         <div>
                             <label className={labelClass}>Robots Directive</label>
-                            <select value={robots} onChange={e => setRobots(e.target.value)} className={inputClass}>
+                            <ThemedSelect value={robots} onChange={e => setRobots(e.target.value)} className={inputClass}>
                                 <option value="index, follow">index, follow (default)</option>
                                 <option value="noindex, follow">noindex, follow</option>
                                 <option value="index, nofollow">index, nofollow</option>
                                 <option value="noindex, nofollow">noindex, nofollow</option>
-                            </select>
+                            </ThemedSelect>
                         </div>
                     </div>
                     <div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { SaveFeedback } from '@/components/ui/SaveFeedback'
@@ -301,10 +302,10 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                     </div>
                     <div>
                         <label className={labelClass}>Discount Type</label>
-                        <select value={promoType} onChange={e => setPromoType(e.target.value as 'percent' | 'fixed')} className={inputClass}>
+                        <ThemedSelect value={promoType} onChange={e => setPromoType(e.target.value as 'percent' | 'fixed')} className={inputClass}>
                             <option value="percent">Percentage (%)</option>
                             <option value="fixed">Fixed Amount (£)</option>
-                        </select>
+                        </ThemedSelect>
                     </div>
                     <div>
                         <label className={labelClass}>Discount Value</label>
