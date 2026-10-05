@@ -29,22 +29,17 @@ function UpdatePasswordForm() {
 
     if (urlError) {
         return (
-            <section className="space-y-6">
-                <div className="space-y-2 text-center">
-                    <h1 className="font-heading text-4xl text-text">LINK EXPIRED</h1>
-                    <p className="text-muted text-sm">
-                        {isExpired
-                            ? 'This password reset link has expired or has already been used.'
-                            : urlError.replace(/\+/g, ' ')}
-                    </p>
+            <section className="text-center">
+                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-5">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
                 </div>
-                <div className="bg-accent/10 border border-accent/20 rounded-none px-4 py-3 text-center">
-                    <p className="text-sm text-accent">Please request a new password reset link.</p>
-                </div>
-                <a
-                    href="/auth/reset-password"
-                    className="block w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition text-center leading-[2.75rem]"
-                >
+                <h1 className="font-heading text-3xl tracking-wide mb-2">LINK EXPIRED</h1>
+                <p className="text-sm text-muted mb-6">
+                    {isExpired
+                        ? 'This password reset link is invalid or has expired. Please request a new one.'
+                        : `${urlError.replace(/\+/g, ' ')} Please request a new one.`}
+                </p>
+                <a href="/auth/reset-password" className="block w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition text-center">
                     Request New Link
                 </a>
             </section>
@@ -53,18 +48,13 @@ function UpdatePasswordForm() {
 
     if (success) {
         return (
-            <section className="space-y-6">
-                <div className="space-y-2 text-center">
-                    <h1 className="font-heading text-4xl text-text">PASSWORD UPDATED</h1>
-                    <p className="text-muted text-sm">Your password has been changed successfully.</p>
+            <section className="text-center">
+                <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-5">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B9C63" strokeWidth="3"><path d="m5 13 4 4L19 7" /></svg>
                 </div>
-                <div className="bg-success/10 border border-success/20 rounded-none px-4 py-3 text-center">
-                    <p className="text-sm text-success">You can now sign in with your new password.</p>
-                </div>
-                <a
-                    href="/auth/login"
-                    className="block w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition text-center leading-[2.75rem]"
-                >
+                <h1 className="font-heading text-3xl tracking-wide mb-2">PASSWORD UPDATED</h1>
+                <p className="text-sm text-muted mb-6">Your password has been changed successfully.</p>
+                <a href="/auth/login" className="block w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition text-center">
                     Go to Login
                 </a>
             </section>
@@ -72,15 +62,15 @@ function UpdatePasswordForm() {
     }
 
     return (
-        <section className="space-y-6">
-            <div className="space-y-2 text-center">
-                <h1 className="font-heading text-4xl text-text">NEW PASSWORD</h1>
-                <p className="text-muted text-sm">Choose a new password for your account.</p>
+        <section>
+            <div>
+                <h1 className="font-heading text-3xl tracking-wide mb-1">SET NEW PASSWORD</h1>
+                <p className="text-muted text-sm mb-6">Choose a new password for your account.</p>
             </div>
 
             <form onSubmit={async (e) => { e.preventDefault(); await handleSubmit(new FormData(e.currentTarget)) }} className="space-y-4">
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="password" className="text-sm font-medium text-text">New Password</label>
+                <div className="flex flex-col">
+                    <label htmlFor="password" className="text-xs font-semibold text-muted mb-1.5 block">New Password</label>
                     <input
                         id="password"
                         name="password"
@@ -88,12 +78,12 @@ function UpdatePasswordForm() {
                         required
                         minLength={8}
                         placeholder="Min 8 characters"
-                        className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
                     />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="confirm_password" className="text-sm font-medium text-text">Confirm Password</label>
+                <div className="flex flex-col">
+                    <label htmlFor="confirm_password" className="text-xs font-semibold text-muted mb-1.5 block">Confirm New Password</label>
                     <input
                         id="confirm_password"
                         name="confirm_password"
@@ -101,18 +91,18 @@ function UpdatePasswordForm() {
                         required
                         minLength={8}
                         placeholder="Repeat your password"
-                        className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
                     />
                 </div>
 
                 {error && (
-                    <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{error}</p>
+                    <p className="text-sm text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
                 )}
 
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] hover:-translate-y-px active:translate-y-0 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none flex items-center justify-center gap-2"
                 >
                     {loading && (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

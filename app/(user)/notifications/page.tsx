@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { NotificationsInbox, type NotificationRow } from '@/components/notifications/NotificationsInbox'
+import { type NotificationRow } from '@/components/notifications/NotificationsInbox'
+import { UserNotificationsInbox } from '@/components/notifications/UserNotificationsInbox'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,9 +17,5 @@ export default async function NotificationsPage() {
         .order('created_at', { ascending: false })
         .limit(200)
 
-    return (
-        <div className="max-w-3xl mx-auto">
-            <NotificationsInbox initial={(notifications || []) as NotificationRow[]} />
-        </div>
-    )
+    return <UserNotificationsInbox initial={(notifications || []) as NotificationRow[]} />
 }

@@ -32,8 +32,8 @@ export default async function BookingsPage() {
     )
 
     return (
-        <section className="space-y-6">
-            <h1 className="font-heading text-4xl text-text">MY BOOKINGS</h1>
+        <section className="max-w-4xl mx-auto">
+            <h1 className="font-heading text-3xl tracking-wide mb-6">MY BOOKINGS</h1>
             <BookingTabs upcoming={upcoming} past={past} cancelled={cancelled} />
         </section>
     )

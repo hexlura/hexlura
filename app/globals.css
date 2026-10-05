@@ -25,7 +25,8 @@
    Re-declares the theme variables on the wrapper element, so every token-based
    class inside it picks up the new palette and the admin /design overrides on
    :root can't win here. Nothing outside .organiser-theme is affected. */
-.organiser-theme {
+.organiser-theme,
+.warm-theme {
   --background: #FAF6F3;
   --surface: #FAF6F3;
   --card: #FFFFFF;
@@ -45,11 +46,17 @@
 /* Warm scrollbars for the organiser portal (mockup: 8px page, 5px sidebar menu).
    The page scrollbar belongs to <html>, so it is targeted with :has(). */
 html:has(.organiser-theme)::-webkit-scrollbar,
-.organiser-theme ::-webkit-scrollbar { width: 8px; height: 8px; }
+html:has(.warm-theme)::-webkit-scrollbar,
+.organiser-theme ::-webkit-scrollbar,
+.warm-theme ::-webkit-scrollbar { width: 8px; height: 8px; }
 html:has(.organiser-theme)::-webkit-scrollbar-thumb,
-.organiser-theme ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
+html:has(.warm-theme)::-webkit-scrollbar-thumb,
+.organiser-theme ::-webkit-scrollbar-thumb,
+.warm-theme ::-webkit-scrollbar-thumb { background: #F1E7E2; border-radius: 8px; }
 html:has(.organiser-theme)::-webkit-scrollbar-track,
-.organiser-theme ::-webkit-scrollbar-track { background: transparent; }
+html:has(.warm-theme)::-webkit-scrollbar-track,
+.organiser-theme ::-webkit-scrollbar-track,
+.warm-theme ::-webkit-scrollbar-track { background: transparent; }
 .organiser-theme aside nav::-webkit-scrollbar { width: 5px; }
 
 @layer utilities {

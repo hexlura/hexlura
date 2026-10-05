@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { statusBadgeClasses, statusLabel, categoryLabel, type SupportStatus, type SupportCategory } from '@/lib/support'
-import { ReplyForm } from './reply-form'
+import { UserReplyForm } from './user-reply-form'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,50 +52,64 @@ export default async function SupportTicketPage({ params }: { params: { id: stri
 
     const messages = (messagesData || []) as Message[]
     const isClosed = ticket.status === 'closed'
+    const userInitial = (user.user_metadata?.full_name || user.email || 'Y').charAt(0).toUpperCase()
+
+    const statusPill: Record<SupportStatus, string> = {
+        open: 'bg-warm-amber/15 text-warm-amberText',
+        pending_user: 'bg-warm-yellow/15 text-warm-yellowText',
+        in_progress: 'bg-blue-500/10 text-blue-600',
+        resolved: 'bg-warm-green/15 text-warm-green',
+        closed: 'bg-border text-muted',
+    }
 
     return (
-        <section className="max-w-3xl mx-auto space-y-6">
-            <div>
-                <Link href="/support" className="text-xs text-muted hover:text-text transition-colors">← Back to tickets</Link>
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-3">
-                    <div className="min-w-0">
-                        <h1 className="font-heading text-3xl text-text tracking-wide break-words">{ticket.subject}</h1>
-                        <p className="text-xs text-muted mt-1">
-                            {categoryLabel(ticket.category)} · Opened {fmt(ticket.created_at)}
-                        </p>
-                    </div>
-                    <span className={`text-xs px-2 py-1 border rounded-full whitespace-nowrap ${statusBadgeClasses(ticket.status)}`}>
-                        {statusLabel(ticket.status)}
-                    </span>
+        <section className="max-w-2xl mx-auto">
+            <Link href="/support" className="text-sm text-muted hover:text-accent mb-2 inline-block">← Back to Support</Link>
+
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+                <div className="min-w-0">
+                    <h1 className="font-heading text-2xl tracking-wide break-words">{ticket.subject}</h1>
+                    <p className="text-xs text-muted mt-1">
+                        {categoryLabel(ticket.category)} · Opened {fmt(ticket.created_at)}
+                    </p>
                 </div>
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase shrink-0 ${statusPill[ticket.status]}`}>
+                    {statusLabel(ticket.status)}
+                </span>
             </div>
 
-            <div className="space-y-3">
-                {messages.map(m => (
-                    <div
-                        key={m.id}
-                        className={`border p-4 ${m.is_admin ? 'bg-accent/5 border-accent/30' : 'bg-card border-border'}`}
-                    >
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-                                {m.is_admin ? 'Hexlura Support' : 'You'}
-                            </span>
-                            <span className="text-xs text-muted">{fmt(m.created_at)}</span>
+            {/* Message thread */}
+            <div className="space-y-4 mb-6">
+                {messages.map(m => m.is_admin ? (
+                    <div key={m.id} className="flex gap-3 justify-end">
+                        <div className="bg-text text-white rounded-2xl rounded-tr-sm p-4 max-w-md">
+                            <p className="text-sm whitespace-pre-wrap break-words">{m.body}</p>
+                            <p className="text-[11px] text-white/50 mt-2">{fmt(m.created_at)}</p>
                         </div>
-                        <p className="text-sm text-text whitespace-pre-wrap break-words">{m.body}</p>
+                        <div className="w-9 h-9 rounded-full bg-text flex items-center justify-center text-white text-xs font-bold shrink-0">HX</div>
+                    </div>
+                ) : (
+                    <div key={m.id} className="flex gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-warm-orange flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            {(userInitial || 'Y')}
+                        </div>
+                        <div className="bg-card rounded-2xl rounded-tl-sm border border-border shadow-soft p-4 max-w-md">
+                            <p className="text-sm whitespace-pre-wrap break-words">{m.body}</p>
+                            <p className="text-[11px] text-muted mt-2">{fmt(m.created_at)}</p>
+                        </div>
                     </div>
                 ))}
             </div>
 
             {isClosed ? (
-                <div className="bg-card border border-border p-4 text-center">
+                <div className="bg-card rounded-2xl border border-border shadow-soft p-4 text-center">
                     <p className="text-sm text-muted">This ticket is closed. Open a new ticket if you need further help.</p>
-                    <Link href="/support/new" className="text-accent text-sm hover:underline mt-2 inline-block">
+                    <Link href="/support/new" className="text-accent text-sm font-semibold hover:underline mt-2 inline-block">
                         Open a new ticket →
                     </Link>
                 </div>
             ) : (
-                <ReplyForm ticketId={ticket.id} />
+                <UserReplyForm ticketId={ticket.id} />
             )}
         </section>
     )

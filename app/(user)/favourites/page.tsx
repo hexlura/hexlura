@@ -98,18 +98,13 @@ export default async function FavouritesPage() {
             </FeeProvider>
         </div>
     ) : (
-        <div className="py-20 text-center border-2 border-dashed border-border rounded-none">
-            <div style={{ fontSize: 48, marginBottom: 16 }}>♡</div>
-            <p className="text-muted mb-2 text-lg">No favourites yet</p>
-            <p className="text-muted text-sm mb-6">
-                Tap the heart on any event to save it here.
-            </p>
+        <div className="py-16 text-center">
+            <p className="text-muted mb-4">You haven&apos;t saved any events yet. Tap the heart on any event to save it here.</p>
             <Link
                 href="/events"
-                className="inline-flex h-10 px-6 items-center text-sm font-medium bg-accent text-white hover:bg-accent/90 transition"
-                style={{ borderRadius: 0 }}
+                className="inline-flex px-6 py-3 rounded-full bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition"
             >
-                Browse Events →
+                Browse Events
             </Link>
         </div>
     )
@@ -128,28 +123,23 @@ export default async function FavouritesPage() {
             ))}
         </div>
     ) : (
-        <div className="py-20 text-center border-2 border-dashed border-border rounded-none">
-            <div style={{ fontSize: 48, marginBottom: 16 }}>☆</div>
-            <p className="text-muted mb-2 text-lg">No followed organisers yet</p>
-            <p className="text-muted text-sm mb-6">
-                Follow organisers to see them here.
-            </p>
+        <div className="py-16 text-center">
+            <p className="text-muted mb-4">You aren&apos;t following any organisers yet. Follow organisers to see them here.</p>
             <Link
                 href="/events"
-                className="inline-flex h-10 px-6 items-center text-sm font-medium bg-accent text-white hover:bg-accent/90 transition"
-                style={{ borderRadius: 0 }}
+                className="inline-flex px-6 py-3 rounded-full bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition"
             >
-                Browse Events →
+                Browse Events
             </Link>
         </div>
     )
 
     return (
-        <section className="max-w-6xl mx-auto space-y-8">
+        <section className="max-w-6xl mx-auto">
             {/* Header */}
-            <div>
-                <h1 className="font-heading text-4xl text-text">MY FAVOURITES</h1>
-                <p className="text-muted mt-1">
+            <div className="mb-6">
+                <h1 className="font-heading text-3xl tracking-wide">FAVOURITES</h1>
+                <p className="text-muted text-sm mt-1">
                     {likedEvents.length + followedOrganisers.length > 0
                         ? `${likedEvents.length} saved event${likedEvents.length !== 1 ? 's' : ''} · ${followedOrganisers.length} followed organiser${followedOrganisers.length !== 1 ? 's' : ''}`
                         : 'Events and organisers you save will appear here.'}

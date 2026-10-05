@@ -12,42 +12,17 @@ interface FavouritesTabsProps {
 export default function FavouritesTabs({ eventsContent, organisersContent, eventCount, organiserCount }: FavouritesTabsProps) {
     const [activeTab, setActiveTab] = useState<'events' | 'organisers'>('events');
 
+    const tabClass = (active: boolean) =>
+        `pb-3 border-b-2 transition ${active ? 'text-text border-accent' : 'text-muted border-transparent hover:text-text'}`;
+
     return (
         <div>
             {/* Tab bar */}
-            <div style={{ display: 'flex', gap: '24px', borderBottom: '1px solid #E0E0E8', marginBottom: '24px' }}>
-                <button
-                    onClick={() => setActiveTab('events')}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        paddingBottom: '10px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: activeTab === 'events' ? '#E63950' : '#666677',
-                        borderBottom: activeTab === 'events' ? '2px solid #E63950' : '2px solid transparent',
-                        marginBottom: '-1px',
-                        transition: 'color 0.15s, border-color 0.15s',
-                    }}
-                >
+            <div className="flex items-center gap-6 border-b border-border mb-6 text-sm font-semibold">
+                <button onClick={() => setActiveTab('events')} className={tabClass(activeTab === 'events')}>
                     Events ({eventCount})
                 </button>
-                <button
-                    onClick={() => setActiveTab('organisers')}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        paddingBottom: '10px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: activeTab === 'organisers' ? '#E63950' : '#666677',
-                        borderBottom: activeTab === 'organisers' ? '2px solid #E63950' : '2px solid transparent',
-                        marginBottom: '-1px',
-                        transition: 'color 0.15s, border-color 0.15s',
-                    }}
-                >
+                <button onClick={() => setActiveTab('organisers')} className={tabClass(activeTab === 'organisers')}>
                     Organisers ({organiserCount})
                 </button>
             </div>

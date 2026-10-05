@@ -4,6 +4,7 @@ import { formatPence, allocateFee } from '@/lib/fees'
 import { Booking } from '@/types'
 import { aggregateBookingItems, type RawBookingItem } from '@/lib/booking-aggregation'
 import { isRefundWindowOpen } from '@/lib/refund-policy'
+import Link from 'next/link'
 import RefundButton from './refund-button'
 
 export default async function BookingDetailPage({ params }: { params: { ref: string } }) {
@@ -87,133 +88,155 @@ export default async function BookingDetailPage({ params }: { params: { ref: str
     // Each line shows its all-in price (ticket + its share of all fees)
     const lineFees = allocateFee(displayItems.map(r => r.subtotal_pence), totalFee)
 
+    const statusChip: Record<string, string> = {
+        confirmed: 'bg-warm-green/15 text-warm-green',
+        cancelled: 'bg-warm-red/10 text-warm-red',
+        refunded: 'bg-warm-amber/15 text-warm-amberText',
+    }
+    const downloadBtn = 'px-4 py-2 rounded-full bg-text text-white text-xs font-semibold hover:bg-black transition whitespace-nowrap'
+
     return (
-        <section className="max-w-3xl mx-auto space-y-8">
+        <section className="max-w-3xl mx-auto">
+            <Link href="/bookings" className="text-sm text-muted hover:text-accent mb-2 inline-block">← Back to Bookings</Link>
+
             {/* Header */}
-            <div className="space-y-2">
-                <h1 className="font-heading text-4xl text-text">{event?.title || 'Booking'}</h1>
-                <p className="text-muted">{eventDate} · {eventTime}</p>
-                <p className="text-muted">{event?.venue_name}, {event?.venue_address}</p>
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+                <div className="min-w-0">
+                    <p className="text-xs font-mono text-muted mb-1">{booking.booking_ref}</p>
+                    <h1 className="font-heading text-3xl tracking-wide">{event?.title || 'Booking'}</h1>
+                    <p className="text-sm text-muted mt-1">
+                        {[event?.venue_name, event?.venue_address].filter(Boolean).join(', ')}
+                        {eventDate && ` · ${eventDate}, ${eventTime}`}
+                    </p>
+                </div>
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase ${statusChip[booking.status] || 'bg-border text-muted'}`}>
+                    {booking.status}
+                </span>
             </div>
 
+            {/* Refund status banner */}
+            {existingRefund && existingRefund.status === 'pending' && (
+                <RefundBanner tone="amber">Refund requested — your request is being reviewed by the organiser.</RefundBanner>
+            )}
+            {existingRefund && existingRefund.status === 'organiser_approved' && (
+                <RefundBanner tone="amber">Under review — the organiser approved your refund and it is awaiting final confirmation.</RefundBanner>
+            )}
+            {existingRefund && existingRefund.status === 'admin_approved' && (
+                <RefundBanner tone="green">
+                    Refunded — your refund of £{((existingRefund.refund_amount_pence ?? 0) / 100).toFixed(2)} has been processed. Allow 5–10 business days to appear.
+                </RefundBanner>
+            )}
+            {existingRefund && (existingRefund.status === 'organiser_rejected' || existingRefund.status === 'admin_rejected') && (
+                <RefundBanner tone="red">
+                    Refund declined — if you believe this is an error, email <span className="font-semibold">support@hexlura.com</span> with your booking reference:{' '}
+                    <span className="font-mono">{booking.booking_ref}</span>
+                </RefundBanner>
+            )}
+
             {/* Ticket breakdown */}
-            <div className="bg-surface border border-border rounded-none p-6 space-y-4">
-                <h3 className="font-bold text-text text-lg">Ticket Breakdown</h3>
+            <div className="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+                <h2 className="font-heading text-lg tracking-wide mb-4">TICKET BREAKDOWN</h2>
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="border-b border-border text-muted text-left">
-                            <th className="pb-2">Ticket</th>
-                            <th className="pb-2 text-center">Qty</th>
-                            <th className="pb-2 text-right">Price</th>
+                        <tr className="text-left text-xs text-muted border-b border-border">
+                            <th className="pb-2 font-semibold">Ticket</th>
+                            <th className="pb-2 font-semibold text-center">Qty</th>
+                            <th className="pb-2 font-semibold text-right">Price</th>
                         </tr>
                     </thead>
                     <tbody>
                         {displayItems.map((row, i) => (
-                            <tr key={row.key} className="border-b border-border/50">
-                                <td className="py-3 text-text">
+                            <tr key={row.key} className="border-b border-border">
+                                <td className="py-3">
                                     {row.name}
                                     {row.is_group && row.group_size > 1 && (
                                         <span className="block text-xs text-muted">Admits {row.group_size} per ticket</span>
                                     )}
                                 </td>
-                                <td className="py-3 text-center text-text">{row.quantity}</td>
-                                <td className="py-3 text-right text-text">{formatPence(row.subtotal_pence + lineFees[i])}</td>
+                                <td className="py-3 text-center">{row.quantity}</td>
+                                <td className="py-3 text-right font-semibold">{formatPence(row.subtotal_pence + lineFees[i])}</td>
                             </tr>
                         ))}
                         {discount > 0 && (
-                            <tr className="border-b border-border/50">
+                            <tr className="border-b border-border">
                                 <td colSpan={2} className="py-3 text-success">Promo discount</td>
                                 <td className="py-3 text-right text-success">-{formatPence(discount)}</td>
                             </tr>
                         )}
-                        <tr>
-                            <td colSpan={2} className="py-3 font-bold text-text text-lg">Total</td>
-                            <td className="py-3 text-right font-bold text-text text-lg">{formatPence(total)}</td>
-                        </tr>
-                        {totalFee > 0 && (
-                            <tr>
-                                <td colSpan={3} className="pb-1 text-right text-xs text-muted">incl. {formatPence(totalFee)} fee</td>
-                            </tr>
-                        )}
                     </tbody>
                 </table>
-
-                {booking.payment_method && (
-                    <p className="text-sm text-muted">Paid via {booking.payment_method}</p>
+                <div className="mt-4 flex justify-between items-baseline font-semibold text-base">
+                    <span>Total Paid</span>
+                    <span className="font-heading text-xl">{formatPence(total)}</span>
+                </div>
+                {totalFee > 0 && (
+                    <p className="text-right text-xs text-muted mt-1">incl. {formatPence(totalFee)} fee</p>
                 )}
-                {confirmedDate && (
-                    <p className="text-sm text-muted">Confirmed {confirmedDate}</p>
+                {(booking.payment_method || confirmedDate) && (
+                    <p className="text-xs text-muted mt-3">
+                        {booking.payment_method && <>Paid via {booking.payment_method}</>}
+                        {booking.payment_method && confirmedDate && ' · '}
+                        {confirmedDate && <>Confirmed {confirmedDate}</>}
+                    </p>
                 )}
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-3">
-                {totalTickets <= 1 ? (
-                    <a
-                        href={`/api/tickets/${booking.booking_ref}/pdf`}
-                        target="_blank"
-                        className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
-                    >
-                        Download PDF Ticket
-                    </a>
-                ) : (
-                    <div className="flex flex-col gap-2">
-                        {Array.from({ length: totalTickets }, (_, i) => (
-                            <a
-                                key={i}
-                                href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`}
-                                target="_blank"
-                                className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
-                            >
-                                Download Ticket {i + 1}
+            {/* Tickets */}
+            <div className="bg-card rounded-2xl border border-border shadow-soft p-6 mb-5">
+                <h2 className="font-heading text-lg tracking-wide mb-4">YOUR TICKETS</h2>
+                <div className="space-y-3">
+                    {totalTickets <= 1 ? (
+                        <div className="flex items-center justify-between gap-3 border border-border rounded-xl p-3.5">
+                            <div>
+                                <p className="text-sm font-semibold">Ticket</p>
+                                <p className="text-xs text-muted font-mono">{booking.booking_ref}</p>
+                            </div>
+                            <a href={`/api/tickets/${booking.booking_ref}/pdf`} target="_blank" className={downloadBtn}>
+                                Download PDF
                             </a>
-                        ))}
-                    </div>
-                )}
-
-                {canRefund && (
-                    <RefundButton bookingId={booking.id} />
-                )}
-
-                {existingRefund && existingRefund.status === 'pending' && (
-                    <div>
-                        <div style={{ display: 'inline-block', background: 'rgba(245,166,35,0.1)', border: '1px solid #F5A623', color: '#F5A623', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
-                            Refund Requested
                         </div>
-                        <p style={{ fontSize: '13px', color: '#8888AA' }}>Your request is being reviewed by the organiser.</p>
-                    </div>
-                )}
-                {existingRefund && existingRefund.status === 'organiser_approved' && (
-                    <div>
-                        <div style={{ display: 'inline-block', background: 'rgba(0,100,255,0.1)', border: '1px solid #6B9FFF', color: '#6B9FFF', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
-                            Under Review
-                        </div>
-                        <p style={{ fontSize: '13px', color: '#8888AA' }}>Your refund has been approved by the organiser and is awaiting final confirmation.</p>
-                    </div>
-                )}
-                {existingRefund && existingRefund.status === 'admin_approved' && (
-                    <div>
-                        <div style={{ display: 'inline-block', background: 'rgba(0,229,160,0.1)', border: '1px solid #00E5A0', color: '#00E5A0', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
-                            Refunded
-                        </div>
-                        <p style={{ fontSize: '13px', color: '#8888AA' }}>
-                            Your refund of £{((existingRefund.refund_amount_pence ?? 0) / 100).toFixed(2)} has been processed. Allow 5–10 business days to appear.
-                        </p>
-                    </div>
-                )}
-                {existingRefund && (existingRefund.status === 'organiser_rejected' || existingRefund.status === 'admin_rejected') && (
-                    <div>
-                        <div style={{ display: 'inline-block', background: 'rgba(230,57,80,0.1)', border: '1px solid #E63950', color: '#E63950', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginBottom: '8px' }}>
-                            Refund Declined
-                        </div>
-                        <p style={{ fontSize: '13px', color: '#8888AA' }}>
-                            Your refund request could not be approved. If you believe this is an error, email{' '}
-                            <span style={{ color: '#F0F0F8' }}>support@hexlura.com</span> with your booking reference:{' '}
-                            <span style={{ fontFamily: '"JetBrains Mono", monospace', color: '#E63950' }}>{booking.booking_ref}</span>
-                        </p>
-                    </div>
-                )}
+                    ) : (
+                        Array.from({ length: totalTickets }, (_, i) => (
+                            <div key={i} className="flex items-center justify-between gap-3 border border-border rounded-xl p-3.5">
+                                <div>
+                                    <p className="text-sm font-semibold">Ticket {i + 1}</p>
+                                    <p className="text-xs text-muted font-mono">{booking.booking_ref}</p>
+                                </div>
+                                <a href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}`} target="_blank" className={downloadBtn}>
+                                    Download PDF
+                                </a>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
+
+            {/* Refund request */}
+            {canRefund && (
+                <div className="bg-card rounded-2xl border border-border shadow-soft p-6 flex items-start justify-between flex-wrap gap-3">
+                    <div>
+                        <p className="font-semibold text-sm">Need a refund?</p>
+                        {refundPolicy && <p className="text-xs text-muted">{refundPolicy}</p>}
+                    </div>
+                    <div className="sm:text-right">
+                        <RefundButton bookingId={booking.id} />
+                    </div>
+                </div>
+            )}
         </section>
+    )
+}
+
+function RefundBanner({ tone, children }: { tone: 'amber' | 'green' | 'red'; children: React.ReactNode }) {
+    const styles = {
+        amber: 'bg-warm-amber/10 border-warm-amber/30 text-warm-amberText',
+        green: 'bg-warm-green/10 border-warm-green/30 text-warm-green',
+        red: 'bg-warm-red/10 border-warm-red/30 text-warm-red',
+    }
+    return (
+        <div className={`mb-6 flex items-start gap-3 px-4 py-3 rounded-xl border text-sm ${styles[tone]}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
+            <div>{children}</div>
+        </div>
     )
 }

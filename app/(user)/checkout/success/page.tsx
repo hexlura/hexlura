@@ -46,44 +46,44 @@ function SaveBookingPanel() {
 
     if (done) {
         return (
-            <div className="bg-surface border border-border rounded-none p-6 text-sm text-text">
+            <div className="bg-accent/5 rounded-2xl border border-accent/20 p-5 text-left text-sm">
                 Check your email to confirm and finish setting up your account.
             </div>
         )
     }
 
     return (
-        <form onSubmit={handleSave} className="bg-surface border border-border rounded-none p-6 space-y-4 text-left">
-            <div>
-                <p className="text-sm font-semibold text-text">Save this booking to an account</p>
-                <p className="text-xs text-muted mt-1">Create a password so you can manage this booking anytime.</p>
+        <form onSubmit={handleSave} className="bg-accent/5 rounded-2xl border border-accent/20 p-5 text-left">
+            <p className="font-semibold text-sm mb-1">Save this booking to an account</p>
+            <p className="text-xs text-muted mb-4">Create a free account to track this booking, get faster checkout next time, and manage refunds.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="Email address"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                />
+                <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-card border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25"
+                />
             </div>
-            <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-            />
-            <input
-                type="password"
-                required
-                minLength={8}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Create a password"
-                className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-            />
             {saveError && (
-                <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{saveError}</p>
+                <p className="text-sm font-semibold text-accent bg-accent/10 rounded-lg px-3.5 py-2.5 mb-3">{saveError}</p>
             )}
             <button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-11 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50"
+                className="px-6 py-2.5 rounded-full bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none"
             >
-                {submitting ? 'Saving...' : 'Save Account'}
+                {submitting ? 'Saving...' : 'Create Account'}
             </button>
         </form>
     )
@@ -172,8 +172,8 @@ function SuccessContent() {
     if (loading) {
         return (
             <div className="max-w-lg mx-auto py-16 text-center space-y-4">
-                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-none mx-auto" />
-                <p className="text-text font-medium">Confirming your booking...</p>
+                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-full mx-auto" />
+                <p className="font-medium">Confirming your booking...</p>
                 <p className="text-muted text-sm">This may take a few seconds.</p>
             </div>
         )
@@ -182,14 +182,14 @@ function SuccessContent() {
     if (error) {
         return (
             <div className="max-w-lg mx-auto py-16 text-center space-y-6">
-                <div className="w-20 h-20 rounded-none bg-accent/10 flex items-center justify-center mx-auto">
+                <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
                     <span className="text-accent text-4xl">✕</span>
                 </div>
-                <h1 className="font-heading text-4xl text-text">PAYMENT FAILED</h1>
+                <h1 className="font-heading text-4xl tracking-wide">PAYMENT FAILED</h1>
                 <p className="text-muted">{error}</p>
                 <button
                     onClick={() => window.history.back()}
-                    className="h-11 px-8 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition"
+                    className="px-8 py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition"
                 >
                     Try Again
                 </button>
@@ -200,25 +200,23 @@ function SuccessContent() {
     const eventDate = booking?.event?.start_at
         ? new Intl.DateTimeFormat('en-GB', {
             weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London',
+            timeZone: 'Europe/London',
         }).format(new Date(booking.event.start_at))
         : ''
 
+    const downloadClass = 'flex-1 py-3 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition flex items-center justify-center'
+
     return (
-        <div className="max-w-lg mx-auto py-16 text-center space-y-8">
-            {/* Animated checkmark */}
-            <div className="relative w-20 h-20 mx-auto">
-                <div className="w-20 h-20 rounded-none bg-success/20 flex items-center justify-center animate-bounce">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-success">
-                        <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                </div>
+        <div className="max-w-xl mx-auto py-10 text-center">
+            {/* Checkmark */}
+            <div className="w-20 h-20 rounded-full bg-warm-green/15 flex items-center justify-center mx-auto mb-5">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1B9C63" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                </svg>
             </div>
 
-            <div className="space-y-2">
-                <h1 className="font-heading text-5xl text-text">YOU&apos;RE GOING!</h1>
-                <p className="text-muted">Your tickets have been confirmed.</p>
-            </div>
+            <h1 className="font-heading text-5xl tracking-wide mb-2">YOU&apos;RE GOING!</h1>
+            <p className="text-muted mb-8">Your tickets have been confirmed.</p>
 
             {booking && (
                 <>
@@ -226,27 +224,31 @@ function SuccessContent() {
                         valuePence={booking.total_pence ?? 0}
                         bookingRef={booking.booking_ref}
                     />
-                    <div className="bg-surface border border-border rounded-none p-6 space-y-4">
-                        <p className="text-xs text-muted uppercase tracking-wider">Booking Reference</p>
-                        <p className="text-3xl font-bold text-accent font-mono tracking-wider">{booking.booking_ref}</p>
+                    <div className="bg-card rounded-2xl border border-border shadow-card p-6 text-left mb-6">
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            {booking.event && (
+                                <div className="min-w-0">
+                                    <p className="font-semibold">{booking.event.title}</p>
+                                    <p className="text-xs text-muted">{[eventDate, booking.event.venue_name].filter(Boolean).join(' · ')}</p>
+                                </div>
+                            )}
+                            <span className="px-2.5 py-1 rounded-full bg-warm-green/15 text-warm-green text-[11px] font-bold shrink-0">CONFIRMED</span>
+                        </div>
 
-                        {booking.event && (
-                            <div className="border-t border-border pt-4 space-y-1 text-sm">
-                                <p className="font-semibold text-text text-lg">{booking.event.title}</p>
-                                <p className="text-muted">{eventDate}</p>
-                                <p className="text-muted">{booking.event.venue_name}</p>
-                            </div>
-                        )}
+                        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-background mb-4">
+                            <span className="text-xs text-muted">Booking Reference</span>
+                            <span className="font-mono text-sm font-semibold text-accent">{booking.booking_ref}</span>
+                        </div>
 
                         {booking.items?.length > 0 && (
-                            <div className="border-t border-border pt-4 space-y-1 text-sm">
+                            <div className="space-y-1.5 text-sm border-t border-border pt-4">
                                 {booking.items.map((item, i) => {
                                     const isGroup = item.ticket_type?.is_group === true
                                     const groupSize = item.ticket_type?.group_size ?? 1
                                     return (
                                         <div key={i} className="flex justify-between">
                                             <span className="text-muted">{item.ticket_type?.name || 'Ticket'}</span>
-                                            <span className="text-text">
+                                            <span>
                                                 {isGroup
                                                     ? `× ${item.quantity} group (${item.quantity * groupSize} people)`
                                                     : `× ${item.quantity}`}
@@ -258,9 +260,9 @@ function SuccessContent() {
                         )}
 
                         {booking.total_pence != null && booking.total_pence > 0 && (
-                            <div className="border-t border-border pt-4 flex justify-between font-bold">
-                                <span>Total paid</span>
-                                <span>{formatPence(booking.total_pence)}</span>
+                            <div className="flex justify-between font-semibold text-base border-t border-border pt-3 mt-3">
+                                <span>Total Paid</span>
+                                <span className="font-heading text-xl">{formatPence(booking.total_pence)}</span>
                             </div>
                         )}
                     </div>
@@ -268,27 +270,32 @@ function SuccessContent() {
                     {(() => {
                         const totalTickets = (booking.items ?? []).reduce((sum, item) => sum + item.quantity, 0)
                         return (
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col sm:flex-row gap-3 mb-3">
                                 {totalTickets <= 1 ? (
                                     <a
                                         href={`/api/tickets/${booking.booking_ref}/pdf?token=${booking.ticket_access_token}`}
                                         target="_blank"
-                                        className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center gap-2"
+                                        className={downloadClass}
                                     >
-                                        Download Ticket
+                                        Download Ticket (PDF)
                                     </a>
                                 ) : (
-                                    Array.from({ length: totalTickets }, (_, i) => (
-                                        <a
-                                            key={i}
-                                            href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}&token=${booking.ticket_access_token}`}
-                                            target="_blank"
-                                            className="h-11 px-6 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition flex items-center justify-center"
-                                        >
-                                            Download Ticket {i + 1}
-                                        </a>
-                                    ))
+                                    <div className="flex flex-col gap-2 flex-1">
+                                        {Array.from({ length: totalTickets }, (_, i) => (
+                                            <a
+                                                key={i}
+                                                href={`/api/tickets/${booking.booking_ref}/pdf?index=${i + 1}&token=${booking.ticket_access_token}`}
+                                                target="_blank"
+                                                className={downloadClass}
+                                            >
+                                                Download Ticket {i + 1}
+                                            </a>
+                                        ))}
+                                    </div>
                                 )}
+                                <Link href="/events" className="flex-1 py-3 rounded-full border border-border text-sm font-semibold hover:bg-background transition flex items-center justify-center self-start sm:self-stretch">
+                                    Browse More Events
+                                </Link>
                             </div>
                         )
                     })()}
@@ -296,17 +303,16 @@ function SuccessContent() {
             )}
 
             {!booking && (
-                <div className="bg-surface border border-border rounded-none p-6 space-y-2">
-                    <p className="text-text font-medium">Payment successful!</p>
+                <div className="bg-card rounded-2xl border border-border shadow-card p-6 text-left space-y-2 mb-6">
+                    <p className="font-semibold">Payment successful!</p>
                     <p className="text-muted text-sm">Your booking is being processed. Check your email for confirmation details.</p>
+                    <Link href="/events" className="text-accent font-semibold hover:underline text-sm inline-block pt-2">
+                        Browse More Events
+                    </Link>
                 </div>
             )}
 
-            {isGuest && <SaveBookingPanel />}
-
-            <Link href="/events" className="text-accent hover:underline text-sm font-medium inline-block">
-                Browse More Events
-            </Link>
+            {isGuest && <div className="mt-8"><SaveBookingPanel /></div>}
         </div>
     )
 }
@@ -315,7 +321,7 @@ export default function CheckoutSuccessPage() {
     return (
         <Suspense fallback={
             <div className="max-w-lg mx-auto py-16 text-center">
-                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-none mx-auto" />
+                <div className="animate-spin h-10 w-10 border-2 border-accent border-t-transparent rounded-full mx-auto" />
             </div>
         }>
             <SuccessContent />

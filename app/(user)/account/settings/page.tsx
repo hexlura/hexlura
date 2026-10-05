@@ -7,10 +7,13 @@ import { createClient } from '@/lib/supabase/client'
 import { compressImage } from '@/lib/compress-image'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
+import { ThemedSelect } from '@/components/ui/ThemedSelect'
 
-const inputClass = "w-full h-11 border border-[#E0E0E0] bg-white px-4 text-sm text-[#0A0A0F] placeholder:text-[#C0C0C8] focus:outline-none focus:ring-2 focus:ring-[#0A0A0F] disabled:opacity-50 disabled:cursor-not-allowed"
-const labelClass = "block text-sm font-medium text-[#0A0A0F] mb-1.5"
-const cardStyle: React.CSSProperties = { background: '#FFFFFF', border: '1px solid #E0E0E0', padding: 24, marginBottom: 24 }
+const inputClass = "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:bg-border/40 disabled:text-muted disabled:cursor-not-allowed"
+const labelClass = "text-xs font-semibold text-muted mb-1.5 block"
+const cardClass = "bg-card rounded-2xl border border-border shadow-soft p-6 mb-5"
+const cardTitleClass = "font-heading text-lg tracking-wide mb-4"
 
 function Spinner() {
     return (
@@ -24,16 +27,13 @@ function Spinner() {
 function StatusMsg({ msg }: { msg: { type: 'success' | 'error'; text: string } | null }) {
     if (!msg) return null
     return (
-        <p style={{
-            fontSize: 13,
-            color: msg.type === 'success' ? '#00C48A' : '#E63950',
-        }}>
+        <p className={`text-sm font-semibold ${msg.type === 'success' ? 'text-success' : 'text-accent'}`}>
             {msg.text}
         </p>
     )
 }
 
-const saveButtonClass = "flex items-center justify-center gap-2 w-full h-11 bg-[#0A0A0F] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+const saveButtonClass = "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-text text-white text-sm font-semibold hover:bg-black transition disabled:opacity-50 disabled:cursor-not-allowed"
 
 export default function AccountSettingsPage() {
     const router = useRouter()
@@ -301,283 +301,201 @@ export default function AccountSettingsPage() {
     }
 
     return (
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 24px' }}>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 36, color: '#0A0A0F', letterSpacing: '0.05em', marginBottom: 32 }}>
-                ACCOUNT SETTINGS
-            </h1>
+        <div className="max-w-3xl mx-auto">
+            <Link href="/account" className="text-sm text-muted hover:text-accent mb-2 inline-block">← Back to Account</Link>
+            <h1 className="font-heading text-3xl tracking-wide mb-6">ACCOUNT SETTINGS</h1>
 
-            {/* Section 1 — Profile Photo */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 20 }}>Profile Photo</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-                    {/* Avatar */}
-                    <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+            {/* Profile Photo */}
+            <section className={cardClass}>
+                <h2 className={cardTitleClass}>PROFILE PHOTO</h2>
+                <div className="flex items-center gap-4 flex-wrap">
+                    <div className="w-20 h-20 rounded-full overflow-hidden shrink-0">
                         {avatarUrl ? (
                             <Image
                                 src={avatarUrl}
                                 alt="Profile photo"
-                                width={96}
-                                height={96}
-                                style={{ width: 96, height: 96, objectFit: 'cover' }}
+                                width={80}
+                                height={80}
+                                className="w-20 h-20 object-cover"
                                 unoptimized
                             />
                         ) : (
-                            <div style={{
-                                width: 96, height: 96, borderRadius: '50%',
-                                background: '#E63950', color: '#FFFFFF',
-                                fontSize: 32, fontWeight: 700,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}>
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-accent to-warm-orange flex items-center justify-center text-white text-3xl font-bold">
                                 {initials}
                             </div>
                         )}
                     </div>
-
                     <div>
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={avatarUploading}
-                            style={{
-                                border: '1px solid #C0C0C8', padding: '8px 20px',
-                                fontSize: 13, color: '#0A0A0F', cursor: 'pointer',
-                                background: 'white', display: 'inline-flex', alignItems: 'center', gap: 6,
-                            }}
+                            className="px-4 py-2 rounded-full border border-border text-sm font-semibold hover:bg-background transition inline-flex items-center gap-2"
                         >
                             {avatarUploading && <Spinner />}
-                            {avatarUploading ? 'Uploading...' : 'Change Photo'}
+                            {avatarUploading ? 'Uploading...' : 'Upload New'}
                         </button>
                         <input
                             ref={fileInputRef}
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
-                            style={{ display: 'none' }}
+                            className="hidden"
                             onChange={handleAvatarChange}
                         />
-                        <p style={{ fontSize: 11, color: '#8888AA', marginTop: 6 }}>JPG, PNG or WebP. Max 2MB.</p>
-                        {avatarError && <p style={{ fontSize: 12, color: '#E63950', marginTop: 4 }}>{avatarError}</p>}
+                        <p className="text-xs text-muted mt-2">JPG, PNG or WebP. Max 2MB.</p>
+                        {avatarError && <p className="text-xs font-semibold text-accent mt-1">{avatarError}</p>}
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Section 2 — Personal Information */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 20 }}>Personal Information</h2>
-                <form onSubmit={handleSavePersonal} className="space-y-4">
-                    <div>
-                        <label className={labelClass}>Full Name</label>
-                        <input
-                            type="text"
-                            value={fullName}
-                            onChange={e => setFullName(e.target.value)}
-                            className={inputClass}
-                            placeholder="Your full name"
-                        />
+            {/* Personal Information */}
+            <section className={cardClass}>
+                <h2 className={cardTitleClass}>PERSONAL INFORMATION</h2>
+                <form onSubmit={handleSavePersonal}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className={labelClass}>Full Name</label>
+                            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className={inputClass} placeholder="Your full name" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Email</label>
+                            <input type="email" value={email} className={inputClass} disabled readOnly />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Phone</label>
+                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClass} placeholder="+44 7700 900000" />
+                            <p className="text-xs text-muted mt-1">Used for booking notifications only</p>
+                        </div>
+                        <div>
+                            <label className={labelClass}>Date of Birth</label>
+                            <input type="date" value={dateOfBirth} onChange={e => setDateOfBirth(e.target.value)} className={inputClass} max={today} />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Gender</label>
+                            <ThemedSelect value={gender} onChange={e => setGender(e.target.value)} className="w-full">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Non-binary">Non-binary</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </ThemedSelect>
+                        </div>
                     </div>
-                    <div>
-                        <label className={labelClass}>Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            className={inputClass}
-                            disabled
-                            readOnly
-                        />
+                    <div className="mt-4 flex items-center gap-4 flex-wrap">
+                        <button type="submit" disabled={personalLoading} className={saveButtonClass}>
+                            {personalLoading && <Spinner />}
+                            {personalLoading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <StatusMsg msg={personalMsg} />
                     </div>
-                    <div>
-                        <label className={labelClass}>Phone Number</label>
-                        <input
-                            type="tel"
-                            value={phone}
-                            onChange={e => setPhone(e.target.value)}
-                            className={inputClass}
-                            placeholder="+44 7700 900000"
-                        />
-                        <p style={{ fontSize: 11, color: '#8888AA', marginTop: 4 }}>Used for booking notifications only</p>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Date of Birth</label>
-                        <input
-                            type="date"
-                            value={dateOfBirth}
-                            onChange={e => setDateOfBirth(e.target.value)}
-                            className={inputClass}
-                            max={today}
-                        />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Gender</label>
-                        <select
-                            value={gender}
-                            onChange={e => setGender(e.target.value)}
-                            className={inputClass}
-                            style={{ appearance: 'auto' }}
-                        >
-                            <option value="">Select</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Non-binary">Non-binary</option>
-                            <option value="Prefer not to say">Prefer not to say</option>
-                        </select>
-                    </div>
-
-                    {personalMsg && <StatusMsg msg={personalMsg} />}
-
-                    <button
-                        type="submit"
-                        disabled={personalLoading}
-                        className={saveButtonClass}
-                        style={{ marginTop: 20 }}
-                    >
-                        {personalLoading && <Spinner />}
-                        {personalLoading ? 'Saving...' : 'Save Changes'}
-                    </button>
                 </form>
-            </div>
+            </section>
 
-            {/* Section 3 — Address */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 20 }}>Address</h2>
-                <form onSubmit={handleSaveAddress} className="space-y-4">
-                    <div>
-                        <label className={labelClass}>Address</label>
-                        <input
-                            type="text"
-                            value={addressLine1}
-                            onChange={e => setAddressLine1(e.target.value)}
-                            className={inputClass}
-                            placeholder="123 High Street"
-                        />
+            {/* Address */}
+            <section className={cardClass}>
+                <h2 className={cardTitleClass}>ADDRESS</h2>
+                <form onSubmit={handleSaveAddress}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                            <label className={labelClass}>Address Line 1</label>
+                            <input type="text" value={addressLine1} onChange={e => setAddressLine1(e.target.value)} className={inputClass} placeholder="123 High Street" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Postcode</label>
+                            <input
+                                type="text"
+                                value={postcode}
+                                onChange={e => { setPostcode(e.target.value); setPostcodeMsg(null) }}
+                                onBlur={handlePostcodeBlur}
+                                className={inputClass}
+                                placeholder="SW1A 1AA"
+                            />
+                            {postcodeMsg && <p className="text-xs font-semibold text-success mt-1">{postcodeMsg}</p>}
+                        </div>
+                        <div>
+                            <label className={labelClass}>City <span className="font-normal">(auto-filled from postcode)</span></label>
+                            <input type="text" value={city} onChange={e => setCity(e.target.value)} className={inputClass} placeholder="London" />
+                        </div>
                     </div>
-                    <div>
-                        <label className={labelClass}>Postcode</label>
-                        <input
-                            type="text"
-                            value={postcode}
-                            onChange={e => { setPostcode(e.target.value); setPostcodeMsg(null) }}
-                            onBlur={handlePostcodeBlur}
-                            className={inputClass}
-                            placeholder="NN1 1AA"
-                        />
-                        {postcodeMsg && (
-                            <p style={{ fontSize: 12, color: '#00C48A', marginTop: 4 }}>{postcodeMsg}</p>
-                        )}
+                    <div className="mt-4 flex items-center gap-4 flex-wrap">
+                        <button type="submit" disabled={addressLoading} className={saveButtonClass}>
+                            {addressLoading && <Spinner />}
+                            {addressLoading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <StatusMsg msg={addressMsg} />
                     </div>
-                    <div>
-                        <label className={labelClass}>City</label>
-                        <input
-                            type="text"
-                            value={city}
-                            onChange={e => setCity(e.target.value)}
-                            className={inputClass}
-                            placeholder="Northampton"
-                        />
-                    </div>
-
-                    {addressMsg && <StatusMsg msg={addressMsg} />}
-
-                    <button
-                        type="submit"
-                        disabled={addressLoading}
-                        className={saveButtonClass}
-                        style={{ marginTop: 20 }}
-                    >
-                        {addressLoading && <Spinner />}
-                        {addressLoading ? 'Saving...' : 'Save Address'}
-                    </button>
                 </form>
-            </div>
+            </section>
 
-            {/* Section 4 — Password */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 20 }}>Change Password</h2>
-                <form onSubmit={handleChangePassword} className="space-y-4">
-                    <div>
-                        <label className={labelClass}>Current Password</label>
-                        <input
-                            type="password"
-                            value={currentPassword}
-                            onChange={e => setCurrentPassword(e.target.value)}
-                            className={inputClass}
-                            placeholder="Current password"
-                        />
+            {/* Change Password */}
+            <section className={cardClass}>
+                <h2 className={cardTitleClass}>CHANGE PASSWORD</h2>
+                <form onSubmit={handleChangePassword}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                            <label className={labelClass}>Current Password</label>
+                            <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className={inputClass} placeholder="Current password" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>New Password</label>
+                            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className={inputClass} placeholder="Min 8 characters" minLength={8} />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Confirm New Password</label>
+                            <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={inputClass} placeholder="Repeat new password" />
+                        </div>
                     </div>
-                    <div>
-                        <label className={labelClass}>New Password</label>
-                        <input
-                            type="password"
-                            value={newPassword}
-                            onChange={e => setNewPassword(e.target.value)}
-                            className={inputClass}
-                            placeholder="Min 8 characters"
-                            minLength={8}
-                        />
+                    <div className="mt-4 flex items-center gap-4 flex-wrap">
+                        <button type="submit" disabled={passwordLoading} className={saveButtonClass}>
+                            {passwordLoading && <Spinner />}
+                            {passwordLoading ? 'Updating...' : 'Update Password'}
+                        </button>
+                        <StatusMsg msg={passwordMsg} />
                     </div>
-                    <div>
-                        <label className={labelClass}>Confirm New Password</label>
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.target.value)}
-                            className={inputClass}
-                            placeholder="Repeat new password"
-                        />
-                    </div>
-
-                    {passwordMsg && <StatusMsg msg={passwordMsg} />}
-
-                    <button
-                        type="submit"
-                        disabled={passwordLoading}
-                        className={saveButtonClass}
-                        style={{ marginTop: 20 }}
-                    >
-                        {passwordLoading && <Spinner />}
-                        {passwordLoading ? 'Updating...' : 'Update Password'}
-                    </button>
                 </form>
-            </div>
+            </section>
 
-            {/* Section 5 — Notification Preferences */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: 16, color: '#0A0A0F', fontWeight: 600, marginBottom: 20 }}>Notification Preferences</h2>
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                    <input
-                        type="checkbox"
-                        checked={!emailMarketingOptOut}
-                        onChange={handleToggleEmailMarketing}
+            {/* Notification Preferences */}
+            <section className={cardClass}>
+                <h2 className={cardTitleClass}>NOTIFICATION PREFERENCES</h2>
+                <div className="flex items-center justify-between gap-4 py-2">
+                    <div>
+                        <p className="text-sm font-semibold">New event emails</p>
+                        <p className="text-xs text-muted">Email me when an organiser I follow announces a new event. You&apos;ll still see these as notifications on Hexlura either way.</p>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={!emailMarketingOptOut}
+                        onClick={handleToggleEmailMarketing}
                         disabled={notifLoading}
-                        style={{ marginTop: 3 }}
-                    />
-                    <span style={{ fontSize: 13, color: '#0A0A0F' }}>
-                        Email me when an organiser I follow announces a new event
-                        <span style={{ display: 'block', fontSize: 11, color: '#8888AA', marginTop: 2 }}>
-                            You&apos;ll still see these as notifications on Hexlura either way.
-                        </span>
-                    </span>
-                </label>
-                {notifMsg && <div style={{ marginTop: 10 }}><StatusMsg msg={notifMsg} /></div>}
-            </div>
+                        className={`w-11 h-6 rounded-full relative shrink-0 transition-colors ${emailMarketingOptOut ? 'bg-border' : 'bg-accent'}`}
+                    >
+                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${emailMarketingOptOut ? 'left-0.5' : 'left-[22px]'}`} />
+                    </button>
+                </div>
+                {notifMsg && <div className="mt-2"><StatusMsg msg={notifMsg} /></div>}
+            </section>
 
-            {/* Section 6 — Danger Zone */}
-            <div style={{ border: '1px solid #E63950', padding: 24 }}>
-                <h2 style={{ fontSize: 16, color: '#E63950', fontWeight: 600, marginBottom: 12 }}>Danger Zone</h2>
-                <p style={{ fontSize: 13, color: '#8888AA', marginBottom: 16 }}>
-                    Deleting your account is permanent and cannot be undone. All your bookings and data will be removed.
-                </p>
-                <button
-                    type="button"
-                    onClick={handleDeleteAccount}
-                    disabled={deleteLoading}
-                    className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ border: '1px solid #E63950', color: '#E63950', background: 'transparent', padding: '10px 24px', fontSize: 13 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#E63950'; e.currentTarget.style.color = '#fff' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#E63950' }}
-                >
-                    {deleteLoading && <Spinner />}
-                    {deleteLoading ? 'Deleting...' : 'Delete Account'}
-                </button>
-            </div>
+            {/* Danger Zone */}
+            <section className="bg-card rounded-2xl border border-accent/30 shadow-soft p-6">
+                <h2 className={`${cardTitleClass} text-accent`}>DANGER ZONE</h2>
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <p className="text-sm font-semibold">Delete Account</p>
+                        <p className="text-xs text-muted">Permanently delete your account and all associated data</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleDeleteAccount}
+                        disabled={deleteLoading}
+                        className="px-5 py-2 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-accent/10 transition inline-flex items-center gap-2"
+                    >
+                        {deleteLoading && <Spinner />}
+                        {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                    </button>
+                </div>
+            </section>
         </div>
     )
 }

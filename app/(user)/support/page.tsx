@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { statusBadgeClasses, statusLabel, categoryLabel, type SupportStatus, type SupportCategory } from '@/lib/support'
+import { statusLabel, categoryLabel, type SupportStatus, type SupportCategory } from '@/lib/support'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +13,14 @@ type TicketRow = {
     last_reply_at: string | null
     last_reply_by_admin: boolean
     created_at: string
+}
+
+const STATUS_PILL: Record<SupportStatus, string> = {
+    open: 'bg-warm-amber/15 text-warm-amberText',
+    pending_user: 'bg-warm-yellow/15 text-warm-yellowText',
+    in_progress: 'bg-blue-500/10 text-blue-600',
+    resolved: 'bg-warm-green/15 text-warm-green',
+    closed: 'bg-border text-muted',
 }
 
 function fmt(d: string) {
@@ -33,64 +41,57 @@ export default async function SupportPage() {
     const tickets = (ticketsRaw || []) as TicketRow[]
 
     return (
-        <section className="max-w-4xl mx-auto space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <section className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
                 <div>
-                    <h1 className="font-heading text-4xl text-text tracking-wide">SUPPORT</h1>
+                    <h1 className="font-heading text-3xl tracking-wide">HELP &amp; SUPPORT</h1>
                     <p className="text-muted text-sm mt-1">Get help with your account, bookings, or events</p>
                 </div>
                 <Link
                     href="/support/new"
-                    className="inline-flex items-center justify-center px-5 py-2.5 bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
+                    className="px-5 py-2.5 rounded-full bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition"
                 >
-                    New ticket
+                    + New Ticket
                 </Link>
             </div>
 
-            <div className="bg-card border border-border">
-                {tickets.length === 0 ? (
-                    <div className="p-12 text-center">
-                        <p className="text-muted text-sm">You haven&apos;t opened any support tickets yet.</p>
-                        <Link href="/support/new" className="text-accent text-sm hover:underline mt-2 inline-block">
-                            Create your first ticket →
-                        </Link>
-                    </div>
-                ) : (
-                    <ul className="divide-y divide-border">
-                        {tickets.map(t => {
-                            const lastActivity = t.last_reply_at ?? t.created_at
-                            const needsReply = t.last_reply_by_admin && t.status !== 'closed' && t.status !== 'resolved'
-                            return (
-                                <li key={t.id}>
-                                    <Link
-                                        href={`/support/${t.id}`}
-                                        className="block px-5 py-4 hover:bg-surface transition-colors"
-                                    >
-                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-medium text-text truncate">{t.subject}</p>
-                                                <p className="text-xs text-muted mt-0.5">
-                                                    {categoryLabel(t.category)} · Updated {fmt(lastActivity)}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                {needsReply && (
-                                                    <span className="text-[10px] text-accent uppercase tracking-wider font-semibold">
-                                                        New reply
-                                                    </span>
-                                                )}
-                                                <span className={`text-xs px-2 py-0.5 border rounded-full ${statusBadgeClasses(t.status)}`}>
-                                                    {statusLabel(t.status)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </li>
-                            )
-                        })}
-                    </ul>
-                )}
-            </div>
+            {tickets.length === 0 ? (
+                <div className="py-16 text-center bg-card rounded-2xl border border-dashed border-border">
+                    <p className="text-muted text-sm">You haven&apos;t opened any support tickets yet.</p>
+                    <Link href="/support/new" className="text-accent text-sm font-semibold hover:underline mt-2 inline-block">
+                        Create your first ticket →
+                    </Link>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {tickets.map(t => {
+                        const lastActivity = t.last_reply_at ?? t.created_at
+                        const needsReply = t.last_reply_by_admin && t.status !== 'closed' && t.status !== 'resolved'
+                        return (
+                            <Link
+                                key={t.id}
+                                href={`/support/${t.id}`}
+                                className="block bg-card rounded-2xl border border-border shadow-soft hover:shadow-hover transition p-4"
+                            >
+                                <div className="flex items-center justify-between gap-3 mb-1">
+                                    <p className="font-semibold text-sm truncate">{t.subject}</p>
+                                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase shrink-0 ${STATUS_PILL[t.status]}`}>
+                                        {statusLabel(t.status)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="text-xs text-muted">
+                                        {categoryLabel(t.category)} · Updated {fmt(lastActivity)}
+                                    </p>
+                                    {needsReply && (
+                                        <span className="px-2 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold">NEW REPLY</span>
+                                    )}
+                                </div>
+                            </Link>
+                        )
+                    })}
+                </div>
+            )}
         </section>
     )
 }

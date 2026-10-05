@@ -17,41 +17,23 @@ export default function GdprExportButton() {
     }
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0F', margin: '0 0 4px' }}>Download My Data</p>
-                <p style={{ fontSize: 13, color: '#666677', margin: 0 }}>
-                    Export all data we hold about your account — emailed to you as a JSON file.
-                </p>
+                <p className="font-semibold text-sm">Privacy &amp; Data</p>
+                <p className="text-xs text-muted">Download a copy of your personal data (GDPR) — emailed to you as a JSON file.</p>
                 {status === 'sent' && (
-                    <p style={{ fontSize: 13, color: '#16A34A', margin: '6px 0 0', fontWeight: 600 }}>
-                        ✓ Export sent — check your email
-                    </p>
+                    <p className="text-xs font-semibold text-success mt-1.5">✓ Export sent — check your email</p>
                 )}
                 {status === 'error' && (
-                    <p style={{ fontSize: 13, color: '#E63950', margin: '6px 0 0' }}>
-                        Something went wrong. Please try again.
-                    </p>
+                    <p className="text-xs font-semibold text-accent mt-1.5">Something went wrong. Please try again.</p>
                 )}
             </div>
             <button
                 onClick={handleRequest}
                 disabled={status === 'loading' || status === 'sent'}
-                style={{
-                    padding: '8px 20px',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    border: '1px solid #C0C0C8',
-                    background: 'transparent',
-                    color: status === 'sent' ? '#16A34A' : '#0A0A0F',
-                    cursor: status === 'loading' || status === 'sent' ? 'default' : 'pointer',
-                    opacity: status === 'loading' ? 0.6 : 1,
-                    borderRadius: 0,
-                    whiteSpace: 'nowrap',
-                    transition: 'opacity 0.15s',
-                }}
+                className={`px-5 py-2 rounded-full border border-border text-sm font-semibold hover:bg-background transition whitespace-nowrap ${status === 'sent' ? 'text-success' : ''}`}
             >
-                {status === 'loading' ? 'Sending...' : status === 'sent' ? 'Sent ✓' : 'Request Export'}
+                {status === 'loading' ? 'Sending...' : status === 'sent' ? 'Sent ✓' : 'Export My Data'}
             </button>
         </div>
     )

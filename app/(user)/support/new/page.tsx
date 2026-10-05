@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { NewTicketForm } from './new-ticket-form'
+import Link from 'next/link'
+import { UserNewTicketForm } from './user-new-ticket-form'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,12 +11,10 @@ export default async function NewSupportTicketPage() {
     if (!user) redirect('/auth/login?next=/support/new')
 
     return (
-        <section className="max-w-2xl mx-auto space-y-6">
-            <div>
-                <h1 className="font-heading text-4xl text-text tracking-wide">NEW TICKET</h1>
-                <p className="text-muted text-sm mt-1">Tell us what&apos;s going on. We&apos;ll get back to you as soon as we can.</p>
-            </div>
-            <NewTicketForm />
+        <section className="max-w-2xl mx-auto">
+            <Link href="/support" className="text-sm text-muted hover:text-accent mb-2 inline-block">← Back to Support</Link>
+            <h1 className="font-heading text-3xl tracking-wide mb-6">NEW SUPPORT TICKET</h1>
+            <UserNewTicketForm />
         </section>
     )
 }

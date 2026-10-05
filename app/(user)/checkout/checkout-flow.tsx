@@ -8,7 +8,7 @@ import { formatPence } from '@/lib/fees'
 import StepPayment from './step-payment'
 import { MetaPixelInitiateCheckout } from '@/components/analytics/MetaPixelEvents'
 
-const STEP_LABELS = ['Payment', 'Confirmation']
+const STEP_LABELS = ['Tickets', 'Your Details', 'Payment']
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -226,190 +226,215 @@ export default function CheckoutFlow() {
 
     if (error) {
         return (
-            <div className="max-w-3xl mx-auto py-12 text-center space-y-4">
+            <div className="max-w-md mx-auto py-12 text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
                     <span className="text-accent text-2xl">!</span>
                 </div>
-                <p className="text-text font-medium">{error}</p>
-                <a href="/events" className="text-accent hover:underline text-sm">Browse events</a>
+                <p className="font-medium">{error}</p>
+                <a href="/events" className="text-accent font-semibold hover:underline text-sm">Browse events</a>
             </div>
         )
     }
 
     if (needsAuthChoice) {
         return (
-            <div className="max-w-sm mx-auto py-16 space-y-6">
-                <div className="text-center space-y-1">
-                    <h1 className="font-heading text-3xl text-text">CHECKOUT</h1>
-                    <p className="text-muted text-sm">How would you like to continue?</p>
-                </div>
-                <div className="space-y-3">
-                    <button
-                        type="button"
-                        onClick={continueAsGuest}
-                        disabled={startingGuest}
-                        className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {startingGuest ? 'Starting...' : 'Continue as Guest'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={logInInstead}
-                        disabled={startingGuest}
-                        className="w-full h-12 rounded-sm border border-border text-text font-semibold text-sm hover:border-accent transition disabled:opacity-50"
-                    >
-                        Log In to My Account
-                    </button>
+            <div className="max-w-sm mx-auto py-10">
+                <div className="bg-card rounded-3xl border border-border shadow-card p-8 space-y-6">
+                    <div>
+                        <h1 className="font-heading text-3xl tracking-wide mb-1">CHECKOUT</h1>
+                        <p className="text-muted text-sm">How would you like to continue?</p>
+                    </div>
+                    <div className="space-y-3">
+                        <button
+                            type="button"
+                            onClick={continueAsGuest}
+                            disabled={startingGuest}
+                            className="w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none"
+                        >
+                            {startingGuest ? 'Starting...' : 'Continue as Guest'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={logInInstead}
+                            disabled={startingGuest}
+                            className="w-full py-3 rounded-full border border-border text-sm font-semibold hover:bg-background transition disabled:opacity-50"
+                        >
+                            Log In to My Account
+                        </button>
+                    </div>
                 </div>
             </div>
         )
     }
 
+    // 0 = Tickets (done before checkout), 1 = Your Details, 2 = Payment
+    const currentStep = state.step === 1 && !proceedToPayment ? 1 : 2
+    const fieldClass = 'w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25'
+    const labelClass = 'text-xs font-semibold text-muted mb-1.5 block'
+
     return (
-        <div className="max-w-3xl mx-auto py-8 space-y-8">
+        <div className="max-w-5xl mx-auto">
             {/* Progress indicator */}
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-4 pb-8">
                 {STEP_LABELS.map((label, i) => {
-                    const stepNum = i + 1
-                    const isActive = state.step === stepNum
-                    const isComplete = state.step > stepNum
+                    const isActive = currentStep === i
+                    const isComplete = i < currentStep
                     return (
-                        <div key={label} className="flex items-center gap-2">
-                            {i > 0 && <div className={`w-8 h-px ${isComplete ? 'bg-accent' : 'bg-border'}`} />}
+                        <div key={label} className="flex items-center gap-4">
+                            {i > 0 && <div className="w-10 h-px bg-border" />}
                             <div className="flex items-center gap-2">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                    isComplete ? 'bg-warm-green text-white' :
                                     isActive ? 'bg-accent text-white' :
-                                    isComplete ? 'bg-accent/20 text-accent' :
-                                    'bg-surface border border-border text-muted'
+                                    'bg-border text-muted'
                                 }`}>
-                                    {isComplete ? '✓' : stepNum}
-                                </div>
-                                <span className={`text-sm font-medium ${isActive ? 'text-text' : 'text-muted'}`}>{label}</span>
+                                    {isComplete ? '✓' : i + 1}
+                                </span>
+                                <span className={`text-sm ${isActive || isComplete ? 'font-semibold' : 'font-medium text-muted'}`}>{label}</span>
                             </div>
                         </div>
                     )
                 })}
             </div>
 
-            {/* Pre-payment: comp code entry. StepPayment only mounts after proceedToPayment. */}
+            {/* Pre-payment: details + comp/promo code. StepPayment only mounts after proceedToPayment.
+                Covers both partial discounts and 100%-off codes: when a code fully covers the ticket
+                subtotal, create-intent bypasses Stripe entirely and confirms the booking directly. */}
             {state.step === 1 && !proceedToPayment && (
-                <div className="space-y-6">
-                    {/* Order summary — includes promo code entry inline, no separate box.
-                        Covers both partial discounts and 100%-off codes: when a code fully
-                        covers the ticket subtotal, create-intent bypasses Stripe entirely and
-                        confirms the booking directly. */}
-                    <div className="bg-surface border border-border rounded-none p-5 text-sm space-y-2">
-                        <p className="font-bold text-text text-base">{state.eventTitle}</p>
-                        <p className="text-muted text-xs">{state.eventDate} · {state.venueName}</p>
-                        <div className="border-t border-border pt-3 space-y-1">
-                            {state.items.map((item, i) => (
-                                <div key={item.ticket_type_id} className="flex justify-between">
-                                    <span className="text-muted">{item.ticket_name} × {item.quantity}</span>
-                                    <span className="text-text">{formatPence(lineTotalsPence[i])}</span>
-                                </div>
-                            ))}
-                            {discountPence > 0 && (
-                                <div className="flex justify-between text-success">
-                                    <span>Discount ({state.promo?.code})</span>
-                                    <span>-{formatPence(discountPence)}</span>
-                                </div>
-                            )}
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 pb-16">
+                    <div>
+                        <div className="bg-card rounded-2xl border border-border shadow-soft p-6">
+                            <h2 className="font-heading text-2xl tracking-wide mb-1">YOUR DETAILS</h2>
+                            <p className="text-sm text-muted mb-5">We&apos;ll send your tickets to this email.</p>
 
-                        <div className="border-t border-border pt-3">
-                            {state.promo ? (
-                                <div className="bg-success/10 border border-success/20 rounded-none px-3 py-2 text-xs text-success flex items-center justify-between gap-3">
-                                    <span>
-                                        Code <span className="font-mono font-bold">{state.promo.code}</span> applied
-                                    </span>
-                                    <button type="button" onClick={removePromoCode} className="underline shrink-0">
-                                        Remove
-                                    </button>
-                                </div>
+                            {needsDetailsForm ? (
+                                <>
+                                    <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-background border border-border mb-5">
+                                        <p className="text-sm">Already have an account?</p>
+                                        <button type="button" onClick={logInInstead} className="text-sm font-semibold text-accent hover:underline">Log In</button>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                                        <div>
+                                            <label className={labelClass}>Full Name</label>
+                                            <input
+                                                type="text"
+                                                value={state.attendeeDetails.full_name}
+                                                onChange={e => setAttendeeDetails({ ...state.attendeeDetails, full_name: e.target.value })}
+                                                placeholder="Jane Smith"
+                                                className={fieldClass}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Email</label>
+                                            <input
+                                                type="email"
+                                                value={state.attendeeDetails.email}
+                                                onChange={e => setAttendeeDetails({ ...state.attendeeDetails, email: e.target.value })}
+                                                placeholder="jane@example.com"
+                                                className={fieldClass}
+                                            />
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <label className={labelClass}>Phone <span className="font-normal">(optional)</span></label>
+                                            <input
+                                                type="tel"
+                                                value={state.attendeeDetails.phone}
+                                                onChange={e => setAttendeeDetails({ ...state.attendeeDetails, phone: e.target.value })}
+                                                placeholder="+44 7…"
+                                                className={fieldClass}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={promoInput}
-                                        onChange={e => setPromoInput(e.target.value.toUpperCase())}
-                                        onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
-                                        placeholder="Promo code"
-                                        className="flex-1 bg-surface border border-border rounded-none px-3 py-2 text-xs text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={applyPromoCode}
-                                        disabled={promoValidating || !promoInput.trim()}
-                                        className="px-4 border border-border text-xs text-muted hover:text-text hover:border-accent transition disabled:opacity-50"
-                                    >
-                                        {promoValidating ? '...' : 'Apply'}
-                                    </button>
+                                <div className="px-4 py-3 rounded-xl bg-background border border-border mb-5 text-sm">
+                                    Booking as <span className="font-semibold">{state.attendeeDetails.full_name || state.attendeeDetails.email}</span>
+                                    {state.attendeeDetails.full_name && <span className="text-muted"> · {state.attendeeDetails.email}</span>}
                                 </div>
                             )}
-                            {promoError && (
-                                <p className="text-xs text-accent mt-2">{promoError}</p>
-                            )}
-                        </div>
 
-                        <div className="border-t border-border pt-2 flex justify-between font-bold">
-                            <span className="text-text">Total</span>
-                            <span className="text-text">
-                                {formatPence(ticketSubtotalPence - discountPence <= 0 ? 0 : (ticketSubtotalPence > 0 ? totalPence : ticketSubtotalPence))}
-                            </span>
+                            {/* Promo / comp code */}
+                            <div className="mb-6">
+                                <label className={labelClass}>Promo / Comp Code</label>
+                                {state.promo ? (
+                                    <div className="bg-success/10 rounded-lg px-3.5 py-2.5 text-sm text-success flex items-center justify-between gap-3">
+                                        <span>
+                                            Code <span className="font-mono font-bold">{state.promo.code}</span> applied
+                                        </span>
+                                        <button type="button" onClick={removePromoCode} className="underline shrink-0 text-xs font-semibold">
+                                            Remove
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={promoInput}
+                                            onChange={e => setPromoInput(e.target.value.toUpperCase())}
+                                            onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
+                                            placeholder="Enter code"
+                                            className={`${fieldClass} flex-1`}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={applyPromoCode}
+                                            disabled={promoValidating || !promoInput.trim()}
+                                            className="px-5 py-2.5 rounded-lg border border-border text-sm font-semibold hover:bg-background transition disabled:opacity-50"
+                                        >
+                                            {promoValidating ? '...' : 'Apply'}
+                                        </button>
+                                    </div>
+                                )}
+                                {promoError && <p className="text-xs font-semibold text-accent mt-2">{promoError}</p>}
+                            </div>
+
+                            {needsDetailsForm && !detailsValid && (
+                                <p className="text-xs text-muted text-center mb-3">Please fill in your name and a valid email above to continue.</p>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setProceedToPayment(true)}
+                                disabled={!detailsValid}
+                                className="block w-full py-3.5 rounded-full bg-accent text-white font-semibold text-center shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none"
+                            >
+                                Continue to Payment →
+                            </button>
                         </div>
-                        {/* One combined figure; buyers don't need the booking/processing split */}
-                        {ticketSubtotalPence - discountPence > 0 && bookingFeePence + processingFeePence > 0 && (
-                            <p className="text-xs text-muted">incl. {formatPence(bookingFeePence + processingFeePence)} fee</p>
-                        )}
                     </div>
 
-                    {/* Attendee details — only shown when nothing was prefilled from a profile
-                        (i.e. a guest checking out anonymously). Logged-in users with an email
-                        keep the existing silent-prefill behaviour untouched. */}
-                    {needsDetailsForm && (
-                        <div className="bg-surface border border-border rounded-none p-5 space-y-4">
-                            <div>
-                                <p className="text-sm font-semibold text-text mb-1">Your details</p>
-                                <p className="text-xs text-muted">We&apos;ll send your tickets to this email.</p>
+                    {/* Order summary */}
+                    <div>
+                        <div className="bg-card rounded-2xl border border-border shadow-soft p-5 lg:sticky lg:top-24">
+                            <h3 className="font-heading text-lg tracking-wide mb-4">ORDER SUMMARY</h3>
+                            <div className="mb-4">
+                                <p className="font-semibold text-sm">{state.eventTitle}</p>
+                                <p className="text-xs text-muted">{[state.eventDate, state.venueName].filter(Boolean).join(' · ')}</p>
                             </div>
-                            <div className="space-y-3">
-                                <input
-                                    type="text"
-                                    value={state.attendeeDetails.full_name}
-                                    onChange={e => setAttendeeDetails({ ...state.attendeeDetails, full_name: e.target.value })}
-                                    placeholder="Full name"
-                                    className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                                />
-                                <input
-                                    type="email"
-                                    value={state.attendeeDetails.email}
-                                    onChange={e => setAttendeeDetails({ ...state.attendeeDetails, email: e.target.value })}
-                                    placeholder="Email address"
-                                    className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                                />
-                                <input
-                                    type="tel"
-                                    value={state.attendeeDetails.phone}
-                                    onChange={e => setAttendeeDetails({ ...state.attendeeDetails, phone: e.target.value })}
-                                    placeholder="Phone number (optional)"
-                                    className="w-full bg-surface border border-border rounded-none px-3 py-2.5 text-sm text-text placeholder:text-muted focus:outline-none focus:border-accent"
-                                />
+                            <div className="space-y-1.5 text-sm border-t border-border pt-4">
+                                {state.items.map((item, i) => (
+                                    <div key={item.ticket_type_id} className="flex justify-between">
+                                        <span className="text-muted">{item.ticket_name} × {item.quantity}</span>
+                                        <span>{formatPence(lineTotalsPence[i])}</span>
+                                    </div>
+                                ))}
+                                {discountPence > 0 && (
+                                    <div className="flex justify-between text-success">
+                                        <span>Discount ({state.promo?.code})</span>
+                                        <span>-{formatPence(discountPence)}</span>
+                                    </div>
+                                )}
                             </div>
+                            <div className="flex justify-between font-semibold text-base border-t border-border pt-3 mt-3">
+                                <span>Total</span>
+                                <span className="font-heading text-xl">
+                                    {formatPence(ticketSubtotalPence - discountPence <= 0 ? 0 : (ticketSubtotalPence > 0 ? totalPence : ticketSubtotalPence))}
+                                </span>
+                            </div>
+                            {/* One combined figure; buyers don't need the booking/processing split */}
+                            {ticketSubtotalPence - discountPence > 0 && bookingFeePence + processingFeePence > 0 && (
+                                <p className="text-xs text-muted text-right mt-1">incl. {formatPence(bookingFeePence + processingFeePence)} fee</p>
+                            )}
                         </div>
-                    )}
-
-                    <div className="space-y-2">
-                        {needsDetailsForm && !detailsValid && (
-                            <p className="text-xs text-muted text-center">Please fill in your name and a valid email above to continue.</p>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => setProceedToPayment(true)}
-                            disabled={!detailsValid}
-                            className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Continue to Payment →
-                        </button>
                     </div>
                 </div>
             )}

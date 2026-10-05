@@ -124,7 +124,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
 
     if (submitted) {
         return (
-            <div className="h-11 px-6 rounded-sm border border-success/30 bg-success/10 text-success text-sm font-medium flex items-center justify-center">
+            <div className="px-5 py-2.5 rounded-full bg-success/10 text-success text-sm font-semibold text-center">
                 Request submitted — organiser will respond within 48 hours
             </div>
         )
@@ -135,7 +135,7 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
         return (
             <button
                 disabled
-                className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium opacity-40 cursor-not-allowed"
+                className="px-5 py-2.5 rounded-full border border-border text-sm font-semibold opacity-40 cursor-not-allowed"
             >
                 Request Refund
             </button>
@@ -148,12 +148,11 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
             <div>
                 <button
                     disabled
-                    style={{ opacity: 0.4, cursor: 'not-allowed' }}
-                    className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium w-full"
+                    className="px-5 py-2.5 rounded-full border border-border text-sm font-semibold opacity-40 cursor-not-allowed"
                 >
                     Refund Not Available
                 </button>
-                <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '6px' }}>{eligibility.ineligibleReason}</p>
+                <p className="text-xs text-muted mt-1.5">{eligibility.ineligibleReason}</p>
             </div>
         )
     }
@@ -163,12 +162,12 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
             <div>
                 <button
                     onClick={() => setOpen(true)}
-                    className="h-11 px-6 rounded-sm border border-border bg-surface text-text text-sm font-medium hover:bg-surface/80 transition w-full"
+                    className="px-5 py-2.5 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-accent/10 transition"
                 >
                     Request Refund
                 </button>
                 {eligibility.refundAmountPence > 0 && (
-                    <p style={{ fontSize: '12px', color: '#8888AA', marginTop: '6px' }}>
+                    <p className="text-xs text-muted mt-1.5">
                         Refund amount: {formatPence(eligibility.refundAmountPence)}
                         {eligibility.bookingFeePence > 0 && ` (fees of ${formatPence(eligibility.bookingFeePence)} are non-refundable)`}
                     </p>
@@ -177,28 +176,28 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
-                    <div className="bg-surface border border-border rounded-none p-6 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="font-heading text-2xl text-text">REQUEST REFUND</h3>
+                    <div className="bg-card rounded-2xl shadow-hover p-6 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="font-heading text-2xl tracking-wide">REQUEST REFUND</h3>
 
                         {eligibility.refundAmountPence > 0 && (
-                            <div style={{ background: 'rgba(0,229,160,0.05)', border: '1px solid rgba(0,229,160,0.2)', padding: '10px 14px', borderRadius: '2px' }}>
-                                <p style={{ fontSize: '13px', color: '#00E5A0', fontWeight: 600 }}>
+                            <div className="bg-success/10 rounded-xl px-3.5 py-2.5">
+                                <p className="text-sm font-semibold text-success">
                                     Refund amount: {formatPence(eligibility.refundAmountPence)}
                                 </p>
                                 {eligibility.bookingFeePence > 0 && (
-                                    <p style={{ fontSize: '11px', color: '#8888AA', marginTop: '3px' }}>
+                                    <p className="text-xs text-muted mt-0.5">
                                         Fees of {formatPence(eligibility.bookingFeePence)} are non-refundable
                                     </p>
                                 )}
                             </div>
                         )}
 
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-text">Reason</label>
+                        <div className="flex flex-col">
+                            <label className="text-xs font-semibold text-muted mb-1.5 block">Reason</label>
                             <select
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
-                                className="h-11 w-full rounded-sm border border-border bg-card px-4 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent/25"
                             >
                                 <option value="">Select a reason...</option>
                                 {REASONS.map((r) => (
@@ -207,34 +206,34 @@ export default function RefundButton({ bookingId }: { bookingId: string }) {
                             </select>
                         </div>
 
-                        <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-text">Message (optional)</label>
+                        <div className="flex flex-col">
+                            <label className="text-xs font-semibold text-muted mb-1.5 block">Message (optional)</label>
                             <textarea
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value.slice(0, 500))}
                                 maxLength={500}
                                 rows={3}
                                 placeholder="Any additional details..."
-                                className="w-full rounded-sm border border-border bg-card px-4 py-3 text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                                className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/25 resize-none"
                             />
                             <span className="text-xs text-muted text-right">{message.length}/500</span>
                         </div>
 
                         {error && (
-                            <p className="text-sm text-accent">{error}</p>
+                            <p className="text-sm font-semibold text-accent">{error}</p>
                         )}
 
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setOpen(false)}
-                                className="flex-1 h-11 rounded-sm border border-border text-text text-sm font-medium hover:bg-card transition"
+                                className="flex-1 py-2.5 rounded-full border border-border text-sm font-semibold hover:bg-background transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={loading}
-                                className="flex-1 h-11 rounded-sm bg-[#0A0A0F] text-white text-sm font-semibold hover:bg-[#2a2a3f] transition disabled:opacity-50"
+                                className="flex-1 py-2.5 rounded-full bg-accent text-white text-sm font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none"
                             >
                                 {loading ? 'Submitting...' : 'Submit Request'}
                             </button>

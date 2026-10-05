@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AuthTermsNote } from './auth-terms-note'
 
 export default function AuthLayout({
     children,
@@ -6,17 +7,14 @@ export default function AuthLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background px-4">
-            <div className="w-full max-w-md space-y-8">
-                <div className="text-center">
-                    <Link href="/">
-                        <span className="font-heading text-4xl text-accent tracking-wider">HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup></span>
-                    </Link>
-                </div>
-                <div className="bg-surface border border-border rounded-none p-8">
-                    {children}
-                </div>
+        <div className="warm-theme flex min-h-screen flex-col items-center justify-center px-6 py-12">
+            <Link href="/" className="mb-8">
+                <span className="font-heading text-3xl text-accent tracking-wider">HEXLURA<sup className="text-[0.4em] align-super tracking-normal">®</sup></span>
+            </Link>
+            <div className="w-full max-w-sm bg-card rounded-3xl border border-border shadow-card p-8">
+                {children}
             </div>
+            <AuthTermsNote />
         </div>
     )
 }

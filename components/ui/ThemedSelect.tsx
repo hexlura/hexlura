@@ -174,7 +174,7 @@ export function ThemedSelect({
 
     // Render inside the themed wrapper (when present) so the scoped CSS variables still apply
     const host = typeof document !== 'undefined'
-        ? (triggerRef.current?.closest('.organiser-theme') as HTMLElement | null) ?? document.body
+        ? (triggerRef.current?.closest('.organiser-theme, .warm-theme') as HTMLElement | null) ?? document.body
         : null
 
     return (

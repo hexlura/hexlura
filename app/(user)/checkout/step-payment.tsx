@@ -75,23 +75,23 @@ function PaymentForm() {
                     type="checkbox"
                     checked={agreed}
                     onChange={(e) => setAgreed(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-border accent-accent"
+                    className="mt-1 h-4 w-4 rounded border-border accent-[#E63950]"
                 />
                 <span className="text-sm text-muted">
                     I agree to the{' '}
-                    <a href="/terms" className="text-accent hover:underline">Terms of Service</a> and{' '}
-                    <a href="/refund-policy" className="text-accent hover:underline">Refund Policy</a>
+                    <a href="/terms" className="text-accent font-semibold hover:underline">Terms of Service</a> and{' '}
+                    <a href="/refund-policy" className="text-accent font-semibold hover:underline">Refund Policy</a>
                 </span>
             </label>
 
             {error && (
-                <p className="text-sm text-accent bg-accent/10 border border-accent/20 rounded-none px-4 py-2">{error}</p>
+                <p className="text-sm font-semibold text-accent bg-accent/10 rounded-lg px-3.5 py-2.5">{error}</p>
             )}
 
             <button
                 type="submit"
                 disabled={!stripe || !elements || loading || !agreed}
-                className="w-full h-12 rounded-sm bg-[#0A0A0F] text-white font-semibold text-sm hover:bg-[#2a2a3f] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {loading && (
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -189,25 +189,25 @@ export default function StepPayment() {
     if (error) {
         return (
             <div className="text-center py-12 space-y-4">
-                <p className="text-accent">{error}</p>
-                <a href="/events" className="text-sm text-accent hover:underline">Browse events</a>
+                <p className="text-accent font-semibold">{error}</p>
+                <a href="/events" className="text-sm text-accent font-semibold hover:underline">Browse events</a>
             </div>
         )
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3 space-y-6">
-                <h2 className="font-heading text-3xl text-text">PAYMENT</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 pb-16">
+            <div className="bg-card rounded-2xl border border-border shadow-soft p-6 space-y-6 self-start">
+                <h2 className="font-heading text-2xl tracking-wide">PAYMENT</h2>
 
                 {/* Locked summary */}
-                <div className="bg-surface border border-border rounded-none p-4 text-sm space-y-2">
-                    <div className="flex justify-between font-bold text-lg">
+                <div className="bg-background border border-border rounded-xl p-4 text-sm space-y-1">
+                    <div className="flex justify-between font-semibold text-base">
                         <span>Total</span>
-                        <span>{formatPence(totalPence)}</span>
+                        <span className="font-heading text-xl">{formatPence(totalPence)}</span>
                     </div>
                     {bookingFeePence + processingFeePence > 0 && (
-                        <p className="text-xs text-muted">incl. {formatPence(bookingFeePence + processingFeePence)} fee</p>
+                        <p className="text-xs text-muted text-right">incl. {formatPence(bookingFeePence + processingFeePence)} fee</p>
                     )}
                 </div>
 
@@ -217,11 +217,12 @@ export default function StepPayment() {
                         options={{
                             clientSecret: state.clientSecret,
                             appearance: {
-                                theme: 'night',
+                                theme: 'stripe',
                                 variables: {
                                     colorPrimary: '#E63950',
-                                    colorBackground: '#1A1A24',
-                                    colorText: '#F0F0F8',
+                                    colorBackground: '#FFFFFF',
+                                    colorText: '#1A0E0C',
+                                    colorTextSecondary: '#6B5D56',
                                     colorDanger: '#E63950',
                                     borderRadius: '8px',
                                 },
@@ -233,7 +234,7 @@ export default function StepPayment() {
                 )}
             </div>
 
-            <div className="lg:col-span-2">
+            <div>
                 <OrderSummary />
             </div>
         </div>
