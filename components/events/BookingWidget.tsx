@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Button } from '@/components/ui/Button';
 import { Event, TicketType } from '@/types';
 import { formatPence, calculateBookingFeePerTicket, type FeeConfig } from '@/lib/fees';
 
@@ -198,16 +197,18 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
         router.push(`/checkout?event_id=${event.id}&tickets=${ticketsParam}`);
     }
 
+    const cardClass = 'bg-card rounded-2xl border border-border shadow-card p-5'
+    const cta = 'w-full py-3.5 rounded-full bg-accent text-white font-semibold text-center shadow-glow hover:brightness-110 transition disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2'
+    const ghostCta = 'w-full py-3.5 rounded-full border border-border bg-card font-semibold text-center hover:bg-background transition disabled:opacity-50 flex items-center justify-center gap-2'
+    const noticeClass = 'rounded-xl bg-background border border-border text-center px-4 py-4 mb-4'
+    const okClass = 'rounded-xl bg-warm-green/10 text-warm-green text-center px-4 py-3.5 text-sm font-semibold'
+
     if (isEventEnded) {
         return (
-            <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24">
-                <h3 className="text-xl font-bold mb-4">Tickets</h3>
-                <div style={{ background: 'rgba(102,102,119,0.08)', border: '1px solid rgba(102,102,119,0.2)', color: '#666677', textAlign: 'center', padding: '16px', fontSize: 14, fontWeight: 600, marginBottom: 16 }}>
-                    This event has ended.
-                </div>
-                <Button className="w-full h-12 text-lg font-bold" disabled>
-                    Event Ended
-                </Button>
+            <div className={cardClass}>
+                <p className="font-heading text-xl tracking-wide mb-4">TICKETS</p>
+                <div className={`${noticeClass} text-sm font-semibold text-muted`}>This event has ended.</div>
+                <button className={cta} disabled>Event Ended</button>
             </div>
         );
     }
@@ -215,33 +216,27 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
     if (isComingSoon) {
         const joined = waitlistStatus === 'joined'
         return (
-            <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24">
-                <h3 className="text-xl font-bold mb-4">Tickets</h3>
-                <div style={{ background: 'rgba(102,102,119,0.08)', border: '1px solid rgba(102,102,119,0.2)', color: '#666677', textAlign: 'center', padding: '20px 16px', marginBottom: 16 }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>🕐</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0F', marginBottom: 4 }}>Tickets Coming Soon</div>
-                    <div style={{ fontSize: 13, color: '#666677' }}>Tickets for this event will be available shortly.<br />Check back soon!</div>
+            <div className={cardClass}>
+                <p className="font-heading text-xl tracking-wide mb-4">TICKETS</p>
+                <div className={noticeClass}>
+                    <div className="text-3xl mb-2">🕐</div>
+                    <div className="text-[15px] font-bold mb-1">Tickets Coming Soon</div>
+                    <div className="text-[13px] text-muted">Tickets for this event will be available shortly.<br />Check back soon!</div>
                 </div>
                 {joined ? (
-                    <div style={{ background: 'rgba(0,196,138,0.08)', border: '1px solid rgba(0,196,138,0.3)', color: '#00C48A', textAlign: 'center', padding: '14px', borderRadius: 2, fontSize: 14, fontWeight: 600 }}>
-                        You&apos;re registered! We&apos;ll notify you as soon as tickets go live.
-                    </div>
+                    <div className={okClass}>You&apos;re registered! We&apos;ll notify you as soon as tickets go live.</div>
                 ) : (
                     <>
-                        <Button
-                            className="w-full h-12 text-base font-bold"
+                        <button
+                            className={cta}
                             disabled={waitlistStatus === 'loading' || waitlistStatus === 'checking'}
                             onClick={handleJoinWaitlist}
                         >
                             {waitlistStatus === 'loading' ? 'Registering...' : 'Register Interest'}
-                        </Button>
-                        <p style={{ fontSize: 12, color: '#666677', textAlign: 'center', marginTop: 8 }}>
-                            We&apos;ll let you know as soon as tickets are live.
-                        </p>
+                        </button>
+                        <p className="text-xs text-muted text-center mt-2">We&apos;ll let you know as soon as tickets are live.</p>
                         {waitlistStatus === 'error' && (
-                            <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', marginTop: 4 }}>
-                                Failed to register. Please try again.
-                            </p>
+                            <p className="text-[13px] font-semibold text-accent text-center mt-1">Failed to register. Please try again.</p>
                         )}
                     </>
                 )}
@@ -252,28 +247,24 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
     if (isAllSoldOut) {
         const joined = waitlistStatus === 'joined'
         return (
-            <div className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24">
-                <h3 className="text-xl font-bold mb-4">Tickets</h3>
-                <div className="bg-accent/10 text-accent text-center p-4 rounded-sm mb-6 font-semibold">
+            <div className={cardClass}>
+                <p className="font-heading text-xl tracking-wide mb-4">TICKETS</p>
+                <div className="rounded-xl bg-warm-red/10 text-warm-red text-center px-4 py-4 mb-4 font-semibold text-sm">
                     This event is completely sold out.
                 </div>
                 {joined ? (
-                    <div style={{ background: 'rgba(0,196,138,0.08)', border: '1px solid rgba(0,196,138,0.3)', color: '#00C48A', textAlign: 'center', padding: '14px', borderRadius: 2, fontSize: 14, fontWeight: 600 }}>
-                        You&apos;re on the waitlist! We&apos;ll notify you if tickets become available.
-                    </div>
+                    <div className={okClass}>You&apos;re on the waitlist! We&apos;ll notify you if tickets become available.</div>
                 ) : (
                     <>
-                        <Button
-                            className="w-full h-12 text-lg font-bold"
+                        <button
+                            className={cta}
                             disabled={waitlistStatus === 'loading' || waitlistStatus === 'checking'}
                             onClick={handleJoinWaitlist}
                         >
                             {waitlistStatus === 'loading' ? 'Joining...' : 'Join Waitlist'}
-                        </Button>
+                        </button>
                         {waitlistStatus === 'error' && (
-                            <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', marginTop: 8 }}>
-                                Failed to join waitlist. Please try again.
-                            </p>
+                            <p className="text-[13px] font-semibold text-accent text-center mt-2">Failed to join waitlist. Please try again.</p>
                         )}
                     </>
                 )}
@@ -282,17 +273,17 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
     }
 
     return (
-        <div ref={widgetRef} className="bg-card border border-border rounded-none p-6 shadow-sm sticky top-24 flex flex-col gap-6">
-            <h3 className="text-xl font-bold">Select Tickets</h3>
+        <div ref={widgetRef} className={cardClass}>
+            <p className="font-heading text-xl tracking-wide mb-4">SELECT TICKETS</p>
 
             {restoredToast && (
-                <div style={{ fontSize: '12px', color: '#00C48A', background: 'rgba(0,196,138,0.08)', border: '1px solid rgba(0,196,138,0.3)', borderRadius: '2px', padding: '8px 12px' }}>
+                <div className="text-xs font-semibold text-warm-green bg-warm-green/10 rounded-lg px-3 py-2 mb-3">
                     Your ticket selection has been restored
                 </div>
             )}
 
-            <div>
-                {ticketTypes.map(ticket => {
+            <div className="mb-4">
+                {ticketTypes.map((ticket, idx) => {
                     const available = ticket.quantity_total - ticket.quantity_sold;
                     const isSoldOut = available <= 0;
                     const quantity = selectedTickets[ticket.id] || 0;
@@ -307,81 +298,62 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
                     const groupSize = ticket.group_size || 1;
 
                     return (
-                        <div key={ticket.id} style={{ borderBottom: '1px solid #C0C0C8' }}>
-                            {/* Single-line row */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
-                                {/* Name */}
-                                <span style={{ fontSize: 14, fontWeight: 600, color: isSoldOut ? '#666677' : '#0A0A0F', flex: 1, marginRight: 12, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
-                                    {ticket.name}
-                                    {isGroup && (
-                                        <span style={{ fontSize: 11, background: '#F0F0F2', color: '#666677', padding: '2px 8px', borderRadius: 2, marginLeft: 8, whiteSpace: 'nowrap', flexShrink: 0, display: 'inline-block' }}>
-                                            Group of {groupSize}
-                                        </span>
-                                    )}
-                                </span>
-                                {/* Price */}
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginRight: 16, whiteSpace: 'nowrap' }}>
-                                    <span style={{ fontSize: 14, color: isSoldOut ? '#666677' : ticket.price_pence === 0 ? '#00C48A' : '#0A0A0F' }}>
-                                        {ticket.price_pence === 0 ? 'Free' : formatPence(ticket.price_pence + ticketFee)}
-                                    </span>
-                                    {ticketFee > 0 && (
-                                        <span style={{ fontSize: 11, color: '#666677' }}>
-                                            incl. {formatPence(ticketFee)} fee
-                                        </span>
+                        <div key={ticket.id} className={idx < ticketTypes.length - 1 ? 'border-b border-border' : ''}>
+                            <div className={`flex items-center justify-between gap-3 py-3 ${isSoldOut ? 'opacity-50' : ''}`}>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-semibold text-sm flex items-center flex-wrap gap-x-2">
+                                        {ticket.name}
+                                        {isGroup && (
+                                            <span className="text-[11px] bg-border text-muted px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                Group of {groupSize}
+                                            </span>
+                                        )}
+                                    </p>
+                                    {isSoldOut ? (
+                                        <p className="text-xs font-semibold text-warm-red">Sold out</p>
+                                    ) : ticket.description ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setExpanded(prev => ({ ...prev, [ticket.id]: !isExpanded }))}
+                                            className="text-xs text-muted hover:text-accent flex items-center gap-1"
+                                        >
+                                            {isExpanded ? '▴ Hide' : '▾ Details'}
+                                        </button>
+                                    ) : null}
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <div className="text-right whitespace-nowrap">
+                                        <p className={`font-heading text-lg leading-none ${isSoldOut ? 'line-through' : ticket.price_pence === 0 ? 'text-warm-green' : ''}`}>
+                                            {ticket.price_pence === 0 ? 'Free' : formatPence(ticket.price_pence + ticketFee)}
+                                        </p>
+                                        {ticketFee > 0 && !isSoldOut && (
+                                            <p className="text-[11px] text-muted mt-0.5">incl. {formatPence(ticketFee)} fee</p>
+                                        )}
+                                    </div>
+                                    {!isSoldOut && (
+                                        <select
+                                            value={quantity}
+                                            onChange={e => handleQuantityChange(ticket.id, parseInt(e.target.value))}
+                                            aria-label={`Quantity for ${ticket.name}`}
+                                            className="bg-card border border-border rounded-lg px-2 py-1.5 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-warm-red/25"
+                                        >
+                                            {Array.from({ length: Math.min(maxQty, available) + 1 }, (_, i) => (
+                                                <option key={i} value={i}>{i}</option>
+                                            ))}
+                                        </select>
                                     )}
                                 </div>
-                                {/* Qty or sold out */}
-                                {isSoldOut ? (
-                                    <span style={{ fontSize: 12, color: '#E63950', fontWeight: 600 }}>SOLD OUT</span>
-                                ) : (
-                                    <select
-                                        value={quantity}
-                                        onChange={e => handleQuantityChange(ticket.id, parseInt(e.target.value))}
-                                        style={{
-                                            background: '#FFFFFF',
-                                            color: '#0A0A0F',
-                                            border: '1px solid #C0C0C8',
-                                            padding: '6px 12px',
-                                            borderRadius: 2,
-                                            fontSize: 14,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        {Array.from({ length: Math.min(maxQty, available) + 1 }, (_, i) => (
-                                            <option key={i} value={i}>{i}</option>
-                                        ))}
-                                    </select>
-                                )}
                             </div>
-                            {/* Group ticket info */}
-                            {isGroup && (
-                                <div style={{ paddingBottom: 4 }}>
-                                    <p style={{ fontSize: 12, color: '#666677', margin: '4px 0 0' }}>
-                                        1 ticket = {groupSize} people · {groupSize} QR codes will be generated
-                                    </p>
+                            {isGroup && !isSoldOut && (
+                                <div className="pb-2">
+                                    <p className="text-xs text-muted">1 ticket = {groupSize} people · {groupSize} QR codes will be generated</p>
                                     {quantity > 0 && (
-                                        <p style={{ fontSize: 12, color: '#00E5A0', margin: '4px 0 0' }}>
-                                            = {quantity * groupSize} people total
-                                        </p>
+                                        <p className="text-xs font-semibold text-warm-green mt-1">= {quantity * groupSize} people total</p>
                                     )}
                                 </div>
                             )}
-                            {/* Expandable description */}
-                            {ticket.description && (
-                                <div style={{ paddingBottom: 8 }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setExpanded(prev => ({ ...prev, [ticket.id]: !isExpanded }))}
-                                        style={{ fontSize: 12, color: '#666677', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                                    >
-                                        {isExpanded ? '▲ Hide' : '▼ Details'}
-                                    </button>
-                                    {isExpanded && (
-                                        <p style={{ fontSize: 13, color: '#666677', padding: '8px 0 0', margin: 0 }}>
-                                            {ticket.description}
-                                        </p>
-                                    )}
-                                </div>
+                            {isExpanded && ticket.description && (
+                                <p className="text-[13px] text-muted pb-3">{ticket.description}</p>
                             )}
                         </div>
                     );
@@ -389,44 +361,29 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
             </div>
 
             {subtotal > 0 && (
-                <div className="space-y-2 text-sm bg-surface p-4 rounded-sm border border-border">
-                    <div className="flex justify-between font-bold text-lg">
+                <div className="rounded-xl bg-background border border-border px-4 py-3 mb-4">
+                    <div className="flex justify-between items-baseline font-semibold">
                         <span>Total</span>
-                        <span>{formatPence(subtotal + bookingFeeTotal + processingFee)}</span>
+                        <span className="font-heading text-xl">{formatPence(subtotal + bookingFeeTotal + processingFee)}</span>
                     </div>
                     {bookingFeeTotal + processingFee > 0 && (
-                        <p style={{ fontSize: 12, color: '#666677', margin: 0 }}>
-                            incl. {formatPence(bookingFeeTotal + processingFee)} fee
-                        </p>
+                        <p className="text-xs text-muted text-right mt-0.5">incl. {formatPence(bookingFeeTotal + processingFee)} fee</p>
                     )}
                 </div>
             )}
 
             {showAuthChoice ? (
-                <div className="flex flex-col gap-2 mt-2">
-                    <p style={{ fontSize: 13, color: '#666677', textAlign: 'center' }}>How would you like to continue?</p>
-                    <Button
-                        className="w-full h-12 text-base font-bold bg-[#0A0A0F] text-white hover:bg-[#2a2a3f]"
-                        disabled={checkoutLoading}
-                        onClick={continueAsGuest}
-                    >
+                <div className="flex flex-col gap-2">
+                    <p className="text-[13px] text-muted text-center">How would you like to continue?</p>
+                    <button className={cta} disabled={checkoutLoading} onClick={continueAsGuest}>
                         {checkoutLoading ? 'Starting...' : 'Continue as Guest'}
-                    </Button>
-                    <Button
-                        className="w-full h-12 text-base font-bold"
-                        variant="outline"
-                        disabled={checkoutLoading}
-                        onClick={logInInstead}
-                    >
+                    </button>
+                    <button className={ghostCta} disabled={checkoutLoading} onClick={logInInstead}>
                         Log In to My Account
-                    </Button>
+                    </button>
                 </div>
             ) : (
-                <Button
-                    className="w-full h-14 text-lg font-bold mt-2 bg-[#0A0A0F] text-white hover:bg-[#2a2a3f]"
-                    disabled={!hasSelectedTickets || checkoutLoading}
-                    onClick={handleCheckout}
-                >
+                <button className={cta} disabled={!hasSelectedTickets || checkoutLoading} onClick={handleCheckout}>
                     {checkoutLoading && (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -434,17 +391,13 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
                         </svg>
                     )}
                     {checkoutLoading ? 'Loading...' : isFreeSelection ? 'Reserve My Spot' : 'Proceed to Checkout'}
-                </Button>
+                </button>
             )}
             {isFreeSelection && (
-                <p style={{ fontSize: 12, color: '#00C48A', textAlign: 'center', margin: '4px 0 0' }}>
-                    No payment required
-                </p>
+                <p className="text-xs font-semibold text-warm-green text-center mt-2">No payment required</p>
             )}
             {reservationError && (
-                <p style={{ fontSize: 13, color: '#E63950', textAlign: 'center', margin: '4px 0 0' }}>
-                    {reservationError}
-                </p>
+                <p className="text-[13px] font-semibold text-accent text-center mt-2">{reservationError}</p>
             )}
         </div>
     );

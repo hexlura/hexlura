@@ -113,17 +113,17 @@ export default function LikeButton({
 
             <style jsx>{`
                 .like-button {
-                    --button-color: #64748b;
-                    --button-border: #e2e8f0;
-                    --button-background: rgba(255, 255, 255, 0.85);
+                    --button-color: #6B5D56;
+                    --button-border: #F1E7E2;
+                    --button-background: #ffffff;
 
                     position: relative;
                     display: inline-flex;
-                    min-height: 42px;
+                    min-height: 38px;
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
-                    padding: 8px 12px 8px 14px;
+                    padding: 6px 12px 6px 14px;
 
                     border: 1px solid var(--button-border);
                     border-radius: 999px;
@@ -153,13 +153,13 @@ export default function LikeButton({
                 }
 
                 .like-button:hover:not(:disabled) {
-                    --button-color: #e11d48;
-                    --button-border: #fecdd3;
-                    --button-background: #fff7f8;
+                    --button-color: #E63950;
+                    --button-border: #F8C9D0;
+                    --button-background: #FFF5F6;
 
                     box-shadow:
-                        0 2px 4px rgba(225, 29, 72, 0.08),
-                        0 8px 22px rgba(225, 29, 72, 0.12);
+                        0 2px 4px rgba(230, 57, 80, 0.08),
+                        0 8px 22px rgba(230, 57, 80, 0.12);
 
                     transform: translateY(-1px);
                 }
@@ -169,22 +169,22 @@ export default function LikeButton({
                 }
 
                 .like-button:focus-visible {
-                    outline: 3px solid rgba(244, 63, 94, 0.2);
+                    outline: 3px solid rgba(230, 57, 80, 0.2);
                     outline-offset: 3px;
                 }
 
                 .like-button.liked {
-                    --button-color: #e11d48;
-                    --button-border: #fecdd3;
+                    --button-color: #E63950;
+                    --button-border: #F8C9D0;
                     --button-background: linear-gradient(
                         135deg,
-                        #fff1f2 0%,
-                        #fff7f8 100%
+                        #FFF0F2 0%,
+                        #FFF5F6 100%
                     );
 
                     box-shadow:
-                        0 2px 4px rgba(225, 29, 72, 0.08),
-                        0 8px 20px rgba(225, 29, 72, 0.1);
+                        0 2px 4px rgba(230, 57, 80, 0.08),
+                        0 8px 20px rgba(230, 57, 80, 0.1);
                 }
 
                 .like-button:disabled {
@@ -212,7 +212,7 @@ export default function LikeButton({
                     animation: heart-pop 350ms
                         cubic-bezier(0.2, 0.8, 0.2, 1);
                     filter: drop-shadow(
-                        0 3px 5px rgba(225, 29, 72, 0.22)
+                        0 3px 5px rgba(230, 57, 80, 0.22)
                     );
                 }
 
@@ -229,7 +229,7 @@ export default function LikeButton({
                     padding: 0 7px;
 
                     border-radius: 999px;
-                    background: rgba(100, 116, 139, 0.1);
+                    background: rgba(107, 93, 86, 0.1);
                     font-size: 12px;
                     font-weight: 700;
                     font-variant-numeric: tabular-nums;
@@ -240,7 +240,7 @@ export default function LikeButton({
                 }
 
                 .liked .like-count {
-                    background: rgba(225, 29, 72, 0.1);
+                    background: rgba(230, 57, 80, 0.1);
                 }
 
                 @keyframes heart-pop {

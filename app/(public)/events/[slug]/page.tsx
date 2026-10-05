@@ -2,7 +2,6 @@ import React from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
-import { Badge } from '@/components/ui/Badge';
 import BookingWidget from '@/components/events/BookingWidget';
 import ShareButton from '@/components/events/ShareButton';
 import EventQRButton from '@/components/events/EventQRButton';
@@ -199,8 +198,28 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
         ...(organiser?.processing_fee_exempt ? { processingFeePence: 0 } : {}),
     };
 
+    const policyMap: Record<string, { label: string; cls: string }> = {
+        'No refunds': { label: 'No Refunds', cls: 'border-warm-red text-warm-red' },
+        'Refunds up to 48 hours before event': { label: 'Refunds up to 48hrs before event', cls: 'border-warm-amber text-warm-amberText' },
+        'Refunds up to 7 days before event': { label: 'Refunds up to 7 days before event', cls: 'border-warm-amber text-warm-amberText' },
+        'Full refunds always available': { label: 'Full Refunds Available', cls: 'border-warm-green text-warm-green' },
+    }
+    // Keyed on the exact sentence EventForm saves (components/organiser/EventForm.tsx's REFUND_POLICIES).
+    const refundPolicy = event.refund_policy ? policyMap[event.refund_policy] : undefined
+
+    let youtubeId: string | null = null
+    if (event.youtube_url) {
+        try {
+            const parsed = new URL(event.youtube_url)
+            youtubeId = parsed.hostname === 'youtu.be' ? parsed.pathname.slice(1) : parsed.searchParams.get('v')
+        } catch { }
+    }
+
+    const headingClass = 'font-heading text-2xl tracking-wide mb-3'
+    const iconClass = 'text-muted mt-0.5 shrink-0'
+
     return (
-        <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
+        <div>
 
             {/* Organiser badge — full width, above grid */}
             {organiser && (
@@ -217,7 +236,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                 />
             )}
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+            <div className="max-w-7xl mx-auto px-6 lg:px-10 pb-10">
                 {/* Promoter referral capture: reads ?ref=, sets cookie, logs click. Renders nothing. */}
                 <PromoterRefCapture eventId={event.id} />
                 <MetaPixelViewContent
@@ -227,228 +246,174 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     valuePence={ticketTypes.length > 0 ? ticketTypes[0].price_pence : 0}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 md:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10">
 
-                    {/* Banner — LEFT COL, ROW 1 | mobile: 3:4, desktop: 2:3 */}
-                    <div className="md:col-start-1 relative w-full overflow-hidden aspect-[3/4] md:aspect-[2/3]">
-                        <BannerCarousel
-                            images={(event.banner_images?.length ? event.banner_images : event.banner_url ? [event.banner_url] : [])}
-                            title={event.title}
-                        />
-                    </div>
-
-                    {/* RIGHT STICKY PANEL — RIGHT COL, spans all rows */}
-                    <div className="md:col-start-2 md:row-start-1 md:row-span-5">
-                        <div className="md:sticky md:top-8 flex flex-col gap-6">
-
-                            {/* Event title */}
-                            <h1 className="uppercase tracking-tight leading-none" style={{ fontFamily: '"Bebas Neue", sans-serif', fontSize: '36px', color: '#0A0A0F' }}>
-                                {event.title}
-                            </h1>
-
-                            {/* Category + tag badges */}
-                            <div className="flex gap-2 flex-wrap">
-                                <Badge className="bg-primary/90 hover:bg-primary">{event.category}</Badge>
-                                {event.tags?.map((tag: string) => (
-                                    <Badge key={tag} variant="muted">{tag}</Badge>
-                                ))}
-                            </div>
-
-                            {/* Date and venue */}
-                            <div className="grid grid-cols-1 gap-4 p-4 bg-muted/10 border border-border/50">
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold">{formattedDate}</h4>
-                                        {isMultiDay ? (
-                                            <p className="text-muted-foreground text-sm">
-                                                {startTime} → {endShortDate}, {endTime} (UK Time)
-                                            </p>
-                                        ) : (
-                                            <p className="text-muted-foreground text-sm">
-                                                {startTime}{endTime && endTime !== startTime ? ` – ${endTime}` : ''} (UK Time)
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 15 4 10a8 8 0 0 1 16 0" /><circle cx="12" cy="10" r="3" /></svg>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold">{event.venue_name}</h4>
-                                        <p className="text-muted-foreground text-sm">{event.venue_address}, {event.venue_postcode}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Check-in window */}
-                            {event.checkin_start_at && (() => {
-                                const openStr = fmtCheckin(event.checkin_start_at)
-                                const closeStr = event.checkin_end_at ? fmtCheckin(event.checkin_end_at) : null
-                                const windowStr = closeStr ? `Opens ${openStr} · Closes ${closeStr}` : `Opens ${openStr}`
-                                return (
-                                    <div>
-                                        <p style={{ fontSize: '11px', color: '#666677', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-                                            DOORS / CHECK-IN
-                                        </p>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#0A0A0F' }}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8888AA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h10" /><path d="M18 8l4 4-4 4" /><path d="M8 12h14" /></svg>
-                                            {windowStr}
-                                        </div>
-                                    </div>
-                                )
-                            })()}
-
-                            {/* Refund policy badge */}
-                            {event.refund_policy && (() => {
-                                // Keyed on the exact sentence EventForm saves (components/organiser/EventForm.tsx's
-                                // REFUND_POLICIES) — refund_policy is stored as that literal readable string, not a code.
-                                const policyMap: Record<string, { label: string; bg: string; color: string; border: string }> = {
-                                    'No refunds': { label: 'No Refunds', bg: 'rgba(230,57,80,0.1)', color: '#E63950', border: '1px solid #E63950' },
-                                    'Refunds up to 48 hours before event': { label: 'Refunds up to 48hrs before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
-                                    'Refunds up to 7 days before event': { label: 'Refunds up to 7 days before event', bg: 'rgba(245,166,35,0.1)', color: '#F5A623', border: '1px solid #F5A623' },
-                                    'Full refunds always available': { label: 'Full Refunds Available', bg: 'rgba(0,229,160,0.1)', color: '#00E5A0', border: '1px solid #00E5A0' },
-                                }
-                                const policy = policyMap[event.refund_policy]
-                                if (!policy) return null
-                                return (
-                                    <div>
-                                        <span style={{ display: 'inline-flex', padding: '6px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '2px', marginTop: '12px', background: policy.bg, color: policy.color, border: policy.border }}>
-                                            {policy.label}
-                                        </span>
-                                        <p style={{ fontSize: '11px', color: '#666677', marginTop: '6px' }}>Fees are non-refundable</p>
-                                    </div>
-                                )
-                            })()}
-
-                            {/* Favourite & Share buttons */}
-                            <div className="flex justify-end gap-2">
-                                <LikeButton
-                                    eventId={event.id}
-                                    initialLiked={userLiked}
-                                    initialCount={likeCount ?? 0}
-                                    isLoggedIn={!!user}
-                                />
-                                <ShareButton title={event.title} />
-                                <EventQRButton />
-                            </div>
-
-                            {/* Free event badge */}
-                            {isAllFree && (
-                                <div>
-                                    <span style={{ display: 'inline-block', background: 'rgba(0,229,160,0.12)', border: '1px solid #00E5A0', color: '#00E5A0', fontSize: 12, fontWeight: 700, letterSpacing: 2, padding: '4px 12px', textTransform: 'uppercase' }}>
-                                        Free Event
-                                    </span>
-                                    <p style={{ fontSize: 13, color: '#666677', marginTop: 6 }}>
-                                        Reserve your free spot before it fills up
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Booking widget */}
-                            <div id="booking-widget">
-                                <BookingWidget event={event} ticketTypes={ticketTypes} feeConfig={bookingFeeConfig} />
-                            </div>
+                    {/* ============ LEFT: poster, about, location, reviews ============ */}
+                    <div className="min-w-0 order-2 lg:order-1">
+                        {/* Poster (portrait: 3:4 mobile / 2:3 desktop) */}
+                        <div className="relative rounded-3xl overflow-hidden aspect-[3/4] md:aspect-[2/3] w-full max-w-sm md:max-w-none md:w-4/5 mx-auto md:mx-0 bg-gradient-to-br from-accent to-warm-orange shadow-card mb-6">
+                            <BannerCarousel
+                                images={(event.banner_images?.length ? event.banner_images : event.banner_url ? [event.banner_url] : [])}
+                                title={event.title}
+                            />
                         </div>
-                    </div>
 
-                    {/* YouTube Embed — LEFT COL */}
-                    {event.youtube_url && (() => {
-                        const url = event.youtube_url
-                        let videoId: string | null = null
-                        try {
-                            const parsed = new URL(url)
-                            if (parsed.hostname === 'youtu.be') {
-                                videoId = parsed.pathname.slice(1)
-                            } else {
-                                videoId = parsed.searchParams.get('v')
-                            }
-                        } catch { }
-                        if (!videoId) return null
-                        return (
-                            <div className="md:col-start-1" style={{ aspectRatio: '16/9', width: '100%' }}>
+                        {/* YouTube Embed */}
+                        {youtubeId && (
+                            <div className="mb-8 rounded-2xl overflow-hidden shadow-soft" style={{ aspectRatio: '16/9', width: '100%' }}>
                                 <iframe
-                                    src={`https://www.youtube.com/embed/${videoId}`}
+                                    src={`https://www.youtube.com/embed/${youtubeId}`}
                                     style={{ width: '100%', height: '100%', border: 'none' }}
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
                                 />
                             </div>
-                        )
-                    })()}
-
-                    {/* About This Event — LEFT COL */}
-                    <section className="md:col-start-1 space-y-4">
-                        <h3 className="text-2xl font-bold">About This Event</h3>
-                        {event.description ? (
-                            <div className="prose dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: event.description }} />
-                        ) : (
-                            <p className="text-muted-foreground">No description provided.</p>
                         )}
-                    </section>
 
-                    {/* Location — LEFT COL */}
-                    <section className="md:col-start-1 space-y-4">
-                        <h3 className="text-2xl font-bold">Location</h3>
-                        {(() => {
-                            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address + ' ' + event.venue_name)}`;
-                            return (
-                                <div>
-                                    <p style={{ fontSize: '16px', fontWeight: 700, color: '#0A0A0F' }}>{event.venue_name}</p>
-                                    <p style={{ fontSize: '14px', color: '#666677', marginTop: '4px' }}>{event.venue_address}{event.venue_postcode ? `, ${event.venue_postcode}` : ''}</p>
-                                    <a
-                                        href={mapsUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="maps-link-btn"
-                                        style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            marginTop: '12px',
-                                            padding: '8px 16px',
-                                            border: '1px solid #C0C0C8',
-                                            borderRadius: '2px',
-                                            color: '#0A0A0F',
-                                            fontSize: '13px',
-                                            textDecoration: 'none',
-                                            transition: 'border-color 0.15s',
-                                        }}
-                                    >
-                                        View on Google Maps
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
-                                    </a>
-                                </div>
-                            );
-                        })()}
-                    </section>
+                        {/* About */}
+                        <section className="mb-8">
+                            <h2 className={headingClass}>ABOUT THIS EVENT</h2>
+                            {event.description ? (
+                                <div
+                                    className="text-sm text-muted leading-relaxed [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_h2]:font-heading [&_h2]:text-xl [&_h2]:text-text [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:text-text [&_a]:text-accent [&_a]:underline"
+                                    dangerouslySetInnerHTML={{ __html: event.description }}
+                                />
+                            ) : (
+                                <p className="text-sm text-muted">No description provided.</p>
+                            )}
+                        </section>
 
-                    {/* Reviews — LEFT COL */}
-                    <section className="md:col-start-1 space-y-6">
-                        <h3 className="text-2xl font-bold">Attendee Reviews</h3>
-                        {reviews.length > 0 ? (
-                            <div className="space-y-4">
-                                {reviews.map((review: Review) => (
-                                    <div key={review.id} className="p-4 border rounded-sm bg-card text-sm">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="flex gap-1 text-yellow-500">
-                                                {"★".repeat(review.rating ?? 0)}{"☆".repeat(5 - (review.rating ?? 0))}
-                                            </div>
-                                            <span className="font-medium text-foreground ml-2">{review.user?.full_name || 'Anonymous'}</span>
+                        {/* Location */}
+                        <section className="mb-8">
+                            <h2 className={headingClass}>LOCATION</h2>
+                            {(() => {
+                                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address + ' ' + event.venue_name)}`;
+                                return (
+                                    <div className="bg-card rounded-2xl border border-border shadow-soft p-4 flex items-center justify-between gap-4 flex-wrap">
+                                        <div>
+                                            <p className="font-semibold text-sm">{event.venue_name}</p>
+                                            <p className="text-xs text-muted">{event.venue_address}{event.venue_postcode ? `, ${event.venue_postcode}` : ''}</p>
                                         </div>
-                                        <p className="text-muted-foreground">{review.comment}</p>
+                                        <a
+                                            href={mapsUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs font-semibold text-accent hover:underline shrink-0"
+                                        >
+                                            Open in Google Maps →
+                                        </a>
                                     </div>
-                                ))}
+                                );
+                            })()}
+                        </section>
+
+                        {/* Reviews */}
+                        <section>
+                            <h2 className={headingClass}>ATTENDEE REVIEWS</h2>
+                            {reviews.length > 0 ? (
+                                <div className="space-y-4">
+                                    {reviews.map((review: Review) => (
+                                        <div key={review.id} className="bg-card rounded-2xl border border-border shadow-soft p-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <p className="font-semibold text-sm">{review.user?.full_name || 'Anonymous'}</p>
+                                                <span className="text-warm-amber text-xs tracking-wide">
+                                                    {"★".repeat(review.rating ?? 0)}{"☆".repeat(5 - (review.rating ?? 0))}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-muted">{review.comment}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center bg-card rounded-2xl border border-dashed border-border">
+                                    <p className="text-sm text-muted">No reviews yet for this event.</p>
+                                </div>
+                            )}
+                        </section>
+                    </div>
+
+                    {/* ============ RIGHT: title, meta, tickets ============ */}
+                    <div className="order-1 lg:order-2 lg:sticky lg:top-24 h-fit">
+
+                        <div className="flex gap-2 flex-wrap mb-3">
+                            <span className="inline-block px-3 py-1 rounded-full bg-text text-white text-xs font-semibold" style={{ background: '#1A0E0C' }}>
+                                {event.category}
+                            </span>
+                            {event.tags?.map((tag: string) => (
+                                <span key={tag} className="inline-block px-3 py-1 rounded-full bg-border text-muted text-xs font-semibold">{tag}</span>
+                            ))}
+                        </div>
+
+                        <h1 className="font-heading text-4xl leading-none uppercase mb-4">{event.title}</h1>
+
+                        {/* Date and venue */}
+                        <div className="bg-card rounded-2xl border border-border shadow-soft p-4 space-y-3 mb-4">
+                            <div className="flex items-start gap-3">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconClass}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 10h18" /></svg>
+                                <div>
+                                    <p className="text-sm font-semibold">{formattedDate}</p>
+                                    {isMultiDay ? (
+                                        <p className="text-xs text-muted">{startTime} → {endShortDate}, {endTime} (UK Time)</p>
+                                    ) : (
+                                        <p className="text-xs text-muted">{startTime}{endTime && endTime !== startTime ? ` – ${endTime}` : ''} (UK Time)</p>
+                                    )}
+                                </div>
                             </div>
-                        ) : (
-                            <div className="p-8 text-center bg-muted/20 border border-dashed">
-                                <p className="text-muted-foreground">No reviews yet for this event.</p>
+                            <div className="flex items-start gap-3">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconClass}><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>
+                                <div>
+                                    <p className="text-sm font-semibold">{event.venue_name}</p>
+                                    <p className="text-xs text-muted">{event.venue_address}{event.venue_postcode ? `, ${event.venue_postcode}` : ''}</p>
+                                </div>
+                            </div>
+                            {event.checkin_start_at && (() => {
+                                const openStr = fmtCheckin(event.checkin_start_at)
+                                const closeStr = event.checkin_end_at ? fmtCheckin(event.checkin_end_at) : null
+                                return (
+                                    <div className="flex items-start gap-3">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconClass}><path d="M13 4H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h10" /><path d="M18 8l4 4-4 4" /><path d="M8 12h14" /></svg>
+                                        <div>
+                                            <p className="text-sm font-semibold">Doors / check-in</p>
+                                            <p className="text-xs text-muted">{closeStr ? `Opens ${openStr} · Closes ${closeStr}` : `Opens ${openStr}`}</p>
+                                        </div>
+                                    </div>
+                                )
+                            })()}
+                        </div>
+
+                        {/* Refund policy badge */}
+                        {refundPolicy && (
+                            <div className="mb-4">
+                                <span className={`inline-block px-3 py-1.5 rounded-full border text-xs font-semibold mb-1 ${refundPolicy.cls}`}>{refundPolicy.label}</span>
+                                <p className="text-xs text-muted">Booking fees are non-refundable</p>
                             </div>
                         )}
-                    </section>
+
+                        {/* Free event badge */}
+                        {isAllFree && (
+                            <div className="mb-4">
+                                <span className="inline-block px-3 py-1.5 rounded-full bg-warm-green/10 text-warm-green text-xs font-bold tracking-wide uppercase">Free Event</span>
+                                <p className="text-xs text-muted mt-1.5">Reserve your free spot before it fills up</p>
+                            </div>
+                        )}
+
+                        {/* Favourite & Share buttons */}
+                        <div className="flex items-center gap-2 mb-6 flex-wrap">
+                            <LikeButton
+                                eventId={event.id}
+                                initialLiked={userLiked}
+                                initialCount={likeCount ?? 0}
+                                isLoggedIn={!!user}
+                            />
+                            <ShareButton title={event.title} />
+                            <EventQRButton />
+                        </div>
+
+                        {/* Booking widget */}
+                        <div id="booking-widget">
+                            <BookingWidget event={event} ticketTypes={ticketTypes} feeConfig={bookingFeeConfig} />
+                        </div>
+                    </div>
 
                 </div>
             </div>

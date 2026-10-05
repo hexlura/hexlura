@@ -58,31 +58,17 @@ export default function FollowButton({ organiserId, initialFollowing, initialCou
             <button
                 onClick={handleClick}
                 disabled={loading}
-                style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    padding: '8px 20px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    borderRadius: '2px',
-                    cursor: loading ? 'default' : 'pointer',
-                    border: '1px solid #0A0A0F',
-                    background: '#0A0A0F',
-                    color: '#FFFFFF',
-                    transition: 'border-color 0.15s, color 0.15s, background 0.15s',
-                }}
+                className={`inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition ${following ? 'bg-[#1A0E0C] border-[#1A0E0C] text-white hover:bg-black' : 'bg-card border-border hover:bg-background'} ${loading ? 'cursor-default' : 'cursor-pointer'}`}
             >
                 {following && (
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
                     </svg>
                 )}
-                {following ? 'Following' : 'Follow'}
+                {following ? 'Following' : '+ Follow'}
             </button>
             {initialCountShow ? (
-                <span style={{ fontSize: '12px', color: '#666677' }}>
+                <span className="text-xs text-muted">
                     {formatCount(count)} Follower{count !== 1 ? 's' : ''}
                 </span>
             ) : null}

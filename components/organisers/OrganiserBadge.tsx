@@ -58,7 +58,7 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
     return (
         <span style={{ display: 'inline-flex', gap: 2 }}>
             {[1, 2, 3, 4, 5].map(s => (
-                <span key={s} style={{ fontSize: size, color: s <= Math.round(rating) ? '#F5A623' : '#C0C0C8', lineHeight: 1 }}>★</span>
+                <span key={s} style={{ fontSize: size, color: s <= Math.round(rating) ? '#F5A623' : '#E8DAD3', lineHeight: 1 }}>★</span>
             ))}
         </span>
     );
@@ -91,12 +91,28 @@ export default function OrganiserBadge({
         website: { label: 'Website', color: '#0A0A0F', svg: '<circle cx="12" cy="12" r="10" fill="none" stroke="white" stroke-width="1.5"/><line x1="2" y1="12" x2="22" y2="12" stroke="white" stroke-width="1.5"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="white" stroke-width="1.5"/>' },
     };
 
-    return (
-        <div className="pb-6">
+    // Merge legacy columns + JSONB social_links
+    const socialLinks: { key: string; url: string }[] = []
+    if (organiser.social_instagram) socialLinks.push({ key: 'instagram', url: organiser.social_instagram })
+    if (organiser.social_facebook) socialLinks.push({ key: 'facebook', url: organiser.social_facebook })
+    if (organiser.social_links) {
+        for (const [key, url] of Object.entries(organiser.social_links)) {
+            if (url && !socialLinks.some(l => l.key === key)) socialLinks.push({ key, url })
+        }
+    }
+    if (!socialLinks.some(l => l.key === 'website') && (organiser.social_website || organiser.website)) {
+        socialLinks.push({ key: 'website', url: (organiser.social_website || organiser.website)! })
+    }
 
-            {/* Cover Image */}
-            <div className="h-[200px] md:h-[250px]" style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-                {organiser.cover_url ? (
+    const stat = (value: React.ReactNode, label: string) => (
+        <span><span className="font-semibold text-text">{value}</span> {label}</span>
+    )
+
+    return (
+        <div>
+            {/* Cover */}
+            <div className="relative h-40 lg:h-56 overflow-hidden bg-gradient-to-br from-[#1A0E0C] via-warm-red/60 to-warm-orange">
+                {organiser.cover_url && (
                     <Image
                         src={organiser.cover_url}
                         alt={`${organiser.org_name} cover`}
@@ -105,255 +121,96 @@ export default function OrganiserBadge({
                         className="object-cover object-center"
                         priority
                     />
-                ) : (
-                    <div style={{ position: 'absolute', inset: 0, background: '#F5F5F7' }} />
                 )}
             </div>
 
-            {/* Floating Glass Widget — pulled up over the cover, expands downward */}
-            <div
-                className="-mt-[65px] md:-mt-[55px] lg:-mt-[25px] relative z-10 mx-[12px] lg:mx-[75px] flex flex-col md:flex-row items-start md:items-stretch justify-between gap-1 md:gap-4 p-4 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.12)] box-border"
-                style={{
-                    background: 'rgba(255, 255, 255, 0.45)',
-                    backdropFilter: 'blur(12px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                }}
-            >
-                {/* Left Side: Profile Info */}
-                <div
-                    className="flex flex-col gap-2 w-full md:w-auto md:flex-1 min-w-0 no-underline text-inherit"
-                >
-                    {/* Top Half: Avatar & Stats Row */}
-                    <div className="flex items-center gap-4">
-
-                        {/* Avatar */}
-                        <Link href={`/organisers/${organiser.slug}`}>
-                            <div
-                                className="rounded-full overflow-hidden relative shrink-0 flex items-center justify-center bg-black/5"
-                                style={{ width: '80px', height: '80px' }}
-                            >
+            {/* Info bar (overlaps the cover) */}
+            <div className="max-w-7xl mx-auto px-6 lg:px-10">
+                <div className="bg-card rounded-2xl border border-border shadow-card -mt-10 relative z-10 p-5 mb-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 min-w-0 flex-1">
+                        <Link href={`/organisers/${organiser.slug}`} className="shrink-0">
+                            <div className="w-16 h-16 rounded-full overflow-hidden relative bg-gradient-to-br from-warm-orange to-warm-amber border-4 border-card flex items-center justify-center text-white font-bold">
                                 {organiser.logo_url ? (
-                                    <Image src={organiser.logo_url} alt="" fill className="object-cover" />
+                                    <Image src={organiser.logo_url} alt="" fill sizes="64px" className="object-cover" />
                                 ) : (
-                                    <span style={{ fontSize: '16px', fontWeight: 700, color: '#0A0A0F' }}>
-                                        {organiser.org_name.charAt(0).toUpperCase()}
-                                    </span>
+                                    organiser.org_name.charAt(0).toUpperCase()
                                 )}
                             </div>
                         </Link>
-
-                        {/* Stats Block */}
-                        <div className="flex flex-col gap-1 flex-1 min-w-0">
-                            <Link href={`/organisers/${organiser.slug}`}>
-                                <div className="overflow-hidden text-ellipsis"
-                                    style={{
-                                        fontFamily: "'Bebas Neue', sans-serif",
-                                        fontSize: 26,
-                                        fontWeight: 900,
-                                        color: '#0A0A0F',
-                                        lineHeight: 1.1,
-                                        margin: '0 0 4px',
-                                    }}
-                                >
-                                    {organiser.org_name}
-                                </div>
+                        <div className="min-w-0 flex-1">
+                            <Link href={`/organisers/${organiser.slug}`} className="font-semibold text-lg hover:text-accent transition-colors block truncate">
+                                {organiser.org_name}
                             </Link>
-                            <div className="flex gap-5">
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[#0A0A0F] leading-tight"
-                                        style={{
-                                            fontFamily: "'Bebas Neue', sans-serif",
-                                            fontSize: 20,
-                                            fontWeight: 900,
-                                            lineHeight: 1.1,
-                                        }}
-                                    >
-                                        {organiserEventCount}
-                                    </span>
-                                    <span className="text-[10px] text-[#0A0A0F] mt-[2px]">
-                                        event{organiserEventCount !== 1 ? 's' : ''}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[#0A0A0F] leading-tight"
-                                        style={{
-                                            fontFamily: "'Bebas Neue', sans-serif",
-                                            fontSize: 20,
-                                            fontWeight: 900,
-                                            lineHeight: 1.1,
-                                        }}
-                                    >
-                                        {followCount}
-                                    </span>
-                                    <span className="text-[10px] text-[#0A0A0F] mt-[2px]">
-                                        follower{followCount !== 1 ? 's' : ''}
-                                    </span>
-                                </div>
+                            <div className="flex items-center flex-wrap gap-x-4 text-sm text-muted mt-0.5">
+                                {stat(organiserEventCount, `event${organiserEventCount !== 1 ? 's' : ''}`)}
+                                {stat(followCount, `follower${followCount !== 1 ? 's' : ''}`)}
                                 {reviewCount !== undefined && reviewCount > 0 && averageRating !== undefined && (
-                                    <div className="flex flex-col items-center">
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-[#0A0A0F] leading-tight"
-                                                style={{
-                                                    fontFamily: "'Bebas Neue', sans-serif",
-                                                    fontSize: 20,
-                                                    fontWeight: 900,
-                                                    lineHeight: 1.1,
-                                                }}
-                                            >
-                                                {averageRating.toFixed(1)}
-                                            </span>
-                                            <Stars rating={averageRating} size={11} />
-                                        </div>
-                                        <span className="text-[10px] text-[#0A0A0F] mt-[2px]">
-                                            rating
-                                        </span>
-                                    </div>
+                                    <span className="flex items-center gap-1">
+                                        <span className="font-semibold text-text">{averageRating.toFixed(1)}</span>
+                                        <Stars rating={averageRating} size={12} />
+                                    </span>
                                 )}
                             </div>
+                            <p className="text-xs text-muted mt-1">
+                                {organiser.organiser_type ? (organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type) : 'Organiser'}
+                                {organiser.location && <> · {organiser.location}</>}
+                            </p>
+                            {organiser.description && (
+                                <div className="mt-2 text-sm">
+                                    <OrganiserDescription description={organiser.description} />
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Bottom Half: Type & Location */}
-                    <div className="min-w-0 flex flex-col">
-                        <p className="text-[11px] text-[#0A0A0F] mt-[2px] whitespace-nowrap overflow-hidden text-ellipsis flex items-center">
-                            <span>{organiser.organiser_type ? (organiserTypeLabels[organiser.organiser_type] ?? organiser.organiser_type) : 'Organiser'}</span>
-                            {organiser.location && (
-                                <span className="inline-flex items-center gap-1 ml-1 overflow-hidden text-ellipsis">
-                                    {' · '}
-                                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0">
-                                        <path d="M8 1C5.24 1 3 3.24 3 6c0 4 5 9 5 9s5-5 5-9c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 8 4a1.5 1.5 0 0 1 0 3z" fill="#0A0A0F" />
-                                    </svg>
-                                    <span className="overflow-hidden text-ellipsis whitespace-nowrap">{organiser.location}</span>
-                                </span>
+                    {/* Actions + socials */}
+                    <div className="flex flex-col items-start md:items-end gap-3 shrink-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {eventId && promoteState !== undefined && promoteState !== null && (
+                                <PromoteEventButton
+                                    eventId={eventId}
+                                    initialState={promoteState}
+                                    isLoggedIn={isLoggedIn}
+                                />
                             )}
-                        </p>
-                    </div>
-
-                    {organiser.description && (
-                        <OrganiserDescription description={organiser.description} />
-                    )}
-                </div>
-
-                {/* Right Side: Actions */}
-                <div className="mt-2 md:mt-0 flex flex-col md:justify-between">
-
-                    {/* Social links (Mobile) */}
-                    <div className="mb-3 flex justify-start md:justify-end md:hidden">
-                        {(() => {
-                            // Merge legacy columns + JSONB social_links
-                            const links: { key: string; url: string }[] = []
-                            if (organiser.social_instagram) links.push({ key: 'instagram', url: organiser.social_instagram })
-                            if (organiser.social_facebook) links.push({ key: 'facebook', url: organiser.social_facebook })
-                            if (organiser.social_links) {
-                                for (const [key, url] of Object.entries(organiser.social_links)) {
-                                    if (url && !links.some(l => l.key === key)) links.push({ key, url })
-                                }
-                            }
-                            if (!links.some(l => l.key === 'website') && (organiser.social_website || organiser.website)) {
-                                links.push({ key: 'website', url: (organiser.social_website || organiser.website)! })
-                            }
-                            if (links.length === 0) return null
-                            return (
-                                <div className="flex justify-center md:justify-start flex-wrap gap-[10px] mt-1">
-                                    {links.map(({ key, url }) => {
-                                        const platform = SOCIAL_PLATFORMS[key]
-                                        if (!platform) return null
-                                        return (
-                                            <a
-                                                key={key}
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title={platform.label}
-                                                style={{
-                                                    width: 24, height: 24,
-                                                    borderRadius: '50%',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: platform.color,
-                                                    textDecoration: 'none',
-                                                    flexShrink: 0,
-                                                }}
-                                            >
-                                                <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: platform.svg }} />
-                                            </a>
-                                        )
-                                    })}
-                                </div>
-                            )
-                        })()}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-start md:justify-end gap-2 shrink-0 w-full md:w-auto">
-                        {eventId && promoteState !== undefined && promoteState !== null && (
-                            <PromoteEventButton
-                                eventId={eventId}
-                                initialState={promoteState}
+                            <FollowButton
+                                organiserId={organiser.id}
+                                initialFollowing={userFollowing}
+                                initialCount={followCount}
+                                initialCountShow={false}
                                 isLoggedIn={isLoggedIn}
                             />
+                            {eventId && userLiked !== undefined && likeCount !== undefined && (
+                                <LikeButton
+                                    eventId={eventId}
+                                    initialLiked={userLiked}
+                                    initialCount={likeCount}
+                                    isLoggedIn={isLoggedIn}
+                                />
+                            )}
+                            {extraActions}
+                        </div>
+                        {socialLinks.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {socialLinks.map(({ key, url }) => {
+                                    const platform = SOCIAL_PLATFORMS[key]
+                                    if (!platform) return null
+                                    return (
+                                        <a
+                                            key={key}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title={platform.label}
+                                            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                            style={{ background: platform.color }}
+                                        >
+                                            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: platform.svg }} />
+                                        </a>
+                                    )
+                                })}
+                            </div>
                         )}
-                        <FollowButton
-                            organiserId={organiser.id}
-                            initialFollowing={userFollowing}
-                            initialCount={followCount}
-                            initialCountShow={false}
-                            isLoggedIn={isLoggedIn}
-                        />
-                        {eventId && userLiked !== undefined && likeCount !== undefined && (
-                            <LikeButton
-                                eventId={eventId}
-                                initialLiked={userLiked}
-                                initialCount={likeCount}
-                                isLoggedIn={isLoggedIn}
-                            />
-                        )}
-                        {extraActions}
-                    </div>
-
-                    {/* Social links (Desktop) */}
-                    <div className="mt-3 hidden md:flex md:justify-end">
-                        {(() => {
-                            // Merge legacy columns + JSONB social_links
-                            const links: { key: string; url: string }[] = []
-                            if (organiser.social_instagram) links.push({ key: 'instagram', url: organiser.social_instagram })
-                            if (organiser.social_facebook) links.push({ key: 'facebook', url: organiser.social_facebook })
-                            if (organiser.social_links) {
-                                for (const [key, url] of Object.entries(organiser.social_links)) {
-                                    if (url && !links.some(l => l.key === key)) links.push({ key, url })
-                                }
-                            }
-                            if (!links.some(l => l.key === 'website') && (organiser.social_website || organiser.website)) {
-                                links.push({ key: 'website', url: (organiser.social_website || organiser.website)! })
-                            }
-                            if (links.length === 0) return null
-                            return (
-                                <div className="flex justify-center md:justify-start flex-wrap gap-[10px] mt-3">
-                                    {links.map(({ key, url }) => {
-                                        const platform = SOCIAL_PLATFORMS[key]
-                                        if (!platform) return null
-                                        return (
-                                            <a
-                                                key={key}
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title={platform.label}
-                                                style={{
-                                                    width: 34, height: 34,
-                                                    borderRadius: '50%',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: platform.color,
-                                                    textDecoration: 'none',
-                                                    flexShrink: 0,
-                                                }}
-                                            >
-                                                <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: platform.svg }} />
-                                            </a>
-                                        )
-                                    })}
-                                </div>
-                            )
-                        })()}
                     </div>
                 </div>
             </div>

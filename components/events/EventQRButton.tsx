@@ -61,49 +61,21 @@ export default function EventQRButton() {
             <button
                 ref={buttonRef}
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-1.5 transition-colors hover:border-[#0A0A0F] hover:text-[#0A0A0F]"
-                style={{
-                    fontSize: '13px',
-                    padding: '11px 14px',
-                    border: '1px solid #C0C0C8',
-                    borderRadius: '2px',
-                    background: 'transparent',
-                    color: open ? '#0A0A0F' : '#666677',
-                    cursor: 'pointer',
-                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border bg-card text-sm font-semibold hover:bg-background transition"
             >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <rect x="1" y="1" width="5" height="5" stroke="currentColor" strokeWidth="1.5" />
-                    <rect x="10" y="1" width="5" height="5" stroke="currentColor" strokeWidth="1.5" />
-                    <rect x="1" y="10" width="5" height="5" stroke="currentColor" strokeWidth="1.5" />
-                    <rect x="10" y="10" width="2" height="2" fill="currentColor" />
-                    <rect x="13" y="10" width="2" height="2" fill="currentColor" />
-                    <rect x="10" y="13" width="2" height="2" fill="currentColor" />
-                    <rect x="3" y="3" width="1.5" height="1.5" fill="currentColor" />
-                    <rect x="12" y="3" width="1.5" height="1.5" fill="currentColor" />
-                    <rect x="3" y="12" width="1.5" height="1.5" fill="currentColor" />
-                </svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M20 20v.01" /></svg>
                 QR Code
             </button>
 
             {open && (
                 <div
                     ref={popupRef}
-                    className="absolute right-0 top-full mt-2 z-50 flex flex-col items-center gap-3 bg-white border border-[#E0E0E6] shadow-lg p-4"
-                    style={{ borderRadius: '2px' }}
+                    className="absolute right-0 top-full mt-2 z-50 flex flex-col items-center gap-3 bg-white border border-border shadow-hover rounded-2xl p-4"
                 >
                     <QRCodeSVG value={window.location.href} size={200} />
                     <button
                         onClick={handleDownload}
-                        className="transition-colors hover:text-[#0A0A0F]"
-                        style={{
-                            fontSize: '12px',
-                            color: '#666677',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                        }}
+                        className="text-xs font-semibold text-muted hover:text-text underline transition-colors"
                     >
                         Download PNG
                     </button>

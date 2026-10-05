@@ -27,21 +27,10 @@ export default function ShareButton({ title }: ShareButtonProps) {
     return (
         <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 transition-colors hover:border-[#0A0A0F] hover:text-[#0A0A0F]"
-            style={{
-                fontSize: '13px',
-                padding: '8px 14px',
-                border: '1px solid #C0C0C8',
-                borderRadius: '2px',
-                background: '#F5F5F9',
-                color: copied ? '#00C48A' : '#666677',
-                cursor: 'pointer',
-            }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full border border-border bg-card text-sm font-semibold hover:bg-background transition ${copied ? 'text-warm-green' : ''}`}
         >
             {!copied && (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M8 1v9M5 4l3-3 3 3M3 11v3h10v-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" /></svg>
             )}
             {copied ? 'Link copied!' : 'Share'}
         </button>
