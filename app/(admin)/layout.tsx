@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
+import { AdminTopBar } from '@/components/layout/AdminTopBar'
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner'
 import MobileBottomNav from '@/components/layout/MobileBottomNav'
 import { cookies } from 'next/headers'
@@ -76,10 +77,13 @@ export default async function AdminLayout({
                 openSupportTickets={openSupportCount ?? 0}
             />
             <main
-                className="flex-1 min-w-0 overflow-auto px-5 sm:px-8 lg:px-10 pb-24 pt-14 lg:pt-8 lg:pb-8 lg:ml-64"
-                style={impersonatedName ? { paddingTop: '56px' } : undefined}
+                className="flex-1 min-w-0 overflow-auto pb-24 lg:pb-0 lg:ml-64"
+                style={impersonatedName ? { paddingTop: '40px' } : undefined}
             >
-                {children}
+                <AdminTopBar userId={user.id} />
+                <div className="px-5 sm:px-8 lg:px-10 pt-14 lg:pt-10 lg:pb-10">
+                    {children}
+                </div>
             </main>
             <MobileBottomNav role="admin" />
         </div>

@@ -168,12 +168,20 @@ export default async function AdminDashboardPage() {
 
             {/* KPI Row 1 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                {kpis1.map(kpi => (
-                    <div key={kpi.label} className="bg-card shadow-card rounded-2xl p-5">
-                        <p className="text-xs text-muted uppercase tracking-wider mb-1">{kpi.label}</p>
-                        <p className="font-heading text-3xl text-text">{kpi.value}</p>
-                        <p className="text-xs text-muted mt-2">{kpi.sub}</p>
-                    </div>
+                {kpis1.map((kpi, i) => (
+                    i === 0 ? (
+                        <div key={kpi.label} className="bg-gradient-to-br from-accent to-warm-orange rounded-2xl shadow-glow p-5 text-white">
+                            <p className="text-xs uppercase tracking-wider mb-1 opacity-90">{kpi.label}</p>
+                            <p className="font-heading text-3xl">{kpi.value}</p>
+                            <p className="text-xs mt-2 opacity-90">{kpi.sub}</p>
+                        </div>
+                    ) : (
+                        <div key={kpi.label} className="bg-card shadow-card rounded-2xl p-5">
+                            <p className="text-xs text-muted uppercase tracking-wider mb-1">{kpi.label}</p>
+                            <p className="font-heading text-3xl text-text">{kpi.value}</p>
+                            <p className="text-xs text-muted mt-2">{kpi.sub}</p>
+                        </div>
+                    )
                 ))}
             </div>
 
