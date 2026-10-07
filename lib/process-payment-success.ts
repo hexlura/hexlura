@@ -43,6 +43,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
     const promoterId = meta.promoter_id || null
     const promoterCommissionPercent = meta.promoter_commission_percent ? parseFloat(meta.promoter_commission_percent) : null
     const promoterCommissionPence = meta.promoter_commission_pence ? parseInt(meta.promoter_commission_pence) : null
+    const commissionWithheldPence = meta.promoter_commission_withheld_pence ? parseInt(meta.promoter_commission_withheld_pence) : 0
 
     if (!eventId || !userId) {
         console.error('Missing required metadata in payment_intent:', paymentIntent.id)
@@ -265,7 +266,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
     // this was neither — i.e. a plain platform charge for an organiser who has a
     // connected account but isn't (or is no longer) allowed to use it.
     if (organiserStripeAccountId && !useDestinationCharge) {
-        const transferAmount = ticketSubtotalPence - discountPence
+        const transferAmount = ticketSubtotalPence - discountPence - commissionWithheldPence
         if (transferAmount > 0) {
             try {
                 await getStripe().transfers.create({

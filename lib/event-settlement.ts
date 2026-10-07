@@ -1,6 +1,7 @@
 import type Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
+import { organiserOwedPence } from '@/lib/promoter-commission'
 
 /**
  * Read-only settlement report for one event: every confirmed booking, how its
@@ -95,6 +96,9 @@ type BookingRow = {
     total_pence: number | null
     stripe_payment_intent_id: string | null
     created_at: string
+    confirmed_at: string | null
+    promoter_id: string | null
+    promoter_commission_pence: number | null
 }
 
 type StripeInfo = Pick<
@@ -215,7 +219,7 @@ export async function getEventSettlement(eventId: string): Promise<EventSettleme
 
     const { data: bookingRows, error: bookingsError } = await admin
         .from('bookings')
-        .select('id, booking_ref, status, needs_manual_payout, ticket_subtotal_pence, discount_pence, booking_fee_pence, order_processing_fee_pence, total_pence, stripe_payment_intent_id, created_at')
+        .select('id, booking_ref, status, needs_manual_payout, ticket_subtotal_pence, discount_pence, booking_fee_pence, order_processing_fee_pence, total_pence, stripe_payment_intent_id, created_at, confirmed_at, promoter_id, promoter_commission_pence')
         .eq('event_id', eventId)
         .order('created_at', { ascending: true })
     if (bookingsError) throw new Error(`Failed to load bookings: ${bookingsError.message}`)
@@ -259,7 +263,7 @@ export async function getEventSettlement(eventId: string): Promise<EventSettleme
         ref: b.booking_ref,
         createdAt: b.created_at,
         needsManualPayout: !!b.needs_manual_payout,
-        ticketPence: (b.ticket_subtotal_pence ?? 0) - (b.discount_pence ?? 0),
+        ticketPence: organiserOwedPence(b), // ticket net of discount and of any promoter commission withheld
         bookingFeePence: b.booking_fee_pence ?? 0,
         processingFeePence: b.order_processing_fee_pence ?? 0,
         totalPence: b.total_pence ?? 0,

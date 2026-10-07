@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { resolveOrganiserId } from '@/lib/organiser-access'
 import { generatePayoutsForOrganiser } from '@/lib/generate-payouts'
+import { commissionWithheldPence } from '@/lib/promoter-commission'
 import { WithdrawButton } from './payouts-client'
 
 export default async function OrganiserPayoutsPage() {
@@ -30,15 +31,37 @@ export default async function OrganiserPayoutsPage() {
 
     const { data: payoutsData } = await serviceClient
         .from('payouts')
-        .select('id, net_pence, status, requested_at, paid_at, reference, created_at, event:events(title)')
+        .select('id, event_id, net_pence, status, requested_at, paid_at, reference, created_at, event:events(title)')
         .eq('organiser_id', organiserId)
         .order('created_at', { ascending: false })
 
     const payouts = (payoutsData || []) as {
-        id: string; net_pence: number | null;
+        id: string; event_id: string | null; net_pence: number | null;
         status: string; requested_at: string | null; paid_at: string | null; reference: string | null; created_at: string;
         event: { title?: string } | null
     }[]
+
+    // Promoter commission withheld from this organiser's ticket money, per event, so each payout
+    // row can show why it is lower than the ticket sales. A split event has two rows (Stripe-settled
+    // and manual), so commission is keyed by event + which of the two the row is.
+    const AUTO_REF = 'Auto-settled via Stripe Connect'
+    const eventIds = Array.from(new Set(payouts.map(p => p.event_id).filter((id): id is string => !!id)))
+    const commissionByEventRoute: Record<string, number> = {}
+    if (eventIds.length > 0) {
+        const { data: promoBookings, error: promoErr } = await serviceClient
+            .from('bookings')
+            .select('event_id, needs_manual_payout, promoter_id, promoter_commission_pence, confirmed_at, created_at')
+            .in('event_id', eventIds)
+            .eq('status', 'confirmed')
+            .not('promoter_id', 'is', null)
+        if (promoErr) console.error('Failed to load promoter commission for payouts page:', promoErr.message)
+        for (const b of promoBookings || []) {
+            const key = `${b.event_id}:${b.needs_manual_payout ? 'manual' : 'auto'}`
+            commissionByEventRoute[key] = (commissionByEventRoute[key] || 0) + commissionWithheldPence(b)
+        }
+    }
+    const commissionFor = (p: { event_id: string | null; reference: string | null }) =>
+        p.event_id ? commissionByEventRoute[`${p.event_id}:${p.reference === AUTO_REF ? 'auto' : 'manual'}`] || 0 : 0
 
     const pendingBalance = payouts
         .filter(p => p.status === 'pending')
@@ -187,6 +210,11 @@ export default async function OrganiserPayoutsPage() {
                             <tr key={p.id} className="border-b border-border/50">
                                 <td className="py-3 pr-4 text-text text-xs max-w-[200px] truncate">
                                     <div className="truncate">{p.event?.title || '—'}</div>
+                                    {commissionFor(p) > 0 && (
+                                        <div className="text-[10px] text-muted mt-0.5 whitespace-normal">
+                                            After {formatPence(commissionFor(p))} promoter commission
+                                        </div>
+                                    )}
                                     {p.status === 'paid' && p.reference && (
                                         <div className="text-[10px] text-muted font-mono mt-0.5 truncate">Ref: {p.reference}</div>
                                     )}

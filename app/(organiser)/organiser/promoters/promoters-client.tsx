@@ -200,7 +200,7 @@ export function PromotersClient({ kpis, items, events }: Props) {
                 <div className="flex items-start justify-between mb-4">
                     <div>
                         <h2 className="text-sm font-medium text-text">Invite a Promoter</h2>
-                        <p className="text-xs text-muted mt-1">Enter their Hexlura email, pick the event, set commission %. They&apos;ll receive an invitation to join.</p>
+                        <p className="text-xs text-muted mt-1">Enter their Hexlura email, pick the event, set commission %. They&apos;ll receive an invitation to join. Commission on their sales is deducted from your ticket revenue.</p>
                     </div>
                     <button
                         onClick={() => setShowInviteForm(v => !v)}
