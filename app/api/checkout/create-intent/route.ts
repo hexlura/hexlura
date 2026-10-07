@@ -136,13 +136,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: `Sales ended for: ${ticketType.name}` }, { status: 400 })
         }
 
-        // Availability check — include active reservations from other sessions
+        // Availability check — include active reservations from OTHER buyers. The buyer's own hold
+        // is for this very purchase, so it must not count against them (it made anyone taking more
+        // than half of the remaining tickets fail with "no longer available").
         const reserveClient = createAdminClient()
         const { data: activeReservations } = await reserveClient
             .from('reservations')
             .select('quantity')
             .eq('ticket_type_id', item.ticket_type_id)
             .eq('status', 'active')
+            .neq('user_id', user.id)
             .gt('expires_at', new Date().toISOString())
 
         const reservedQty = activeReservations?.reduce((sum, r) => sum + r.quantity, 0) ?? 0
