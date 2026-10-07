@@ -518,6 +518,13 @@ export async function POST(request: NextRequest) {
                 promoter_id: promoterId || '',
                 promoter_commission_percent: promoterCommissionPercent !== null ? String(promoterCommissionPercent) : '',
                 promoter_commission_pence: promoterCommissionPence !== null ? String(promoterCommissionPence) : '',
+                // Meta Conversions API matching data — read back in processPaymentIntentSucceeded
+                // (the webhook has no browser, so cookies/IP/UA must be captured here).
+                meta_fbp: (request.cookies.get('_fbp')?.value || '').slice(0, 200),
+                meta_fbc: (request.cookies.get('_fbc')?.value || '').slice(0, 300),
+                meta_ip: ip === 'unknown' ? '' : ip.slice(0, 64),
+                meta_ua: (request.headers.get('user-agent') || '').slice(0, 450),
+                meta_source_url: (request.headers.get('referer') || '').slice(0, 450),
             },
         },
         useDirectCharge ? { stripeAccount: organiserStripeAccountId! } : undefined

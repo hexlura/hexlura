@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { resendVerificationEmail } from '../actions'
+import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents'
 
 function VerifyContent() {
     const searchParams = useSearchParams()
@@ -13,6 +14,16 @@ function VerifyContent() {
     const [cooldown, setCooldown] = useState(0)
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
+
+    // Fire once per signup (not on every refresh of this page)
+    useEffect(() => {
+        try {
+            const key = `hexlura_meta_reg_${email}`
+            if (sessionStorage.getItem(key)) return
+            sessionStorage.setItem(key, '1')
+        } catch { /* storage blocked — still fire once per mount */ }
+        trackMetaEvent('CompleteRegistration', { status: true })
+    }, [email])
 
     useEffect(() => {
         if (cooldown <= 0) return

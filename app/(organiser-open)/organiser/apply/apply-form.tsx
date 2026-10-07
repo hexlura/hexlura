@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { TERMS_VERSION } from '@/lib/terms'
+import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents'
 
 interface ApplyFormProps {
     userId: string
@@ -102,6 +103,7 @@ export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
                 }).catch(() => {}),
             ])
 
+            trackMetaEvent('Lead', { content_category: 'organiser_application' })
             router.push('/organiser')
         } catch {
             setError('Something went wrong. Please try again.')

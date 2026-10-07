@@ -5,6 +5,7 @@ import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { MetaPixelInit } from '@/components/analytics/MetaPixel'
+import { MetaClickId } from '@/components/analytics/MetaClickId'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
 import { CrispChat } from '@/components/support/CrispChat'
 import { DesignTokens } from '@/components/DesignTokens'
@@ -71,6 +72,7 @@ export default async function RootLayout({
             <GoogleAnalytics />
           </Suspense>
           <CookieConsent />
+          <MetaClickId />
           <MetaPixelInit pixelId={platformPixelId} />
           <CrispChat />
         </div>

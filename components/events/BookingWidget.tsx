@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Event, TicketType } from '@/types';
+import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents';
 import { formatPence, calculateBookingFeePerTicket, type FeeConfig } from '@/lib/fees';
 
 type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
@@ -114,6 +115,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
             })
             const data = await res.json()
             if (data.success) {
+                trackMetaEvent('Lead', { content_name: event.title, content_ids: [event.id], content_category: 'waitlist' })
                 setWaitlistStatus('joined')
             } else {
                 setWaitlistStatus('error')
@@ -126,6 +128,13 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
 
     async function handleCheckout() {
         setCheckoutLoading(true);
+        trackMetaEvent('AddToCart', {
+            content_ids: [event.id],
+            content_name: event.title,
+            content_type: 'product',
+            value: (subtotal + bookingFeeTotal + processingFee) / 100,
+            currency: 'GBP',
+        });
         setReservationError('');
 
         const supabase = createClient();

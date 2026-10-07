@@ -9,6 +9,7 @@ import { MetaPixelPurchase } from '@/components/analytics/MetaPixelEvents'
 
 interface BookingData {
     booking_ref: string
+    event_id: string
     ticket_access_token: string | null
     total_pence: number | null
     event: {
@@ -108,7 +109,7 @@ function SuccessContent() {
             if (bookingRef) {
                 const { data } = await supabase
                     .from('bookings')
-                    .select('booking_ref, ticket_access_token, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
+                    .select('booking_ref, event_id, ticket_access_token, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
                     .eq('booking_ref', bookingRef)
                     .eq('status', 'confirmed')
                     .single()
@@ -145,7 +146,7 @@ function SuccessContent() {
             while (attempts < maxAttempts) {
                 const { data } = await supabase
                     .from('bookings')
-                    .select('booking_ref, ticket_access_token, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
+                    .select('booking_ref, event_id, ticket_access_token, total_pence, event:events(title, start_at, venue_name), items:booking_items(quantity, ticket_type:ticket_types(name, is_group, group_size))')
                     .eq('stripe_payment_intent_id', paymentIntent)
                     .eq('status', 'confirmed')
                     .single()
@@ -225,6 +226,7 @@ function SuccessContent() {
                     <MetaPixelPurchase
                         valuePence={booking.total_pence ?? 0}
                         bookingRef={booking.booking_ref}
+                        eventId={booking.event_id}
                     />
                     <div className="bg-surface border border-border rounded-none p-6 space-y-4">
                         <p className="text-xs text-muted uppercase tracking-wider">Booking Reference</p>
