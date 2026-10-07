@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Event, TicketType } from '@/types';
+import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents';
 import { formatPence, calculateBookingFeePerTicket, type FeeConfig } from '@/lib/fees';
 
 type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
@@ -82,7 +83,10 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
     const hasSelectedTickets = ticketTypes.some(t => effectiveQty(t) > 0);
     const hasNoTickets = ticketTypes.length === 0;
     const isComingSoon = hasNoTickets || event.ticket_availability === 'coming_soon';
-    const isAllSoldOut = !isComingSoon && ticketTypes.every(t => (t.quantity_total - t.quantity_sold) <= 0);
+    // A ticket whose organiser-set stop-selling date has passed shows as sold out even if stock remains
+    const isTicketSoldOut = (t: (typeof ticketTypes)[number]) =>
+        (t.quantity_total - t.quantity_sold) <= 0 || (!!t.sale_ends_at && new Date(t.sale_ends_at) < new Date());
+    const isAllSoldOut = !isComingSoon && ticketTypes.every(isTicketSoldOut);
     const isEventEnded = event.end_at ? new Date(event.end_at) < new Date() : false;
 
     useEffect(() => {
@@ -110,6 +114,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
             })
             const data = await res.json()
             if (data.success) {
+                trackMetaEvent('Lead', { content_name: event.title, content_ids: [event.id], content_category: 'waitlist' })
                 setWaitlistStatus('joined')
             } else {
                 setWaitlistStatus('error')
@@ -122,6 +127,13 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
 
     async function handleCheckout() {
         setCheckoutLoading(true);
+        trackMetaEvent('AddToCart', {
+            content_ids: [event.id],
+            content_name: event.title,
+            content_type: 'product',
+            value: (subtotal + bookingFeeTotal + processingFee) / 100,
+            currency: 'GBP',
+        });
         setReservationError('');
 
         const supabase = createClient();
@@ -285,7 +297,7 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
             <div className="mb-4">
                 {ticketTypes.map((ticket, idx) => {
                     const available = ticket.quantity_total - ticket.quantity_sold;
-                    const isSoldOut = available <= 0;
+                    const isSoldOut = isTicketSoldOut(ticket);
                     const quantity = selectedTickets[ticket.id] || 0;
                     const maxQty = ticket.max_per_order || 10;
                     const isExpanded = expanded[ticket.id] || false;

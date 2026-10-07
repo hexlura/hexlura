@@ -458,7 +458,7 @@ export function PromotersClient({ kpis, items, events }: Props) {
                         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
                             <div>
                                 <h2 className="font-heading text-2xl tracking-wide">INVITE PROMOTER</h2>
-                                <p className="text-muted text-xs mt-0.5">Add a referral partner and set their commission</p>
+                                <p className="text-muted text-xs mt-0.5">Add a referral partner and set their commission. Commission on their sales is deducted from your ticket revenue.</p>
                             </div>
                             <button
                                 type="button"

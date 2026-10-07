@@ -351,6 +351,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     const promoterId = meta.promoter_id || null
     const promoterCommissionPercent = meta.promoter_commission_percent ? parseFloat(meta.promoter_commission_percent) : null
     const promoterCommissionPence = meta.promoter_commission_pence ? parseInt(meta.promoter_commission_pence) : null
+    const commissionWithheldPence = meta.promoter_commission_withheld_pence ? parseInt(meta.promoter_commission_withheld_pence) : 0
 
     if (!eventId || !userId) {
         console.error('Missing required metadata in payment_intent:', paymentIntentId)
@@ -550,7 +551,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     // Platform model: destination charge already split funds at charge time. Only do
     // a manual transfer for legacy/bank-transfer organisers.
     if (organiserStripeAccountId && !useDestinationCharge) {
-        const transferAmount = ticketSubtotalPence - discountPence
+        const transferAmount = ticketSubtotalPence - discountPence - commissionWithheldPence
         if (transferAmount > 0) {
             try {
                 await getStripe().transfers.create({

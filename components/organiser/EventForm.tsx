@@ -16,7 +16,15 @@ const RichTextEditor = dynamic(
     () => import('@/components/editor/RichTextEditor').then(m => m.RichTextEditor),
     { ssr: false, loading: () => <div className="h-48 bg-background border border-border rounded-xl animate-pulse" /> }
 )
-const UK_CITIES = ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']
+const GROUP_SIZE_MIN = 2
+const GROUP_SIZE_MAX = 100
+const GROUP_SIZE_MSG = `Group size must be a whole number from ${GROUP_SIZE_MIN} to ${GROUP_SIZE_MAX}`
+
+function groupSizeInvalid(tt: { is_group: boolean; group_size: number }) {
+    return tt.is_group && !(Number.isInteger(tt.group_size) && tt.group_size >= GROUP_SIZE_MIN && tt.group_size <= GROUP_SIZE_MAX)
+}
+
+const UK_CITIES =['London', 'Manchester', 'Birmingham', 'Glasgow', 'Edinburgh', 'Leeds', 'Bristol', 'Liverpool', 'Newcastle', 'Cardiff', 'Sheffield', 'Nottingham']
 
 function SectionTitle({ num, title, badge, inline = false }: { num: string; title: string; badge: string; inline?: boolean }) {
     return (
@@ -37,6 +45,10 @@ interface TicketTypeRow {
     is_visible: boolean
     is_group: boolean
     group_size: number
+    groupSizeStr: string
+    // Set once the organiser edits the field, so legacy tickets saved with an
+    // out-of-range size aren't flagged just by opening the page.
+    groupSizeTouched?: boolean
     sort_order: number
     sale_starts_at: string
     sale_ends_at: string
@@ -150,7 +162,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     const defaultTicket: TicketTypeRow = {
         name: 'General Admission', description: '', price_pence: 0, priceStr: '',
         quantity_total: 100, qtyStr: '100', max_per_order: 10, is_visible: true, sort_order: 0,
-        sale_starts_at: '', sale_ends_at: '', is_group: false, group_size: 1,
+        sale_starts_at: '', sale_ends_at: '', is_group: false, group_size: 1, groupSizeStr: '1',
     }
     const [tickets, setTickets] = useState<TicketTypeRow[]>(
         initTickets?.map(tt => ({
@@ -165,9 +177,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
             is_visible: tt.is_visible,
             sort_order: tt.sort_order,
             sale_starts_at: tt.sale_starts_at || '',
-            sale_ends_at: tt.sale_ends_at || '',
+            sale_ends_at: toDatetimeLocal(tt.sale_ends_at),
             is_group: (tt as TicketType & { is_group?: boolean }).is_group ?? false,
             group_size: (tt as TicketType & { group_size?: number }).group_size ?? 1,
+            groupSizeStr: String((tt as TicketType & { group_size?: number }).group_size ?? 1),
         })) || [defaultTicket]
     )
 
@@ -213,9 +226,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
                     is_visible: tt.is_visible,
                     sort_order: tt.sort_order,
                     sale_starts_at: tt.sale_starts_at || '',
-                    sale_ends_at: tt.sale_ends_at || '',
+                    sale_ends_at: toDatetimeLocal(tt.sale_ends_at),
                     is_group: (tt as Record<string, unknown>).is_group as boolean ?? false,
                     group_size: (tt as Record<string, unknown>).group_size as number ?? 1,
+                    groupSizeStr: String((tt as Record<string, unknown>).group_size as number ?? 1),
                 })))
             }
         })
@@ -261,7 +275,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
             name: tt.name, description: tt.description, price_pence: tt.price_pence,
             quantity_total: tt.quantity_total, max_per_order: tt.max_per_order,
             is_visible: tt.is_visible, sort_order: sortOrder,
-            sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at || null,
+            sale_starts_at: tt.sale_starts_at || null, sale_ends_at: tt.sale_ends_at ? ukTimeToUTC(tt.sale_ends_at) : null,
             is_group: tt.is_group, group_size: tt.group_size,
         }
     }
@@ -330,6 +344,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     }
 
     async function saveDraft() {
+        const badGroup = tickets.find(tt => tt.groupSizeTouched && groupSizeInvalid(tt))
+        if (badGroup) { setSaveError(`Ticket "${badGroup.name}": ${GROUP_SIZE_MSG}`); return }
         setSaving(true)
         setSaveError('')
         const supabase = createClient()
@@ -385,6 +401,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         if (!venuePostcode.trim()) errs.push('Postcode is required')
         if (tickets.length === 0 && ticketAvailability !== 'coming_soon') errs.push('At least one ticket type is required')
         if (checkinTimesInvalid) errs.push('Check-in closing time must be after the check-in opening time')
+        tickets.forEach(tt => { if (tt.groupSizeTouched && groupSizeInvalid(tt)) errs.push(`Ticket "${tt.name}": ${GROUP_SIZE_MSG}`) })
         return errs
     }
 
@@ -474,7 +491,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
             qtyStr: '',
             quantity_total: 0,
             sort_order: prev.length,
-            ...(is_group ? { is_group: true, group_size: 2 } : {}),
+            ...(is_group ? { is_group: true, group_size: GROUP_SIZE_MIN, groupSizeStr: String(GROUP_SIZE_MIN) } : {}),
         }])
     }
 
@@ -790,19 +807,36 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
                                 </button>
                             </div>
                         </div>
+                        {/* Stop-selling date: after this the ticket shows as sold out, even if stock remains */}
+                        <div className="border-t border-border mt-3 pt-3">
+                            <label className={labelClass}>Stop selling on (optional)</label>
+                            <p className="text-xs text-muted mb-1.5">After this date and time this ticket shows as sold out, even if tickets are left</p>
+                            <DateTimePicker
+                                value={tt.sale_ends_at}
+                                onChange={val => updateTicket(i, { sale_ends_at: val })}
+                                placeholder="No stop date"
+                                className={ticketInput}
+                            />
+                        </div>
                         {/* Group size (shown only for group tickets) */}
                         {tt.is_group && (
                             <div className="border-t border-border mt-3 pt-3">
                                 <label className={labelClass}>Group Size</label>
                                 <p className="text-xs text-muted mb-1.5">Each purchase generates one QR code per person in the group</p>
                                 <input
-                                    type="number"
-                                    min={2}
-                                    max={50}
-                                    value={tt.group_size}
-                                    onChange={e => updateTicket(i, { group_size: Math.min(50, Math.max(2, parseInt(e.target.value) || 2)) })}
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={tt.groupSizeStr}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '').slice(0, 3)
+                                        updateTicket(i, { groupSizeStr: val, group_size: parseInt(val) || 0, groupSizeTouched: true })
+                                    }}
+                                    placeholder={`Minimum ${GROUP_SIZE_MIN}`}
                                     className={`${ticketInput} sm:w-40`}
                                 />
+                                {tt.groupSizeTouched && groupSizeInvalid(tt) && (
+                                    <p className="text-xs text-warm-red mt-1">{GROUP_SIZE_MSG}</p>
+                                )}
                             </div>
                         )}
                     </div>

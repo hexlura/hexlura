@@ -9,6 +9,7 @@ import { randomUUID } from 'crypto'
 import { checkoutLimiter, checkoutUserLimiter, getIP } from '@/lib/rate-limit'
 import { autoFollowOrganiser } from '@/lib/auto-follow'
 import { computeEligiblePence, type PromoCartLine } from '@/lib/promo-eligibility'
+import { isDeductionActive } from '@/lib/promoter-commission'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -487,6 +488,14 @@ export async function POST(request: NextRequest) {
     const bothFeesExempt = bookingFeeExempt && processingFeeExempt
     const useDirectCharge = useDestinationCharge && bothFeesExempt
     const platformFeePence = totalBookingFeePence + orderProcessingFeePence
+    // Promoter commission comes out of the organiser's ticket money, not Hexlura's fees: it is
+    // added to the amount Hexlura keeps (the application fee), so the organiser's transfer is
+    // reduced by it. Decided once here and recorded in metadata so the webhook's fallback
+    // transfers use the exact same figure.
+    const commissionWithheldPence =
+        promoterId && promoterCommissionPence && promoterCommissionPence > 0 && isDeductionActive()
+            ? promoterCommissionPence
+            : 0
     const chargeType = useDirectCharge ? 'direct' : useDestinationCharge ? 'destination' : 'platform'
 
     const paymentIntent = await getStripe().paymentIntents.create(
@@ -495,8 +504,13 @@ export async function POST(request: NextRequest) {
             currency: 'gbp',
             automatic_payment_methods: { enabled: true },
             ...(useDestinationCharge && !useDirectCharge ? {
-                application_fee_amount: platformFeePence,
+                application_fee_amount: platformFeePence + commissionWithheldPence,
                 transfer_data: { destination: organiserStripeAccountId! },
+            } : {}),
+            // Direct charge (both fees waived): nothing for the platform to collect except the
+            // promoter commission, taken as an application fee on the organiser's own charge.
+            ...(useDirectCharge && commissionWithheldPence > 0 ? {
+                application_fee_amount: commissionWithheldPence,
             } : {}),
             metadata: {
                 event_id,
@@ -518,6 +532,14 @@ export async function POST(request: NextRequest) {
                 promoter_id: promoterId || '',
                 promoter_commission_percent: promoterCommissionPercent !== null ? String(promoterCommissionPercent) : '',
                 promoter_commission_pence: promoterCommissionPence !== null ? String(promoterCommissionPence) : '',
+                promoter_commission_withheld_pence: String(commissionWithheldPence),
+                // Meta Conversions API matching data — read back in processPaymentIntentSucceeded
+                // (the webhook has no browser, so cookies/IP/UA must be captured here).
+                meta_fbp: (request.cookies.get('_fbp')?.value || '').slice(0, 200),
+                meta_fbc: (request.cookies.get('_fbc')?.value || '').slice(0, 300),
+                meta_ip: ip === 'unknown' ? '' : ip.slice(0, 64),
+                meta_ua: (request.headers.get('user-agent') || '').slice(0, 450),
+                meta_source_url: (request.headers.get('referer') || '').slice(0, 450),
             },
         },
         useDirectCharge ? { stripeAccount: organiserStripeAccountId! } : undefined

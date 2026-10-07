@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/service'
+import { organiserOwedPence } from '@/lib/promoter-commission'
 
 /**
  * Auto-generate pending payout records for completed events that don't
@@ -58,7 +59,8 @@ export async function generatePayoutsForOrganiser(organiserId: string) {
     for (const event of eligibleEvents) {
         if (existingEventIds.has(event.id)) continue
 
-        // Sum confirmed bookings for this event. Net of any promo-code discount — the
+        // Sum confirmed bookings for this event. Net of any promo-code discount and of any
+        // promoter commission withheld from the organiser (see lib/promoter-commission.ts) — the
         // organiser is only owed what was actually collected for tickets, not the
         // pre-discount face value (ticket_subtotal_pence is always the face value,
         // regardless of how much of it was waived by discount_pence).
@@ -73,14 +75,14 @@ export async function generatePayoutsForOrganiser(organiserId: string) {
         // let admin trigger a second, duplicate Stripe transfer for money already paid.
         const { data: bookings } = await supabase
             .from('bookings')
-            .select('ticket_subtotal_pence, discount_pence, needs_manual_payout')
+            .select('ticket_subtotal_pence, discount_pence, needs_manual_payout, promoter_id, promoter_commission_pence, confirmed_at, created_at')
             .eq('event_id', event.id)
             .eq('status', 'confirmed')
 
         if (!bookings || bookings.length === 0) continue
 
         const netPenceOf = (rows: typeof bookings) =>
-            rows.reduce((sum, b) => sum + (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0), 0)
+            rows.reduce((sum, b) => sum + organiserOwedPence(b), 0)
 
         const manualPence = netPenceOf(bookings.filter(b => b.needs_manual_payout))
         const autoSettledPence = netPenceOf(bookings.filter(b => !b.needs_manual_payout))

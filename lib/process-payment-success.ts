@@ -9,6 +9,7 @@ import { randomUUID } from 'crypto'
 import { autoFollowOrganiser } from '@/lib/auto-follow'
 import { buildTicketDescriptors, type BookingItemRow } from '@/lib/tickets/descriptors'
 import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
+import { sendMetaEvent } from '@/lib/meta-capi'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -42,6 +43,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
     const promoterId = meta.promoter_id || null
     const promoterCommissionPercent = meta.promoter_commission_percent ? parseFloat(meta.promoter_commission_percent) : null
     const promoterCommissionPence = meta.promoter_commission_pence ? parseInt(meta.promoter_commission_pence) : null
+    const commissionWithheldPence = meta.promoter_commission_withheld_pence ? parseInt(meta.promoter_commission_withheld_pence) : 0
 
     if (!eventId || !userId) {
         console.error('Missing required metadata in payment_intent:', paymentIntent.id)
@@ -264,7 +266,7 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
     // this was neither — i.e. a plain platform charge for an organiser who has a
     // connected account but isn't (or is no longer) allowed to use it.
     if (organiserStripeAccountId && !useDestinationCharge) {
-        const transferAmount = ticketSubtotalPence - discountPence
+        const transferAmount = ticketSubtotalPence - discountPence - commissionWithheldPence
         if (transferAmount > 0) {
             try {
                 await getStripe().transfers.create({
@@ -281,6 +283,36 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
                     .eq('id', booking.id)
             }
         }
+    }
+
+    // Meta Conversions API — server-side Purchase so ad attribution survives ad blockers,
+    // iOS tracking limits and buyers who close the tab before the success page loads.
+    // event_id = booking_ref, matching the browser Pixel's eventID so Meta dedupes the pair.
+    // Free bookings (£0) are skipped: a zero-value Purchase would poison ad optimisation.
+    if (totalPence > 0) {
+        await sendMetaEvent({
+            eventName: 'Purchase',
+            eventId: booking.booking_ref,
+            sourceUrl: meta.meta_source_url || null,
+            user: {
+                email: attendeeEmail,
+                phone: meta.attendee_phone,
+                fullName: attendeeName,
+                externalId: userId,
+                fbp: meta.meta_fbp || null,
+                fbc: meta.meta_fbc || null,
+                ip: meta.meta_ip || null,
+                userAgent: meta.meta_ua || null,
+            },
+            custom: {
+                value: totalPence / 100,
+                currency: 'GBP',
+                content_ids: [eventId],
+                content_type: 'product',
+                num_items: items.reduce((n, i) => n + i.quantity, 0),
+                order_id: booking.booking_ref,
+            },
+        })
     }
 
     // Send confirmation email

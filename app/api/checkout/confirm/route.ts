@@ -38,6 +38,7 @@ export async function POST(request: Request) {
         const promoterId = meta.promoter_id || null
         const promoterCommissionPercent = meta.promoter_commission_percent ? parseFloat(meta.promoter_commission_percent) : null
         const promoterCommissionPence = meta.promoter_commission_pence ? parseInt(meta.promoter_commission_pence) : null
+    const commissionWithheldPence = meta.promoter_commission_withheld_pence ? parseInt(meta.promoter_commission_withheld_pence) : 0
 
         const totalPence = ticketSubtotalPence - discountPence + bookingFeePence
 
@@ -200,7 +201,7 @@ export async function POST(request: Request) {
 
         // Stripe Connect transfer
         if (organiserStripeAccountId) {
-            const transferAmount = ticketSubtotalPence - discountPence
+            const transferAmount = ticketSubtotalPence - discountPence - commissionWithheldPence
             if (transferAmount > 0) {
                 try {
                     await getStripe().transfers.create({

@@ -444,6 +444,7 @@ export default function CheckoutFlow() {
                     <MetaPixelInitiateCheckout
                         valuePence={totalPence}
                         numItems={state.items.reduce((s, i) => s + i.quantity, 0)}
+                        eventId={state.eventId}
                     />
                     <StepPayment />
                 </>
