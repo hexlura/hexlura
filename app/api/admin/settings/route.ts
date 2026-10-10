@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
+import { HOME_THEME_MODES } from '@/lib/home-theme-config'
 
 export async function POST(request: NextRequest) {
     const supabase = createClient()
@@ -29,6 +30,8 @@ export async function POST(request: NextRequest) {
         'from_email',
         'support_email',
         'meta_pixel_id',
+        'home_theme_mode',
+        'home_theme_particles',
     ] as const
 
     if (!VALID_SETTING_KEYS.includes(key as typeof VALID_SETTING_KEYS[number])) {
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     const NUMERIC_KEYS = ['booking_fee_percent', 'booking_fee_min_pence', 'booking_fee_max_pence', 'order_processing_fee_pence', 'max_featured_slots', 'payout_cooldown_days']
-    const BOOLEAN_KEYS = ['maintenance_mode', 'auto_approve_organisers', 'stripe_connect_enabled']
+    const BOOLEAN_KEYS = ['maintenance_mode', 'auto_approve_organisers', 'stripe_connect_enabled', 'home_theme_particles']
 
     if (NUMERIC_KEYS.includes(key)) {
         const num = Number(value)
@@ -47,6 +50,10 @@ export async function POST(request: NextRequest) {
 
     if (BOOLEAN_KEYS.includes(key) && value !== 'true' && value !== 'false') {
         return NextResponse.json({ error: 'Value must be true or false' }, { status: 400 })
+    }
+
+    if (key === 'home_theme_mode' && !(HOME_THEME_MODES as readonly string[]).includes(value)) {
+        return NextResponse.json({ error: 'Invalid theme mode' }, { status: 400 })
     }
 
     const { error: upsertError } = await adminClient.from('platform_settings').upsert({

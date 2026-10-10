@@ -5,6 +5,7 @@ import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { SaveFeedback } from '@/components/ui/SaveFeedback'
+import { SEASONS, isHomeThemeMode, type HomeThemeMode, type SeasonKey } from '@/lib/home-theme-config'
 
 
 interface PromoRow {
@@ -15,13 +16,15 @@ interface PromoRow {
 interface Props {
     settings: Record<string, string>
     promoCodes: PromoRow[]
+    /** The season the date windows pick for today (what 'Auto' would show right now). */
+    autoSeason: SeasonKey | null
 }
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export function SettingsClient({ settings, promoCodes }: Props) {
+export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
     const router = useRouter()
 
     // Fee settings
@@ -33,6 +36,10 @@ export function SettingsClient({ settings, promoCodes }: Props) {
     // Homepage settings
     const [maxFeatured, setMaxFeatured] = useState(settings['max_featured_slots'] ?? '6')
     const [maintenanceMode, setMaintenanceMode] = useState(settings['maintenance_mode'] === 'true')
+
+    // Homepage theme
+    const [themeMode, setThemeMode] = useState<HomeThemeMode>(isHomeThemeMode(settings['home_theme_mode']) ? settings['home_theme_mode'] : 'auto')
+    const [themeParticles, setThemeParticles] = useState(settings['home_theme_particles'] !== 'false')
 
     // Payout settings
     const [payoutCooldown, setPayoutCooldown] = useState(settings['payout_cooldown_days'] ?? '2')
@@ -116,6 +123,25 @@ export function SettingsClient({ settings, promoCodes }: Props) {
             setSaving(null)
         }
     }
+
+    async function handleSaveTheme() {
+        setSaving('theme')
+        try {
+            await Promise.all([
+                saveSetting('home_theme_mode', themeMode),
+                saveSetting('home_theme_particles', themeParticles ? 'true' : 'false'),
+            ])
+            showFeedback('theme', 'Homepage theme saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('theme', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
+    }
+
+    // What visitors will see once this is saved.
+    const previewSeason: SeasonKey | null = themeMode === 'off' ? null : themeMode === 'auto' ? autoSeason : themeMode
 
     async function handleSavePayouts() {
         setSaving('payouts')
@@ -253,6 +279,48 @@ export function SettingsClient({ settings, promoCodes }: Props) {
                         {saving === 'homepage' ? 'Saving...' : 'Save Homepage Settings'}
                     </Button>
                     <SaveFeedback message={feedback.homepage ?? null} />
+                </div>
+            </div>
+
+            {/* Homepage Theme */}
+            <div className={sectionClass}>
+                <h2 className="text-sm font-medium text-text mb-1">Homepage Theme</h2>
+                <p className="text-xs text-muted mb-4">Seasonal look for the front page: colours, announcement bar, falling decorations and a themed collection block.</p>
+                <div className="mb-4">
+                    <label className={labelClass}>Mode</label>
+                    <ThemedSelect value={themeMode} onChange={e => setThemeMode(e.target.value as HomeThemeMode)} className={inputClass}>
+                        <option value="auto">Auto — follow the calendar (recommended)</option>
+                        <option value="off">Off — normal homepage</option>
+                        <option value="halloween">Always: Halloween</option>
+                        <option value="christmas">Always: Christmas</option>
+                        <option value="winter">Always: Winter</option>
+                        <option value="newyear">Always: New Year</option>
+                    </ThemedSelect>
+                    <p className="text-xs text-muted mt-2">
+                        Auto dates: Halloween 10 Oct – 1 Nov · Christmas 1 – 25 Dec · New Year 26 Dec – 2 Jan · Winter 3 Jan – end Feb. Outside those dates the homepage is normal.
+                    </p>
+                </div>
+                <div className="flex items-center justify-between mb-4 py-3 border-y border-border">
+                    <div>
+                        <p className="text-sm text-text">Falling decorations</p>
+                        <p className="text-xs text-muted">Snow, bats, sparkles etc. drifting over the page. Turn off to keep just the colours and banner.</p>
+                    </div>
+                    <button
+                        onClick={() => setThemeParticles(!themeParticles)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${themeParticles ? 'bg-accent' : 'bg-border'}`}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${themeParticles ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+                <p className="text-xs text-muted mb-4">
+                    {previewSeason ? <>Visitors will see: <span className="font-semibold text-text">{SEASONS[previewSeason].label}</span> theme</> : <>Visitors will see: <span className="font-semibold text-text">the normal homepage</span></>}
+                    {themeMode === 'auto' && ` (Auto today: ${autoSeason ? SEASONS[autoSeason].label : 'no theme'})`}
+                </p>
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Button variant="primary" size="md" onClick={handleSaveTheme} disabled={saving === 'theme'}>
+                        {saving === 'theme' ? 'Saving...' : 'Save Homepage Theme'}
+                    </Button>
+                    <SaveFeedback message={feedback.theme ?? null} />
                 </div>
             </div>
 

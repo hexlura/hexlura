@@ -140,3 +140,70 @@ html:has(.warm-theme)::-webkit-scrollbar-track,
 .ProseMirror.resize-cursor {
   cursor: col-resize;
 }
+
+/* ───────────────────────── Seasonal homepage themes ─────────────────────────
+   Driven by lib/home-theme-config.ts + the admin "Homepage Theme" setting. The marker is only
+   rendered on "/" (components/season/SeasonTop.tsx), so no other page is affected.
+   Each theme re-declares the palette variables on the .warm-theme wrapper, so every token-based
+   class (bg-accent, border-border, …) follows automatically. --panel / --glow feed the dark
+   "For business" panel; --s1..3 feed the hero headline gradient. */
+.warm-theme:has([data-season="halloween"]) {
+  --background: #FBF3EA; --surface: #FBF3EA; --border: #F0DCC8; --accent: #E8590C;
+  --panel: #1E0F33; --glow: rgba(255,106,0,.40); --s1: #FF6A00; --s2: #FF9A1F; --s3: #B66DFF;
+  --season-bar: linear-gradient(90deg,#2a0a3d,#7a2d00,#2a0a3d);
+  --season-hero-tint: radial-gradient(700px 400px at 15% 20%, rgba(255,106,0,.35), transparent), radial-gradient(700px 400px at 90% 90%, rgba(130,50,220,.4), transparent);
+  --season-collection: linear-gradient(135deg,#1E0F33,#4a1d6e 55%,#b34700);
+  background: radial-gradient(900px 500px at 100% 15%, rgba(130,50,220,.10), transparent), radial-gradient(900px 500px at 0% 70%, rgba(255,106,0,.10), transparent), #FBF3EA;
+}
+.warm-theme:has([data-season="christmas"]) {
+  --background: #FBF4F1; --surface: #FBF4F1; --border: #EBD8D3; --accent: #D1263D;
+  --panel: #0F2A1C; --glow: rgba(230,57,80,.40); --s1: #FF4D5E; --s2: #FFD25A; --s3: #3DDC84;
+  --season-bar: linear-gradient(90deg,#7a0f1c,#0f5a33,#7a0f1c);
+  --season-hero-tint: radial-gradient(700px 400px at 12% 15%, rgba(230,57,80,.35), transparent), radial-gradient(700px 400px at 90% 85%, rgba(30,160,90,.35), transparent);
+  --season-collection: linear-gradient(135deg,#7a0f1c,#a31f2f 45%,#0f5a33);
+  background: radial-gradient(900px 500px at 100% 15%, rgba(30,160,90,.10), transparent), radial-gradient(900px 500px at 0% 70%, rgba(230,57,80,.10), transparent), #FBF4F1;
+}
+.warm-theme:has([data-season="winter"]) {
+  --background: #F1F7FC; --surface: #F1F7FC; --border: #D8E6F2; --accent: #2878C8;
+  --panel: #0E2A47; --glow: rgba(110,190,255,.40); --s1: #7CC8FF; --s2: #BFE6FF; --s3: #FFFFFF;
+  --season-bar: linear-gradient(90deg,#0e2a47,#1d4f7a,#0e2a47);
+  --season-hero-tint: radial-gradient(800px 420px at 20% 10%, rgba(110,190,255,.30), transparent), radial-gradient(700px 400px at 90% 90%, rgba(190,160,255,.22), transparent);
+  --season-collection: linear-gradient(135deg,#0e2a47,#1d5a96 55%,#6bb8f2);
+  background: radial-gradient(900px 500px at 100% 15%, rgba(110,190,255,.14), transparent), radial-gradient(900px 500px at 0% 70%, rgba(190,160,255,.10), transparent), #F1F7FC;
+}
+.warm-theme:has([data-season="newyear"]) {
+  --background: #FBF7EA; --surface: #FBF7EA; --border: #EEE1B8; --accent: #B8860B;
+  --panel: #1A1300; --glow: rgba(245,197,24,.40); --s1: #F5C518; --s2: #FFE27A; --s3: #E63950;
+  --season-bar: linear-gradient(90deg,#1a1300,#6b4b00,#1a1300);
+  --season-hero-tint: radial-gradient(700px 400px at 15% 15%, rgba(245,197,24,.33), transparent), radial-gradient(700px 400px at 90% 90%, rgba(230,57,80,.3), transparent);
+  --season-collection: linear-gradient(135deg,#1a1300,#5a4300 50%,#a3222f);
+  background: radial-gradient(900px 500px at 100% 15%, rgba(245,197,24,.14), transparent), radial-gradient(900px 500px at 0% 70%, rgba(230,57,80,.08), transparent), #FBF7EA;
+}
+
+.season-bar { height: 40px; background: var(--season-bar); }
+/* The homepage navbar floats over the hero (absolute top-0); push it below the announcement bar. */
+.warm-theme:has(.season-bar) header.absolute { top: 40px; }
+.season-gradient { background-image: linear-gradient(90deg, var(--s1), var(--s2), var(--s3)); }
+.season-hero-tint { background: var(--season-hero-tint); }
+.season-collection-panel { background: var(--season-collection); }
+
+.season-fx-item { position: absolute; top: -10%; will-change: transform; user-select: none; }
+@keyframes season-fall { to { transform: translate3d(var(--dx, 30px), 115vh, 0) rotate(var(--rot, 360deg)); } }
+@keyframes season-rise { from { transform: translate3d(0,0,0); opacity: 0; } 15% { opacity: .9; } to { transform: translate3d(var(--dx, 30px), -115vh, 0) rotate(var(--rot, 20deg)); opacity: 0; } }
+@keyframes season-flit { 0% { transform: translate3d(-10vw,0,0); } 50% { transform: translate3d(50vw,-40px,0); } 100% { transform: translate3d(110vw,20px,0); } }
+@keyframes season-blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+.season-lights { position: absolute; top: 0; left: 0; right: 0; height: 26px; display: flex; justify-content: space-around; }
+.season-lights i { width: 10px; height: 14px; margin-top: 10px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: currentColor; box-shadow: 0 0 14px 3px currentColor; animation: season-blink 1.6s infinite; }
+.season-snowline { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; opacity: .9; background: radial-gradient(24px 20px at 12px 100%, #fff 98%, transparent) 0 0 / 48px 46px repeat-x; }
+.season-web { position: absolute; top: 0; width: 260px; height: 260px; opacity: .55; }
+
+.season-sticker { position: absolute; top: 8px; right: 8px; font-size: 22px; line-height: 1; transform: rotate(8deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+.season-divider { text-align: center; overflow: hidden; white-space: nowrap; font-size: 20px; letter-spacing: .9em; opacity: .55; padding: 18px 0; }
+.season-greeting { text-align: center; font-size: 14px; font-weight: 700; padding: 22px 16px; }
+.season-tile { display: block; border-radius: 18px; padding: 18px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(4px); transition: transform .2s, background .2s; }
+.season-tile:hover { transform: translateY(-3px); background: rgba(255,255,255,.2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .season-fx-item, .season-lights i { animation: none !important; }
+}

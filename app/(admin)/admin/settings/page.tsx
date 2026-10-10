@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { SettingsClient } from './settings-client'
+import { seasonForDate } from '@/lib/home-theme-config'
 
 export default async function AdminSettingsPage() {
     const supabase = createClient()
@@ -35,6 +36,7 @@ export default async function AdminSettingsPage() {
         <SettingsClient
             settings={settings}
             promoCodes={(promoCodes || []) as PromoRow[]}
+            autoSeason={seasonForDate()}
         />
     )
 }

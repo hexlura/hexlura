@@ -12,11 +12,13 @@ interface EventCardProps {
     showOrganiser?: boolean;
     compact?: boolean;
     priority?: boolean;
+    /** Optional seasonal emoji pinned to the poster corner (homepage theme). */
+    sticker?: string;
 }
 
 
 // Portrait poster card: date chip on the image, then title, venue and an all-in price.
-export default function EventCard({ event, compact = false, priority = false }: EventCardProps) {
+export default function EventCard({ event, compact = false, priority = false, sticker }: EventCardProps) {
     const fees = useListingFees();
     const ticketTypes = event.ticket_types || [];
 
@@ -91,6 +93,7 @@ export default function EventCard({ event, compact = false, priority = false }: 
                 <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-white/90 text-[10px] font-bold text-text uppercase">
                     {dateStr}
                 </span>
+                {sticker && <span aria-hidden className="season-sticker">{sticker}</span>}
                 {isFree && !isEventEnded && !visibleSoldOut && (
                     <span className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-warm-green text-white text-[10px] font-bold">FREE</span>
                 )}

@@ -8,6 +8,10 @@ import { Event } from '@/types';
 import type { FeaturedEvent } from './HeroSlider';
 import EventCard from '@/components/events/EventCard'
 import BackgroundVideo from '@/components/sell-tickets/BackgroundVideo';
+import { SeasonDeco } from '@/components/season/SeasonDeco';
+import { SeasonTop } from '@/components/season/SeasonTop';
+import { getHomeTheme } from '@/lib/home-theme';
+import { SEASONS } from '@/lib/home-theme-config';
 import RecommendedEvents from '@/components/home/RecommendedEvents';
 import { getPageControls, isSectionVisible } from '@/lib/page-controls/get-page-controls';
 import { PAGE_KEYS, HOME_SECTION_KEYS } from '@/lib/page-controls/constants';
@@ -46,7 +50,7 @@ export default async function HomePage() {
     const now = new Date().toISOString();
     const weekAhead = new Date(Date.now() + 7 * 86400000).toISOString();
 
-    const [{ count: thisWeekCount }, { data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls, listingFees] = await Promise.all([
+    const [{ count: thisWeekCount }, { data: eventsRaw }, { data: pastEventsRaw }, { data: citiesRaw }, { data: categoriesRaw }, { data: featuredRaw }, { data: partnersRaw }, pageControls, listingFees, homeTheme] = await Promise.all([
         supabase
             .from('events')
             .select('id', { count: 'exact', head: true })
@@ -90,7 +94,11 @@ export default async function HomePage() {
             .order('display_order', { ascending: true }),
         getPageControls(PAGE_KEYS.HOME),
         getListingFees(),
+        getHomeTheme(),
     ]);
+
+    // Active seasonal theme (admin: Settings -> Homepage Theme). null = normal homepage.
+    const season = homeTheme ? SEASONS[homeTheme.season] : null;
 
     const upcomingEventsVisible = isSectionVisible(pageControls, HOME_SECTION_KEYS.UPCOMING_EVENTS);
 
@@ -136,6 +144,7 @@ export default async function HomePage() {
     return (
         <FeeProvider fees={listingFees}>
         <div>
+            {homeTheme && <SeasonTop season={homeTheme.season} particles={homeTheme.particles} />}
             {/* ── HERO ── */}
             <section
                 className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28"
@@ -153,15 +162,27 @@ export default async function HomePage() {
                 {/* Dark overlay for text readability + fade into the page below */}
                 <div aria-hidden className="absolute inset-0 bg-black/55 z-0" />
                 <div aria-hidden className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 to-transparent z-0" />
+                {season && (
+                    <>
+                        <div aria-hidden className="season-hero-tint absolute inset-0 z-[1] pointer-events-none" />
+                        <SeasonDeco kind={season.deco} />
+                    </>
+                )}
                 <div className="max-w-5xl mx-auto px-6 lg:px-10 text-center relative z-10">
-                    {(thisWeekCount ?? 0) > 0 && (
+                    {season ? (
+                        <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold mb-6 tracking-wide">
+                            {season.badge}
+                        </span>
+                    ) : (thisWeekCount ?? 0) > 0 && (
                         <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold mb-6 tracking-wide">
                             🔥 {thisWeekCount} {thisWeekCount === 1 ? 'EVENT' : 'EVENTS'} THIS WEEK
                         </span>
                     )}
                     <h1 className="font-heading text-5xl sm:text-6xl lg:text-8xl leading-[0.9] text-white mb-6">
                         FIND YOUR<br />
-                        <span className="bg-gradient-to-r from-accent via-warm-orange to-warm-amber bg-clip-text text-transparent">NEXT NIGHT OUT</span>
+                        <span className={`${season ? 'season-gradient' : 'bg-gradient-to-r from-accent via-warm-orange to-warm-amber'} bg-clip-text text-transparent`}>
+                            {season ? season.headline : 'NEXT NIGHT OUT'}
+                        </span>
                     </h1>
                     <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto">
                         Discover live music, nightlife, comedy and more — all across the UK, all in one place.
@@ -196,7 +217,19 @@ export default async function HomePage() {
                     </form>
 
                     {/* Category quick chips */}
-                    {chips.length > 0 && (
+                    {season ? (
+                        <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+                            {season.chips.map(c => (
+                                <Link
+                                    key={c.label}
+                                    href={`/events?q=${encodeURIComponent(c.q)}`}
+                                    className="px-3.5 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-semibold hover:bg-white/20 transition"
+                                >
+                                    {c.label}
+                                </Link>
+                            ))}
+                        </div>
+                    ) : chips.length > 0 && (
                         <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
                             {chips.map(cat => (
                                 <Link
@@ -263,10 +296,44 @@ export default async function HomePage() {
                 </section>
             )}
 
+            {/* ── SEASONAL COLLECTION (only while a theme is active) ── */}
+            {season && (
+                <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
+                    <div className="season-collection-panel relative overflow-hidden rounded-3xl p-8 lg:p-10 text-white">
+                        <div aria-hidden className="absolute inset-0 pointer-events-none">
+                            <span className="absolute -right-2 -top-6 text-[150px] opacity-[0.12]">{season.collection.deco}</span>
+                            <span className="absolute left-[30%] -bottom-10 text-[110px] opacity-[0.08]">{season.collection.deco}</span>
+                        </div>
+                        <div className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-7">
+                            <div>
+                                <p className="text-xs font-bold tracking-widest text-white/70 mb-2">{season.collection.kicker}</p>
+                                <h2 className="font-heading text-4xl lg:text-5xl leading-none">{season.collection.title}</h2>
+                                <p className="text-white/70 mt-3 max-w-xl text-sm">{season.collection.sub}</p>
+                            </div>
+                            <Link
+                                href={`/events?q=${encodeURIComponent(season.collection.q)}`}
+                                className="shrink-0 self-start lg:self-end px-6 py-3 rounded-full bg-white text-text font-semibold text-sm hover:brightness-95 transition"
+                            >
+                                {season.collection.cta}
+                            </Link>
+                        </div>
+                        <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {season.collection.tiles.map(t => (
+                                <Link key={t.label} href={`/events?q=${encodeURIComponent(t.q)}`} className="season-tile">
+                                    <span className="block text-4xl mb-2.5">{t.emoji}</span>
+                                    <span className="font-semibold block">{t.label}</span>
+                                    <span className="text-xs text-white/65">{t.sub}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* ── EXPLORE BY CITY ── */}
             {cities.length > 0 && (
                 <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-16">
-                    <h2 className="font-heading text-2xl lg:text-3xl tracking-wide mb-5">EXPLORE BY CITY</h2>
+                    <h2 className="font-heading text-2xl lg:text-3xl tracking-wide mb-5">{season ? `${season.sticker} ${season.titles.city}` : "EXPLORE BY CITY"}</h2>
                     <div className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2" style={{ scrollbarWidth: 'none' }}>
                         {cities.map((city, i) => (
                             <Link
@@ -292,7 +359,7 @@ export default async function HomePage() {
             {upcomingEventsVisible && (
                 <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
                     <div className="flex items-center justify-between mb-5">
-                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">UPCOMING EVENTS</h2>
+                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">{season ? `${season.sticker} ${season.titles.upcoming}` : "UPCOMING EVENTS"}</h2>
                         <Link href="/events" className={cardTextBtn}>View All →</Link>
                     </div>
 
@@ -303,7 +370,7 @@ export default async function HomePage() {
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
                             {events.map((event, i) => (
-                                <EventCard key={event.id} event={event} priority={i < 5} />
+                                <EventCard key={event.id} event={event} priority={i < 5} sticker={season && i % 3 === 1 ? season.sticker : undefined} />
                             ))}
                         </div>
                     )}
@@ -330,10 +397,12 @@ export default async function HomePage() {
                 </section>
             )}
 
+            {season && <div aria-hidden className="season-divider mt-16">{season.divider}</div>}
+
             {/* ── ORGANISER RECRUIT ── */}
-            <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-20">
-                <div className="rounded-3xl relative overflow-hidden" style={{ background: '#1A0E0C' }}>
-                    <div className="absolute inset-0" style={{ background: 'radial-gradient(600px 300px at 90% 0%, rgba(230,57,80,0.35), transparent)' }} />
+            <section className={`max-w-7xl mx-auto px-6 lg:px-10 ${season ? 'mt-4' : 'mt-20'}`}>
+                <div className="rounded-3xl relative overflow-hidden" style={{ background: 'var(--panel, #1A0E0C)' }}>
+                    <div className="absolute inset-0" style={{ background: 'radial-gradient(600px 300px at 90% 0%, var(--glow, rgba(230,57,80,0.35)), transparent)' }} />
                     <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-10 lg:p-16">
                         <div>
                             <p className="text-accent font-semibold text-sm mb-2 tracking-wide">SELLING TICKETS?</p>
@@ -380,6 +449,8 @@ export default async function HomePage() {
                 </section>
             )}
             {partners.length === 0 && <div className="pb-14" />}
+
+            {season && <p className="season-greeting">{season.greeting}</p>}
         </div>
         </FeeProvider>
     );
