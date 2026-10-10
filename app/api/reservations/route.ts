@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+// How long tickets stay held while the buyer completes checkout. Keep in sync with the
+// "Checkout session" duration on the Cookies page.
+const HOLD_MINUTES = 5
+
 export async function POST(request: Request) {
     const body = await request.json()
     const { tickets, session_id } = body as {
@@ -20,7 +24,18 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createAdminClient()
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
+    const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString()
+
+    // A new selection replaces this buyer's own earlier hold on the same ticket types. Otherwise
+    // going back and clicking "Proceed to Checkout" again stacks a second hold on top of the
+    // first, and reserve_tickets counts the buyer's own old hold against them ("sold out").
+    const { error: releaseError } = await adminClient
+        .from('reservations')
+        .update({ status: 'expired' })
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .in('ticket_type_id', tickets.map((t) => t.ticket_type_id))
+    if (releaseError) console.error('Failed to release earlier holds before reserving:', releaseError.message)
 
     // Atomic, all-or-nothing: locks each ticket type row, re-checks capacity
     // under that lock, and inserts — so concurrent requests for the same

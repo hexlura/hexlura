@@ -69,7 +69,7 @@ const cookies = [
     { name: 'CSRF token', type: 'Essential', purpose: 'Protects against cross-site request forgery', duration: 'Session' },
     { name: 'Stripe session', type: 'Essential', purpose: 'Required for secure payment processing', duration: 'Session' },
     { name: 'Preferences', type: 'Functional', purpose: 'Remembers your city and search preferences', duration: '30 days' },
-    { name: 'Checkout session', type: 'Functional', purpose: 'Preserves your ticket selection during checkout', duration: '10 minutes' },
+    { name: 'Checkout session', type: 'Functional', purpose: 'Preserves your ticket selection during checkout', duration: '5 minutes' },
     { name: 'Analytics', type: 'Analytics', purpose: 'Tracks page views and user journeys to improve the Platform', duration: '24 months' },
     { name: 'Performance', type: 'Analytics', purpose: 'Monitors page load times and errors', duration: '12 months' },
 ]
