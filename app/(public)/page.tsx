@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import { Event } from '@/types';
 import type { FeaturedEvent } from './HeroSlider';
 import EventCard from '@/components/events/EventCard'
+import BackgroundVideo from '@/components/sell-tickets/BackgroundVideo';
 import RecommendedEvents from '@/components/home/RecommendedEvents';
 import { getPageControls, isSectionVisible } from '@/lib/page-controls/get-page-controls';
 import { PAGE_KEYS, HOME_SECTION_KEYS } from '@/lib/page-controls/constants';
@@ -143,12 +144,16 @@ export default async function HomePage() {
                         'radial-gradient(1000px 500px at 100% 0%, rgba(255,122,61,0.25), transparent), radial-gradient(800px 400px at 0% 100%, rgba(230,57,80,0.25), transparent), #1A0E0C',
                 }}
             >
-                <div
-                    aria-hidden
-                    className="absolute inset-0 pointer-events-none"
-                    style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '18px 18px' }}
+                <BackgroundVideo
+                    webmSrc="/assets/videos/hero_card.webm"
+                    mp4Src="/assets/videos/hero_card.mp4"
+                    poster="/assets/videos/hero_card-poster.jpg"
+                    className="absolute inset-0 w-full h-full object-cover z-0"
                 />
-                <div className="max-w-5xl mx-auto px-6 lg:px-10 text-center relative">
+                {/* Dark overlay for text readability + fade into the page below */}
+                <div aria-hidden className="absolute inset-0 bg-black/55 z-0" />
+                <div aria-hidden className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 to-transparent z-0" />
+                <div className="max-w-5xl mx-auto px-6 lg:px-10 text-center relative z-10">
                     {(thisWeekCount ?? 0) > 0 && (
                         <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold mb-6 tracking-wide">
                             🔥 {thisWeekCount} {thisWeekCount === 1 ? 'EVENT' : 'EVENTS'} THIS WEEK
