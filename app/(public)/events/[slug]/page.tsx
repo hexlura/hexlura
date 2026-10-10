@@ -246,12 +246,14 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     valuePence={ticketTypes.length > 0 ? ticketTypes[0].price_pence : 0}
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10">
+                {/* Mobile order: poster, title/info/tickets, then the text sections.
+                    Desktop: poster + text sections stacked in the left column, tickets sticky on the right. */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-x-10 gap-y-6 lg:gap-y-0">
 
-                    {/* ============ LEFT: poster, about, location, reviews ============ */}
-                    <div className="min-w-0 order-2 lg:order-1">
+                    {/* ============ POSTER (+ hashtags) ============ */}
+                    <div className="min-w-0 lg:col-start-1 lg:row-start-1 lg:mb-8">
                         {/* Poster (portrait: 3:4 mobile / 2:3 desktop) */}
-                        <div className="relative rounded-3xl overflow-hidden aspect-[3/4] md:aspect-[2/3] w-full max-w-sm md:max-w-none md:w-4/5 mx-auto md:mx-0 bg-gradient-to-br from-accent to-warm-orange shadow-card mb-6">
+                        <div className={`relative rounded-3xl overflow-hidden aspect-[3/4] md:aspect-[2/3] w-full max-w-sm md:max-w-none md:w-4/5 mx-auto md:mx-0 bg-gradient-to-br from-accent to-warm-orange shadow-card ${event.tags?.length > 0 ? 'mb-6' : ''}`}>
                             <BannerCarousel
                                 images={(event.banner_images?.length ? event.banner_images : event.banner_url ? [event.banner_url] : [])}
                                 title={event.title}
@@ -260,13 +262,16 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
 
                         {/* Tags */}
                         {event.tags?.length > 0 && (
-                            <div className="flex gap-2 flex-wrap mb-8">
+                            <div className="flex gap-2 flex-wrap">
                                 {event.tags.map((tag: string) => (
                                     <span key={tag} className="inline-block px-3 py-1.5 rounded-xl bg-border text-muted text-xs font-medium leading-relaxed break-words max-w-full">{tag}</span>
                                 ))}
                             </div>
                         )}
+                    </div>
 
+                    {/* ============ ABOUT, location, reviews (below tickets on mobile) ============ */}
+                    <div className="min-w-0 order-3 lg:order-none lg:col-start-1 lg:row-start-2">
                         {/* YouTube Embed */}
                         {youtubeId && (
                             <div className="mb-8 rounded-2xl overflow-hidden shadow-soft" style={{ aspectRatio: '16/9', width: '100%' }}>
@@ -342,7 +347,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                     </div>
 
                     {/* ============ RIGHT: title, meta, tickets ============ */}
-                    <div className="order-1 lg:order-2 lg:sticky lg:top-24 h-fit">
+                    <div className="order-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start lg:sticky lg:top-24 h-fit">
 
                         <div className="mb-3">
                             <span className="inline-block px-3 py-1 rounded-full bg-text text-white text-xs font-semibold" style={{ background: '#1A0E0C' }}>
