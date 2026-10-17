@@ -8,6 +8,7 @@ import NewBookingOrganiser from '@/emails/new-booking-organiser'
 import PayoutFailedAdmin from '@/emails/payout-failed-admin'
 import { sendOrganiserIdentityVerifiedEmail } from '@/lib/email'
 import { processPaymentIntentSucceeded } from '@/lib/process-payment-success'
+import { refundPayment } from '@/lib/stripe-refund'
 import { buildTicketDescriptors, type BookingItemRow } from '@/lib/tickets/descriptors'
 import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
 import { Resend } from 'resend'
@@ -370,14 +371,14 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
         if (!ticketType) {
             console.error(`Ticket type ${item.ticket_type_id} not found — refunding`)
-            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await refundPayment({ paymentIntentId })
             return
         }
 
         const available = ticketType.quantity_total - ticketType.quantity_sold
         if (item.quantity > available) {
             console.error(`Oversold: ${ticketType.name} — refunding`)
-            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await refundPayment({ paymentIntentId })
             return
         }
     }
@@ -526,7 +527,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         } else if (incremented === false) {
             // RPC ran fine and correctly refused — no capacity left. Refund and cancel.
             console.error(`Oversold on commit: ${item.ticket_type_id} — refunding and cancelling booking ${booking.id}`)
-            await getStripe().refunds.create({ payment_intent: paymentIntentId })
+            await refundPayment({ paymentIntentId })
             await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id)
             return
         }

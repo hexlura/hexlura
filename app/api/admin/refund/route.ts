@@ -5,6 +5,7 @@ import { logAuditAction } from '@/lib/audit'
 import { reversePromoterEarningsForBooking } from '@/lib/promoter-earnings'
 import { notifyWaitlistForEvent } from '@/lib/waitlist'
 import { notifyAdmins } from '@/lib/notify-admins'
+import { refundPayment } from '@/lib/stripe-refund'
 import { Resend } from 'resend'
 
 function getResend() {
@@ -129,12 +130,22 @@ export async function POST(request: NextRequest) {
     // and leave the request as 'organiser_approved' so it stays actionable.
     if (booking.stripe_payment_intent_id && refundAmount > 0) {
         try {
-            const stripe = (await import('stripe')).default
-            const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-02-25.clover' })
-            await stripeClient.refunds.create({
-                payment_intent: booking.stripe_payment_intent_id,
-                amount: refundAmount,
+            // Also takes the organiser's share back on destination charges (see lib/stripe-refund.ts).
+            const outcome = await refundPayment({
+                paymentIntentId: booking.stripe_payment_intent_id,
+                amountPence: refundAmount,
+                ticketNetPence: maxRefundablePence,
+                bookingRef: booking.booking_ref,
             })
+            if (outcome.reversalError) {
+                await logAuditAction({
+                    actorId: user.id,
+                    action: 'refund_transfer_reversal_failed',
+                    entityType: 'booking',
+                    entityId: booking_id,
+                    metadata: { refund_request_id, refund_id: outcome.refund.id, booking_ref: booking.booking_ref, error: outcome.reversalError },
+                })
+            }
         } catch (err) {
             console.error('Stripe refund failed:', err)
             await logAuditAction({

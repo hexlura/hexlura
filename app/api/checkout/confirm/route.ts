@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
+import { refundPayment } from '@/lib/stripe-refund'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendBookingConfirmationEmail } from '@/lib/email'
 import { randomUUID } from 'crypto'
@@ -55,14 +56,14 @@ export async function POST(request: Request) {
             if (!ticketType) {
                 console.error(`Ticket type ${item.ticket_type_id} not found during confirm`)
                 // Refund
-                await getStripe().refunds.create({ payment_intent: paymentIntent.id })
+                await refundPayment({ paymentIntentId: paymentIntent.id })
                 return NextResponse.json({ received: true })
             }
 
             const available = ticketType.quantity_total - ticketType.quantity_sold
             if (item.quantity > available) {
                 console.error(`Oversold: ${ticketType.name}. Refunding.`)
-                await getStripe().refunds.create({ payment_intent: paymentIntent.id })
+                await refundPayment({ paymentIntentId: paymentIntent.id })
                 return NextResponse.json({ received: true })
             }
         }
