@@ -371,22 +371,9 @@ export function OrganiserSidebar({ userName, orgName, userId, identityStatus = n
                         </button>
                     </div>
                 </nav>
-                {/* Upgrade card — pinned to the bottom of the sidebar, outside the scrolling menu.
-                    pb-20 on mobile clears the bottom nav bar. */}
-                <div className="shrink-0 p-5 pt-3 pb-20 lg:pb-5 border-t border-border">
-                    <div className="bg-gradient-to-br from-accent via-accent to-warm-orange rounded-2xl p-5 text-white shadow-glow relative overflow-hidden">
-                        <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-90">Free Plan</p>
-                        <p className="text-sm mt-2 mb-4 leading-snug relative">Unlock lower fees, team seats &amp; promoter tools with Pro</p>
-                        <Link
-                            href="/organiser/billing"
-                            onClick={() => setIsOpen(false)}
-                            className="block text-center w-full bg-white text-text text-xs font-bold py-2.5 rounded-xl hover:bg-white/90 transition-colors relative"
-                        >
-                            Upgrade to Pro →
-                        </Link>
-                    </div>
-                </div>
+                {/* Spacer so the sign-out button clears the mobile bottom nav bar.
+                    (The "Upgrade to Pro" card lived here; removed until billing is decided and built.) */}
+                <div className="shrink-0 pb-20 lg:hidden" />
             </aside>
         </>
     )
