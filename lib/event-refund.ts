@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { reversePromoterEarningsForBooking } from '@/lib/promoter-earnings'
 import { sendEventCancelledEmail } from '@/lib/email'
 import { notifyAdmins } from '@/lib/notify-admins'
+import { refundPayment } from '@/lib/stripe-refund'
 
 // An event that has already run (or was marked ended). Refunding its buyers
 // would hand back money for a night they attended, so deletion flows must not.
@@ -48,9 +49,8 @@ export async function refundAllBookingsForEvent(eventId: string): Promise<Refund
         // failure doesn't stall refunding everyone else.
         if (booking.stripe_payment_intent_id) {
             try {
-                const stripe = (await import('stripe')).default
-                const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-02-25.clover' })
-                await stripeClient.refunds.create({ payment_intent: booking.stripe_payment_intent_id })
+                // Full refund; also takes the organiser's share back on destination charges.
+                await refundPayment({ paymentIntentId: booking.stripe_payment_intent_id, bookingRef: booking.booking_ref })
             } catch (err) {
                 console.error(`Stripe refund failed for booking ${booking.booking_ref}:`, err)
                 failedBookingRefs.push(booking.booking_ref)
