@@ -22,7 +22,7 @@ export default async function PrivacyPage() {
 
         <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>Who We Are</h2>
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#6B5D56', lineHeight: 1.8, marginBottom: 16 }}>
-          Hexlura is operated by <strong style={{ color: '#1A0E0C' }}>Hexlura Ltd (Company No. 17102803)</strong>, registered at 41 Junction Road, Northampton, England, NN2 7JA. We are registered with the Information Commissioner&apos;s Office (ICO). ICO Registration Number: [PENDING].
+          Hexlura is operated by <strong style={{ color: '#1A0E0C' }}>Hexlura Ltd (Company No. 17102803)</strong>, registered at 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ. We are registered with the Information Commissioner&apos;s Office (ICO). ICO Registration Number: [PENDING].
         </p>
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#6B5D56', lineHeight: 1.8, marginBottom: 16 }}>
           Contact: <a href="mailto:support@hexlura.com" style={{ color: '#E63950' }}>support@hexlura.com</a>
@@ -133,7 +133,7 @@ export default async function PrivacyPage() {
         <h2 style={{ fontFamily: 'var(--font-bebas-neue), Bebas Neue, sans-serif', fontSize: 28, color: '#E63950', marginTop: 40, marginBottom: 16 }}>Contact &amp; Complaints</h2>
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#6B5D56', lineHeight: 1.8, marginBottom: 16 }}>
           Email: <a href="mailto:support@hexlura.com" style={{ color: '#E63950' }}>support@hexlura.com</a><br />
-          Address: Hexlura Ltd, 41 Junction Road, Northampton, England, NN2 7JA
+          Address: Hexlura Ltd, 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ
         </p>
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: '#6B5D56', lineHeight: 1.8, marginBottom: 16 }}>
           If you are unhappy with how we handle your data, you have the right to lodge a complaint with the ICO at{' '}

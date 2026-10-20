@@ -46,7 +46,7 @@ export default function AboutPage() {
                 <p className="text-muted leading-relaxed">Hexlura is operated by Hexlura Ltd, a company registered in England and Wales.</p>
                 <div className="mt-4 space-y-1 text-sm text-muted">
                     <p><span className="font-semibold text-text">Company Number:</span> 17102803</p>
-                    <p><span className="font-semibold text-text">Registered Address:</span> 41 Junction Road, Northampton, England, NN2 7JA</p>
+                    <p><span className="font-semibold text-text">Registered Address:</span> 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ</p>
                     <p>
                         <span className="font-semibold text-text">Contact:</span>{' '}
                         <a href="mailto:support@hexlura.com" className="text-accent hover:underline">support@hexlura.com</a>

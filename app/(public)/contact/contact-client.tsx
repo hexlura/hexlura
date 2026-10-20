@@ -129,7 +129,7 @@ export default function ContactPageClient() {
                     </div>
 
                     <p className="text-xs text-muted leading-relaxed pt-8">
-                        Hexlura Ltd &middot; 41 Junction Road, Northampton, England, NN2 7JA &middot; Company No. 17102803
+                        Hexlura Ltd &middot; 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ &middot; Company No. 17102803
                     </p>
                 </div>
 
