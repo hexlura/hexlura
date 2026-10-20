@@ -7,7 +7,6 @@ import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { MetaPixelInit } from '@/components/analytics/MetaPixel'
 import { MetaClickId } from '@/components/analytics/MetaClickId'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
-import { CrispChat } from '@/components/support/CrispChat'
 import { DesignTokens } from '@/components/DesignTokens'
 import { createServiceClient } from '@/lib/supabase/service'
 import "./globals.css";
@@ -74,7 +73,6 @@ export default async function RootLayout({
           <CookieConsent />
           <MetaClickId />
           <MetaPixelInit pixelId={platformPixelId} />
-          <CrispChat />
         </div>
       </body>
     </html>
