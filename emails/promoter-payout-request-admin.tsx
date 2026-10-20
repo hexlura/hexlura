@@ -1,6 +1,6 @@
-import { Link, Text } from '@react-email/components'
 import React from 'react'
 import BaseEmail from './components/BaseEmail'
+import { Button, Card, Divider, Eyebrow, Icon, Lead, Note, Row, Title } from './components/kit'
 
 interface PromoterPayoutRequestAdminProps {
     promoterName: string
@@ -26,133 +26,24 @@ export default function PromoterPayoutRequestAdmin({
     const amount = formatGBP(totalRequestedPence)
 
     return (
-        <BaseEmail previewText={`New promoter payout request: ${promoterName} — ${amount}`}>
-            <Text style={headingStyle}>NEW PROMOTER PAYOUT REQUEST</Text>
+        <BaseEmail previewText={`New promoter payout request: ${promoterName} — ${amount}`} tag="Admin">
+            <Icon glyph="£" tone="amber" />
+            <Eyebrow>Awaiting your review</Eyebrow>
+            <Title>NEW PROMOTER PAYOUT REQUEST</Title>
+            <Lead>A promoter has submitted a payout withdrawal request and is awaiting your review.</Lead>
 
-            <Text style={bodyTextStyle}>
-                A promoter has submitted a payout withdrawal request and is awaiting your review.
-            </Text>
+            <Card>
+                <Row label="Promoter">{promoterName}</Row>
+                <Row label="Contact">{promoterEmail}</Row>
+                <Row label="Referral code" mono>{referralCode}</Row>
+                <Row label="Amount requested"><strong>{amount}</strong></Row>
+                <Row label="Payouts in batch" last>{payoutCount}</Row>
+            </Card>
 
-            <div style={detailBoxStyle}>
-                <table style={tableStyle} cellPadding={0} cellSpacing={0}>
-                    <tbody>
-                        <tr>
-                            <td style={rowLabelStyle}>Promoter</td>
-                            <td style={rowValueStyle}>{promoterName}</td>
-                        </tr>
-                        <tr>
-                            <td style={rowLabelStyle}>Contact</td>
-                            <td style={rowValueStyle}>{promoterEmail}</td>
-                        </tr>
-                        <tr>
-                            <td style={rowLabelStyle}>Referral code</td>
-                            <td style={rowMonoValueStyle}>{referralCode}</td>
-                        </tr>
-                        <tr>
-                            <td style={rowLabelStyle}>Amount requested</td>
-                            <td style={rowValueStyle}><strong>{amount}</strong></td>
-                        </tr>
-                        <tr>
-                            <td style={rowLabelStyle}>Payouts in batch</td>
-                            <td style={rowValueStyle}>{payoutCount}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <Button href={`${appUrl}/admin/payouts`}>Review in admin panel →</Button>
 
-            <div style={buttonWrapStyle}>
-                <Link href={`${appUrl}/admin/payouts`} style={primaryButtonStyle}>
-                    Review in Admin Panel →
-                </Link>
-            </div>
-
-            <div style={dividerStyle} />
-
-            <Text style={noteStyle}>
-                This is an internal admin notification. Do not forward this email.
-            </Text>
+            <Divider />
+            <Note>This is an internal admin notification. Do not forward this email.</Note>
         </BaseEmail>
     )
-}
-
-const headingStyle: React.CSSProperties = {
-    fontFamily: 'Arial Black, Arial, sans-serif',
-    fontSize: '28px',
-    fontWeight: 900,
-    color: '#0A0A0F',
-    margin: '0 0 24px 0',
-}
-
-const bodyTextStyle: React.CSSProperties = {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
-    color: '#666677',
-    lineHeight: 1.6,
-    margin: '0 0 24px 0',
-}
-
-const detailBoxStyle: React.CSSProperties = {
-    border: '1px solid #EEEEEE',
-    padding: '8px 16px',
-    margin: '0 0 24px 0',
-}
-
-const tableStyle: React.CSSProperties = {
-    width: '100%',
-    borderCollapse: 'collapse',
-}
-
-const rowLabelStyle: React.CSSProperties = {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
-    color: '#666677',
-    padding: '10px 0',
-    borderBottom: '1px solid #EEEEEE',
-    width: '40%',
-}
-
-const rowValueStyle: React.CSSProperties = {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
-    color: '#0A0A0F',
-    padding: '10px 0',
-    borderBottom: '1px solid #EEEEEE',
-    textAlign: 'right',
-}
-
-const rowMonoValueStyle: React.CSSProperties = {
-    fontFamily: 'Courier New, monospace',
-    fontSize: '13px',
-    color: '#0A0A0F',
-    padding: '10px 0',
-    borderBottom: '1px solid #EEEEEE',
-    textAlign: 'right',
-}
-
-const buttonWrapStyle: React.CSSProperties = {
-    margin: '0 0 24px 0',
-}
-
-const primaryButtonStyle: React.CSSProperties = {
-    backgroundColor: '#E63950',
-    color: '#FFFFFF',
-    padding: '14px 32px',
-    fontSize: '14px',
-    fontWeight: 700,
-    textDecoration: 'none',
-    display: 'inline-block',
-    fontFamily: 'Arial, sans-serif',
-}
-
-const dividerStyle: React.CSSProperties = {
-    borderTop: '1px solid #EEEEEE',
-    margin: '32px 0',
-}
-
-const noteStyle: React.CSSProperties = {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '13px',
-    color: '#8888AA',
-    lineHeight: 1.6,
-    margin: '16px 0 0 0',
 }
