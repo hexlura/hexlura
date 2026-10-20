@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email — Payout sent</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="emails.css" />
+</head>
+<body>
+<div class="chrome">
+  <a class="back" href="index.html">← All email mockups</a>
+  <dl class="meta">
+    <dt>Template</dt><dd>payout-paid-organiser · to the organiser</dd>
+    <dt>Pattern</dt><dd>"Money" email. payout-paid-promoter, payout-requested-organiser and payout-request-admin would follow it.</dd>
+    <dt>Sent when</dt><dd>An admin marks a payout as paid</dd>
+    <dt>From</dt><dd>Hexlura &lt;noreply@hexlura.com&gt;</dd>
+    <dt>Subject</dt><dd>Your payout of £486.00 is on its way</dd>
+    <dt>Sample data</dt><dd>Fictional organiser and amount — for layout review only</dd>
+    <dt>Copy flag</dt><dd class="flag">Today's wording says the payout was "released by bank transfer to your nominated account". That is only true for bank-transfer organisers; Stripe Connect organisers are paid automatically. Wording unchanged here.</dd>
+  </dl>
+  <div class="toggle"><button class="on" data-mode="desktop">Desktop</button><button data-mode="mobile">Mobile</button></div>
+</div>
+
+<div class="stage">
+<div class="email">
+  <div class="strip"></div>
+  <div class="hdr"><div class="logo">HEXLURA<sup>®</sup></div><span class="tag">Payout</span></div>
+  <div class="bd">
+    <div class="icon green">✓</div>
+    <p class="eyebrow">Organiser</p>
+    <h1>PAYOUT SENT</h1>
+    <p class="lead">Hi Sam, great news — your payout for <strong style="color:var(--text)">Nightshade Events</strong> has just been released by bank transfer to your nominated account.</p>
+
+    <div class="amount"><small>YOUR PAYOUT</small><b>£486.00</b><span>Sent on 12 November 2026</span></div>
+
+    <div class="card">
+      <p class="title" style="font-size:16px">Payout details</p>
+      <div class="row"><span class="k">Event</span><span class="v">Neon Nights — Warehouse Rave</span></div>
+      <div class="row"><span class="k">Method</span><span class="v">Bank transfer</span></div>
+      <div class="row"><span class="k">Reference</span><span class="v mono">HXL-PAY-3F9A21C4</span></div>
+    </div>
+
+    <p>Funds typically arrive in your bank account within 1–2 business days. If you don't see them after that, let us know and we'll chase it up.</p>
+
+    <a class="btn" href="#">View payout history →</a>
+
+    <div class="hr"></div>
+    <p class="note">Something not right? Contact <a class="link" href="#">support@hexlura.com</a> — we usually respond within a few hours.</p>
+  </div>
+  <div class="ftr">
+    <div class="logo">HEXLURA<sup>®</sup></div><br>
+    Hexlura Ltd · Company No. 17102803<br>
+    Registered office: 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ<br>
+    <a href="#">support@hexlura.com</a> · <a href="#">Terms</a> · <a href="#">Privacy</a><br>
+    This is an automated email — please do not reply.
+  </div>
+</div>
+</div>
+<script src="emails.js"></script>
+</body>
+</html>

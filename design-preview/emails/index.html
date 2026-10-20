@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hexlura — Email redesign mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: { bg:'#FAF6F3', card:'#FFFFFF', border:'#F1E7E2', text:'#1A0E0C', muted:'#6B5D56', accent:'#E63950', orange:'#FF7A3D', amber:'#F5A623', green:'#1B9C63', amberText:'#9C6900' },
+      fontFamily: { heading:['"Bebas Neue"','sans-serif'], sans:['"DM Sans"','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+      boxShadow: { soft:'0 2px 12px rgba(60,20,10,0.05)', card:'0 6px 24px -4px rgba(60,20,10,0.08)', hover:'0 12px 36px -6px rgba(60,20,10,0.14)' },
+    } },
+  }
+</script>
+<style>
+  body { background: radial-gradient(1100px 480px at 90% -10%, rgba(255,122,61,0.10), transparent), radial-gradient(800px 380px at -10% 0%, rgba(230,57,80,0.07), transparent), #FAF6F3; }
+</style>
+</head>
+<body class="font-sans text-text">
+<main class="max-w-5xl mx-auto px-5 py-10">
+
+  <a href="../style-guide.html" class="text-xs text-muted hover:text-accent">← Style guide</a>
+
+  <header class="mt-3 mb-10">
+    <span class="text-xs font-semibold text-accent bg-accent/10 px-3 py-1 rounded-full">Mockups · not built yet</span>
+    <h1 class="font-heading text-5xl tracking-wide mt-4">EMAIL REDESIGN</h1>
+    <p class="text-muted mt-3 max-w-2xl leading-relaxed">
+      Your 30 transactional emails still use the old look: a dark header, a grey page, heavy Arial headings and emoji icons.
+      These mockups bring them into the new warm style. Nine of them are drawn in full, one for each <em>pattern</em> of message you send.
+      The other 21 follow the same patterns (table at the bottom).
+    </p>
+    <p class="text-xs text-muted mt-3 max-w-2xl">All names, events and amounts are fictional sample data. Wording is kept exactly as it is today, except where a note says otherwise. Use the Desktop / Mobile toggle inside each mockup.</p>
+  </header>
+
+  <!-- Gallery -->
+  <h2 class="font-heading text-2xl tracking-wide mb-4">THE NINE MOCKUPS</h2>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+    <a href="booking-confirmation.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-green bg-green/10 px-2 py-1 rounded-full">Buyer</span>
+      <p class="font-semibold mt-3">Booking confirmation</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">Tickets confirmed, booking reference, event card, order summary.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="event-reminder.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-green bg-green/10 px-2 py-1 rounded-full">Buyer</span>
+      <p class="font-semibold mt-3">Event reminder</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">24 hours before the event, with the ticket download.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="event-cancelled.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-green bg-green/10 px-2 py-1 rounded-full">Buyer</span>
+      <p class="font-semibold mt-3">Event cancelled</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">A "notice" message with a clear refund box.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="password-reset.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-muted bg-bg px-2 py-1 rounded-full">Any user</span>
+      <p class="font-semibold mt-3">Password reset</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">The "one big button" layout used for every action email.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="user-welcome.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-muted bg-bg px-2 py-1 rounded-full">Any user</span>
+      <p class="font-semibold mt-3">Welcome</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">The longer layout with a tip list and an organiser invitation.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="team-invite.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-muted bg-bg px-2 py-1 rounded-full">Door staff</span>
+      <p class="font-semibold mt-3">Team invitation</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">An invite with one accept button.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="new-booking-organiser.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-orange bg-orange/10 px-2 py-1 rounded-full">Organiser</span>
+      <p class="font-semibold mt-3">New booking</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">Ticket revenue only. No fee lines, by design.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="payout-paid-organiser.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-orange bg-orange/10 px-2 py-1 rounded-full">Organiser</span>
+      <p class="font-semibold mt-3">Payout sent</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">A big amount box with the payout details underneath.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+    <a href="refund-admin-review.html" class="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-accent bg-accent/10 px-2 py-1 rounded-full">Admin</span>
+      <p class="font-semibold mt-3">Refund awaiting approval</p>
+      <p class="text-xs text-muted mt-1 leading-relaxed">The admin "needs a decision" alert with a details table.</p>
+      <p class="text-xs font-semibold text-accent mt-3">Open →</p>
+    </a>
+  </div>
+
+  <!-- Before / after -->
+  <h2 class="font-heading text-2xl tracking-wide mb-4">WHAT CHANGES</h2>
+  <div class="grid md:grid-cols-2 gap-4 mb-12">
+    <div class="bg-card border border-border rounded-2xl p-6 shadow-soft">
+      <p class="text-xs font-bold uppercase tracking-widest text-muted mb-3">Today</p>
+      <ul class="text-sm space-y-2 text-muted">
+        <li>· Near-black header bar (#0A0A0F) on a cold grey page (#F5F5F7)</li>
+        <li>· Arial Black headings; boxes with sharp corners</li>
+        <li>· Emoji as icons (render differently in every email app)</li>
+        <li>· Flat red button with no breathing room</li>
+        <li>· Footer: company name, number, support email — no address</li>
+      </ul>
+    </div>
+    <div class="bg-card border-2 border-accent rounded-2xl p-6 shadow-card">
+      <p class="text-xs font-bold uppercase tracking-widest text-accent mb-3">Redesign</p>
+      <ul class="text-sm space-y-2">
+        <li>· Warm cream page, white rounded card, red→orange strip along the top</li>
+        <li>· Bebas Neue headings with a safe fallback; DM Sans body</li>
+        <li>· Tinted icon circles (green / red / amber) instead of emoji</li>
+        <li>· Soft cream info cards, rounded buttons with a gentle glow</li>
+        <li>· One shared footer with the company number <strong>and registered office address</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <h2 class="font-heading text-2xl tracking-wide mb-4">RULES FOR THE BUILD</h2>
+  <div class="bg-card border border-border rounded-2xl p-6 shadow-soft mb-12 text-sm leading-relaxed space-y-3">
+    <p class="text-muted">These mockups are a <strong class="text-text">visual guide</strong>, not email-ready code. Email apps are far fussier than browsers, so the real build must follow these rules:</p>
+    <ul class="space-y-2 text-muted">
+      <li><strong class="text-text">One shared layout.</strong> Change <span class="font-mono text-xs">emails/components/BaseEmail.tsx</span> once (header, footer, colours) and all 30 templates update.</li>
+      <li><strong class="text-text">Tables and inline styles</strong> (React Email already does this). No flexbox or CSS variables in the final emails.</li>
+      <li><strong class="text-text">Fonts.</strong> Gmail and Outlook don't load web fonts. Headings must look fine in the fallback (Impact / Arial Narrow), so design with that in mind. Body text is Arial.</li>
+      <li><strong class="text-text">Icons are hosted PNGs</strong> (about 2× size), not emoji or SVG. Email apps block SVG.</li>
+      <li><strong class="text-text">The top gradient strip falls back to solid red</strong> in Outlook, which ignores gradients. The rounded corners will square off in desktop Outlook. Both are acceptable.</li>
+      <li><strong class="text-text">Buttons</strong> use the "bulletproof button" pattern, so they stay clickable when images are off.</li>
+      <li><strong class="text-text">Test before sending</strong> in Gmail, Apple Mail and Outlook, light and dark mode, with a real send to your own address.</li>
+      <li><strong class="text-text">The fee rule still applies.</strong> Organiser emails show ticket revenue only. Buyer and admin emails may show fees.</li>
+    </ul>
+  </div>
+
+  <!-- Findings -->
+  <h2 class="font-heading text-2xl tracking-wide mb-4">THINGS I FOUND WHILE READING THE EMAILS</h2>
+  <div class="bg-amber/10 border border-amber/30 rounded-2xl p-6 mb-12 text-sm leading-relaxed">
+    <ol class="space-y-3 list-decimal pl-5">
+      <li><strong>Ticket lines show the wrong price.</strong> The buyer confirmation and the organiser alert print "2 × £41.98" and "2 × £40.00", but those figures are the <em>line totals</em>, not the per-ticket price. This is a real bug in today's emails, and the mockups show it correctly.</li>
+      <li><strong>The footer has no registered office address.</strong> UK companies normally have to show their registered name, company number and registered office in business emails. The mockups add it. Please confirm with your accountant or lawyer.</li>
+      <li><strong>"Please do not reply" vs "just reply to this email".</strong> The welcome email invites replies; its own footer says not to. Pick one. If you want replies, the sender address must be a real inbox.</li>
+      <li><strong>"You keep 100% of face value"</strong> in the welcome email won't be true after the planned Stripe change, so change it then.</li>
+      <li><strong>The payout email always says "bank transfer".</strong> Stripe Connect organisers are paid automatically and don't get this email.</li>
+      <li><strong>Marketing emails need an unsubscribe link.</strong> Announcement, event-promo-campaign and new-event-followers are marketing. I have not checked whether they include one.</li>
+      <li><strong>Not yet in git:</strong> <span class="font-mono text-xs">emails/event-correction.tsx</span> exists only on your PC.</li>
+    </ol>
+  </div>
+
+  <!-- Coverage -->
+  <h2 class="font-heading text-2xl tracking-wide mb-4">ALL 30 TEMPLATES, GROUPED BY PATTERN</h2>
+  <div class="bg-card border border-border rounded-2xl shadow-soft overflow-hidden mb-12">
+    <table class="w-full text-sm">
+      <thead class="bg-bg text-xs uppercase tracking-widest text-muted">
+        <tr><th class="text-left px-5 py-3 w-44">Pattern</th><th class="text-left px-5 py-3">Templates</th></tr>
+      </thead>
+      <tbody class="divide-y divide-border align-top">
+        <tr><td class="px-5 py-4 font-semibold">Ticket card<br><span class="text-xs font-normal text-muted">booking confirmation style</span></td>
+          <td class="px-5 py-4 text-muted"><a class="text-accent font-semibold" href="booking-confirmation.html">booking-confirmation</a>, <a class="text-accent font-semibold" href="event-reminder.html">event-reminder</a></td></tr>
+        <tr><td class="px-5 py-4 font-semibold">One action<br><span class="text-xs font-normal text-muted">one big button</span></td>
+          <td class="px-5 py-4 text-muted"><a class="text-accent font-semibold" href="password-reset.html">password-reset</a>, <a class="text-accent font-semibold" href="team-invite.html">team-invite</a>, email-verification, promoter-invite, stripe-connected, organiser-identity-verified</td></tr>
+        <tr><td class="px-5 py-4 font-semibold">Welcome</td>
+          <td class="px-5 py-4 text-muted"><a class="text-accent font-semibold" href="user-welcome.html">user-welcome</a>, organiser-welcome, promoter-welcome</td></tr>
+        <tr><td class="px-5 py-4 font-semibold">Notice</td>
+          <td class="px-5 py-4 text-muted"><a class="text-accent font-semibold" href="event-cancelled.html">event-cancelled</a>, event-correction, waitlist-available, event-published, account-deletion-approved</td></tr>
+        <tr><td class="px-5 py-4 font-semibold">Money<br><span class="text-xs font-normal text-muted">organiser and promoter</span></td>
+          <td class="px-5 py-4 text-muted"><a class="text-accent font-semibold" href="new-booking-organiser.html">new-booking-organiser</a>, <a class="text-accent font-semibold" href="payout-paid-organiser.html">payout-paid-organiser</a>, payout-paid-promoter, payout-requested-organiser, refund-request-organiser</td></tr>
+        <tr><td class="px-5 py-4 font-semibold">Admin alert<br><span class="text-xs font-normal text-muted">red variant for failures</span></td>
+          <td class="px-5 py-4 text-muted"><a class="text-accent font-semibold" href="refund-admin-review.html">refund-admin-review</a>, payout-failed-admin, payout-request-admin, promoter-payout-request-admin, account-deletion-requested-admin, event-deletion-requested-admin</td></tr>
+        <tr><td class="px-5 py-4 font-semibold">Marketing<br><span class="text-xs font-normal text-muted">needs an unsubscribe link</span></td>
+          <td class="px-5 py-4 text-muted">announcement, event-promo-campaign, new-event-followers</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-xs text-muted text-center">Bold red names have a full mockup. The rest use the same layout with different text.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email — Booking confirmation</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="emails.css" />
+</head>
+<body>
+<div class="chrome">
+  <a class="back" href="index.html">← All email mockups</a>
+  <dl class="meta">
+    <dt>Template</dt><dd>booking-confirmation · to the buyer</dd>
+    <dt>Sent when</dt><dd>A payment succeeds and the booking is created (also for free bookings)</dd>
+    <dt>From</dt><dd>Hexlura &lt;noreply@hexlura.com&gt;</dd>
+    <dt>Subject</dt><dd>Your tickets for Neon Nights — Warehouse Rave are confirmed!</dd>
+    <dt>Preview text</dt><dd>Your tickets for Neon Nights — Warehouse Rave are confirmed!</dd>
+    <dt>Attachments</dt><dd>One PDF ticket per physical ticket (unchanged)</dd>
+    <dt>Sample data</dt><dd>Fictional buyer, event and amounts — for layout review only</dd>
+    <dt>Copy flag</dt><dd class="flag">Today's email prints each line as "2 × £41.98", but £41.98 is the line total, not the per-ticket price. This mockup shows "2 × General Admission" on the left and the line total on the right.</dd>
+  </dl>
+  <div class="toggle"><button class="on" data-mode="desktop">Desktop</button><button data-mode="mobile">Mobile</button></div>
+</div>
+
+<div class="stage">
+<div class="email">
+  <div class="strip"></div>
+  <div class="hdr"><div class="logo">HEXLURA<sup>®</sup></div><span class="tag">Your tickets</span></div>
+  <div class="bd">
+    <div class="icon green">✓</div>
+    <p class="eyebrow">Booking confirmed</p>
+    <h1>YOU'RE GOING!</h1>
+    <p class="lead">Hi Priya, your tickets are confirmed. They're attached to this email as PDFs.</p>
+
+    <div class="ref"><small>BOOKING REFERENCE</small><b>HXL-7K2M9Q</b></div>
+
+    <div class="card">
+      <p class="title">Neon Nights — Warehouse Rave</p>
+      <div class="row"><span class="k">Date</span><span class="v">Saturday 8 November 2026</span></div>
+      <div class="row"><span class="k">Time</span><span class="v">10:00 PM – 4:00 AM UK Time</span></div>
+      <div class="row"><span class="k">Venue</span><span class="v">The Dockyard, 12 Dock Lane, Manchester M1 4AB</span></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="k">2 × General Admission</span><span class="v">£41.98</span></div>
+      <div class="total"><span>Total paid</span><span>£41.98<small>includes £1.98 in fees</small></span></div>
+    </div>
+
+    <a class="btn" href="#">Download your tickets →</a>
+    <p class="note" style="text-align:center">Show the QR code at the door. Each QR code is valid for one scan only.</p>
+    <p class="note" style="text-align:center">Questions? <a class="link" href="#">support@hexlura.com</a></p>
+  </div>
+  <div class="ftr">
+    <div class="logo">HEXLURA<sup>®</sup></div><br>
+    Hexlura Ltd · Company No. 17102803<br>
+    Registered office: 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ<br>
+    <a href="#">support@hexlura.com</a> · <a href="#">Terms</a> · <a href="#">Privacy</a><br>
+    This is an automated email — please do not reply.
+  </div>
+</div>
+</div>
+<script src="emails.js"></script>
+</body>
+</html>

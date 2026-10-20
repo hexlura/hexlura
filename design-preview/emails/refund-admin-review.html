@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email — Refund awaiting approval (admin)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="emails.css" />
+</head>
+<body>
+<div class="chrome">
+  <a class="back" href="index.html">← All email mockups</a>
+  <dl class="meta">
+    <dt>Template</dt><dd>refund-admin-review · to admins</dd>
+    <dt>Pattern</dt><dd>"Admin alert" email. payout-failed-admin, payout-request-admin, promoter-payout-request-admin and the two deletion-request emails would follow it. A red variant would suit anything that is failing.</dd>
+    <dt>Sent when</dt><dd>An organiser approves a refund request and it needs admin confirmation</dd>
+    <dt>From</dt><dd>Hexlura &lt;noreply@hexlura.com&gt;</dd>
+    <dt>Subject</dt><dd>Refund approved by organiser — action required</dd>
+    <dt>Sample data</dt><dd>Fictional buyer, organiser and amounts — for layout review only</dd>
+    <dt>Fee rule</dt><dd class="flag">Admin emails may show Hexlura's fee (the fee-visibility rule only applies to organisers).</dd>
+  </dl>
+  <div class="toggle"><button class="on" data-mode="desktop">Desktop</button><button data-mode="mobile">Mobile</button></div>
+</div>
+
+<div class="stage">
+<div class="email">
+  <div class="strip"></div>
+  <div class="hdr"><div class="logo">HEXLURA<sup>®</sup></div><span class="tag">Admin</span></div>
+  <div class="bd">
+    <div class="icon amber">!</div>
+    <p class="eyebrow">Refund awaiting your approval</p>
+    <h1>ACTION REQUIRED</h1>
+    <p class="lead">An organiser has approved a refund request. Please review and confirm or deny.</p>
+
+    <div class="notice">
+      <b class="t">Needs a decision</b>
+      The buyer has not been refunded yet. Nothing changes until you confirm.
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="k">Event</span><span class="v">Neon Nights — Warehouse Rave</span></div>
+      <div class="row"><span class="k">Organiser</span><span class="v">Nightshade Events</span></div>
+      <div class="row"><span class="k">Buyer</span><span class="v">Priya Shah · priya@example.com</span></div>
+      <div class="row"><span class="k">Booking ref</span><span class="v mono" style="color:var(--accent)">HXL-7K2M9Q</span></div>
+      <div class="row"><span class="k">Refund amount</span><span class="v neg">£40.00</span></div>
+      <div class="row"><span class="k">Platform fee kept</span><span class="v">£1.98</span></div>
+    </div>
+
+    <a class="btn" href="#">Review &amp; confirm →</a>
+  </div>
+  <div class="ftr">
+    <div class="logo">HEXLURA<sup>®</sup></div><br>
+    Hexlura Ltd · Company No. 17102803<br>
+    Registered office: 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ<br>
+    This is an automated email — please do not reply.
+  </div>
+</div>
+</div>
+<script src="emails.js"></script>
+</body>
+</html>

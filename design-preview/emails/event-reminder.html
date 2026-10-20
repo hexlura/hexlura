@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email — Event reminder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="emails.css" />
+</head>
+<body>
+<div class="chrome">
+  <a class="back" href="index.html">← All email mockups</a>
+  <dl class="meta">
+    <dt>Template</dt><dd>event-reminder · to the buyer</dd>
+    <dt>Sent when</dt><dd>Daily cron at 09:00 UTC, for events starting in about 24 hours</dd>
+    <dt>From</dt><dd>Hexlura &lt;noreply@hexlura.com&gt;</dd>
+    <dt>Subject</dt><dd>Reminder: Neon Nights — Warehouse Rave is tomorrow!</dd>
+    <dt>Sample data</dt><dd>Fictional event — for layout review only</dd>
+  </dl>
+  <div class="toggle"><button class="on" data-mode="desktop">Desktop</button><button data-mode="mobile">Mobile</button></div>
+</div>
+
+<div class="stage">
+<div class="email">
+  <div class="strip"></div>
+  <div class="hdr"><div class="logo">HEXLURA<sup>®</sup></div><span class="tag">Reminder</span></div>
+  <div class="bd">
+    <div class="icon amber" style="font-size:17px;letter-spacing:.02em">24h</div>
+    <p class="eyebrow">Event reminder</p>
+    <h1>YOUR EVENT IS TOMORROW</h1>
+    <p class="lead">Don't forget — your tickets are ready.</p>
+
+    <div class="card">
+      <p class="title">Neon Nights — Warehouse Rave</p>
+      <div class="row"><span class="k">Date</span><span class="v">Saturday 8 November 2026</span></div>
+      <div class="row"><span class="k">Time</span><span class="v">10:00 PM UK Time</span></div>
+      <div class="row"><span class="k">Venue</span><span class="v">The Dockyard, 12 Dock Lane, Manchester M1 4AB</span></div>
+    </div>
+
+    <a class="btn" href="#">Download ticket →</a>
+    <a class="btn ghost" href="#">View event details</a>
+    <p class="note" style="text-align:center;margin-top:16px">Show your QR code at the door. Each code is valid for one scan only.</p>
+  </div>
+  <div class="ftr">
+    <div class="logo">HEXLURA<sup>®</sup></div><br>
+    Hexlura Ltd · Company No. 17102803<br>
+    Registered office: 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ<br>
+    <a href="#">support@hexlura.com</a> · <a href="#">Terms</a> · <a href="#">Privacy</a><br>
+    This is an automated email — please do not reply.
+  </div>
+</div>
+</div>
+<script src="emails.js"></script>
+</body>
+</html>

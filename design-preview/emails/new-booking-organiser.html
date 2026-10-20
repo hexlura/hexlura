@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email — New booking (organiser)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="emails.css" />
+</head>
+<body>
+<div class="chrome">
+  <a class="back" href="index.html">← All email mockups</a>
+  <dl class="meta">
+    <dt>Template</dt><dd>new-booking-organiser · to the organiser</dd>
+    <dt>Sent when</dt><dd>A buyer completes a booking for the organiser's event</dd>
+    <dt>From</dt><dd>Hexlura &lt;noreply@hexlura.com&gt;</dd>
+    <dt>Subject</dt><dd>New booking for Neon Nights — Warehouse Rave — HXL-7K2M9Q</dd>
+    <dt>Sample data</dt><dd>Fictional buyer and event — for layout review only</dd>
+    <dt>Fee rule</dt><dd class="flag">Organiser emails show ticket revenue only, never Hexlura's fee or the buyer's total — so there is deliberately no fee line here. Today's email also prints "2 × £40.00" (line total, not per ticket); this mockup shows the quantity and the line total separately.</dd>
+  </dl>
+  <div class="toggle"><button class="on" data-mode="desktop">Desktop</button><button data-mode="mobile">Mobile</button></div>
+</div>
+
+<div class="stage">
+<div class="email">
+  <div class="strip"></div>
+  <div class="hdr"><div class="logo">HEXLURA<sup>®</sup></div><span class="tag">New booking</span></div>
+  <div class="bd">
+    <div class="icon green">£</div>
+    <p class="eyebrow">Organiser</p>
+    <h1>NEW BOOKING!</h1>
+    <p class="lead">Hi Nightshade Events, you have a new booking for <strong style="color:var(--text)">Neon Nights — Warehouse Rave</strong>.</p>
+
+    <div class="card">
+      <div class="row"><span class="k">Buyer</span><span class="v">Priya Shah · priya@example.com</span></div>
+      <div class="row"><span class="k">Event</span><span class="v">Neon Nights — Warehouse Rave</span></div>
+      <div class="row"><span class="k">Date</span><span class="v">Saturday 8 November 2026</span></div>
+      <div class="row"><span class="k">Reference</span><span class="v mono" style="color:var(--accent)">HXL-7K2M9Q</span></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="k">2 × General Admission</span><span class="v">£40.00</span></div>
+      <div class="total"><span>Your revenue</span><span class="pos">£40.00</span></div>
+    </div>
+
+    <a class="btn" href="#">View dashboard →</a>
+    <p class="note" style="text-align:center">Keep up the great work!</p>
+  </div>
+  <div class="ftr">
+    <div class="logo">HEXLURA<sup>®</sup></div><br>
+    Hexlura Ltd · Company No. 17102803<br>
+    Registered office: 71-75 Shelton Street, Covent Garden, London, United Kingdom, WC2H 9JQ<br>
+    <a href="#">support@hexlura.com</a> · <a href="#">Terms</a> · <a href="#">Privacy</a><br>
+    This is an automated email — please do not reply.
+  </div>
+</div>
+</div>
+<script src="emails.js"></script>
+</body>
+</html>
