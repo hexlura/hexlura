@@ -47,7 +47,7 @@ export default function EventPublished({
 
             <Divider />
             <Note>
-                Questions? Reply to this email or contact <SupportLink />.
+                Questions? Contact <SupportLink />.
             </Note>
         </BaseEmail>
     )

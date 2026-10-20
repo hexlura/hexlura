@@ -33,7 +33,7 @@ export default function UserWelcome({ fullName, appUrl }: UserWelcomeProps) {
             <Card white>
                 <CardTitle>Run events of your own?</CardTitle>
                 <CardSub>
-                    Hexlura is also the most organiser-friendly ticketing platform in the UK. Zero monthly fees, you keep 100% of face value, payouts within 2 business days.
+                    Hexlura is also the most organiser-friendly ticketing platform in the UK. No monthly fees, built-in QR code check-in, and payouts within 2 business days of your event ending.
                 </CardSub>
                 <div style={{ height: '14px' }} />
                 <Button href={`${appUrl}/business`} ghost>Become an organiser</Button>
@@ -43,7 +43,7 @@ export default function UserWelcome({ fullName, appUrl }: UserWelcomeProps) {
                 If you haven&apos;t verified your email yet, please check your inbox for the verification link to unlock booking.
             </Note>
             <Note>
-                Need help? Just reply to this email or contact <SupportLink />.
+                Need help? Contact <SupportLink />.
             </Note>
         </BaseEmail>
     )

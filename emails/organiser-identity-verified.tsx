@@ -37,7 +37,7 @@ export default function OrganiserIdentityVerified({
 
             <Divider />
             <Note>
-                Questions? Reply to this email or contact <SupportLink />.
+                Questions? Contact <SupportLink />.
             </Note>
         </BaseEmail>
     )

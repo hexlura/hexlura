@@ -36,7 +36,7 @@ export default function OrganiserWelcome({ fullName, orgName, appUrl }: Organise
             <SubHeading>Why organisers love Hexlura</SubHeading>
             <CheckList
                 items={[
-                    'Zero monthly fees — keep 100% of your face value',
+                    'No monthly fees — create events and start selling tickets for free',
                     'Payouts within 2 business days of your event ending',
                     'Built-in QR code check-in with the door scanner',
                     'Real-time analytics and attendee data',

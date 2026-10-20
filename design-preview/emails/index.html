@@ -143,8 +143,8 @@
     <ol class="space-y-3 list-decimal pl-5">
       <li><strong>Ticket lines show the wrong price.</strong> The buyer confirmation and the organiser alert print "2 × £41.98" and "2 × £40.00", but those figures are the <em>line totals</em>, not the per-ticket price. This is a real bug in today's emails, and the mockups show it correctly.</li>
       <li><strong>The footer has no registered office address.</strong> UK companies normally have to show their registered name, company number and registered office in business emails. The mockups add it. Please confirm with your accountant or lawyer.</li>
-      <li><strong>"Please do not reply" vs "just reply to this email".</strong> The welcome email invites replies; its own footer says not to. Pick one. If you want replies, the sender address must be a real inbox.</li>
-      <li><strong>"You keep 100% of face value"</strong> in the welcome email won't be true after the planned Stripe change, so change it then.</li>
+      <li><strong>Fixed: "do not reply" vs "just reply".</strong> Six emails told people to reply while the footer said not to. They now say "contact support@hexlura.com".</li>
+      <li><strong>Fixed: "keep 100% of face value".</strong> Removed from the user and organiser welcome emails, because it stops being true after the Stripe change. The public site and Terms still say it and need updating when that change happens.</li>
       <li><strong>The payout email always says "bank transfer".</strong> Stripe Connect organisers are paid automatically and don't get this email.</li>
       <li><strong>Marketing emails need an unsubscribe link.</strong> Announcement, event-promo-campaign and new-event-followers are marketing. I have not checked whether they include one.</li>
       <li><strong>Not yet in git:</strong> <span class="font-mono text-xs">emails/event-correction.tsx</span> exists only on your PC.</li>

@@ -34,7 +34,7 @@ export default function PromoterWelcome({ displayName, referralCode, appUrl }: P
 
             <Button href={`${appUrl}/promoter`}>Open promoter dashboard →</Button>
             <Note>
-                Questions? Reply to this email or contact <SupportLink />.
+                Questions? Contact <SupportLink />.
             </Note>
         </BaseEmail>
     )

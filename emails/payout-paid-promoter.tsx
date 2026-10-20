@@ -59,7 +59,7 @@ export default function PayoutPaidPromoter({
 
             <Divider />
             <Note>
-                Something not right? Reply to this email or contact <SupportLink /> — we usually respond within a few hours.
+                Something not right? Contact <SupportLink /> — we usually respond within a few hours.
             </Note>
         </BaseEmail>
     )
