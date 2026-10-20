@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import GdprExportButton from '@/components/account/GdprExportButton'
+import { SignOutButton } from '@/components/layout/SignOutButton'
 
 export default async function AccountPage() {
     const supabase = createClient()
@@ -130,6 +131,11 @@ export default async function AccountPage() {
             {/* Privacy & Data */}
             <div className="bg-card rounded-2xl border border-border shadow-soft p-5">
                 <GdprExportButton />
+            </div>
+
+            {/* Sign out */}
+            <div className="mt-6">
+                <SignOutButton className="px-5 py-2.5 rounded-full border border-border text-sm font-semibold text-accent hover:bg-background transition" />
             </div>
         </section>
     )

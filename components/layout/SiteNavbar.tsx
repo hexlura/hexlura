@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { SignOutButton } from './SignOutButton'
 
 const NAV_LINKS = [
     { href: '/events', label: 'Browse Events' },
@@ -24,10 +25,30 @@ export function SiteNavbar() {
     const [fullName, setFullName] = useState<string | null>(null)
     const [isPromoter, setIsPromoter] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
+    const [accountOpen, setAccountOpen] = useState(false)
+    const accountRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         setMenuOpen(false)
+        setAccountOpen(false)
     }, [pathname])
+
+    // Close the account dropdown on an outside click or Escape.
+    useEffect(() => {
+        if (!accountOpen) return
+        function onPointerDown(e: MouseEvent) {
+            if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
+        }
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') setAccountOpen(false)
+        }
+        document.addEventListener('mousedown', onPointerDown)
+        document.addEventListener('keydown', onKeyDown)
+        return () => {
+            document.removeEventListener('mousedown', onPointerDown)
+            document.removeEventListener('keydown', onKeyDown)
+        }
+    }, [accountOpen])
 
     useEffect(() => {
         const supabase = createClient()
@@ -113,13 +134,27 @@ export function SiteNavbar() {
                             <Link href="/notifications" className={`hidden sm:block ${iconClass}`} aria-label="Notifications" title="Notifications">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>
                             </Link>
-                            <Link
-                                href="/account"
-                                aria-label="My account"
-                                className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-warm-orange flex items-center justify-center text-white text-sm font-bold ml-1"
-                            >
-                                {initial}
-                            </Link>
+                            <div className="relative ml-1" ref={accountRef}>
+                                <button
+                                    type="button"
+                                    onClick={() => setAccountOpen(o => !o)}
+                                    aria-label="Account menu"
+                                    aria-haspopup="menu"
+                                    aria-expanded={accountOpen}
+                                    className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-warm-orange flex items-center justify-center text-white text-sm font-bold"
+                                >
+                                    {initial}
+                                </button>
+                                {accountOpen && (
+                                    <div role="menu" className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-2xl shadow-hover p-1.5 text-sm font-semibold text-text z-50">
+                                        <p className="px-3 py-2 text-xs font-normal text-muted truncate border-b border-border mb-1">{user.email}</p>
+                                        <Link role="menuitem" href="/account" className="block px-3 py-2.5 rounded-xl hover:bg-background">My Account</Link>
+                                        <Link role="menuitem" href="/bookings" className="block px-3 py-2.5 rounded-xl hover:bg-background">My Bookings</Link>
+                                        <div className="border-t border-border my-1" />
+                                        <SignOutButton menuItem className="w-full text-left px-3 py-2.5 rounded-xl text-accent hover:bg-background" />
+                                    </div>
+                                )}
+                            </div>
                         </>
                     ) : (
                         <>
@@ -165,6 +200,8 @@ export function SiteNavbar() {
                                 {dashboard && <Link href={dashboard.href} className="px-4 py-3 rounded-xl text-text hover:bg-background">{dashboard.label}</Link>}
                                 <Link href="/account" className="px-4 py-3 rounded-xl text-text hover:bg-background">My Account</Link>
                                 <Link href="/favourites" className="px-4 py-3 rounded-xl text-text hover:bg-background">Favourites</Link>
+                                <div className="border-t border-border my-1" />
+                                <SignOutButton className="w-full text-left px-4 py-3 rounded-xl text-accent hover:bg-background" />
                             </>
                         ) : (
                             <Link href="/auth/login" className="px-4 py-3 rounded-xl text-text hover:bg-background">Log In</Link>
