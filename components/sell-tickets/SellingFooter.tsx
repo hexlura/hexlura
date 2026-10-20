@@ -68,7 +68,7 @@ export default function SellingFooter({ ctaHref }: { ctaHref: string }) {
                         <p className="text-xs text-gray-600 font-mono leading-relaxed">
                             © 2026 Hexlura Ltd
                             <br />
-                            Company No. 17022833
+                            Company No. 17102803
                             <br />
                             Registered in England &amp; Wales
                         </p>
