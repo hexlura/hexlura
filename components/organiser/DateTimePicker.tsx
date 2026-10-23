@@ -66,7 +66,12 @@ export function DateTimePicker({ value, onChange, min, placeholder, required, cl
     useEffect(() => {
         if (!open) return
         function handleClick(e: MouseEvent) {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
+            const target = e.target as Element
+            // The hour/minute lists (ThemedSelect) are drawn in a portal outside this popup, so a click on
+            // one of their options looks like an "outside" click. Closing here would unmount the popup
+            // before the option is chosen, which made the time impossible to change.
+            if (target.closest?.('[role="listbox"]')) return
+            if (ref.current && !ref.current.contains(target as Node)) {
                 setOpen(false)
             }
         }
