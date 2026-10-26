@@ -130,6 +130,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     // links — old links are also caught by a slug-history redirect as a
     // second line of defence, but preventing the change at the source is better.
     const slugLocked = isEdit && event?.status !== 'draft'
+    // A brand-new event, or one still in draft. Anything else (published, ended, …) is "live":
+    // it is already visible to buyers, so it gets "Save changes" instead of Publish and no auto-save.
+    const isDraft = !isEdit || event?.status === 'draft'
 
     // Section 01
     const [title, setTitle] = useState(event?.title || '')
@@ -198,6 +201,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     const [errors, setErrors] = useState<string[]>([])
     const [publishing, setPublishing] = useState(false)
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const errorsRef = useRef<HTMLDivElement>(null)
     // Remembers an event created mid-session so a failed save can be retried
     // without inserting a duplicate event (the `event` prop only updates after
     // navigation to the edit page).
@@ -235,13 +239,20 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         })
     }, [event?.id, tickets.length])
 
-    // Auto-save every 30 seconds
+    // Auto-save every 30 seconds — drafts only. A live event must never change under buyers
+    // because a half-finished edit happened to be auto-saved; those go out via "Save changes".
     useEffect(() => {
+        if (!isDraft) return
         autoSaveRef.current = setInterval(() => {
             if (title) saveDraft()
         }, 30000)
         return () => { if (autoSaveRef.current) clearInterval(autoSaveRef.current) }
-    }, [title, description, tickets, saveDraft])
+    }, [isDraft, title, description, tickets, saveDraft])
+
+    // Validation messages sit at the bottom of a long form; bring them into view when they appear.
+    useEffect(() => {
+        if (errors.length) errorsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, [errors])
 
     function buildEventPayload(slugValue: string) {
         return {
@@ -403,6 +414,14 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         if (checkinTimesInvalid) errs.push('Check-in closing time must be after the check-in opening time')
         tickets.forEach(tt => { if (tt.groupSizeTouched && groupSizeInvalid(tt)) errs.push(`Ticket "${tt.name}": ${GROUP_SIZE_MSG}`) })
         return errs
+    }
+
+    // Live events: same required-field checks as publishing, then save in place (no status change).
+    async function handleSaveChanges() {
+        const errs = validate()
+        if (errs.length) { setErrors(errs); return }
+        setErrors([])
+        await saveDraft()
     }
 
     async function handlePublish() {
@@ -896,40 +915,67 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
                 </div>
             )}
             {errors.length > 0 && (
-                <div className="mb-4 bg-warm-red/10 rounded-xl p-4">
+                <div ref={errorsRef} className="mb-4 bg-warm-red/10 rounded-xl p-4 scroll-mt-24">
                     <p className="text-warm-red text-sm font-medium mb-2">Please fix the following:</p>
                     <ul className="list-disc list-inside space-y-1">
                         {errors.map(e => <li key={e} className="text-warm-red text-xs">{e}</li>)}
                     </ul>
                 </div>
             )}
-            <div className="flex items-center justify-end gap-3">
-                <button
-                    type="button"
-                    onClick={saveDraft}
-                    disabled={saving}
-                    className="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-background transition-colors disabled:opacity-60"
-                >
-                    {saving ? 'Saving...' : 'Save as Draft'}
-                </button>
-                {stripeReady ? (
-                    <button
-                        type="button"
-                        onClick={handlePublish}
-                        disabled={publishing}
-                        className="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
-                    >
-                        {publishing ? 'Publishing...' : 'Publish Event'}
-                    </button>
-                ) : (
-                    <a
-                        href="/organiser/settings"
-                        title="Connect Stripe to publish"
-                        className="bg-background text-muted border border-border px-5 py-3 rounded-xl text-sm font-semibold"
-                    >
-                        Publish Event (Connect Stripe first)
-                    </a>
-                )}
+            {/* Action bar — sticks to the bottom of the screen (above the mobile menu) so Save is always in reach */}
+            <div className="sticky bottom-[4.5rem] md:bottom-4 z-30 mt-2 mb-2 bg-white/95 backdrop-blur border border-border rounded-2xl shadow-hover px-4 py-3 flex items-center justify-between gap-3">
+                <p className="hidden sm:block text-xs text-muted min-w-0 truncate">
+                    {saving
+                        ? 'Saving…'
+                        : saved
+                            ? 'Saved ✓'
+                            : isDraft
+                                ? 'Draft — not visible to buyers yet'
+                                : event?.status === 'published'
+                                    ? 'Live — your changes reach buyers when you save'
+                                    : `Status: ${event?.status}`}
+                </p>
+                <div className="flex items-center gap-3 ml-auto">
+                    {isDraft ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={saveDraft}
+                                disabled={saving || publishing}
+                                className="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-background transition-colors disabled:opacity-60"
+                            >
+                                {saving ? 'Saving...' : 'Save draft'}
+                            </button>
+                            {stripeReady ? (
+                                <button
+                                    type="button"
+                                    onClick={handlePublish}
+                                    disabled={publishing || saving}
+                                    className="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                                >
+                                    {publishing ? 'Publishing...' : 'Publish event'}
+                                </button>
+                            ) : (
+                                <a
+                                    href="/organiser/settings"
+                                    title="Connect Stripe to publish"
+                                    className="bg-background text-muted border border-border px-5 py-3 rounded-xl text-sm font-semibold"
+                                >
+                                    Publish event (Connect Stripe first)
+                                </a>
+                            )}
+                        </>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleSaveChanges}
+                            disabled={saving}
+                            className="bg-accent text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                        >
+                            {saving ? 'Saving...' : 'Save changes'}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Ticket type preset modal */}
