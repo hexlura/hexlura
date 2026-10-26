@@ -122,6 +122,29 @@ function friendlyDbError(error: { code?: string; message?: string } | null | und
     return `${action} failed: ${error.message || 'unexpected error'}. Your changes have NOT been saved.`
 }
 
+// venue_address is stored as "street, city". When reopening the form we split the city back off — but only
+// when it really is the stored city. (It used to chop whatever followed the last comma, so an address like
+// "Unit 5, 12 High St" with no city lost "12 High St" on reopen and the next save made that permanent.)
+function addressWithoutCity(address?: string | null, city?: string | null): string {
+    const a = (address || '').trim()
+    const c = (city || '').trim()
+    if (!c) return a
+    if (a.toLowerCase() === c.toLowerCase()) return ''
+    if (a.toLowerCase().endsWith(`, ${c.toLowerCase()}`)) return a.slice(0, a.length - c.length - 2).trim()
+    return a
+}
+
+// Inverse of the above. Doesn't append the city twice if the address already ends with it
+// (older events stored "street, city" before the separate city field existed).
+function joinAddress(address: string, city: string): string {
+    const a = address.trim()
+    const c = city.trim()
+    if (!c) return a
+    if (!a) return c
+    if (a.toLowerCase().endsWith(c.toLowerCase())) return a
+    return `${a}, ${c}`
+}
+
 export function EventForm({ organiserId, event, ticketTypes: initTickets, stripeReady = true }: EventFormProps) {
     const router = useRouter()
     const isEdit = !!event
@@ -153,7 +176,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     const [checkinStartAt, setCheckinStartAt] = useState(toDatetimeLocal((event as (typeof event & { checkin_start_at?: string }))?.checkin_start_at))
     const [checkinEndAt, setCheckinEndAt] = useState(toDatetimeLocal((event as (typeof event & { checkin_end_at?: string }))?.checkin_end_at))
     const [venueName, setVenueName] = useState(event?.venue_name || '')
-    const [venueAddress, setVenueAddress] = useState(event?.venue_address?.replace(/,\s*[^,]+$/, '').trim() || '')
+    const [venueAddress, setVenueAddress] = useState(addressWithoutCity(event?.venue_address, (event as (typeof event & { venue_city?: string | null }))?.venue_city))
     const [venueCity, setVenueCity] = useState((event as (typeof event & { venue_city?: string | null }))?.venue_city || '')
     const [venuePostcode, setVenuePostcode] = useState(event?.venue_postcode || '')
     const [venueLat, setVenueLat] = useState<number | null>((event as { venue_lat?: number | null })?.venue_lat ?? null)
@@ -262,7 +285,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
             category: category || 'Other',
             tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
             venue_name: venueName,
-            venue_address: [venueAddress, venueCity].filter(Boolean).join(', '),
+            venue_address: joinAddress(venueAddress, venueCity),
             venue_city: venueCity || null,
             venue_postcode: venuePostcode,
             venue_lat: venueLat,
@@ -392,8 +415,10 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
 
-        // Navigate to edit page if just created
+        // Navigate to edit page if just created; otherwise re-fetch this page's server data so the
+        // overview, the list and a later reopen show what was just saved, not the browser's cached copy.
         if (!event?.id) router.replace(`/organiser/events/${created.id}/edit`)
+        else router.refresh()
     }
 
     // Check-in close must be after check-in open — a close time before open
@@ -522,7 +547,24 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         const tt = tickets[i]
         if (tt.id) {
             const supabase = createClient()
-            await supabase.from('ticket_types').delete().eq('id', tt.id)
+            setSaveError('')
+
+            // A ticket type with sales must never be deleted: the database detaches every sold ticket from
+            // its type (ticket_type_id → NULL), so buyers' tickets would lose their name on PDFs, check-in
+            // and the attendee list. Hide it from buyers instead.
+            const { data: row, error: readError } = await supabase
+                .from('ticket_types').select('quantity_sold').eq('id', tt.id).maybeSingle()
+            if (readError) { setSaveError(friendlyDbError(readError, 'Removing the ticket')); return }
+            if ((row?.quantity_sold ?? 0) > 0) {
+                setSaveError(`"${tt.name}" already has ${row?.quantity_sold} ticket${row?.quantity_sold === 1 ? '' : 's'} sold, so it can't be deleted. Turn off "Visible" on it to hide it from buyers instead.`)
+                return
+            }
+
+            // .select() so an RLS-filtered delete (0 rows, no error) is detectable. Only remove the ticket from
+            // the screen once the database confirms — otherwise it silently reappears on the next reopen.
+            const { data: deleted, error } = await supabase.from('ticket_types').delete().eq('id', tt.id).select('id')
+            if (error) { setSaveError(friendlyDbError(error, 'Removing the ticket')); return }
+            if (!deleted || deleted.length === 0) { setSaveError(PERMISSION_MSG); return }
         }
         setTickets(prev => prev.filter((_, idx) => idx !== i))
     }

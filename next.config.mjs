@@ -8,6 +8,10 @@ const nextConfig = {
     // "Cannot find module '.../pdfkit/js/standard-fonts/Helvetica.cjs'" in prod
     // while working fine locally. Force-include them explicitly.
     experimental: {
+        // Next 14 keeps every visited dynamic page in the browser for 30 s and reuses it on Link/Back
+        // navigation, so data you just saved can show as "old" when you reopen it. These pages are all
+        // per-user dynamic data — never serve a cached copy (this is the Next 15 default).
+        staleTimes: { dynamic: 0 },
         outputFileTracingIncludes: {
             '/api/**/*': ['./node_modules/pdfkit/js/standard-fonts/**/*', './node_modules/pdfkit/js/data/**/*'],
         },
