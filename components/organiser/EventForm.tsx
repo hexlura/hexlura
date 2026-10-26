@@ -570,8 +570,49 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     const labelClass = 'text-xs text-muted block mb-1.5'
     const cardClass = 'bg-card rounded-2xl shadow-card p-6 mb-6'
 
+    // The same two buttons appear on EVERY event form (new, draft, or already live), both at the top
+    // of the form and in the sticky bar at the bottom, so they never have to be hunted for.
+    //  - First button: "Save draft" for new/draft events, "Save changes" for live ones. Saving never
+    //    changes the status (a live event stays live; it just keeps its edits).
+    //  - Second button: Publish. Only offered while it makes sense — draft or already published.
+    //    An ended/cancelled event must never be flipped back to published.
+    const canPublish = isDraft || event?.status === 'published'
+    const actionButtons = (
+        <>
+            <button
+                type="button"
+                onClick={isDraft ? saveDraft : handleSaveChanges}
+                disabled={saving || publishing}
+                className="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-background transition-colors disabled:opacity-60"
+            >
+                {saving ? 'Saving...' : isDraft ? 'Save draft' : 'Save changes'}
+            </button>
+            {canPublish && (stripeReady ? (
+                <button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={publishing || saving}
+                    className="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
+                >
+                    {publishing ? 'Publishing...' : isDraft ? 'Publish event' : 'Publish changes'}
+                </button>
+            ) : (
+                <a
+                    href="/organiser/settings"
+                    title="Connect Stripe to publish"
+                    className="bg-background text-muted border border-border px-5 py-3 rounded-xl text-sm font-semibold"
+                >
+                    Publish event (Connect Stripe first)
+                </a>
+            ))}
+        </>
+    )
+
     return (
         <div>
+            {/* Same actions at the top of the form (the sticky bar below repeats them) */}
+            <div className="mb-6 flex flex-wrap items-center justify-end gap-3">{actionButtons}</div>
+
             {/* Save indicator */}
             <div className="fixed top-4 right-4 z-40 flex flex-col gap-2 items-end">
                 {saved && <span className="text-warm-green text-xs font-semibold bg-card shadow-hover rounded-xl px-3 py-2">Saved ✓</span>}
@@ -935,47 +976,7 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
                                     ? 'Live — your changes reach buyers when you save'
                                     : `Status: ${event?.status}`}
                 </p>
-                <div className="flex items-center gap-3 ml-auto">
-                    {isDraft ? (
-                        <>
-                            <button
-                                type="button"
-                                onClick={saveDraft}
-                                disabled={saving || publishing}
-                                className="bg-card border border-border px-5 py-3 rounded-xl text-sm font-semibold hover:bg-background transition-colors disabled:opacity-60"
-                            >
-                                {saving ? 'Saving...' : 'Save draft'}
-                            </button>
-                            {stripeReady ? (
-                                <button
-                                    type="button"
-                                    onClick={handlePublish}
-                                    disabled={publishing || saving}
-                                    className="bg-accent text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
-                                >
-                                    {publishing ? 'Publishing...' : 'Publish event'}
-                                </button>
-                            ) : (
-                                <a
-                                    href="/organiser/settings"
-                                    title="Connect Stripe to publish"
-                                    className="bg-background text-muted border border-border px-5 py-3 rounded-xl text-sm font-semibold"
-                                >
-                                    Publish event (Connect Stripe first)
-                                </a>
-                            )}
-                        </>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={handleSaveChanges}
-                            disabled={saving}
-                            className="bg-accent text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all disabled:opacity-70"
-                        >
-                            {saving ? 'Saving...' : 'Save changes'}
-                        </button>
-                    )}
-                </div>
+                <div className="flex items-center gap-3 ml-auto">{actionButtons}</div>
             </div>
 
             {/* Ticket type preset modal */}
