@@ -122,6 +122,23 @@ function friendlyDbError(error: { code?: string; message?: string } | null | und
     return `${action} failed: ${error.message || 'unexpected error'}. Your changes have NOT been saved.`
 }
 
+const BANNER_MAX_ORIGINAL_BYTES = 15 * 1024 * 1024
+
+// Turn a raw Supabase Storage error into something an organiser can act on.
+function friendlyUploadError(error: { message?: string; statusCode?: string | number } | null | undefined): string {
+    const msg = (error?.message || '').toLowerCase()
+    const status = String(error?.statusCode ?? '')
+    if (msg.includes('row-level security') || msg.includes('unauthorized') || status === '401' || status === '403')
+        return "Upload not allowed — your session may have expired. Refresh the page, sign in again and retry."
+    if (msg.includes('exceeded the maximum') || msg.includes('too large') || status === '413')
+        return 'That image is too large. Please choose a smaller one (under 15MB).'
+    if (msg.includes('failed to fetch') || msg.includes('network'))
+        return 'Upload failed — check your internet connection and try again.'
+    if (msg.includes('bucket not found') || status === '404')
+        return 'Image storage is not available right now. Please contact support@hexlura.com.'
+    return `Upload failed: ${error?.message || 'unexpected error'}. Please try again.`
+}
+
 // venue_address is stored as "street, city". When reopening the form we split the city back off — but only
 // when it really is the stored city. (It used to chop whatever followed the last comma, so an address like
 // "Unit 5, 12 High St" with no city lost "12 High St" on reopen and the next save made that permanent.)
@@ -225,6 +242,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
     const [publishing, setPublishing] = useState(false)
     const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const errorsRef = useRef<HTMLDivElement>(null)
+    const replaceInputRef = useRef<HTMLInputElement>(null)
+    const replaceIndexRef = useRef<number | null>(null)
+    // What the database currently holds for the banner images, so we can tell the organiser when an
+    // upload/replace/remove on screen hasn't been saved yet (uploading never saves the event by itself).
+    const savedBannersRef = useRef<string>(JSON.stringify(
+        event?.banner_images?.length ? event.banner_images : event?.banner_url ? [event.banner_url] : []
+    ))
     // Remembers an event created mid-session so a failed save can be retried
     // without inserting a duplicate event (the `event` prop only updates after
     // navigation to the edit page).
@@ -271,6 +295,16 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         }, 30000)
         return () => { if (autoSaveRef.current) clearInterval(autoSaveRef.current) }
     }, [isDraft, title, description, tickets, saveDraft])
+
+    const bannerUnsaved = JSON.stringify(bannerImages) !== savedBannersRef.current
+
+    // Don't let an organiser close the tab with a freshly uploaded image that was never saved.
+    useEffect(() => {
+        if (!bannerUnsaved) return
+        const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
+        window.addEventListener('beforeunload', warn)
+        return () => window.removeEventListener('beforeunload', warn)
+    }, [bannerUnsaved])
 
     // Validation messages sit at the bottom of a long form; bring them into view when they appear.
     useEffect(() => {
@@ -412,6 +446,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
             return
         }
 
+        savedBannersRef.current = JSON.stringify(bannerImages)
+        // The event page (cached 2 min) and homepage (5 min) would otherwise keep showing the old banner/details.
+        if (!isDraft) refreshPublicPages(created.id)
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
 
@@ -439,6 +476,13 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         if (checkinTimesInvalid) errs.push('Check-in closing time must be after the check-in opening time')
         tickets.forEach(tt => { if (tt.groupSizeTouched && groupSizeInvalid(tt)) errs.push(`Ticket "${tt.name}": ${GROUP_SIZE_MSG}`) })
         return errs
+    }
+
+    // Ask the server to drop its cached copies of this event's public pages (best effort — a failure only
+    // means the public page catches up on its normal 2–5 minute schedule).
+    function refreshPublicPages(eventId: string) {
+        void fetch(`/api/organiser/events/${eventId}/revalidate`, { method: 'POST' })
+            .catch(err => console.error('public page refresh failed:', err))
     }
 
     // Live events: same required-field checks as publishing, then save in place (no status change).
@@ -495,6 +539,9 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
 
         setPublishing(false)
 
+        savedBannersRef.current = JSON.stringify(bannerImages)
+        refreshPublicPages(created.id)
+
         // Fire-and-forget the "your event is live" notification + email.
         // The API is idempotent (uses events.published_email_sent_at), so
         // republishes won't double-send.
@@ -504,25 +551,44 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
         router.push('/organiser/events')
     }
 
-    async function uploadBanner(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
+    // `replaceAt`: swap that image in place (used by the "Replace" button) instead of adding another one.
+    async function uploadBanner(e: React.ChangeEvent<HTMLInputElement>, replaceAt?: number) {
+        const input = e.target
+        const file = input.files?.[0]
+        // Clear the input so choosing the SAME file again (e.g. after removing it) still fires onChange.
+        const reset = () => { input.value = '' }
         if (!file) return
         setBannerError('')
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setBannerError('Only JPG, PNG or WEBP files are allowed'); return }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setBannerError('Only JPG, PNG or WEBP files are allowed'); reset(); return }
+        if (file.size > BANNER_MAX_ORIGINAL_BYTES) { setBannerError(`That image is ${(file.size / 1048576).toFixed(1)}MB — please choose one under 15MB.`); reset(); return }
 
         setBannerUploading(true)
         const supabase = createClient()
         let blob: Blob
         try { blob = await compressImage(file, 1600) } catch { blob = file }
-        const path = `organisers/${organiserId}/${Date.now()}.webp`
-        const { error } = await supabase.storage.from('event-banners').upload(path, blob, { contentType: 'image/webp' })
+        // Label the file with what it really is (some browsers, e.g. Safari, can't encode webp and hand back a PNG).
+        const mime = blob.type === 'image/png' ? 'image/png' : blob.type === 'image/jpeg' ? 'image/jpeg' : 'image/webp'
+        const ext = mime === 'image/png' ? 'png' : mime === 'image/jpeg' ? 'jpg' : 'webp'
+        const path = `organisers/${organiserId}/${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('event-banners').upload(path, blob, { contentType: mime })
         if (error) {
-            setBannerError(error.message)
+            console.error('Banner upload failed:', error)
+            setBannerError(friendlyUploadError(error))
         } else {
             const { data } = supabase.storage.from('event-banners').getPublicUrl(path)
-            setBannerImages(prev => [...prev, data.publicUrl])
+            const url = data.publicUrl
+            setBannerImages(prev => {
+                if (replaceAt !== undefined && replaceAt >= 0 && replaceAt < prev.length) return prev.map((u, idx) => idx === replaceAt ? url : u)
+                return [...prev, url]
+            })
         }
+        reset()
         setBannerUploading(false)
+    }
+
+    // Move an image to the front: the first image is the main banner everywhere (home page, cards, link previews).
+    function makeMainBanner(i: number) {
+        setBannerImages(prev => (i <= 0 || i >= prev.length) ? prev : [prev[i], ...prev.filter((_, idx) => idx !== i)])
     }
 
     function addTicketFromPreset(name: string, description: string, is_group?: boolean) {
@@ -704,31 +770,63 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
                     <div className="sm:col-span-2">
                         <label className={labelClass}>Banner Images <span className="text-muted font-normal">(up to 4)</span></label>
                         {bannerImages.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
+                            <div className="flex flex-wrap gap-3 mb-3">
                                 {bannerImages.map((url, i) => (
-                                    <div key={url} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
-                                        <Image src={url} alt={`Banner ${i + 1}`} fill sizes="80px" className="object-cover" />
-                                        {i === 0 && (
-                                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">MAIN</span>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={() => setBannerImages(prev => prev.filter((_, idx) => idx !== i))}
-                                            className="absolute top-1 right-1 bg-black/55 rounded-full w-[18px] h-[18px] flex items-center justify-center text-white text-[11px] leading-none"
-                                            aria-label="Remove image"
-                                        >×</button>
+                                    <div key={url} className="w-24">
+                                        <div className="relative w-24 h-36 rounded-xl overflow-hidden border border-border">
+                                            <Image src={url} alt={`Banner ${i + 1}`} fill sizes="96px" className="object-cover" />
+                                            {i === 0 && (
+                                                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">MAIN</span>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => setBannerImages(prev => prev.filter((_, idx) => idx !== i))}
+                                                className="absolute top-1 right-1 bg-black/55 rounded-full w-[18px] h-[18px] flex items-center justify-center text-white text-[11px] leading-none"
+                                                aria-label="Remove image"
+                                            >×</button>
+                                        </div>
+                                        <div className="mt-1.5 flex flex-col items-start gap-0.5">
+                                            <button
+                                                type="button"
+                                                disabled={bannerUploading}
+                                                onClick={() => { replaceIndexRef.current = i; replaceInputRef.current?.click() }}
+                                                className="text-[11px] font-semibold text-accent hover:underline disabled:opacity-50"
+                                            >Replace</button>
+                                            {i > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => makeMainBanner(i)}
+                                                    className="text-[11px] font-semibold text-muted hover:text-text hover:underline"
+                                                >Make main</button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         )}
-                        {bannerImages.length < 4 && (
+                        {/* One hidden picker shared by every "Replace" button */}
+                        <input
+                            ref={replaceInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={e => { const at = replaceIndexRef.current ?? undefined; replaceIndexRef.current = null; void uploadBanner(e, at) }}
+                        />
+                        {bannerImages.length < 4 ? (
                             <label className="block w-full border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-warm-red/50 transition-colors">
-                                <p className="text-sm text-muted">{bannerUploading ? 'Uploading...' : bannerImages.length === 0 ? 'Click to upload or drag images here' : `Click to upload image ${bannerImages.length + 1} of 4`}</p>
-                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadBanner} className="hidden" disabled={bannerUploading} />
+                                <p className="text-sm text-muted">{bannerUploading ? 'Uploading...' : bannerImages.length === 0 ? 'Click to upload or drag images here' : `Add another image (${bannerImages.length} of 4)`}</p>
+                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { void uploadBanner(e) }} className="hidden" disabled={bannerUploading} />
                             </label>
+                        ) : (
+                            <p className="text-xs text-muted">You have the maximum of 4 images. Use Replace on one, or remove one with × to add another.</p>
                         )}
                         {bannerError && <p className="text-warm-red text-xs mt-1">{bannerError}</p>}
-                        <p className="text-xs text-muted mt-1.5">Portrait format 800×1200px (2:3 ratio). Max 5MB each. JPG, PNG or WebP. First image is the main banner.</p>
+                        {bannerUnsaved && (
+                            <p className="mt-2 text-xs font-medium text-warm-amberText bg-warm-amber/15 rounded-lg px-3 py-2">
+                                Your image change isn&apos;t saved yet — press &ldquo;{isDraft ? 'Save draft' : 'Save changes'}&rdquo; to {isDraft ? 'keep it' : 'update your live event'}.
+                            </p>
+                        )}
+                        <p className="text-xs text-muted mt-1.5">Portrait format 800×1200px (2:3 ratio). Up to 15MB each (we shrink it for you). JPG, PNG or WebP. The first image is the main banner — use Replace to swap it, or Make main to promote another.</p>
                     </div>
                     <div className="sm:col-span-2">
                         <label className={labelClass}>Promo Video (YouTube URL)</label>
@@ -1012,6 +1110,8 @@ export function EventForm({ organiserId, event, ticketTypes: initTickets, stripe
                         ? 'Saving…'
                         : saved
                             ? 'Saved ✓'
+                            : bannerUnsaved
+                                ? 'Image changed — not saved yet'
                             : isDraft
                                 ? 'Draft — not visible to buyers yet'
                                 : event?.status === 'published'
