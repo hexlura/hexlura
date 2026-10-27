@@ -84,13 +84,15 @@ export function SiteNavbar() {
         return () => subscription.unsubscribe()
     }, [])
 
-    // Where a signed-in person's "workspace" lives, if they have one.
-    const dashboard =
-        role === 'admin' ? { href: '/admin', label: 'Admin' }
-        : role === 'organiser' ? { href: '/organiser', label: 'Dashboard' }
-        : isPromoter ? { href: '/promoter', label: 'Promoter' }
-        : role === 'door_staff' ? { href: '/checkin', label: 'Scanner' }
-        : null
+    // Every workspace this person can open. Someone can hold more than one (e.g. an organiser who is also a
+    // promoter — being a promoter is a separate record, not the role), so list them all rather than only the first.
+    const workspaces: { href: string; label: string; menuLabel: string }[] = []
+    if (role === 'admin') workspaces.push({ href: '/admin', label: 'Admin', menuLabel: 'Admin dashboard' })
+    if (role === 'organiser') workspaces.push({ href: '/organiser', label: 'Dashboard', menuLabel: 'Organiser dashboard' })
+    if (isPromoter) workspaces.push({ href: '/promoter', label: 'Promoter', menuLabel: 'Promoter dashboard' })
+    if (role === 'door_staff') workspaces.push({ href: '/checkin', label: 'Scanner', menuLabel: 'Scanner' })
+    // The button in the top bar stays the primary one; the account menu and mobile menu list all of them.
+    const dashboard = workspaces[0] ?? null
 
     const initial = (fullName || user?.email || 'A').charAt(0).toUpperCase()
 
@@ -150,6 +152,9 @@ export function SiteNavbar() {
                                         <p className="px-3 py-2 text-xs font-normal text-muted truncate border-b border-border mb-1">{user.email}</p>
                                         <Link role="menuitem" href="/account" className="block px-3 py-2.5 rounded-xl hover:bg-background">My Account</Link>
                                         <Link role="menuitem" href="/bookings" className="block px-3 py-2.5 rounded-xl hover:bg-background">My Bookings</Link>
+                                        {workspaces.map(w => (
+                                            <Link key={w.href} role="menuitem" href={w.href} className="block px-3 py-2.5 rounded-xl hover:bg-background">{w.menuLabel}</Link>
+                                        ))}
                                         <div className="border-t border-border my-1" />
                                         <SignOutButton menuItem className="w-full text-left px-3 py-2.5 rounded-xl text-accent hover:bg-background" />
                                     </div>
@@ -197,7 +202,9 @@ export function SiteNavbar() {
                         <div className="border-t border-border my-1" />
                         {user ? (
                             <>
-                                {dashboard && <Link href={dashboard.href} className="px-4 py-3 rounded-xl text-text hover:bg-background">{dashboard.label}</Link>}
+                                {workspaces.map(w => (
+                                    <Link key={w.href} href={w.href} className="px-4 py-3 rounded-xl text-text hover:bg-background">{w.menuLabel}</Link>
+                                ))}
                                 <Link href="/account" className="px-4 py-3 rounded-xl text-text hover:bg-background">My Account</Link>
                                 <Link href="/favourites" className="px-4 py-3 rounded-xl text-text hover:bg-background">Favourites</Link>
                                 <div className="border-t border-border my-1" />

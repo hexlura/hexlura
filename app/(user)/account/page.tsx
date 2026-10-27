@@ -17,7 +17,7 @@ export default async function AccountPage() {
     const serviceClient = createServiceClient()
 
     // Fetch profile, bookings, organiser status, and team memberships in parallel
-    const [{ data: profile }, { data: organiserProfile }, { data: teamMemberships }] = await Promise.all([
+    const [{ data: profile }, { data: organiserProfile }, { data: teamMemberships }, { data: promoterProfile }] = await Promise.all([
         serviceClient
             .from('profiles')
             .select('full_name, email, avatar_url, role, created_at')
@@ -33,6 +33,11 @@ export default async function AccountPage() {
             .select('id, privilege, organiser:organiser_profiles!organiser_id(org_name)')
             .eq('user_id', user.id)
             .eq('status', 'active'),
+        serviceClient
+            .from('promoter_profiles')
+            .select('display_name, referral_code, status')
+            .eq('user_id', user.id)
+            .maybeSingle(),
     ])
 
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'there'
@@ -92,6 +97,28 @@ export default async function AccountPage() {
                         </div>
                     </div>
                     <span className="text-accent text-sm font-semibold group-hover:translate-x-0.5 transition-transform">Go to Dashboard →</span>
+                </Link>
+            )}
+
+            {/* Promoter dashboard — being a promoter is a separate record, not the account role, so anyone
+                with a promoter profile (including organisers) gets a way back to it from here */}
+            {promoterProfile && (
+                <Link
+                    href="/promoter"
+                    className="bg-text rounded-2xl p-5 mb-6 flex items-center justify-between gap-4 group hover:brightness-110 transition"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-warm-red/20 flex items-center justify-center shrink-0">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E63950" strokeWidth="2"><path d="M4 20V10M12 20V4M20 20v-7" /></svg>
+                        </div>
+                        <div>
+                            <p className="text-white font-semibold text-sm">Promoter Dashboard</p>
+                            <p className="text-white/50 text-xs">
+                                Your referral code <span className="font-mono">{promoterProfile.referral_code}</span> — links, sales and earnings
+                            </p>
+                        </div>
+                    </div>
+                    <span className="text-accent text-sm font-semibold group-hover:translate-x-0.5 transition-transform">Open →</span>
                 </Link>
             )}
 
