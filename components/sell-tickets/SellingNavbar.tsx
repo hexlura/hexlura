@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { SHOW_REVENUE_CALCULATOR } from './flags'
 
 const sectionLinks = [
     { label: 'Why Hexlura', href: '#why-hexlura' },
-    { label: 'The numbers', href: '#calculator' },
+    // "The numbers" jumps to the revenue calculator, so it only shows while that section is on the page
+    ...(SHOW_REVENUE_CALCULATOR ? [{ label: 'The numbers', href: '#calculator' }] : []),
     { label: 'How it works', href: '#how-it-works' },
     { label: 'Features', href: '#features' },
     { label: 'FAQ', href: '#faqs' },

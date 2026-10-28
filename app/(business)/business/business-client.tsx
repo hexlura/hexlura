@@ -14,6 +14,7 @@ import StickyStackCards from '@/components/sell-tickets/StickyStackCards'
 import ComparisonSection from '@/components/sell-tickets/ComparisonSection'
 import MidBanner from '@/components/sell-tickets/MidBanner'
 import CalculatorSection from '@/components/sell-tickets/CalculatorSection'
+import { SHOW_REVENUE_CALCULATOR } from '@/components/sell-tickets/flags'
 import ProcessSection from '@/components/sell-tickets/ProcessSection'
 import FeaturesSection from '@/components/sell-tickets/FeaturesSection'
 import PricingSection from '@/components/sell-tickets/PricingSection'
@@ -432,7 +433,7 @@ export default function BusinessClient({
 
       <MidBanner ctaHref={ctaHref} />
 
-      <CalculatorSection ctaHref={ctaHref} />
+      {SHOW_REVENUE_CALCULATOR && <CalculatorSection ctaHref={ctaHref} />}
 
       <ProcessSection
         downloadSlot={<OrgGuideDownload bucketName={bucketName} storagePath={storagePath} />}
