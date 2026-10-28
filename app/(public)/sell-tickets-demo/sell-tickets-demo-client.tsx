@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { RevenueCalculator } from '@/components/organiser/RevenueCalculator'
+import { SHOW_REVENUE_CALCULATOR } from '@/components/sell-tickets/flags'
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 
@@ -286,23 +287,26 @@ export default function SellTicketsDemoClient({ ctaHref }: { ctaHref: string }) 
             </p>
           </div>
 
-          {/* Right: live revenue calculator, dark card, sits directly in the hero */}
-          <div style={{
-            background: '#0A0A0F', borderRadius: 24, padding: 8,
-            boxShadow: '0 24px 60px rgba(10,10,15,0.25)',
-          }}>
-            <RevenueCalculator
-              accentColor="#E63950"
-              glowColor="#E63950"
-              glowIntensity={0.28}
-              glassTint={0.06}
-              innerTint={0.04}
-              showCta
-              ctaHref={ctaHref}
-              ctaLabel="Create Event"
-              maxWidth="100%"
-            />
-          </div>
+          {/* Right: live revenue calculator, dark card, sits directly in the hero.
+              Hidden for now with the /business one — see components/sell-tickets/flags.ts */}
+          {SHOW_REVENUE_CALCULATOR && (
+            <div style={{
+              background: '#0A0A0F', borderRadius: 24, padding: 8,
+              boxShadow: '0 24px 60px rgba(10,10,15,0.25)',
+            }}>
+              <RevenueCalculator
+                accentColor="#E63950"
+                glowColor="#E63950"
+                glowIntensity={0.28}
+                glassTint={0.06}
+                innerTint={0.04}
+                showCta
+                ctaHref={ctaHref}
+                ctaLabel="Create Event"
+                maxWidth="100%"
+              />
+            </div>
+          )}
         </div>
       </section>
 

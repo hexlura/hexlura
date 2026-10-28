@@ -8,6 +8,8 @@ import { MetaPixelInit } from '@/components/analytics/MetaPixel'
 import { MetaClickId } from '@/components/analytics/MetaClickId'
 import { CookieConsent } from '@/components/analytics/CookieConsent'
 import { DesignTokens } from '@/components/DesignTokens'
+import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat'
+import { getWhatsAppSettings } from '@/lib/whatsapp'
 import { createServiceClient } from '@/lib/supabase/service'
 import "./globals.css";
 
@@ -45,6 +47,8 @@ export default async function RootLayout({
     .eq('key', 'meta_pixel_id')
     .single()
   const platformPixelId = pixelSetting?.value || ''
+  // Company WhatsApp (admin → Settings → WhatsApp). null = not set / switched off.
+  const whatsapp = await getWhatsAppSettings()
 
   return (
     <html lang="en">
@@ -73,6 +77,7 @@ export default async function RootLayout({
           <CookieConsent />
           <MetaClickId />
           <MetaPixelInit pixelId={platformPixelId} />
+          {whatsapp?.floating && <WhatsAppFloat number={whatsapp.number} message={whatsapp.message} />}
         </div>
       </body>
     </html>

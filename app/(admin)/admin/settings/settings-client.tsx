@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { SaveFeedback } from '@/components/ui/SaveFeedback'
 import { SEASONS, isHomeThemeMode, type HomeThemeMode, type SeasonKey } from '@/lib/home-theme-config'
+import { DEFAULT_COMPANY_WHATSAPP, DEFAULT_WHATSAPP_MESSAGE, formatWhatsAppNumber, normaliseWhatsAppNumber } from '@/lib/whatsapp-shared'
 
 
 interface PromoRow {
@@ -52,6 +53,13 @@ export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
     const [fromName, setFromName] = useState(settings['from_name'] ?? 'Hexlura')
     const [fromEmail, setFromEmail] = useState(settings['from_email'] ?? 'tickets@hexlura.com')
     const [supportEmail, setSupportEmail] = useState(settings['support_email'] ?? 'support@hexlura.com')
+
+    // WhatsApp — no saved row yet means the built-in company number is in use; a saved blank means off.
+    const [whatsappNumber, setWhatsappNumber] = useState(
+        formatWhatsAppNumber(settings['whatsapp_number'] === undefined ? DEFAULT_COMPANY_WHATSAPP : settings['whatsapp_number'] || '').replace(/^\+$/, '')
+    )
+    const [whatsappMessage, setWhatsappMessage] = useState(settings['whatsapp_message'] || DEFAULT_WHATSAPP_MESSAGE)
+    const [whatsappFloating, setWhatsappFloating] = useState(settings['whatsapp_floating'] !== 'false')
 
     // Promo codes
     const [promoCode, setPromoCode] = useState('')
@@ -184,6 +192,27 @@ export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
             router.refresh()
         } catch (e) {
             showFeedback('email', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
+    }
+
+    async function handleSaveWhatsApp() {
+        setSaving('whatsapp')
+        try {
+            // Check it here too so a typo shows a clear message before anything is saved.
+            if (whatsappNumber.trim() && !normaliseWhatsAppNumber(whatsappNumber)) {
+                throw new Error('Enter a valid mobile number with country code, e.g. +44 7471 442401')
+            }
+            await Promise.all([
+                saveSetting('whatsapp_number', whatsappNumber.trim()),
+                saveSetting('whatsapp_message', whatsappMessage.trim()),
+                saveSetting('whatsapp_floating', whatsappFloating ? 'true' : 'false'),
+            ])
+            showFeedback('whatsapp', whatsappNumber.trim() ? 'WhatsApp settings saved' : 'WhatsApp turned off')
+            router.refresh()
+        } catch (e) {
+            showFeedback('whatsapp', `Error: ${(e as Error).message}`)
         } finally {
             setSaving(null)
         }
@@ -472,6 +501,49 @@ export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
                         {saving === 'email' ? 'Saving...' : 'Save Email Settings'}
                     </Button>
                     <SaveFeedback message={feedback.email ?? null} />
+                </div>
+            </div>
+
+            {/* WhatsApp */}
+            <div className={sectionClass}>
+                <h2 className="text-sm font-medium text-text mb-1">WhatsApp Chat</h2>
+                <p className="text-xs text-muted mb-4">
+                    Shows a &ldquo;Chat on WhatsApp&rdquo; row on the Contact page and a green icon on every page that visitors can drag anywhere on screen.
+                    Leave the number blank and save to turn WhatsApp off completely.
+                </p>
+                <div className="grid grid-cols-1 gap-4 mb-4">
+                    <div>
+                        <label className={labelClass}>Company WhatsApp number</label>
+                        <input
+                            type="tel"
+                            value={whatsappNumber}
+                            onChange={e => setWhatsappNumber(e.target.value)}
+                            placeholder="+44 7471 442401"
+                            className={inputClass}
+                        />
+                        <p className="text-xs text-muted mt-1.5">Include the country code. UK numbers starting 07… are converted to +44 automatically.</p>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Pre-filled message</label>
+                        <input
+                            type="text"
+                            value={whatsappMessage}
+                            onChange={e => setWhatsappMessage(e.target.value)}
+                            maxLength={200}
+                            className={inputClass}
+                        />
+                        <p className="text-xs text-muted mt-1.5">What appears in the chat box when someone taps the icon. They can edit it before sending.</p>
+                    </div>
+                    <label className="flex items-center gap-3 text-sm cursor-pointer">
+                        <input type="checkbox" checked={whatsappFloating} onChange={e => setWhatsappFloating(e.target.checked)} className="w-4 h-4 accent-[#E63950]" />
+                        Show the floating WhatsApp icon on every page
+                    </label>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Button variant="primary" size="md" onClick={handleSaveWhatsApp} disabled={saving === 'whatsapp'}>
+                        {saving === 'whatsapp' ? 'Saving...' : 'Save WhatsApp Settings'}
+                    </Button>
+                    <SaveFeedback message={feedback.whatsapp ?? null} />
                 </div>
             </div>
         </div>
