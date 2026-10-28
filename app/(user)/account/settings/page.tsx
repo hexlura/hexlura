@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { compressImage } from '@/lib/compress-image'
+import { validateImageFile, prepareImage, storagePathFromUrl, friendlyUploadError } from '@/lib/compress-image'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -122,18 +122,20 @@ export default function AccountSettingsPage() {
         if (!file || !userId) return
 
         setAvatarError(null)
-        const path = `${userId}/avatar.webp`
+        const invalid = validateImageFile(file)
+        if (invalid) { setAvatarError(invalid); e.target.value = ''; return }
 
         setAvatarUploading(true)
         try {
-            let blob: Blob
-            try { blob = await compressImage(file, 400) } catch { blob = file }
+            const { blob, mime, ext } = await prepareImage(file, 400)
+            // New file name every time: a reused name is served from the CDN cache for up to an hour.
+            const path = `${userId}/avatar-${Date.now()}.${ext}`
 
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
-                .upload(path, blob, { upsert: true, contentType: 'image/webp' })
+                .upload(path, blob, { contentType: mime })
 
-            if (uploadError) throw uploadError
+            if (uploadError) throw new Error(friendlyUploadError(uploadError))
 
             const { data: { publicUrl } } = supabase.storage
                 .from('avatars')
@@ -154,12 +156,15 @@ export default function AccountSettingsPage() {
                 .single()
 
             if (organiserProfile) {
-                await supabase
+                const { error: logoErr } = await supabase
                     .from('organiser_profiles')
                     .update({ logo_url: publicUrl })
                     .eq('id', organiserProfile.id)
+                if (logoErr) console.error('Logo sync failed:', logoErr)
             }
 
+            const oldPath = storagePathFromUrl(avatarUrl, 'avatars')
+            if (oldPath && oldPath !== path) void supabase.storage.from('avatars').remove([oldPath])
             setAvatarUrl(publicUrl)
         } catch (err: unknown) {
             setAvatarError(err instanceof Error ? err.message : 'Upload failed.')

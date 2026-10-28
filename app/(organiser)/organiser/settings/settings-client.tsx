@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { compressImage } from '@/lib/compress-image'
+import { validateImageFile, prepareImage, storagePathFromUrl, friendlyUploadError } from '@/lib/compress-image'
 import type { OrganiserProfile } from '@/types'
 
 // The eight platforms shown in the design. Anything else already stored in social_links (e.g. "website") is preserved.
@@ -267,44 +267,66 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     }
 
     async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
+        const input = e.target
+        const file = input.files?.[0]
         if (!file) return
-        setLogoUploading(true)
         setErr('logo', '')
+        const invalid = validateImageFile(file)
+        if (invalid) { setErr('logo', invalid); input.value = ''; return }
+        setLogoUploading(true)
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setLogoUploading(false); return }
-        let blob: Blob
-        try { blob = await compressImage(file, 400) } catch { blob = file }
-        const path = `${user.id}/logo.webp`
-        const { error } = await supabase.storage.from('organiser-logos').upload(path, blob, { upsert: true, contentType: 'image/webp' })
-        if (error) { setErr('logo', 'Upload failed. Please try again.'); setLogoUploading(false); return }
+        if (!user) { setLogoUploading(false); input.value = ''; return }
+        const { blob, mime, ext } = await prepareImage(file, 400)
+        // New file name every time: a reused name is served from the CDN cache for up to an hour.
+        const path = `${user.id}/logo-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('organiser-logos').upload(path, blob, { contentType: mime })
+        if (error) { setErr('logo', friendlyUploadError(error)); setLogoUploading(false); input.value = ''; return }
         const { data: urlData } = supabase.storage.from('organiser-logos').getPublicUrl(path)
         const url = urlData.publicUrl
-        await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id)
-        await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
+        const { data: saved, error: orgErr } = await supabase.from('organiser_profiles').update({ logo_url: url }).eq('id', organiser.id).select('id')
+        if (orgErr || !saved?.length) {
+            console.error('Logo save failed:', orgErr)
+            setErr('logo', 'The image uploaded but your profile could not be updated. Please try again.')
+            setLogoUploading(false); input.value = ''; return
+        }
+        const { error: avErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id)
+        if (avErr) console.error('Avatar sync failed:', avErr)
+        const oldPath = storagePathFromUrl(logoUrl, 'organiser-logos')
+        if (oldPath && oldPath !== path) void supabase.storage.from('organiser-logos').remove([oldPath])
         setLogoUrl(url)
         setLogoUploading(false)
+        input.value = ''
     }
 
     async function uploadCover(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
+        const input = e.target
+        const file = input.files?.[0]
         if (!file) return
-        setCoverUploading(true)
         setErr('cover', '')
+        const invalid = validateImageFile(file)
+        if (invalid) { setErr('cover', invalid); input.value = ''; return }
+        setCoverUploading(true)
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setCoverUploading(false); return }
-        let blob: Blob
-        try { blob = await compressImage(file, 1600) } catch { blob = file }
-        const path = `${user.id}/cover.webp`
-        const { error } = await supabase.storage.from('organiser-covers').upload(path, blob, { upsert: true, contentType: 'image/webp' })
-        if (error) { setErr('cover', 'Upload failed. Please try again.'); setCoverUploading(false); return }
+        if (!user) { setCoverUploading(false); input.value = ''; return }
+        const { blob, mime, ext } = await prepareImage(file, 1600)
+        const path = `${user.id}/cover-${Date.now()}.${ext}`
+        const { error } = await supabase.storage.from('organiser-covers').upload(path, blob, { contentType: mime })
+        if (error) { setErr('cover', friendlyUploadError(error)); setCoverUploading(false); input.value = ''; return }
         const { data: urlData } = supabase.storage.from('organiser-covers').getPublicUrl(path)
         const url = urlData.publicUrl
-        await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id)
+        const { data: saved, error: saveErr } = await supabase.from('organiser_profiles').update({ cover_url: url }).eq('id', organiser.id).select('id')
+        if (saveErr || !saved?.length) {
+            console.error('Cover save failed:', saveErr)
+            setErr('cover', 'The image uploaded but your profile could not be updated. Please try again.')
+            setCoverUploading(false); input.value = ''; return
+        }
+        const oldPath = storagePathFromUrl(coverUrl, 'organiser-covers')
+        if (oldPath && oldPath !== path) void supabase.storage.from('organiser-covers').remove([oldPath])
         setCoverUrl(url)
         setCoverUploading(false)
+        input.value = ''
     }
 
     async function handleCloseAccount() {
