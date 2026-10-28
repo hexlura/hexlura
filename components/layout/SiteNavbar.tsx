@@ -109,8 +109,8 @@ export function SiteNavbar() {
             : 'sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-border'}
         >
             <div className={`max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between gap-6 ${overlay ? 'h-20' : 'h-16'}`}>
-                <Link href="/" className={`font-heading text-2xl tracking-wider shrink-0 ${overlay ? 'text-white' : 'text-accent'}`}>
-                    HEXLURA<sup className={`text-[0.45em] align-super tracking-normal ${overlay ? 'text-accent' : ''}`}>®</sup>
+                <Link href="/" className={`font-heading text-2xl tracking-wider shrink-0 text-accent${overlay ? ' drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]' : ''}`}>
+                    HEXLURA<sup className="text-[0.45em] align-super tracking-normal">®</sup>
                 </Link>
 
                 <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
