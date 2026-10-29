@@ -11,6 +11,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Off by default to save email quota. To turn back on: set REMINDERS_ENABLED=true in Vercel
+    // and restore the /api/cron/event-reminders entry (0 9 * * *) in vercel.json.
+    if (process.env.REMINDERS_ENABLED !== 'true') {
+        return NextResponse.json({ reminders: 0, events: 0, disabled: true })
+    }
+
     const supabase = createServiceClient()
     const now = new Date()
 
