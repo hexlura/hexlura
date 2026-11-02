@@ -58,10 +58,8 @@ export async function syncRefundedCharge(charge: Stripe.Charge): Promise<RefundS
     if (updateErr) throw new Error(`refund sync: could not mark ${booking.booking_ref} refunded: ${updateErr.message}`)
     if (!flipped || flipped.length === 0) return 'already_handled'
 
-    // Void the individual tickets too, matching what the app's own refund flows do.
-    const { error: itemsErr } = await supabase.from('booking_items').update({ status: 'cancelled' }).eq('booking_id', booking.id)
-    if (itemsErr) console.error(`refund sync: could not cancel tickets for ${booking.booking_ref}:`, itemsErr.message)
-
+    // Tickets are voided by the booking status alone (booking_items has no status column; the
+    // door scanner rejects any ticket whose booking is 'refunded').
     await reversePromoterEarningsForBooking(booking.id)
 
     // Close any refund request still open for this booking.
