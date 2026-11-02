@@ -34,11 +34,15 @@ export async function POST() {
     // Refresh available earnings before locking them in
     await markEarningsAvailable(promoterId)
 
-    const { data: available } = await adminClient
+    // Earnings stay 'available' until an admin marks them paid, so skip any already locked to an
+    // earlier payout request (payout_id set) — otherwise a second request pays the same money twice.
+    const { data: available, error: availableErr } = await adminClient
         .from('promoter_earnings')
         .select('id, commission_pence')
         .eq('promoter_id', promoterId)
         .eq('status', 'available')
+        .is('payout_id', null)
+    if (availableErr) return NextResponse.json({ error: 'Could not load your earnings' }, { status: 500 })
 
     const earningsRows = available || []
     if (earningsRows.length === 0) {
@@ -69,11 +73,28 @@ export async function POST() {
         return NextResponse.json({ error: payoutErr?.message || 'Failed to create payout' }, { status: 500 })
     }
 
-    // Lock the earnings rows to this payout (still 'available' until admin marks paid)
-    await adminClient
+    // Lock the earnings rows to this payout (still 'available' until admin marks paid).
+    // Only rows still unlocked are claimed, so two requests arriving together can't both take the
+    // same earnings; whatever this request did claim decides the payout amount.
+    const { data: claimed, error: claimErr } = await adminClient
         .from('promoter_earnings')
         .update({ payout_id: payout.id })
         .in('id', earningsRows.map(r => r.id))
+        .is('payout_id', null)
+        .select('id, commission_pence')
+    if (claimErr || !claimed || claimed.length === 0) {
+        await adminClient.from('promoter_payouts').delete().eq('id', payout.id)
+        if (claimErr) return NextResponse.json({ error: 'Could not lock your earnings for payout' }, { status: 500 })
+        return NextResponse.json({ error: 'You already have a withdrawal request for these earnings' }, { status: 409 })
+    }
+    const claimedPence = claimed.reduce((sum, e) => sum + (e.commission_pence || 0), 0)
+    if (claimed.length !== earningsRows.length) {
+        const { error: fixErr } = await adminClient
+            .from('promoter_payouts')
+            .update({ gross_pence: claimedPence, net_pence: claimedPence })
+            .eq('id', payout.id)
+        if (fixErr) console.error('Promoter payout amount correction failed:', fixErr.message)
+    }
 
     // Notify admins (email to support inbox + in-app notifications)
     const { data: profileEmail } = await adminClient
@@ -86,8 +107,8 @@ export async function POST() {
         promoterName: profile.display_name,
         promoterEmail: profileEmail?.email || user.email || 'unknown',
         referralCode: profile.referral_code,
-        totalRequestedPence: grossPence,
-        payoutCount: earningsRows.length,
+        totalRequestedPence: claimedPence,
+        payoutCount: claimed.length,
     })
 
     const { data: admins } = await adminClient.from('profiles').select('id').eq('role', 'admin')
@@ -97,11 +118,11 @@ export async function POST() {
                 user_id: a.id,
                 type: 'promoter_payout_requested',
                 title: 'New promoter payout request',
-                body: `${profile.display_name} (${profile.referral_code}) requested £${(grossPence / 100).toFixed(2)} across ${earningsRows.length} sale${earningsRows.length === 1 ? '' : 's'}.`,
+                body: `${profile.display_name} (${profile.referral_code}) requested £${(claimedPence / 100).toFixed(2)} across ${claimed.length} sale${claimed.length === 1 ? '' : 's'}.`,
                 link: '/admin/payouts',
             }))
         )
     }
 
-    return NextResponse.json({ success: true, totalRequested: grossPence, count: earningsRows.length })
+    return NextResponse.json({ success: true, totalRequested: claimedPence, count: claimed.length })
 }
