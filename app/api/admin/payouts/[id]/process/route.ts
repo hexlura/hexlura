@@ -18,8 +18,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     let reference = ''
     let force = false
     let overrideReason = ''
+    let requestedMethod: string | null = null
     try {
-        const body = await request.json() as { reference?: string; force?: boolean; override_reason?: string }
+        const body = await request.json() as { reference?: string; force?: boolean; override_reason?: string; method?: string }
+        if (typeof body.method === 'string') requestedMethod = body.method
         if (typeof body.reference === 'string') reference = body.reference.trim()
         if (body.force === true) force = true
         if (typeof body.override_reason === 'string') overrideReason = body.override_reason.trim()
@@ -27,9 +29,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         // No JSON body (e.g. "Process All" loop posts no body) — fine, fall back to derived
     }
 
+    // Admin may choose, per payout, how it is paid — the organiser's saved method is only the default.
+    const PAYOUT_METHODS = ['stripe_connect', 'bank_transfer']
+    if (requestedMethod !== null && !PAYOUT_METHODS.includes(requestedMethod)) {
+        return NextResponse.json({ error: 'Invalid payout method' }, { status: 400 })
+    }
+
     const { data: payout } = await adminClient
         .from('payouts')
-        .select('id, status, net_pence, organiser_id, event_id, organiser_profiles(stripe_account_id, payout_method, org_name, user_id, identity_status, identity_verified_at), events(title)')
+        .select('id, status, net_pence, organiser_id, event_id, organiser_profiles(stripe_account_id, payout_method, bank_sort_code, bank_account_number, org_name, user_id, identity_status, identity_verified_at), events(title)')
         .eq('id', params.id)
         .single()
 
@@ -44,6 +52,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         organiser_profiles: {
             stripe_account_id: string | null
             payout_method: string
+            bank_sort_code: string | null
+            bank_account_number: string | null
             org_name: string
             user_id: string
             identity_status: string | null
@@ -52,7 +62,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         events: { title: string } | null
     }
     const p = payout as unknown as PayoutWithOrg
-    const payoutMethod = p.organiser_profiles?.payout_method ?? 'bank_transfer'
+    const savedMethod = p.organiser_profiles?.payout_method ?? 'bank_transfer'
+    const payoutMethod = requestedMethod ?? savedMethod
+    const methodOverridden = payoutMethod !== savedMethod
 
     // Gate B: identity must be verified, unless admin supplies a force override + reason
     const identityVerified = p.organiser_profiles?.identity_verified_at != null
@@ -76,6 +88,35 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const PROCESSABLE = ['pending', 'requested', 'failed']
     if (!PROCESSABLE.includes(p.status)) {
         return NextResponse.json({ error: `Payout is already ${p.status}` }, { status: 409 })
+    }
+
+    // Checks that must pass BEFORE the payout is claimed, so a refusal leaves it untouched (not 'failed').
+    if (payoutMethod === 'stripe_connect' && !p.organiser_profiles?.stripe_account_id) {
+        return NextResponse.json({ error: 'This organiser has no connected Stripe account — choose bank transfer instead.' }, { status: 400 })
+    }
+    if (methodOverridden && payoutMethod === 'bank_transfer'
+        && !(p.organiser_profiles?.bank_sort_code && p.organiser_profiles?.bank_account_number)) {
+        return NextResponse.json({ error: 'This organiser has no bank details on file.' }, { status: 400 })
+    }
+    if (payoutMethod === 'stripe_connect') {
+        // A transfer can only draw on AVAILABLE balance (card payments are held for a couple of days).
+        // Refuse clearly up front rather than claiming the payout and marking it 'failed'.
+        try {
+            const stripe = (await import('stripe')).default
+            const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2026-02-25.clover' })
+            const balance = await stripeClient.balance.retrieve()
+            const availablePence = balance.available.filter(b => b.currency === 'gbp').reduce((s, b) => s + b.amount, 0)
+            const neededPence = p.net_pence || 0
+            if (availablePence < neededPence) {
+                return NextResponse.json({
+                    error: `Not enough available Stripe balance: £${(availablePence / 100).toFixed(2)} available, £${(neededPence / 100).toFixed(2)} needed. Wait for pending funds to release or add to your balance, or pay by bank transfer.`,
+                    insufficient_balance: true,
+                }, { status: 409 })
+            }
+        } catch (err) {
+            // If the balance can't be read, don't block — the transfer below is rejected by Stripe anyway if funds are short.
+            console.error(`Payout ${p.id} balance check failed:`, err)
+        }
     }
 
     // Atomically claim it: only one caller can move it to 'processing', so a
@@ -158,6 +199,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         metadata: {
             net_pence: p.net_pence,
             payout_method: payoutMethod,
+            saved_method: savedMethod,
+            method_overridden: methodOverridden || undefined,
             stripe_transfer_id: transferId,
             reference: success ? finalReference : undefined,
             failure_reason: failureReason ?? undefined,

@@ -30,7 +30,7 @@ export default async function AdminPayoutsPage({
     // Fetch pending payouts (auto-generated, cooldown passed) and requested payouts (organiser-requested)
     const { data: dueData } = await adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, status, scheduled_at, requested_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, identity_verified_at, profiles(full_name, email)), events(title, end_at, start_at)')
+        .select('id, gross_pence, net_pence, status, scheduled_at, requested_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, bank_account_name, bank_sort_code, bank_account_number, stripe_account_id, identity_verified_at, profiles(full_name, email)), events(title, end_at, start_at)')
         .in('status', ['pending', 'requested'])
 
     type PayoutWithRelated = {
@@ -45,7 +45,7 @@ export default async function AdminPayoutsPage({
         organiser_id: string
         event_id: string | null
         stripe_transfer_id: string | null
-        organiser_profiles: { org_name: string; payout_method?: string; identity_verified_at: string | null; profiles: { full_name: string | null; email: string | null } | null } | null
+        organiser_profiles: { org_name: string; payout_method?: string; bank_account_name?: string | null; bank_sort_code?: string | null; bank_account_number?: string | null; stripe_account_id?: string | null; identity_verified_at: string | null; profiles: { full_name: string | null; email: string | null } | null } | null
         events: { title: string; end_at: string | null; start_at: string } | null
     }
 

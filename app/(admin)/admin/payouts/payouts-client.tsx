@@ -70,14 +70,22 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
     const [selectedStatus, setSelectedStatus] = useState('')
     const [referenceInput, setReferenceInput] = useState('')
     const [overrideReason, setOverrideReason] = useState('')
+    // Admin's per-payout choice of how to pay; keyed by payout id so it can never leak to another payout.
+    const [methodChoice, setMethodChoice] = useState<{ id: string; method: 'stripe_connect' | 'bank_transfer' } | null>(null)
     const [processingAll, setProcessingAll] = useState(false)
     const [processProgress, setProcessProgress] = useState<{ current: number; total: number } | null>(null)
     const [loading, setLoading] = useState<string | null>(null)
     const [toastMsg, setToastMsg] = useState<string | null>(null)
 
-    function showToast(msg: string) {
+    function showToast(msg: string, ms = 4000) {
         setToastMsg(msg)
-        setTimeout(() => setToastMsg(null), 4000)
+        setTimeout(() => setToastMsg(null), ms)
+    }
+
+    // How this payout will be paid: the admin's choice if made, otherwise the organiser's saved method.
+    function methodFor(payout: PayoutRow): 'stripe_connect' | 'bank_transfer' {
+        if (methodChoice && methodChoice.id === payout.id) return methodChoice.method
+        return payout.organiser_profiles?.payout_method === 'stripe_connect' ? 'stripe_connect' : 'bank_transfer'
     }
 
     function updateParam(key: string, value: string) {
@@ -95,9 +103,10 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             return
         }
         setLoading(payout.id)
-        const isBankTransfer = payout.organiser_profiles?.payout_method !== 'stripe_connect'
+        const method = methodFor(payout)
+        const isBankTransfer = method === 'bank_transfer'
         const ref = isBankTransfer ? (referenceInput.trim() || deriveReference(payout.id)) : undefined
-        const body: Record<string, unknown> = {}
+        const body: Record<string, unknown> = { method }
         if (ref) body.reference = ref
         if (!isVerified) {
             body.force = true
@@ -114,9 +123,12 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             setConfirmModal(null)
             setReferenceInput('')
             setOverrideReason('')
+            setMethodChoice(null)
             router.refresh()
         } else {
-            showToast('Failed to process payout')
+            // Show the server's reason (e.g. not enough Stripe balance) instead of a generic message.
+            const err = await res.json().catch(() => null) as { error?: string } | null
+            showToast(err?.error ? `Not processed: ${err.error}` : 'Failed to process payout', 9000)
         }
     }
 
@@ -401,12 +413,37 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                         <h3 className="font-heading text-xl text-text mb-3">Process Payout</h3>
                         <p className="text-sm text-muted mb-2">{confirmModal.organiser_profiles?.org_name}</p>
                         <p className="text-sm text-muted mb-1">Amount: <span className="text-text font-medium">{formatPence(confirmModal.net_pence || 0)}</span></p>
+                        <div className="mb-4">
+                            <label className="text-xs text-muted block mb-1.5">Pay by</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {([['stripe_connect', 'Stripe transfer'], ['bank_transfer', 'Bank transfer']] as const).map(([value, label]) => (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => setMethodChoice({ id: confirmModal.id, method: value })}
+                                        className={`rounded-lg border px-3 py-2 text-sm ${methodFor(confirmModal) === value ? 'border-accent text-accent bg-warm-red/5 font-medium' : 'border-border text-muted'}`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                            {methodFor(confirmModal) !== (confirmModal.organiser_profiles?.payout_method === 'stripe_connect' ? 'stripe_connect' : 'bank_transfer') && (
+                                <p className="text-[11px] text-accent mt-1.5">Differs from the organiser&apos;s saved method — this one payout only.</p>
+                            )}
+                        </div>
                         <p className="text-sm text-muted mb-4">
-                            {confirmModal.organiser_profiles?.payout_method === 'stripe_connect'
-                                ? 'This will trigger an automatic Stripe transfer.'
-                                : 'Mark as paid after sending the bank transfer manually.'}
+                            {methodFor(confirmModal) === 'stripe_connect'
+                                ? 'This will send a real Stripe transfer from your available balance to their connected account.'
+                                : 'No Stripe transfer is sent. Pay the organiser from your bank first, then confirm here to mark it paid.'}
                         </p>
-                        {confirmModal.organiser_profiles?.payout_method !== 'stripe_connect' && (
+                        {methodFor(confirmModal) === 'bank_transfer' && (
+                            <div className="mb-4 bg-background border border-border rounded-lg p-3 text-xs space-y-1">
+                                <div className="flex justify-between"><span className="text-muted">Account name</span><span className="text-text">{confirmModal.organiser_profiles?.bank_account_name || '—'}</span></div>
+                                <div className="flex justify-between"><span className="text-muted">Sort code</span><span className="text-text font-mono">{confirmModal.organiser_profiles?.bank_sort_code || '—'}</span></div>
+                                <div className="flex justify-between"><span className="text-muted">Account number</span><span className="text-text font-mono">{confirmModal.organiser_profiles?.bank_account_number || '—'}</span></div>
+                            </div>
+                        )}
+                        {methodFor(confirmModal) === 'bank_transfer' && (
                             <div className="mb-4">
                                 <label className="text-xs text-muted block mb-1.5">Bank Reference</label>
                                 <input
@@ -436,7 +473,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             <Button variant="primary" size="md" onClick={() => handleProcessPayout(confirmModal)} disabled={loading === confirmModal.id}>
                                 {loading === confirmModal.id ? 'Processing...' : (!confirmModal.organiser_profiles?.identity_verified_at ? 'Override & Process' : 'Confirm Payout')}
                             </Button>
-                            <Button variant="secondary" size="md" onClick={() => { setConfirmModal(null); setReferenceInput(''); setOverrideReason('') }}>Cancel</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setConfirmModal(null); setReferenceInput(''); setOverrideReason(''); setMethodChoice(null) }}>Cancel</Button>
                         </div>
                     </div>
                 </div>
@@ -457,6 +494,22 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted">Account ID</span>
                                     <span className="text-text font-mono text-xs">{bankModal.organiser_profiles?.stripe_account_id || '—'}</span>
+                                </div>
+                                {/* Bank details stay visible for Connect organisers so an admin can pay by bank when needed. */}
+                                <div className="pt-2 mt-2 border-t border-border space-y-2">
+                                    <p className="text-[11px] uppercase tracking-wider text-muted">Bank details on file</p>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted">Account Name</span>
+                                        <span className="text-text">{bankModal.organiser_profiles?.bank_account_name || '—'}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted">Sort Code</span>
+                                        <span className="text-text font-mono">{bankModal.organiser_profiles?.bank_sort_code || '—'}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted">Account Number</span>
+                                        <span className="text-text font-mono">{bankModal.organiser_profiles?.bank_account_number || '—'}</span>
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -506,6 +559,11 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <option value="failed">Failed</option>
                             </ThemedSelect>
                         </div>
+                        {selectedStatus === 'paid' && statusModal.status !== 'paid' && (
+                            <p className="mb-4 text-[11px] text-accent bg-warm-red/5 border border-warm-red/30 rounded-lg p-2.5">
+                                This only records the payout as paid — it does NOT send any money through Stripe. Use it after you have already paid the organiser yourself. To send a Stripe transfer, use Process instead.
+                            </p>
+                        )}
                         {selectedStatus === 'paid' && (
                             <div className="mb-4">
                                 <label className="text-xs text-muted block mb-1.5">Bank Reference</label>

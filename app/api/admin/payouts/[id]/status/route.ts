@@ -90,7 +90,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         update.reference = reference
     }
 
-    await adminClient.from('payouts').update(update).eq('id', params.id)
+    const { error: updateError } = await adminClient.from('payouts').update(update).eq('id', params.id)
+    if (updateError) {
+        // Don't audit-log, email or notify for a change that never saved.
+        console.error(`Payout ${params.id} status update failed:`, updateError)
+        return NextResponse.json({ error: 'Could not save the status change' }, { status: 500 })
+    }
 
     await logAuditAction({
         actorId: user.id,
