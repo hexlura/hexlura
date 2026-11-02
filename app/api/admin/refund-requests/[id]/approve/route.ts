@@ -85,13 +85,28 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         }
     }
 
-    await adminClient
+    // The Stripe refund has already gone through, so a failed save here must be surfaced — otherwise
+    // the buyer is refunded but the booking stays 'confirmed' with working tickets.
+    // Conditional: the Stripe refund webhook may have flipped it first, in which case it already did the follow-up work.
+    const { data: flipped, error: statusErr } = await adminClient
         .from('bookings')
         .update({ status: 'refunded' })
         .eq('id', booking.id)
+        .neq('status', 'refunded')
+        .select('id')
+    if (statusErr) {
+        console.error('Refund issued but booking status update failed:', statusErr)
+        await notifyAdmins({
+            type: 'refund_failed',
+            title: 'Refund sent but booking not updated — fix manually',
+            body: `Booking ${booking.booking_ref} was refunded in Stripe but could not be marked refunded. Mark it refunded in the admin bookings page.`,
+            link: '/admin/bookings',
+        })
+        return NextResponse.json({ error: 'Refund was sent through Stripe but the booking could not be marked refunded. Check the booking.' }, { status: 500 })
+    }
 
-    // Reverse any promoter commission attributed to this booking (full refund)
-    await reversePromoterEarningsForBooking(booking.id)
+    // Reverse any promoter commission attributed to this booking (full refund) — only if we flipped it
+    if (flipped && flipped.length > 0) await reversePromoterEarningsForBooking(booking.id)
 
     // Notify waitlisted users that a spot has opened up
     const { data: refundBooking } = await adminClient
@@ -104,10 +119,11 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
         if (ev) void notifyWaitlistForEvent(refundBooking.event_id, ev.title, ev.slug)
     }
 
-    await adminClient
+    const { error: reqErr } = await adminClient
         .from('refund_requests')
         .update({ status: 'admin_approved', resolved_at: new Date().toISOString() })
         .eq('id', params.id)
+    if (reqErr) console.error('Refund approved but request row not closed:', reqErr)
 
     await logAuditAction({
         actorId: user.id,

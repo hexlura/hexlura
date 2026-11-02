@@ -57,9 +57,11 @@ export async function refundAllBookingsForEvent(eventId: string): Promise<Refund
                 continue
             }
         }
-        await adminClient.from('bookings').update({ status: 'refunded' }).eq('id', booking.id)
+        // Conditional: the Stripe refund webhook may already have flipped this booking and reversed
+        // its promoter earnings — doing that twice would double a clawback.
+        const { data: flipped } = await adminClient.from('bookings').update({ status: 'refunded' }).eq('id', booking.id).neq('status', 'refunded').select('id')
         await adminClient.from('booking_items').update({ status: 'cancelled' }).eq('booking_id', booking.id)
-        await reversePromoterEarningsForBooking(booking.id)
+        if (flipped && flipped.length > 0) await reversePromoterEarningsForBooking(booking.id)
 
         if (booking.user_id) {
             void adminClient.from('notifications').insert({

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { processPaymentIntentSucceeded } from '@/lib/process-payment-success'
+import { syncRefundedCharge } from '@/lib/sync-stripe-refund'
 
 export async function POST(req: NextRequest) {
     const body = await req.text()
@@ -49,6 +50,17 @@ export async function POST(req: NextRequest) {
 
         if (paymentIntent.metadata?.event_id && paymentIntent.metadata?.charge_type === 'direct') {
             console.error('Direct charge payment failed:', paymentIntent.id, paymentIntent.last_payment_error?.message)
+        }
+    }
+
+    // Refunds of direct charges are made on the connected account, so they arrive here.
+    // syncRefundedCharge ignores anything that isn't one of our bookings.
+    if (event.type === 'charge.refunded') {
+        try {
+            await syncRefundedCharge(event.data.object as Stripe.Charge)
+        } catch (err) {
+            console.error('Error handling connect charge.refunded:', err)
+            return NextResponse.json({ error: 'Refund sync failed' }, { status: 500 })
         }
     }
 

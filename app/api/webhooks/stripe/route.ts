@@ -9,6 +9,7 @@ import PayoutFailedAdmin from '@/emails/payout-failed-admin'
 import { sendOrganiserIdentityVerifiedEmail } from '@/lib/email'
 import { processPaymentIntentSucceeded } from '@/lib/process-payment-success'
 import { refundPayment } from '@/lib/stripe-refund'
+import { syncRefundedCharge } from '@/lib/sync-stripe-refund'
 import { buildTicketDescriptors, type BookingItemRow } from '@/lib/tickets/descriptors'
 import { generateTicketPdf } from '@/lib/tickets/generateTicketPdf'
 import { Resend } from 'resend'
@@ -47,6 +48,18 @@ export async function POST(req: NextRequest) {
         } catch (err) {
             console.error('Error handling payment_intent.succeeded:', err)
             // Still return 200 so Stripe does not retry
+        }
+    }
+
+    if (event.type === 'charge.refunded') {
+        // A refund made outside the app (e.g. the Stripe dashboard) must still void the booking.
+        // Unlike the handlers above, answer 500 on failure so Stripe retries — nothing else will fix it.
+        try {
+            const result = await syncRefundedCharge(event.data.object as Stripe.Charge)
+            console.log(`charge.refunded ${(event.data.object as Stripe.Charge).id}: ${result}`)
+        } catch (err) {
+            console.error('Error handling charge.refunded:', err)
+            return NextResponse.json({ error: 'Refund sync failed' }, { status: 500 })
         }
     }
 
