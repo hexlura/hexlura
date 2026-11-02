@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchAllRows } from '@/lib/supabase/fetch-all'
 import { redirect } from 'next/navigation'
 import { OrganisersClient } from './organisers-client'
 
@@ -59,17 +60,22 @@ export default async function AdminOrganisersPage({
             .select('id, organiser_id')
             .in('organiser_id', activeIds)
 
-        const { data: bookingsData } = await adminClient
-            .from('bookings')
-            .select('ticket_subtotal_pence, discount_pence, event:events(organiser_id)')
-            .eq('status', 'confirmed')
+        type BkgWithOrg = { ticket_subtotal_pence: number | null; discount_pence: number | null; event: { organiser_id: string } | null }
+        // Paged — a single query is silently capped at 1,000 rows
+        const bookingsData = await fetchAllRows<BkgWithOrg>((from, to) =>
+            adminClient
+                .from('bookings')
+                .select('ticket_subtotal_pence, discount_pence, event:events(organiser_id)')
+                .eq('status', 'confirmed')
+                .order('id')
+                .range(from, to) as unknown as PromiseLike<{ data: BkgWithOrg[] | null; error: { message: string } | null }>,
+        )
 
         for (const e of (eventsData || []) as { id: string; organiser_id: string }[]) {
             if (!orgStats[e.organiser_id]) orgStats[e.organiser_id] = { events: 0, revenue: 0 }
             orgStats[e.organiser_id].events++
         }
-        type BkgWithOrg = { ticket_subtotal_pence: number | null; discount_pence: number | null; event: { organiser_id: string } | null }
-        for (const b of (bookingsData || []) as unknown as BkgWithOrg[]) {
+        for (const b of bookingsData) {
             const oid = b.event?.organiser_id
             if (oid && orgStats[oid]) {
                 orgStats[oid].revenue += (b.ticket_subtotal_pence || 0) - (b.discount_pence || 0)

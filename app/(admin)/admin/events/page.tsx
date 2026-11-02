@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchAllRows } from '@/lib/supabase/fetch-all'
 import { redirect } from 'next/navigation'
 import { AdminEventsClient } from './events-client'
 
@@ -49,13 +50,17 @@ export default async function AdminEventsPage({
     const { data: eventsData, count } = await query
 
     // Fetch confirmed booking totals per event
-    const { data: salesData } = await adminClient
-        .from('bookings')
-        .select('event_id, total_pence, booking_fee_pence, order_processing_fee_pence')
-        .eq('status', 'confirmed')
+    const salesData = await fetchAllRows<{ event_id: string; total_pence: number | null; booking_fee_pence: number | null; order_processing_fee_pence: number | null }>((from, to) =>
+        adminClient
+            .from('bookings')
+            .select('event_id, total_pence, booking_fee_pence, order_processing_fee_pence')
+            .eq('status', 'confirmed')
+            .order('id')
+            .range(from, to),
+    )
 
     const salesMap = new Map<string, { gross: number; fee: number }>()
-    for (const b of salesData || []) {
+    for (const b of salesData) {
         const prev = salesMap.get(b.event_id) || { gross: 0, fee: 0 }
         prev.gross += b.total_pence || 0
         // Platform revenue = per-ticket booking fee + flat order processing fee

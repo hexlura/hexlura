@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchAllRows } from '@/lib/supabase/fetch-all'
 import { redirect } from 'next/navigation'
 import { formatPence } from '@/lib/fees'
 import { FinancialsClient } from './financials-client'
@@ -12,21 +13,31 @@ export default async function AdminFinancialsPage() {
 
     const adminClient = createAdminClient()
 
-    const { data: allBookings } = await adminClient
-        .from('bookings')
-        .select('total_pence, booking_fee_pence, confirmed_at')
-        .eq('status', 'confirmed')
+    // Paged — a single query is silently capped at 1,000 rows
+    const bookings = await fetchAllRows<{ total_pence: number | null; booking_fee_pence: number | null; order_processing_fee_pence: number | null; confirmed_at: string | null }>((from, to) =>
+        adminClient
+            .from('bookings')
+            .select('total_pence, booking_fee_pence, order_processing_fee_pence, confirmed_at')
+            .eq('status', 'confirmed')
+            .order('id')
+            .range(from, to),
+    )
 
-    const { data: allPayouts } = await adminClient
-        .from('payouts')
-        .select('net_pence, gross_pence, paid_at, status')
-        .eq('status', 'paid')
+    const payouts = await fetchAllRows<{ net_pence: number | null; gross_pence: number | null; paid_at: string | null; status: string }>((from, to) =>
+        adminClient
+            .from('payouts')
+            .select('net_pence, gross_pence, paid_at, status')
+            .eq('status', 'paid')
+            .order('id')
+            .range(from, to),
+    )
 
-    const bookings = (allBookings || []) as { total_pence: number | null; booking_fee_pence: number | null; confirmed_at: string | null }[]
-    const payouts = (allPayouts || []) as { net_pence: number | null; gross_pence: number | null; paid_at: string | null; status: string }[]
+    // Platform revenue = per-ticket booking fee + flat order processing fee (same as the Events list)
+    const bookingRevenue = (b: { booking_fee_pence: number | null; order_processing_fee_pence: number | null }) =>
+        (b.booking_fee_pence || 0) + (b.order_processing_fee_pence || 0)
 
     const totalGmv = bookings.reduce((s, b) => s + (b.total_pence || 0), 0)
-    const totalRevenue = bookings.reduce((s, b) => s + (b.booking_fee_pence || 0), 0)
+    const totalRevenue = bookings.reduce((s, b) => s + bookingRevenue(b), 0)
     const totalPaidOut = payouts.reduce((s, p) => s + (p.net_pence || 0), 0)
 
     // Monthly breakdown: last 12 months
@@ -51,7 +62,7 @@ export default async function AdminFinancialsPage() {
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
         if (monthlyStats[key]) {
             monthlyStats[key].gmv += b.total_pence || 0
-            monthlyStats[key].revenue += b.booking_fee_pence || 0
+            monthlyStats[key].revenue += bookingRevenue(b)
             monthlyStats[key].bookings_count++
         }
     }

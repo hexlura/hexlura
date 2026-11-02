@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchAllRows } from '@/lib/supabase/fetch-all'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPence } from '@/lib/fees'
@@ -12,16 +13,19 @@ export default async function AdminDashboardPage() {
 
     const adminClient = createAdminClient()
 
-    // KPI: GMV and platform revenue from confirmed bookings
-    const { data: bookings } = await adminClient
-        .from('bookings')
-        .select('total_pence, booking_fee_pence, confirmed_at, created_at')
-        .eq('status', 'confirmed')
-
-    const allBookings = (bookings || []) as { total_pence: number | null; booking_fee_pence: number | null; confirmed_at: string | null; created_at: string }[]
+    // KPI: GMV and platform revenue from confirmed bookings (paged — a single query is capped at 1,000 rows)
+    const allBookings = await fetchAllRows<{ total_pence: number | null; booking_fee_pence: number | null; order_processing_fee_pence: number | null; confirmed_at: string | null; created_at: string }>((from, to) =>
+        adminClient
+            .from('bookings')
+            .select('total_pence, booking_fee_pence, order_processing_fee_pence, confirmed_at, created_at')
+            .eq('status', 'confirmed')
+            .order('id')
+            .range(from, to),
+    )
 
     const gmvPence = allBookings.reduce((s, b) => s + (b.total_pence || 0), 0)
-    const revenuePence = allBookings.reduce((s, b) => s + (b.booking_fee_pence || 0), 0)
+    // Platform revenue = per-ticket booking fee + flat order processing fee (same as the Events list)
+    const revenuePence = allBookings.reduce((s, b) => s + (b.booking_fee_pence || 0) + (b.order_processing_fee_pence || 0), 0)
 
     // KPI: Total users (role='user')
     const { count: totalUsers } = await adminClient
@@ -93,13 +97,17 @@ export default async function AdminDashboardPage() {
     const gmvChartData = Object.entries(chartMap).map(([date, revenue]) => ({ date, revenue }))
 
     // Bookings by category
-    const { data: eventsWithBookings } = await adminClient
-        .from('bookings')
-        .select('total_pence, event:events(category)')
-        .eq('status', 'confirmed')
     type BookingWithEvent = { total_pence: number | null; event: { category: string } | null }
+    const eventsWithBookings = await fetchAllRows<BookingWithEvent>((from, to) =>
+        adminClient
+            .from('bookings')
+            .select('total_pence, event:events(category)')
+            .eq('status', 'confirmed')
+            .order('id')
+            .range(from, to) as unknown as PromiseLike<{ data: BookingWithEvent[] | null; error: { message: string } | null }>,
+    )
     const byCat: Record<string, number> = {}
-    for (const bk of ((eventsWithBookings || []) as unknown as BookingWithEvent[])) {
+    for (const bk of eventsWithBookings) {
         const cat = bk.event?.category ?? 'Other'
         byCat[cat] = (byCat[cat] || 0) + 1
     }
