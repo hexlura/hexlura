@@ -16,12 +16,24 @@ export default async function AdminOrganiserDetailPage({ params }: { params: { i
             id, org_name, slug, organiser_type, stripe_account_id, stripe_connect_allowed,
             stripe_charges_enabled, stripe_payouts_enabled, payout_method, is_approved,
             is_suspended, booking_fee_exempt, processing_fee_exempt, identity_status, created_at, approved_at, user_id,
+            bank_account_name, bank_sort_code, bank_account_number,
             profiles!organiser_profiles_user_id_fkey (full_name, email)
         `)
         .eq('id', params.id)
         .single()
 
     if (!organiser) notFound()
+
+    // Recent bank detail changes (who, when, why) — account numbers are already masked in the log
+    const { data: changeRows, error: changeErr } = await adminClient
+        .from('audit_logs')
+        .select('created_at, metadata')
+        .eq('entity_id', params.id)
+        .eq('action', 'update_bank_details')
+        .order('created_at', { ascending: false })
+        .limit(5)
+    if (changeErr) console.error('Bank change history load failed:', changeErr.message)
+    const bankChanges = (changeRows || []) as unknown as { created_at: string; metadata: { by?: string; reason?: string; before?: { name?: string | null; account?: string }; after?: { name?: string | null; account?: string } } | null }[]
 
     type OrganiserDetail = {
         id: string; org_name: string; slug: string; organiser_type: string | null
@@ -31,8 +43,9 @@ export default async function AdminOrganiserDetailPage({ params }: { params: { i
         booking_fee_exempt: boolean; processing_fee_exempt: boolean
         identity_status: 'processing' | 'verified' | 'requires_input' | 'canceled' | null
         created_at: string; approved_at: string | null; user_id: string
+        bank_account_name: string | null; bank_sort_code: string | null; bank_account_number: string | null
         profiles: { full_name: string | null; email: string | null } | null
     }
 
-    return <OrganiserDetailClient organiser={organiser as unknown as OrganiserDetail} />
+    return <OrganiserDetailClient organiser={organiser as unknown as OrganiserDetail} bankChanges={bankChanges} />
 }

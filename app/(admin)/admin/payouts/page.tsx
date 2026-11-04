@@ -97,11 +97,31 @@ export default async function AdminPayoutsPage({
     const allPromoterPayouts = (promoterPayoutsData || []) as unknown as PromoterPayoutRow[]
     const duePromoterPayouts = allPromoterPayouts.filter(p => p.status === 'pending' || p.status === 'requested')
 
+    // Fraud check: was the organiser's bank account changed in the last 7 days? An attacker who gets into
+    // an organiser account would swap the bank details and then ask for a payout, so flag it before paying.
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const shownOrganiserIds = Array.from(new Set([...allDuePending, ...allPayouts].map(p => p.organiser_id)))
+    const bankChangedAt = new Map<string, string>()
+    if (shownOrganiserIds.length > 0) {
+        const { data: changeLogs, error: changeErr } = await adminClient
+            .from('audit_logs')
+            .select('entity_id, created_at')
+            .eq('action', 'update_bank_details')
+            .gte('created_at', weekAgo)
+            .in('entity_id', shownOrganiserIds)
+        if (changeErr) console.error('Bank change lookup failed:', changeErr.message)
+        for (const l of (changeLogs || []) as { entity_id: string; created_at: string }[]) {
+            const prev = bankChangedAt.get(l.entity_id)
+            if (!prev || l.created_at > prev) bankChangedAt.set(l.entity_id, l.created_at)
+        }
+    }
+    const withBankFlag = (p: PayoutWithRelated) => ({ ...p, bank_changed_at: bankChangedAt.get(p.organiser_id) ?? null })
+
     return (
         <>
             <PayoutsClient
-                duePayouts={allDuePending}
-                allPayouts={(allPayouts || []) as unknown as PayoutWithRelated[]}
+                duePayouts={allDuePending.map(withBankFlag) as unknown as PayoutWithRelated[]}
+                allPayouts={(allPayouts || []).map(withBankFlag) as unknown as PayoutWithRelated[]}
                 totalRows={count ?? 0}
                 page={page}
                 pageSize={pageSize}

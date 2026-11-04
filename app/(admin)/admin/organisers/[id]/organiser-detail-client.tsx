@@ -14,15 +14,28 @@ interface OrganiserDetail {
     booking_fee_exempt: boolean; processing_fee_exempt: boolean
     identity_status: IdentityStatus
     created_at: string; approved_at: string | null; user_id: string
+    bank_account_name: string | null; bank_sort_code: string | null; bank_account_number: string | null
     profiles: { full_name: string | null; email: string | null } | null
+}
+
+interface BankChange {
+    created_at: string
+    metadata: { by?: string; reason?: string; before?: { name?: string | null; account?: string }; after?: { name?: string | null; account?: string } } | null
 }
 
 function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetail }) {
+export function OrganiserDetailClient({ organiser, bankChanges }: { organiser: OrganiserDetail; bankChanges: BankChange[] }) {
     const router = useRouter()
+    const [editingBank, setEditingBank] = useState(false)
+    const [bankName, setBankName] = useState(organiser.bank_account_name ?? '')
+    const [bankSort, setBankSort] = useState(organiser.bank_sort_code ?? '')
+    const [bankNumber, setBankNumber] = useState(organiser.bank_account_number ?? '')
+    const [bankReason, setBankReason] = useState('')
+    const [bankSaving, setBankSaving] = useState(false)
+    const [bankError, setBankError] = useState<string | null>(null)
     const [allowed, setAllowed] = useState(organiser.stripe_connect_allowed)
     const [bookingFeeExempt, setBookingFeeExempt] = useState(organiser.booking_fee_exempt)
     const [processingFeeExempt, setProcessingFeeExempt] = useState(organiser.processing_fee_exempt)
@@ -71,6 +84,32 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
             const { error } = await res.json().catch(() => ({ error: 'Failed to update — try again' }))
             showToast(error || 'Failed to update — try again')
         }
+    }
+
+    async function saveBankDetails(e: React.FormEvent) {
+        e.preventDefault()
+        setBankSaving(true)
+        setBankError(null)
+        try {
+            const res = await fetch(`/api/admin/organisers/${organiser.id}/bank-details`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: bankName, sortCode: bankSort, accountNumber: bankNumber, reason: bankReason }),
+            })
+            const data = await res.json().catch(() => null) as { error?: string } | null
+            if (!res.ok) {
+                setBankError(data?.error || 'Could not save — try again')
+            } else {
+                setEditingBank(false)
+                setBankReason('')
+                showToast('Bank details updated — the organiser has been emailed')
+                router.refresh()
+            }
+        } catch (err) {
+            console.error('Admin bank details save failed:', err)
+            setBankError('Could not save — try again')
+        }
+        setBankSaving(false)
     }
 
     const connectReady = allowed && organiser.stripe_charges_enabled
@@ -145,6 +184,66 @@ export function OrganiserDetailClient({ organiser }: { organiser: OrganiserDetai
                         <p>Connected account: <span className="text-text">{organiser.stripe_account_id}</span></p>
                         <p>Charges enabled: <span className="text-text">{organiser.stripe_charges_enabled ? 'Yes' : 'No'}</span></p>
                         <p>Payouts enabled: <span className="text-text">{organiser.stripe_payouts_enabled ? 'Yes' : 'No'}</span></p>
+                    </div>
+                )}
+            </div>
+
+            <div className="bg-card shadow-card rounded-2xl p-6 mt-6">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="font-heading text-xl text-text">Bank details</h2>
+                    {!editingBank && (
+                        <button onClick={() => setEditingBank(true)} className="text-xs text-accent font-semibold hover:underline">
+                            {organiser.bank_account_number ? 'Edit' : 'Add'}
+                        </button>
+                    )}
+                </div>
+                <p className="text-xs text-muted mb-4">
+                    Where a bank-transfer payout is sent. Every change needs a reason, is audit-logged, and the organiser is emailed.
+                </p>
+                {!editingBank ? (
+                    <dl className="grid grid-cols-3 gap-4 text-sm border-t border-border pt-4">
+                        <div><dt className="text-xs text-muted">Account holder</dt><dd className="text-text">{organiser.bank_account_name || '—'}</dd></div>
+                        <div><dt className="text-xs text-muted">Sort code</dt><dd className="text-text font-mono">{organiser.bank_sort_code || '—'}</dd></div>
+                        <div><dt className="text-xs text-muted">Account number</dt><dd className="text-text font-mono">{organiser.bank_account_number || '—'}</dd></div>
+                    </dl>
+                ) : (
+                    <form onSubmit={saveBankDetails} className="space-y-3 border-t border-border pt-4">
+                        <div>
+                            <label className="text-xs text-muted block mb-1">Account holder name</label>
+                            <input value={bankName} onChange={e => setBankName(e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs text-muted block mb-1">Sort code</label>
+                                <input value={bankSort} onChange={e => setBankSort(e.target.value)} placeholder="00-00-00" maxLength={8} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text font-mono" />
+                            </div>
+                            <div>
+                                <label className="text-xs text-muted block mb-1">Account number</label>
+                                <input value={bankNumber} onChange={e => setBankNumber(e.target.value)} placeholder="12345678" maxLength={8} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text font-mono" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-xs text-muted block mb-1">Reason for the change (audit-logged, required)</label>
+                            <textarea value={bankReason} onChange={e => setBankReason(e.target.value)} rows={2} placeholder="e.g. Organiser emailed support to change account" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text" />
+                        </div>
+                        {bankError && <p className="text-xs text-accent">{bankError}</p>}
+                        <div className="flex gap-3">
+                            <button type="submit" disabled={bankSaving} className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">{bankSaving ? 'Saving...' : 'Save bank details'}</button>
+                            <button type="button" onClick={() => { setEditingBank(false); setBankError(null) }} className="px-4 py-2 rounded-lg text-sm border border-border text-text">Cancel</button>
+                        </div>
+                    </form>
+                )}
+                {bankChanges.length > 0 && (
+                    <div className="border-t border-border pt-4 mt-4">
+                        <p className="text-xs text-muted mb-2">Recent changes</p>
+                        <ul className="text-xs text-text space-y-1">
+                            {bankChanges.map((c, i) => (
+                                <li key={i}>
+                                    {fmt(c.created_at)} · {c.metadata?.by === 'admin' ? 'by an admin' : 'by the organiser'} · {c.metadata?.before?.account ?? '—'} → {c.metadata?.after?.account ?? '—'}
+                                    {c.metadata?.reason ? <span className="text-muted"> · “{c.metadata.reason}”</span> : null}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 )}
             </div>

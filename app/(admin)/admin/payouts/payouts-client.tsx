@@ -21,6 +21,8 @@ interface PayoutRow {
     created_at: string
     organiser_id: string
     event_id: string | null
+    /** Set when the organiser's bank details changed in the last 7 days (fraud check before paying). */
+    bank_changed_at?: string | null
     organiser_profiles: {
         org_name: string
         payout_method?: string
@@ -456,6 +458,15 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. This is shown to the organiser.</p>
                             </div>
                         )}
+                        {confirmModal.bank_changed_at && (
+                            <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-lg">
+                                <p className="text-xs text-accent font-medium">⚠ Bank details changed on {fmt(confirmModal.bank_changed_at)}</p>
+                                <p className="text-[11px] text-muted mt-1">
+                                    Check with the organiser (by phone or a known email) that this change was theirs before paying.{' '}
+                                    <Link href={`/admin/organisers/${confirmModal.organiser_id}`} className="text-accent underline">View change history →</Link>
+                                </p>
+                            </div>
+                        )}
                         {!confirmModal.organiser_profiles?.identity_verified_at && (
                             <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-lg">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
@@ -532,6 +543,10 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 </div>
                             </div>
                         )}
+                        {bankModal.bank_changed_at && (
+                            <p className="mt-4 text-[11px] text-accent">⚠ Bank details were changed on {fmt(bankModal.bank_changed_at)}.</p>
+                        )}
+                        <Link href={`/admin/organisers/${bankModal.organiser_id}`} className="block mt-4 text-xs text-accent underline">Edit bank details →</Link>
                         <div className="mt-5">
                             <Button variant="secondary" size="md" onClick={() => setBankModal(null)} className="w-full">Close</Button>
                         </div>

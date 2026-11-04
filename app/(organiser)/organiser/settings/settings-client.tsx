@@ -168,7 +168,6 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     const [notifyPayout, setNotifyPayout] = useState(true)
 
     // ── Payout method (bank transfer is the legacy route; Connect is the standard one) ──
-    const [payoutMethod, setPayoutMethod] = useState<'bank_transfer' | 'stripe_connect'>(organiser.payout_method ?? 'bank_transfer')
     const [bankAccountName, setBankAccountName] = useState(organiser.bank_account_name || '')
     const [bankSortCode, setBankSortCode] = useState(organiser.bank_sort_code || '')
     const [bankAccountNumber, setBankAccountNumber] = useState(organiser.bank_account_number || '')
@@ -249,13 +248,31 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
     async function savePayoutMethod(e: React.FormEvent) {
         e.preventDefault()
         setPayoutSaving(true)
-        const ok = await updateProfile(
-            'payout',
-            payoutMethod === 'bank_transfer'
-                ? { payout_method: 'bank_transfer', bank_account_name: bankAccountName, bank_sort_code: bankSortCode, bank_account_number: bankAccountNumber }
-                : { payout_method: 'stripe_connect' }
-        )
-        if (ok) flash(setPayoutSaved)
+        setErr('payout', '')
+        // Bank details are validated, audit-logged and emailed by the server — never written from the browser.
+        try {
+            const res = await fetch('/api/organiser/bank-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: bankAccountName,
+                    sortCode: bankSortCode,
+                    accountNumber: bankAccountNumber,
+                    // Organisers connected to Stripe keep being paid via Stripe; the details are just kept on file.
+                    useForPayouts: !organiser.stripe_account_id,
+                }),
+            })
+            const data = await res.json().catch(() => null) as { error?: string } | null
+            if (!res.ok) {
+                setErr('payout', data?.error || 'Could not save your bank details. Please try again.')
+            } else {
+                flash(setPayoutSaved)
+                router.refresh()
+            }
+        } catch (err) {
+            console.error('[Settings] bank details save failed:', err)
+            setErr('payout', 'Could not save your bank details. Please try again.')
+        }
         setPayoutSaving(false)
     }
 
@@ -604,19 +621,23 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                     </>
                 )}
 
-                {/* Bank transfer: the only option when Connect isn't available, and kept for organisers who are still
-                    paid by bank transfer and haven't connected Stripe yet (they need their details to be paid). */}
-                {(!showConnectBlock || (organiser.payout_method === 'bank_transfer' && !organiser.stripe_account_id)) && (
+                {/* Bank details are always editable: they are the payout method for organisers without Stripe, and
+                    kept on file for connected organisers in case a payout ever has to be sent by bank transfer. */}
+                {(
                     <form onSubmit={savePayoutMethod} className={showConnectBlock ? 'space-y-4 mt-6 pt-6 border-t border-border' : 'space-y-4'}>
-                        {showConnectBlock && <p className="text-sm font-medium">Bank transfer (current method)</p>}
-                        <p className="text-xs text-muted">Admin manually transfers your earnings to your UK bank account.</p>
+                        {showConnectBlock && <p className="text-sm font-medium">{organiser.stripe_account_id ? 'Bank details' : 'Bank transfer (current method)'}</p>}
+                        <p className="text-xs text-muted">
+                            {organiser.stripe_account_id
+                                ? 'Kept on file in case a payout is ever sent by bank transfer instead of Stripe. Any change is emailed to you and flagged to our team.'
+                                : 'Admin manually transfers your earnings to your UK bank account. Any change is emailed to you and flagged to our team.'}
+                        </p>
                         <div className="space-y-3">
                             <div>
                                 <label className={labelClass}>Account Holder Name</label>
                                 <input
                                     type="text"
                                     value={bankAccountName}
-                                    onChange={e => { setBankAccountName(e.target.value); setPayoutMethod('bank_transfer') }}
+                                    onChange={e => setBankAccountName(e.target.value)}
                                     placeholder="Full name or company name"
                                     className={inputClass}
                                 />
@@ -627,7 +648,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                                     <input
                                         type="text"
                                         value={bankSortCode}
-                                        onChange={e => { setBankSortCode(e.target.value); setPayoutMethod('bank_transfer') }}
+                                        onChange={e => setBankSortCode(e.target.value)}
                                         placeholder="00-00-00"
                                         maxLength={8}
                                         className={inputClass}
@@ -638,7 +659,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                                     <input
                                         type="text"
                                         value={bankAccountNumber}
-                                        onChange={e => { setBankAccountNumber(e.target.value); setPayoutMethod('bank_transfer') }}
+                                        onChange={e => setBankAccountNumber(e.target.value)}
                                         placeholder="12345678"
                                         maxLength={8}
                                         className={inputClass}
@@ -651,7 +672,7 @@ export function SettingsClient({ organiser: organiserProp, stripeConnectEnabled 
                         </div>
                         {errors.payout && <p className="text-warm-red text-xs">{errors.payout}</p>}
                         <button type="submit" disabled={payoutSaving} className={saveBtn}>
-                            {payoutSaved ? 'Saved ✓' : payoutSaving ? 'Saving...' : 'Save Payout Method'}
+                            {payoutSaved ? 'Saved ✓' : payoutSaving ? 'Saving...' : 'Save bank details'}
                         </button>
                     </form>
                 )}

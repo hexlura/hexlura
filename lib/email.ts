@@ -25,6 +25,7 @@ import NewEventFollowers from '@/emails/new-event-followers'
 import EventDeletionRequestedAdmin from '@/emails/event-deletion-requested-admin'
 import AccountDeletionRequestedAdmin from '@/emails/account-deletion-requested-admin'
 import AccountDeletionApproved from '@/emails/account-deletion-approved'
+import BankDetailsChanged from '@/emails/bank-details-changed'
 
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY || 'placeholder')
@@ -594,6 +595,39 @@ export async function sendStripeConnectedEmail(data: {
         })
     } catch (err) {
         console.error('Failed to send stripe connected email:', err)
+    }
+}
+
+// Security notice: payout bank details were changed. Sent to the organiser's login email.
+// Only the last digits are ever included — never the full sort code or account number.
+export async function sendBankDetailsChangedEmail(data: {
+    to: string
+    fullName: string
+    orgName: string
+    accountName: string
+    sortCode: string
+    accountNumber: string
+    changedBy: 'you' | 'Hexlura'
+}): Promise<void> {
+    try {
+        const html = await render(BankDetailsChanged({
+            fullName: data.fullName,
+            orgName: data.orgName,
+            accountName: data.accountName,
+            sortCodeEnding: data.sortCode.replace(/\D/g, '').slice(-2),
+            accountEnding: `••••${data.accountNumber.slice(-4)}`,
+            changedBy: data.changedBy,
+            changedAt: new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        }))
+        await getResend().emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            replyTo: 'support@hexlura.com',
+            to: data.to,
+            subject: 'Your payout bank details were changed',
+            html,
+        })
+    } catch (err) {
+        console.error('Failed to send bank details changed email:', err)
     }
 }
 
