@@ -104,6 +104,8 @@ export default async function HomePage() {
 
     const events = (eventsRaw || []) as Event[];
     const pastEvents = (pastEventsRaw || []) as Event[];
+    // Upcoming first, then past events in the same grid so the homepage never looks empty.
+    const allEvents = [...events, ...pastEvents];
     const cities = (citiesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
     const categories = (categoriesRaw || []) as Array<{ id: string; name: string; slug: string; image_url: string | null }>;
     const partners = (partnersRaw || []).filter(p => !!p.image_url) as Array<{ name: string; image_url: string }>;
@@ -359,18 +361,18 @@ export default async function HomePage() {
             {upcomingEventsVisible && (
                 <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
                     <div className="flex items-center justify-between mb-5">
-                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">{season ? `${season.sticker} ${season.titles.upcoming}` : "UPCOMING EVENTS"}</h2>
+                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">{season ? `${season.sticker} EVENTS` : "EVENTS"}</h2>
                         <Link href="/events" className={cardTextBtn}>View All →</Link>
                     </div>
 
-                    {events.length === 0 ? (
+                    {allEvents.length === 0 ? (
                         <div className="py-12 text-center text-muted bg-card rounded-2xl border border-dashed border-border">
-                            No upcoming events yet. Check back soon!
+                            No events yet. Check back soon!
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-                            {events.map((event, i) => (
-                                <EventCard key={event.id} event={event} priority={i < 5} sticker={season && i % 3 === 1 ? season.sticker : undefined} />
+                            {allEvents.map((event, i) => (
+                                <EventCard key={event.id} event={event} priority={i < 5} ended={i >= events.length} sticker={season && i % 3 === 1 ? season.sticker : undefined} />
                             ))}
                         </div>
                     )}
@@ -379,23 +381,6 @@ export default async function HomePage() {
 
             {/* ── RECOMMENDED EVENTS (personalised, client-rendered) ── */}
             <RecommendedEvents />
-
-            {/* ── PAST EVENTS ── */}
-            {pastEvents.length > 0 && (
-                <section className="max-w-7xl mx-auto px-6 lg:px-10 mt-14">
-                    <div className="flex items-center justify-between mb-5">
-                        <h2 className="font-heading text-2xl lg:text-3xl tracking-wide">PAST EVENTS</h2>
-                        <Link href="/events?tab=past" className={cardTextBtn}>View All →</Link>
-                    </div>
-                    <div className="flex gap-5 overflow-x-auto overflow-y-hidden pb-2" style={{ scrollbarWidth: 'none' }}>
-                        {pastEvents.map((event) => (
-                            <div key={event.id} className="shrink-0 w-40 sm:w-44">
-                                <EventCard event={event} compact />
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
 
             {season && <div aria-hidden className="season-divider mt-16">{season.divider}</div>}
 

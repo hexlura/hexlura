@@ -14,11 +14,13 @@ interface EventCardProps {
     priority?: boolean;
     /** Optional seasonal emoji pinned to the poster corner (homepage theme). */
     sticker?: string;
+    /** Force the "ended" treatment, for events whose status is 'ended' but have no end_at. */
+    ended?: boolean;
 }
 
 
 // Portrait poster card: date chip on the image, then title, venue and an all-in price.
-export default function EventCard({ event, compact = false, priority = false, sticker }: EventCardProps) {
+export default function EventCard({ event, compact = false, priority = false, sticker, ended = false }: EventCardProps) {
     const fees = useListingFees();
     const ticketTypes = event.ticket_types || [];
 
@@ -43,7 +45,7 @@ export default function EventCard({ event, compact = false, priority = false, st
 
     const venueLine = [event.venue_name, event.venue_address?.split(',')[0]].filter(Boolean).join(', ');
 
-    const isEventEnded = event.end_at ? new Date(event.end_at) < new Date() : false;
+    const isEventEnded = ended || (event.end_at ? new Date(event.end_at) < new Date() : false);
     const isFree = visibleTypes.length > 0 && Math.max(...visibleTypes.map(t => t.price_pence)) === 0;
 
     // Price line. Prices are all-in: ticket price plus the buyer's booking fee.
@@ -96,6 +98,9 @@ export default function EventCard({ event, compact = false, priority = false, st
                 {sticker && <span aria-hidden className="season-sticker">{sticker}</span>}
                 {isFree && !isEventEnded && !visibleSoldOut && (
                     <span className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-warm-green text-white text-[10px] font-bold">FREE</span>
+                )}
+                {isEventEnded && (
+                    <span className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-bold">ENDED</span>
                 )}
                 {visibleSoldOut && !isEventEnded && (
                     <span className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-full bg-warm-red text-white text-[10px] font-bold">SOLD OUT</span>
