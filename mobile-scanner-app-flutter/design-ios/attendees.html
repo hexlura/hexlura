@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexlura Scanner iOS — Attendees</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+    .search {
+        display:flex; align-items:center; gap:8px; background:var(--card); border-radius:12px;
+        height:38px; padding:0 12px; color:var(--muted); margin-bottom:10px;
+    }
+    .search input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:17px; font-family:var(--sf); }
+    .search input::placeholder { color:var(--footnote); }
+
+    /* iOS segmented control */
+    .segmented { display:flex; background:var(--card); border-radius:10px; padding:2px; }
+    .segmented button { flex:1; background:none; border:none; color:var(--muted); font-size:13px; font-weight:500; padding:7px 4px; border-radius:8px; font-family:var(--sf); cursor:pointer; }
+    .segmented button.active { background:#34343f; color:var(--text); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.4); }
+
+    .att-row { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:0.5px solid var(--border); margin-left:0; }
+    .att-name { font-size:17px; font-weight:600; margin:0; }
+    .att-sub { font-size:13px; color:var(--muted); margin:2px 0 0; }
+    .att-ref { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent); }
+    .checkin-btn { font-size:14px; font-weight:600; height:32px; padding:0 14px; background:var(--accent); color:#fff; border:none; border-radius:16px; cursor:pointer; flex-shrink:0; font-family:var(--sf); }
+    .checked-badge { font-size:13px; color:var(--success); font-weight:600; white-space:nowrap; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="nav-strip">
+    <a href="login.html">1. Login</a>
+    <a href="permission.html">2. Camera permission</a>
+    <a href="events.html">3. Events</a>
+    <a href="scanner.html">4. Scanner</a>
+    <a href="attendees.html" class="active">5. Attendees</a>
+</div>
+
+<div class="device">
+  <div class="screen">
+    <div class="island"></div>
+    <div class="statusbar"><span>9:41</span><span class="right">▂▄▆█ ᯤ 🔋</span></div>
+
+    <div class="navbar">
+        <button class="back" onclick="window.location.href='scanner.html'">
+            <svg viewBox="0 0 12 20" width="12" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 2 2 10 10 18"/></svg>
+            Scan
+        </button>
+        <div class="title">
+            <p class="heading" style="font-size:17px;">Attendees</p>
+            <p style="font-size:12px;color:var(--muted);">184 of 260 checked in</p>
+        </div>
+        <div class="actions"></div>
+    </div>
+
+    <div class="screen-body" style="padding:0;">
+        <div style="padding:12px 16px 10px;flex-shrink:0;">
+            <div class="search">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+                <input placeholder="Search name or booking ref">
+            </div>
+            <div class="segmented">
+                <button class="active">All 260</button>
+                <button>In 184</button>
+                <button>Not in 76</button>
+            </div>
+        </div>
+
+        <div style="flex:1;">
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Aisha Bello</p><p class="att-sub">General Admission · <span class="att-ref">HXL-7F3K92</span></p></div><span class="checked-badge">✓ 10:42 PM</span></div>
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Marcus Reid</p><p class="att-sub">VIP · <span class="att-ref">HXL-9K2M41</span></p></div><span class="checked-badge">✓ 10:41 PM</span></div>
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Tola Adeyemi <span style="color:var(--muted);font-weight:400;">(2/3)</span></p><p class="att-sub">Group Ticket · <span class="att-ref">HXL-3D8P17</span></p></div><button class="checkin-btn">Check In</button></div>
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Chuka Nwosu</p><p class="att-sub">General Admission · <span class="att-ref">HXL-5R1Q88</span></p></div><button class="checkin-btn">Check In</button></div>
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Sarah Whitfield</p><p class="att-sub">Early Bird · <span class="att-ref">HXL-2N7T63</span></p></div><span class="checked-badge">✓ 10:38 PM</span></div>
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Femi Alade</p><p class="att-sub">General Admission · <span class="att-ref">HXL-8H4W25</span></p></div><button class="checkin-btn">Check In</button></div>
+            <div class="att-row"><div style="min-width:0;flex:1;"><p class="att-name">Grace Owolabi</p><p class="att-sub">VIP · <span class="att-ref">HXL-6Y9L74</span></p></div><span class="checked-badge">✓ 10:35 PM</span></div>
+            <div class="att-row" style="border-bottom:none;"><div style="min-width:0;flex:1;"><p class="att-name">Daniel Okoro</p><p class="att-sub">General Admission · <span class="att-ref">HXL-4B6V30</span></p></div><button class="checkin-btn">Check In</button></div>
+        </div>
+
+        <p style="text-align:center;font-size:12px;color:var(--footnote);padding:16px 24px;">
+            Tap “Check In” to check someone in without scanning. Works offline and syncs later.
+        </p>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+</body>
+</html>

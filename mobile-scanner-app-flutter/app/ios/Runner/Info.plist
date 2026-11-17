@@ -41,6 +41,24 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Hexlura Scanner uses the camera to scan attendee ticket QR codes at the door. Nothing is recorded or saved.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Google OAuth redirect — must match lib/config.dart's oauthScheme/oauthCallbackHost -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.hexlura.scanner.oauth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hexluradoorstaffflutter</string>
+			</array>
+		</dict>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

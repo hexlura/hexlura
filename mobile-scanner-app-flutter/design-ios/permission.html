@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexlura Scanner iOS — Camera permission</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+    .sheet-bg { position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:20; display:flex; align-items:center; justify-content:center; padding:0 48px; }
+    .alert { width:100%; background:rgba(44,44,52,.96); border-radius:14px; text-align:center; overflow:hidden; }
+    .alert .body { padding:20px 16px 16px; }
+    .alert h3 { margin:0 0 6px; font-size:17px; font-weight:600; }
+    .alert p { margin:0; font-size:13px; line-height:1.35; }
+    .alert .row { display:flex; border-top:0.5px solid #4a4a56; }
+    .alert .row button { flex:1; background:none; border:none; color:#0a84ff; font-size:17px; padding:12px 0; font-family:var(--sf); cursor:pointer; }
+    .alert .row button + button { border-left:0.5px solid #4a4a56; font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="nav-strip">
+    <a href="login.html">1. Login</a>
+    <a href="permission.html" class="active">2. Camera permission</a>
+    <a href="events.html">3. Events</a>
+    <a href="scanner.html">4. Scanner</a>
+    <a href="attendees.html">5. Attendees</a>
+</div>
+
+<div class="device">
+  <div class="screen">
+    <div class="island"></div>
+    <div class="statusbar"><span>9:41</span><span class="right">▂▄▆█ ᯤ 🔋</span></div>
+
+    <!-- Primer shown before the system prompt (iOS only asks once, so explain first) -->
+    <div class="screen-body" style="justify-content:center;align-items:center;padding:0 32px;text-align:center;">
+        <div style="width:88px;height:88px;border-radius:50%;background:rgba(230,57,80,.12);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <p class="heading" style="font-size:30px;margin:0 0 10px;">CAMERA ACCESS</p>
+        <p style="font-size:16px;color:var(--muted);line-height:1.5;margin:0 0 30px;">Hexlura Scanner uses the camera to read ticket QR codes at the door. Nothing is recorded or saved.</p>
+        <button class="btn" onclick="document.getElementById('sys').style.display='flex'">Continue</button>
+        <p style="font-size:13px;color:var(--footnote);margin-top:16px;">You can also check people in by booking reference.</p>
+    </div>
+    <div class="home-indicator"></div>
+
+    <!-- iOS system permission alert -->
+    <div class="sheet-bg" id="sys" style="display:flex;">
+        <div class="alert">
+            <div class="body">
+                <h3>“Hexlura Scanner” Would Like to Access the Camera</h3>
+                <p>Used to scan attendee ticket QR codes at the door.</p>
+            </div>
+            <div class="row">
+                <button onclick="window.location.href='events.html'">Don’t Allow</button>
+                <button onclick="window.location.href='events.html'">OK</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

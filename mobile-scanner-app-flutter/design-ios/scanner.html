@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexlura Scanner iOS — Scan</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+    .viewfinder {
+        position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden;
+        background: #000 radial-gradient(circle at center, #1a1a24 0%, #000 100%);
+    }
+    .viewfinder .frame {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 68%; height: 68%; border: 2px solid var(--success); border-radius: 14px;
+        box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+    }
+    .corner { position: absolute; width: 24px; height: 24px; }
+    .c1 { top:-2px; left:-2px; border-top:4px solid var(--accent); border-left:4px solid var(--accent); border-top-left-radius:10px; }
+    .c2 { top:-2px; right:-2px; border-top:4px solid var(--accent); border-right:4px solid var(--accent); border-top-right-radius:10px; }
+    .c3 { bottom:-2px; left:-2px; border-bottom:4px solid var(--accent); border-left:4px solid var(--accent); border-bottom-left-radius:10px; }
+    .c4 { bottom:-2px; right:-2px; border-bottom:4px solid var(--accent); border-right:4px solid var(--accent); border-bottom-right-radius:10px; }
+    .scanline { position:absolute; left:6%; width:88%; height:2px; background:linear-gradient(90deg,transparent,var(--success),transparent); animation:sweep 2.2s ease-in-out infinite; }
+    @keyframes sweep { 0%,100%{top:6%;} 50%{top:94%;} }
+    .torch {
+        position:absolute; right:12px; bottom:12px; width:44px; height:44px; border-radius:50%;
+        background:rgba(0,0,0,.55); border:0.5px solid rgba(255,255,255,.25); color:#fff;
+        display:flex; align-items:center; justify-content:center; z-index:2; cursor:pointer;
+    }
+
+    .overlay { position:absolute; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; padding:28px; z-index:40; }
+    .overlay.show { display:flex; }
+    .result-card { width:100%; max-width:330px; padding:34px 24px; text-align:center; border-radius:22px; }
+    .result-icon { font-size:60px; margin-bottom:12px; line-height:1; }
+    .result-title { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:2px; margin:0 0 10px; }
+    .result-msg { font-size:16px; margin:0; line-height:1.4; }
+
+    .scan-row { display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:0.5px solid var(--border); }
+    .scan-row:last-child { border-bottom:none; }
+    .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .scan-row p { flex:1; font-size:15px; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .scan-row span { font-size:12px; color:var(--muted); }
+
+    .demo-controls { margin-top:20px; background:var(--card); border:1px solid var(--border); padding:14px; border-radius:12px; font-size:11px; }
+    .demo-controls p { margin:0 0 8px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+    .demo-controls .row { display:flex; flex-wrap:wrap; gap:6px; }
+    .demo-controls button { font-size:11px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer; }
+    .demo-controls button:hover { color:var(--text); border-color:var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="nav-strip">
+    <a href="login.html">1. Login</a>
+    <a href="permission.html">2. Camera permission</a>
+    <a href="events.html">3. Events</a>
+    <a href="scanner.html" class="active">4. Scanner</a>
+    <a href="attendees.html">5. Attendees</a>
+</div>
+
+<div class="device">
+  <div class="screen">
+    <div class="island"></div>
+    <div class="statusbar"><span>9:41</span><span class="right">▂▄▆█ ᯤ 🔋</span></div>
+
+    <div class="navbar">
+        <button class="back" onclick="window.location.href='events.html'">
+            <svg viewBox="0 0 12 20" width="12" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 2 2 10 10 18"/></svg>
+            Events
+        </button>
+        <div class="title"><p class="heading" style="font-size:17px;">Neon Nights — Warehouse 24</p></div>
+        <div class="actions">
+            <button class="nav-icon" onclick="window.location.href='attendees.html'" title="Attendees">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="subheader">
+        <p style="font-size:12px;color:var(--muted);margin:0;">Sat 15 Aug · 9:30 PM doors</p>
+        <p style="font-size:13px;margin:0;"><span class="heading" style="font-size:18px;">184</span> <span style="color:var(--muted);">of 260 in</span></p>
+    </div>
+    <div style="height:3px;background:var(--border);flex-shrink:0;"><div style="height:100%;width:70%;background:var(--accent);"></div></div>
+
+    <div id="offlineBanner" style="display:none;flex-shrink:0;background:rgba(245,166,35,.12);border-bottom:0.5px solid var(--warning);padding:9px 18px;font-size:13px;color:var(--warning);align-items:center;justify-content:space-between;">
+        <span>⚠ Offline — scans saved locally</span><span style="font-weight:700;">3 queued</span>
+    </div>
+
+    <div class="screen-body" style="padding:16px;">
+        <div class="viewfinder">
+            <div class="frame">
+                <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+                <div class="scanline"></div>
+            </div>
+            <div class="torch" title="Torch">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:13px;color:var(--muted);margin:10px 0 16px;">Point camera at attendee QR code</p>
+
+        <div class="group" style="padding:14px;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 8px;">Enter booking ref manually</p>
+            <div style="display:flex;gap:8px;">
+                <input class="input" style="flex:1;" placeholder="HXL-XXXXXX" autocapitalize="characters">
+                <button class="btn btn-secondary btn-small" style="height:46px;">Search</button>
+            </div>
+        </div>
+
+        <div class="group" style="margin-top:16px;">
+            <div style="padding:11px 16px;border-bottom:0.5px solid var(--border);">
+                <p style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0;">Recent Scans (4)</p>
+            </div>
+            <div class="scan-row"><div class="dot" style="background:var(--success)"></div><p>Aisha Bello — General Admission</p><span>10:42:03</span></div>
+            <div class="scan-row"><div class="dot" style="background:var(--accent)"></div><p style="color:var(--accent)">Already checked in at 10:12 PM</p><span>10:41:47</span></div>
+            <div class="scan-row"><div class="dot" style="background:var(--success)"></div><p>Marcus Reid — VIP</p><span>10:41:02</span></div>
+            <div class="scan-row"><div class="dot" style="background:var(--success)"></div><p>Tola Adeyemi — General Admission</p><span>10:40:38</span></div>
+        </div>
+
+        <div class="demo-controls">
+            <p>Preview scan result (design review only)</p>
+            <div class="row">
+                <button onclick="showResult('SUCCESS')">Success</button>
+                <button onclick="showResult('ALREADY_SCANNED')">Already Scanned</button>
+                <button onclick="showResult('WRONG_EVENT')">Wrong Event</button>
+                <button onclick="showResult('TOO_EARLY')">Too Early</button>
+                <button onclick="showResult('CANCELLED_TICKET')">Cancelled</button>
+                <button onclick="showResult('INVALID')">Invalid</button>
+                <button onclick="hideResult()">Dismiss</button>
+                <button onclick="toggleOffline()">Toggle Offline Banner</button>
+            </div>
+        </div>
+    </div>
+    <div class="home-indicator"></div>
+
+    <div id="resultOverlay" class="overlay" onclick="hideResult()">
+        <div id="resultCard" class="result-card">
+            <div id="resultIcon" class="result-icon">✓</div>
+            <p id="resultTitle" class="result-title">CHECK IN SUCCESSFUL</p>
+            <p id="resultMsg" class="result-msg">Welcome! Checked in successfully</p>
+            <div id="resultDetail" style="font-size:15px;margin-top:16px;padding-top:16px;border-top:1px solid currentColor;opacity:.85;">
+                <p style="margin:0 0 2px;font-weight:600;">Aisha Bello</p>
+                <p style="margin:0;">General Admission</p>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STATES = {
+    SUCCESS:          { bg:'rgba(0,229,160,0.12)', border:'#00E5A0', color:'#00E5A0', icon:'✓', title:'CHECK IN SUCCESSFUL', msg:'Welcome! Checked in successfully', detail:true },
+    ALREADY_SCANNED:  { bg:'rgba(230,57,80,0.12)', border:'#E63950', color:'#E63950', icon:'✗', title:'ALREADY CHECKED IN', msg:'Already checked in at 10:12 PM on 15 Aug 2026', detail:false },
+    WRONG_EVENT:      { bg:'rgba(230,57,80,0.12)', border:'#E63950', color:'#E63950', icon:'✗', title:'WRONG EVENT', msg:'This ticket is for Sunday Rooftop Sessions, not this event', detail:false },
+    TOO_EARLY:        { bg:'rgba(245,166,35,0.12)', border:'#F5A623', color:'#F5A623', icon:'⚠', title:'TOO EARLY', msg:'Check-in opens at 9:30 PM', detail:false },
+    CANCELLED_TICKET: { bg:'rgba(230,57,80,0.12)', border:'#E63950', color:'#E63950', icon:'✗', title:'TICKET CANCELLED', msg:'Ticket cancelled — refund was issued', detail:false },
+    INVALID:          { bg:'rgba(230,57,80,0.12)', border:'#E63950', color:'#E63950', icon:'✗', title:'INVALID TICKET', msg:'Invalid ticket — not found in system', detail:false },
+};
+function showResult(code) {
+    const s = STATES[code], card = document.getElementById('resultCard');
+    card.style.background = s.bg; card.style.border = `1px solid ${s.border}`; card.style.color = s.color;
+    document.getElementById('resultIcon').textContent = s.icon;
+    document.getElementById('resultTitle').textContent = s.title;
+    document.getElementById('resultMsg').textContent = s.msg;
+    document.getElementById('resultDetail').style.display = s.detail ? 'block' : 'none';
+    document.getElementById('resultOverlay').classList.add('show');
+}
+function hideResult() { document.getElementById('resultOverlay').classList.remove('show'); }
+function toggleOffline() {
+    const el = document.getElementById('offlineBanner');
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+</script>
+</body>
+</html>

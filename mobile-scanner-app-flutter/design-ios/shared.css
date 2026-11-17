@@ -1,0 +1,133 @@
+/* Hexlura Door Staff Scanner — iOS mockup tokens
+   Same palette as ../design/shared.css (Android). iOS-specific: iPhone frame
+   with Dynamic Island, system font, large-title nav, rounded controls,
+   home indicator. Design review only — not shipped UI. */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono&display=swap');
+
+:root {
+    --bg: #0A0A0F;
+    --surface: #13131A;
+    --card: #1A1A24;
+    --border: #2A2A3A;
+    --text: #F0F0F8;
+    --muted: #8888AA;
+    --accent: #E63950;
+    --accent-dim: #7a1a26;
+    --success: #00E5A0;
+    --warning: #F5A623;
+    --footnote: #555570;
+    --sf: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    margin: 0;
+    font-family: var(--sf);
+    background: #050508;
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+    min-height: 100vh;
+}
+
+.heading { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
+
+/* iPhone 15 Pro-style frame (393 x 852 pt) */
+.device {
+    width: 393px;
+    max-width: 100%;
+    background: #1c1c22;
+    border-radius: 56px;
+    padding: 11px;
+    box-shadow: 0 0 0 2px #2c2c34, 0 30px 80px rgba(0,0,0,0.65);
+}
+.screen {
+    background: var(--bg);
+    border-radius: 46px;
+    overflow: hidden;
+    height: 852px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 34px; background: #000; border-radius: 20px; z-index: 50;
+}
+.statusbar {
+    height: 54px; flex-shrink: 0;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 34px 8px 38px;
+    font-size: 16px; font-weight: 600; color: var(--text);
+}
+.statusbar .right { display: flex; gap: 6px; align-items: center; }
+.home-indicator {
+    flex-shrink: 0; height: 28px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px;
+}
+.home-indicator::after { content: ''; width: 134px; height: 5px; border-radius: 3px; background: rgba(240,240,248,0.85); }
+
+.screen-body {
+    flex: 1; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: none;
+}
+.screen-body::-webkit-scrollbar { display: none; }
+.scroll-row { scrollbar-width: none; }
+.scroll-row::-webkit-scrollbar { display: none; }
+
+/* iOS navigation bar: back chevron + label on the left, centred/inline title, actions right */
+.navbar {
+    flex-shrink: 0; background: rgba(19,19,26,0.92); border-bottom: 0.5px solid var(--border);
+    padding: 6px 12px 8px; display: flex; align-items: center; gap: 8px; min-height: 44px;
+}
+.navbar .back {
+    display: flex; align-items: center; gap: 2px; color: var(--accent);
+    font-size: 17px; background: none; border: none; padding: 6px 4px; cursor: pointer; font-family: var(--sf);
+}
+.navbar .title { flex: 1; min-width: 0; text-align: center; }
+.navbar .title.left { text-align: left; }
+.navbar .title p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.navbar .actions { display: flex; gap: 6px; min-width: 44px; justify-content: flex-end; }
+.nav-icon {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    background: none; border: none; color: var(--accent); cursor: pointer; border-radius: 50%;
+}
+
+.subheader {
+    flex-shrink: 0; background: var(--surface); border-bottom: 0.5px solid var(--border);
+    padding: 9px 18px; display: flex; align-items: center; justify-content: space-between;
+}
+
+/* iOS-style controls: 14pt radius, 50pt tall primary button */
+.btn {
+    display: block; width: 100%; text-align: center; background: var(--accent); color: #fff; border: none;
+    height: 50px; font-size: 17px; font-weight: 600; border-radius: 14px; cursor: pointer; text-decoration: none;
+    font-family: var(--sf);
+}
+.btn:active { opacity: .8; }
+.btn-secondary { background: var(--card); border: 0.5px solid var(--border); color: var(--text); }
+.btn-small { height: 36px; font-size: 15px; padding: 0 16px; width: auto; border-radius: 10px; }
+
+.input {
+    width: 100%; background: var(--bg); border: 0.5px solid var(--border); color: var(--text);
+    height: 46px; padding: 0 14px; font-size: 17px; border-radius: 12px; outline: none; font-family: var(--sf);
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--footnote); }
+.label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px 4px; }
+
+.group { background: var(--card); border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+
+/* iOS switch */
+.switch { width: 51px; height: 31px; border-radius: 16px; background: var(--accent); position: relative; flex-shrink: 0; }
+.switch::after { content: ''; position: absolute; top: 2px; right: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+
+.nav-strip {
+    position: fixed; top: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px;
+    background: #13131A; border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: 12px; z-index: 100;
+}
+.nav-strip a { color: var(--muted); text-decoration: none; padding: 4px 6px; border-radius: 4px; }
+.nav-strip a.active { color: var(--text); background: var(--accent); }
+.nav-strip a:hover { color: var(--text); }
+@media (max-width: 700px) { .nav-strip { position: static; flex-direction: row; flex-wrap: wrap; margin-bottom: 12px; } body { flex-direction: column; align-items: center; } }

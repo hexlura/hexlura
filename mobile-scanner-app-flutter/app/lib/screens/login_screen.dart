@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _password = TextEditingController();
   bool _loading = false;
   bool _googleLoading = false;
+  bool _appleLoading = false;
   String _error = '';
 
   Future<void> _submit() async {
@@ -44,6 +46,20 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() {
       _googleLoading = false;
+      if (err != null) _error = err;
+    });
+  }
+
+  Future<void> _appleSignIn() async {
+    setState(() {
+      _appleLoading = true;
+      _error = '';
+    });
+    final auth = context.read<AuthController>();
+    final err = await auth.signInWithApple();
+    if (!mounted) return;
+    setState(() {
+      _appleLoading = false;
       if (err != null) _error = err;
     });
   }
@@ -112,6 +128,42 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      // App Store rule 4.8: Apple must be offered alongside Google, iOS only.
+                      if (Platform.isIOS) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _appleLoading ? null : _appleSignIn,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              disabledBackgroundColor: Colors.white70,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_appleLoading)
+                                  const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                                  )
+                                else
+                                  const Icon(Icons.apple, size: 22, color: Colors.black),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _appleLoading ? 'Connecting to Apple...' : 'Sign in with Apple',
+                                  style: AppText.body(size: 14, weight: FontWeight.w600, color: Colors.black),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(

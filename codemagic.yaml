@@ -1,0 +1,70 @@
+# Codemagic CI — Hexlura Scanner (Flutter) iOS build -> TestFlight.
+# Manual start only (no automatic triggers): this repo's `main` auto-deploys the
+# website, so builds of the scanner app should never fire on every push.
+#
+# One-time setup in the Codemagic UI (none of this is stored in git):
+#   1. Teams > Integrations > App Store Connect: add an API key
+#      (Users and Access > Integrations > App Store Connect API in Apple's portal,
+#      role "App Manager"), and name the integration exactly as below.
+#   2. Code signing identities: let Codemagic generate the distribution certificate
+#      and provisioning profile for bundle ID com.hexlura.scanner (or upload ours).
+#   3. Environment variable group "scanner_ios": APP_STORE_APPLE_ID = the numeric
+#      Apple ID of the app record created in App Store Connect.
+
+workflows:
+  scanner-ios-release:
+    name: Hexlura Scanner iOS (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: mobile-scanner-app-flutter/app
+
+    integrations:
+      app_store_connect: Hexlura App Store Connect
+
+    environment:
+      flutter: 3.38.5          # same version the Android release workflow uses
+      xcode: latest
+      cocoapods: default
+      groups:
+        - scanner_ios
+      vars:
+        BUNDLE_ID: com.hexlura.scanner
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.hexlura.scanner
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+
+      - name: Static analysis
+        script: flutter analyze lib
+
+      - name: Apply signing profiles to the Xcode project
+        script: xcode-project use-profiles
+
+      - name: Next build number (latest TestFlight build + 1)
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
+          echo "NEXT_BUILD_NUMBER=$((LATEST + 1))" >> $CM_ENV
+
+      - name: Build signed IPA
+        script: |
+          flutter build ipa --release \
+            --build-number=$NEXT_BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # Internal testers only for now: no Beta App Review needed, builds appear within minutes.

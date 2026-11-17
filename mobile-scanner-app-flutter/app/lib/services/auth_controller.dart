@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config.dart';
 import 'supabase_service.dart';
@@ -102,6 +105,45 @@ class AuthController extends ChangeNotifier {
     return _pendingSignIn!.future.timeout(
       const Duration(seconds: 60),
       onTimeout: () => null, // user likely cancelled the browser flow
+    );
+  }
+
+  /// Native Sign in with Apple (iOS only). Apple returns an identity token that
+  /// Supabase verifies directly — no browser redirect. The raw nonce stays on
+  /// the device; Apple only sees its SHA-256, and Supabase checks they match,
+  /// which stops a captured token being replayed. Door-staff access is then
+  /// verified in the onAuthStateChange listener, same as every other path.
+  Future<String?> signInWithApple() async {
+    _pendingSignIn = Completer<String?>();
+    try {
+      final rawNonce = supabase.auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+        nonce: hashedNonce,
+      );
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        _pendingSignIn = null;
+        return 'Apple sign-in failed. Please try again.';
+      }
+      await supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      _pendingSignIn = null;
+      if (e.code == AuthorizationErrorCode.canceled) return null; // user dismissed the sheet
+      return 'Apple sign-in failed. Please try again.';
+    } on AuthException catch (e) {
+      _pendingSignIn = null;
+      return e.message;
+    }
+    return _pendingSignIn!.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => 'Sign-in timed out. Please try again.',
     );
   }
 
