@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isGuestCheckoutEnabled, GUEST_CHECKOUT_DISABLED_MESSAGE } from '@/lib/guest-checkout'
 
 // How long tickets stay held while the buyer completes checkout. Keep in sync with the
 // "Checkout session" duration on the Cookies page.
@@ -21,6 +22,12 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return NextResponse.json({ success: false, message: 'Not authenticated' }, { status: 401 })
+    }
+
+    // Guest (anonymous-auth) checkout can be switched off by an admin — enforce it
+    // here too so a direct API call can't take a ticket hold.
+    if (user.is_anonymous && !(await isGuestCheckoutEnabled())) {
+        return NextResponse.json({ success: false, message: GUEST_CHECKOUT_DISABLED_MESSAGE }, { status: 403 })
     }
 
     const adminClient = createAdminClient()

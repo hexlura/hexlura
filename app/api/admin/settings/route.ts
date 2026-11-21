@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         'whatsapp_number',
         'whatsapp_message',
         'whatsapp_floating',
+        'guest_checkout_enabled',
     ] as const
 
     if (!VALID_SETTING_KEYS.includes(key as typeof VALID_SETTING_KEYS[number])) {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     const NUMERIC_KEYS = ['booking_fee_percent', 'booking_fee_min_pence', 'booking_fee_max_pence', 'order_processing_fee_pence', 'max_featured_slots', 'payout_cooldown_days']
-    const BOOLEAN_KEYS = ['maintenance_mode', 'auto_approve_organisers', 'stripe_connect_enabled', 'home_theme_particles', 'whatsapp_floating']
+    const BOOLEAN_KEYS = ['maintenance_mode', 'auto_approve_organisers', 'stripe_connect_enabled', 'home_theme_particles', 'whatsapp_floating', 'guest_checkout_enabled']
 
     if (NUMERIC_KEYS.includes(key)) {
         const num = Number(value)

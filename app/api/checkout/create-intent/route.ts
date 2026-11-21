@@ -10,6 +10,7 @@ import { checkoutLimiter, checkoutUserLimiter, getIP } from '@/lib/rate-limit'
 import { autoFollowOrganiser } from '@/lib/auto-follow'
 import { computeEligiblePence, type PromoCartLine } from '@/lib/promo-eligibility'
 import { isDeductionActive } from '@/lib/promoter-commission'
+import { isGuestCheckoutEnabled, GUEST_CHECKOUT_DISABLED_MESSAGE } from '@/lib/guest-checkout'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -54,6 +55,12 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    // Guest (anonymous-auth) checkout can be switched off by an admin. Enforced here
+    // as well as in the UI so a direct API call can't bypass it.
+    if (user.is_anonymous && !(await isGuestCheckoutEnabled())) {
+        return NextResponse.json({ error: GUEST_CHECKOUT_DISABLED_MESSAGE }, { status: 403 })
     }
 
     const { success: userOk } = checkoutUserLimiter(user.id)

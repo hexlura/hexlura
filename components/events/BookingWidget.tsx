@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Event, TicketType } from '@/types';
 import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents';
+import { fetchGuestCheckoutEnabled } from '@/lib/guest-checkout-client';
 import { formatPence, calculateBookingFeePerTicket, type FeeConfig } from '@/lib/fees';
 
 type GroupTicketType = TicketType & { is_group?: boolean; group_size?: number };
@@ -29,6 +30,9 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
     // Shown in place of the CTA when the visitor has no session — choose to continue as
     // guest (silent Supabase anonymous auth) or log in before the ticket hold is reserved.
     const [showAuthChoice, setShowAuthChoice] = useState(false);
+    // Admin switch (platform_settings.guest_checkout_enabled). Off by default; only
+    // read when the auth choice is about to be shown.
+    const [guestEnabled, setGuestEnabled] = useState(false);
     const widgetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -139,16 +143,22 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
 
-        if (!session) {
-            setCheckoutLoading(false);
-            setShowAuthChoice(true);
-            return;
+        // No session, or a leftover guest session: guests are only let through while the
+        // admin switch is on. Otherwise the buyer must log in / register.
+        if (!session || session.user.is_anonymous) {
+            const guestOk = await fetchGuestCheckoutEnabled();
+            if (!session || !guestOk) {
+                setGuestEnabled(guestOk);
+                setCheckoutLoading(false);
+                setShowAuthChoice(true);
+                return;
+            }
         }
 
         await reserveAndGoToCheckout();
     }
 
-    function logInInstead() {
+    function saveSelectionAndGo(path: '/auth/login' | '/auth/register') {
         const returnUrl = window.location.pathname;
         const eventSlug = returnUrl.split('/events/')[1];
         localStorage.setItem('hexlura_pending_checkout', JSON.stringify({
@@ -157,7 +167,15 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
             tickets: selectedTickets,
             returnUrl,
         }));
-        router.push(`/auth/login?next=${encodeURIComponent(returnUrl)}`);
+        router.push(`${path}?next=${encodeURIComponent(returnUrl)}`);
+    }
+
+    function logInInstead() {
+        saveSelectionAndGo('/auth/login');
+    }
+
+    function createAccountInstead() {
+        saveSelectionAndGo('/auth/register');
     }
 
     async function continueAsGuest() {
@@ -386,13 +404,22 @@ export default function BookingWidget({ event, ticketTypes, initialQuantities, f
 
             {showAuthChoice ? (
                 <div className="flex flex-col gap-2">
-                    <p className="text-[13px] text-muted text-center">How would you like to continue?</p>
-                    <button className={cta} disabled={checkoutLoading} onClick={continueAsGuest}>
-                        {checkoutLoading ? 'Starting...' : 'Continue as Guest'}
-                    </button>
-                    <button className={ghostCta} disabled={checkoutLoading} onClick={logInInstead}>
+                    <p className="text-[13px] text-muted text-center">
+                        {guestEnabled ? 'How would you like to continue?' : 'Log in or create an account to buy tickets.'}
+                    </p>
+                    {guestEnabled && (
+                        <button className={cta} disabled={checkoutLoading} onClick={continueAsGuest}>
+                            {checkoutLoading ? 'Starting...' : 'Continue as Guest'}
+                        </button>
+                    )}
+                    <button className={guestEnabled ? ghostCta : cta} disabled={checkoutLoading} onClick={logInInstead}>
                         Log In to My Account
                     </button>
+                    {!guestEnabled && (
+                        <button className={ghostCta} disabled={checkoutLoading} onClick={createAccountInstead}>
+                            Create an Account
+                        </button>
+                    )}
                 </div>
             ) : (
                 <button className={cta} disabled={!hasSelectedTickets || checkoutLoading} onClick={handleCheckout}>

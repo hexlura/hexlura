@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useCheckout } from '@/lib/checkout-context'
 import { createClient } from '@/lib/supabase/client'
 import { formatPence } from '@/lib/fees'
+import { fetchGuestCheckoutEnabled } from '@/lib/guest-checkout-client'
 import StepPayment from './step-payment'
 import { MetaPixelInitiateCheckout } from '@/components/analytics/MetaPixelEvents'
 
@@ -22,6 +23,8 @@ export default function CheckoutFlow() {
     // (silent Supabase anonymous auth) or log in to an existing account.
     const [needsAuthChoice, setNeedsAuthChoice] = useState(false)
     const [startingGuest, setStartingGuest] = useState(false)
+    // Admin switch (platform_settings.guest_checkout_enabled) — off by default.
+    const [guestEnabled, setGuestEnabled] = useState(false)
     // Set once when event data loads — whether to show the attendee-details form.
     // Derived from state.attendeeDetails.email would flicker the form away as soon
     // as the guest starts typing their email, so this is captured once at load time.
@@ -178,7 +181,14 @@ export default function CheckoutFlow() {
         async function init() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
+            // A leftover guest session only proceeds while guest checkout is switched on.
+            if (user && !user.is_anonymous) {
+                await loadEventData()
+                return
+            }
+            const guestOk = await fetchGuestCheckoutEnabled()
+            setGuestEnabled(guestOk)
+            if (user && guestOk) {
                 await loadEventData()
             } else {
                 setNeedsAuthChoice(true)
@@ -208,6 +218,11 @@ export default function CheckoutFlow() {
     function logInInstead() {
         const next = `/checkout?${searchParams.toString()}`
         router.push(`/auth/login?next=${encodeURIComponent(next)}`)
+    }
+
+    function createAccountInstead() {
+        const next = `/checkout?${searchParams.toString()}`
+        router.push(`/auth/register?next=${encodeURIComponent(next)}`)
     }
 
     const detailsValid = !needsDetailsForm || (
@@ -242,25 +257,40 @@ export default function CheckoutFlow() {
                 <div className="bg-card rounded-3xl border border-border shadow-card p-8 space-y-6">
                     <div>
                         <h1 className="font-heading text-3xl tracking-wide mb-1">CHECKOUT</h1>
-                        <p className="text-muted text-sm">How would you like to continue?</p>
+                        <p className="text-muted text-sm">
+                            {guestEnabled ? 'How would you like to continue?' : 'Log in or create an account to buy tickets.'}
+                        </p>
                     </div>
                     <div className="space-y-3">
-                        <button
-                            type="button"
-                            onClick={continueAsGuest}
-                            disabled={startingGuest}
-                            className="w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none"
-                        >
-                            {startingGuest ? 'Starting...' : 'Continue as Guest'}
-                        </button>
+                        {guestEnabled && (
+                            <button
+                                type="button"
+                                onClick={continueAsGuest}
+                                disabled={startingGuest}
+                                className="w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none"
+                            >
+                                {startingGuest ? 'Starting...' : 'Continue as Guest'}
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={logInInstead}
                             disabled={startingGuest}
-                            className="w-full py-3 rounded-full border border-border text-sm font-semibold hover:bg-background transition disabled:opacity-50"
+                            className={guestEnabled
+                                ? 'w-full py-3 rounded-full border border-border text-sm font-semibold hover:bg-background transition disabled:opacity-50'
+                                : 'w-full py-3 rounded-full bg-accent text-white font-semibold shadow-glow hover:brightness-110 transition disabled:opacity-60 disabled:shadow-none'}
                         >
                             Log In to My Account
                         </button>
+                        {!guestEnabled && (
+                            <button
+                                type="button"
+                                onClick={createAccountInstead}
+                                className="w-full py-3 rounded-full border border-border text-sm font-semibold hover:bg-background transition"
+                            >
+                                Create an Account
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

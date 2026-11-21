@@ -45,6 +45,8 @@ export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
     // Payout settings
     const [payoutCooldown, setPayoutCooldown] = useState(settings['payout_cooldown_days'] ?? '2')
     const [stripeConnectEnabled, setStripeConnectEnabled] = useState(settings['stripe_connect_enabled'] === 'true')
+    // Off unless explicitly 'true' — matches lib/guest-checkout.ts (missing row = disabled).
+    const [guestCheckoutEnabled, setGuestCheckoutEnabled] = useState(settings['guest_checkout_enabled'] === 'true')
 
     // Analytics settings
     const [metaPixelId, setMetaPixelId] = useState(settings['meta_pixel_id'] ?? '')
@@ -127,6 +129,19 @@ export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
             router.refresh()
         } catch (e) {
             showFeedback('homepage', `Error: ${(e as Error).message}`)
+        } finally {
+            setSaving(null)
+        }
+    }
+
+    async function handleSaveCheckout() {
+        setSaving('checkout')
+        try {
+            await saveSetting('guest_checkout_enabled', guestCheckoutEnabled ? 'true' : 'false')
+            showFeedback('checkout', 'Checkout settings saved')
+            router.refresh()
+        } catch (e) {
+            showFeedback('checkout', `Error: ${(e as Error).message}`)
         } finally {
             setSaving(null)
         }
@@ -308,6 +323,34 @@ export function SettingsClient({ settings, promoCodes, autoSeason }: Props) {
                         {saving === 'homepage' ? 'Saving...' : 'Save Homepage Settings'}
                     </Button>
                     <SaveFeedback message={feedback.homepage ?? null} />
+                </div>
+            </div>
+
+            {/* Checkout */}
+            <div className={sectionClass}>
+                <h2 className="text-sm font-medium text-text mb-4">Checkout</h2>
+                <div className="flex items-center justify-between mb-4 py-3 border-y border-border">
+                    <div>
+                        <p className="text-sm text-text">Allow guest checkout</p>
+                        <p className="text-xs text-muted">
+                            Off: buyers must log in or create an account to buy tickets. On: they can also continue as a guest.
+                            Existing guest bookings are not affected.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setGuestCheckoutEnabled(!guestCheckoutEnabled)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${guestCheckoutEnabled ? 'bg-accent' : 'bg-border'}`}
+                        aria-pressed={guestCheckoutEnabled}
+                        aria-label="Allow guest checkout"
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${guestCheckoutEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Button variant="primary" size="md" onClick={handleSaveCheckout} disabled={saving === 'checkout'}>
+                        {saving === 'checkout' ? 'Saving...' : 'Save Checkout Settings'}
+                    </Button>
+                    <SaveFeedback message={feedback.checkout ?? null} />
                 </div>
             </div>
 
