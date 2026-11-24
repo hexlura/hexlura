@@ -101,18 +101,12 @@ export async function POST(req: NextRequest) {
 
                     if (bookingItems) {
                         for (const item of bookingItems) {
-                            const { data: tt } = await supabase
-                                .from('ticket_types')
-                                .select('quantity_sold')
-                                .eq('id', item.ticket_type_id)
-                                .single()
-
-                            if (tt) {
-                                await supabase
-                                    .from('ticket_types')
-                                    .update({ quantity_sold: Math.max(0, tt.quantity_sold - item.quantity) })
-                                    .eq('id', item.ticket_type_id)
-                            }
+                            // One atomic statement so concurrent releases/sales can't overwrite each other
+                            const { error: relErr } = await supabase.rpc('release_quantity_sold', {
+                                p_ticket_type_id: item.ticket_type_id,
+                                p_quantity: item.quantity,
+                            })
+                            if (relErr) console.error(`Failed to release stock for ${item.ticket_type_id}:`, relErr.message)
                         }
                     }
 
@@ -546,20 +540,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         }
     }
 
-    // Increment promo code usage
+    // Increment promo code usage — one atomic statement; payment already taken, so cap not enforced
     if (promoCodeId) {
-        const { data: promo } = await supabase
-            .from('promo_codes')
-            .select('uses_count')
-            .eq('id', promoCodeId)
-            .single()
-
-        if (promo) {
-            await supabase
-                .from('promo_codes')
-                .update({ uses_count: promo.uses_count + 1 })
-                .eq('id', promoCodeId)
-        }
+        const { error: promoErr } = await supabase.rpc('redeem_promo_code', { p_promo_id: promoCodeId, p_enforce_cap: false })
+        if (promoErr) console.error(`Promo usage count failed for ${promoCodeId}:`, promoErr.message)
     }
 
     // Platform model: destination charge already split funds at charge time. Only do

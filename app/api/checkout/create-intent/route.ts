@@ -293,6 +293,51 @@ export async function POST(request: NextRequest) {
     if (ticketSubtotalPence - discountPence === 0) {
         const adminClient = createAdminClient()
 
+        // Claim stock and the promo use FIRST, each in one atomic statement, so two people grabbing
+        // the last free ticket (or the last use of a capped code) at the same moment can't both win.
+        // Anything claimed is given back if a later step fails.
+        const claimedStock: { ticket_type_id: string; quantity: number }[] = []
+        let promoClaimed = false
+        const releaseClaims = async () => {
+            for (const c of claimedStock) {
+                const { error } = await adminClient.rpc('release_quantity_sold', { p_ticket_type_id: c.ticket_type_id, p_quantity: c.quantity })
+                if (error) console.error('Free booking: failed to release stock after error:', error.message)
+            }
+            if (promoClaimed && promoCodeId) {
+                const { error } = await adminClient.rpc('unredeem_promo_code', { p_promo_id: promoCodeId })
+                if (error) console.error('Free booking: failed to release promo use after error:', error.message)
+            }
+        }
+
+        for (const item of items) {
+            const { data: ok, error: stockErr } = await adminClient.rpc('increment_quantity_sold', {
+                p_ticket_type_id: item.ticket_type_id,
+                p_quantity: item.quantity,
+            })
+            if (stockErr || ok !== true) {
+                await releaseClaims()
+                if (stockErr) console.error('Free booking: stock claim failed:', stockErr.message)
+                return NextResponse.json(
+                    { error: stockErr ? 'Could not reserve your tickets. Please try again.' : 'Sorry, these tickets just sold out' },
+                    { status: stockErr ? 500 : 409 }
+                )
+            }
+            claimedStock.push(item)
+        }
+
+        if (promoCodeId) {
+            const { data: ok, error: promoErr } = await adminClient.rpc('redeem_promo_code', { p_promo_id: promoCodeId, p_enforce_cap: true })
+            if (promoErr || ok !== true) {
+                await releaseClaims()
+                if (promoErr) console.error('Free booking: promo claim failed:', promoErr.message)
+                return NextResponse.json(
+                    { error: promoErr ? 'Could not apply your promo code. Please try again.' : 'This promo code has been fully used.' },
+                    { status: promoErr ? 500 : 409 }
+                )
+            }
+            promoClaimed = true
+        }
+
         const { data: booking, error: bookingError } = await adminClient
             .from('bookings')
             .insert({
@@ -317,19 +362,13 @@ export async function POST(request: NextRequest) {
             .single()
 
         if (bookingError || !booking) {
+            await releaseClaims()
             return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
         }
 
-        // Record redemption so max_uses (and max_uses_per_customer) are enforced on future checkouts
+        // Record the redemption (uses_count was already claimed atomically above) so
+        // max_uses_per_customer is enforced on future checkouts.
         if (promoCodeId) {
-            const { data: promo } = await adminClient
-                .from('promo_codes').select('uses_count').eq('id', promoCodeId).single()
-            if (promo) {
-                await adminClient
-                    .from('promo_codes')
-                    .update({ uses_count: promo.uses_count + 1 })
-                    .eq('id', promoCodeId)
-            }
             await adminClient.from('promo_code_redemptions').insert({
                 promo_code_id: promoCodeId,
                 booking_id: booking.id,
@@ -366,24 +405,11 @@ export async function POST(request: NextRequest) {
                 })
                 if (insertErr) {
                     console.error('Failed to insert booking_item:', insertErr.message)
-                    throw new Error(`booking_item insert failed: ${insertErr.message}`)
+                    // Don't leave a half-made free booking holding stock.
+                    await adminClient.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id)
+                    await releaseClaims()
+                    return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
                 }
-            }
-
-            const { error: rpcError } = await adminClient.rpc('increment_quantity_sold', {
-                p_ticket_type_id: item.ticket_type_id,
-                p_quantity: item.quantity,
-            })
-            if (rpcError) {
-                const { data: current } = await adminClient
-                    .from('ticket_types')
-                    .select('quantity_sold')
-                    .eq('id', item.ticket_type_id)
-                    .single()
-                await adminClient
-                    .from('ticket_types')
-                    .update({ quantity_sold: (current?.quantity_sold ?? 0) + item.quantity })
-                    .eq('id', item.ticket_type_id)
             }
         }
 
