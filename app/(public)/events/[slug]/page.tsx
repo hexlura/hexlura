@@ -2,6 +2,7 @@ import React from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { sanitizeRichText } from '@/lib/sanitize-html';
 import BookingWidget from '@/components/events/BookingWidget';
 import ShareButton from '@/components/events/ShareButton';
 import EventQRButton from '@/components/events/EventQRButton';
@@ -290,7 +291,7 @@ export default async function EventDetailPage({ params }: { params: { slug: stri
                             {event.description ? (
                                 <div
                                     className="text-sm text-muted leading-relaxed [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_h2]:font-heading [&_h2]:text-xl [&_h2]:text-text [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:text-text [&_a]:text-accent [&_a]:underline"
-                                    dangerouslySetInnerHTML={{ __html: event.description }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(event.description) }}
                                 />
                             ) : (
                                 <p className="text-sm text-muted">No description provided.</p>

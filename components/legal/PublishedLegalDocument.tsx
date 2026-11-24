@@ -1,3 +1,4 @@
+import { sanitizeRichText } from '@/lib/sanitize-html'
 import type { LegalDocument } from '@/lib/legal'
 
 // Renders an admin-published legal document on the public site.
@@ -19,7 +20,7 @@ export function PublishedLegalDocument({ doc, title }: { doc: LegalDocument; tit
             <div className="border-t-4 border-accent rounded-full mb-10" style={{ borderTopColor: '#E63950' }} />
             <div
                 className="text-[15px] leading-[1.9] text-muted [&_h2]:font-heading [&_h2]:text-3xl [&_h2]:tracking-wide [&_h2]:text-text [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-[17px] [&_h3]:font-semibold [&_h3]:text-text [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-2 [&_a]:text-accent [&_a]:underline [&_strong]:text-text [&_hr]:my-10 [&_hr]:border-border"
-                dangerouslySetInnerHTML={{ __html: doc.content_html }}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichText(doc.content_html) }}
             />
         </div>
     )

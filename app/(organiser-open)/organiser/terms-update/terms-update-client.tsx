@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FocusShell } from '@/components/layout/FocusShell'
+import { sanitizeRichText } from '@/lib/sanitize-html'
 
 interface Props {
     orgName: string
@@ -72,7 +73,7 @@ export function TermsUpdateClient({ orgName, contentHtml, version }: Props) {
 
                 <div
                     className="max-h-80 overflow-y-auto rounded-2xl border border-border bg-background p-5 mb-6 text-sm leading-relaxed text-text [&_h2]:font-heading [&_h2]:text-xl [&_h2]:tracking-wide [&_h2]:text-accent [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_a]:text-accent [&_a]:underline"
-                    dangerouslySetInnerHTML={{ __html: contentHtml }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeRichText(contentHtml) }}
                 />
 
                 <label className="flex items-start gap-3 cursor-pointer mb-6">
