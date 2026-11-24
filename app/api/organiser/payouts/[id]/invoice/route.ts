@@ -1,3 +1,4 @@
+import { escapeHtml } from '@/lib/sanitize-html'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -110,16 +111,16 @@ export async function GET(
     </div>
     <div>
       <h3>To</h3>
-      <p><strong>${organiser?.business_name || organiser?.display_name || '—'}</strong></p>
-      ${organiser?.contact_email ? `<p>${organiser.contact_email}</p>` : ''}
+      <p><strong>${escapeHtml(organiser?.business_name || organiser?.display_name || "—")}</strong></p>
+      ${organiser?.contact_email ? `<p>${escapeHtml(organiser.contact_email)}</p>` : ''}
     </div>
   </div>
 
   <div class="section">
     <h3>Event</h3>
-    <p><strong>${event?.title || '—'}</strong></p>
-    <p>${eventDate}${event?.venue_name ? ' · ' + event.venue_name : ''}</p>
-    ${event?.venue_address ? `<p>${event.venue_address}</p>` : ''}
+    <p><strong>${escapeHtml(event?.title || "—")}</strong></p>
+    <p>${eventDate}${event?.venue_name ? ' · ' + escapeHtml(event.venue_name) : ''}</p>
+    ${event?.venue_address ? `<p>${escapeHtml(event.venue_address)}</p>` : ''}
   </div>
 
   <table>
@@ -134,9 +135,9 @@ export async function GET(
     <tbody>
       <tr>
         <td>Ticket sales net payout</td>
-        <td>${payout.reference || invoiceNumber}</td>
+        <td>${escapeHtml(payout.reference || invoiceNumber)}</td>
         <td>
-          <span class="status-badge status-${payout.status}">${payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}</span>
+          <span class="status-badge status-${escapeHtml(payout.status)}">${payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}</span>
         </td>
         <td class="amount">${netAmount}</td>
       </tr>
