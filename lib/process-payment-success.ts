@@ -241,18 +241,10 @@ export async function processPaymentIntentSucceeded(paymentIntent: Stripe.Paymen
 
     // Increment promo code usage + record the redemption (max_uses_per_customer enforcement)
     if (promoCodeId) {
-        const { data: promo } = await supabase
-            .from('promo_codes')
-            .select('uses_count')
-            .eq('id', promoCodeId)
-            .single()
-
-        if (promo) {
-            await supabase
-                .from('promo_codes')
-                .update({ uses_count: promo.uses_count + 1 })
-                .eq('id', promoCodeId)
-        }
+        // One atomic statement, so concurrent payments can't overwrite each other's count. The payment
+        // already succeeded, so the use is always recorded (cap not enforced here).
+        const { error: promoErr } = await supabase.rpc('redeem_promo_code', { p_promo_id: promoCodeId, p_enforce_cap: false })
+        if (promoErr) console.error(`Promo usage count failed for ${promoCodeId}:`, promoErr.message)
         await supabase.from('promo_code_redemptions').insert({
             promo_code_id: promoCodeId,
             booking_id: booking.id,
