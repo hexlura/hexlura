@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { ThemedSelect } from '@/components/ui/ThemedSelect'
-import { TERMS_VERSION } from '@/lib/terms'
 import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents'
 
 interface ApplyFormProps {
@@ -24,7 +22,7 @@ const ORG_TYPES: { value: OrgType; emoji: string; name: string; description: str
     { value: 'education', emoji: '🎓', name: 'Education', description: 'School, university, training provider or workshop host' },
 ]
 
-export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
+export function ApplyForm({ userEmail }: ApplyFormProps) {
     const router = useRouter()
     const [orgType, setOrgType] = useState<OrgType | null>(null)
     const [orgName, setOrgName] = useState('')
@@ -39,10 +37,6 @@ export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
     const [error, setError] = useState('')
     const [typeError, setTypeError] = useState('')
 
-    function toSlug(name: string) {
-        return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-    }
-
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         if (!orgType) {
@@ -55,39 +49,27 @@ export function ApplyForm({ userId, userEmail, termsVersion }: ApplyFormProps) {
         setError('')
 
         try {
-            const supabase = createClient()
-            const baseSlug = toSlug(orgName)
-            const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
-
-            // Create organiser profile — approved immediately
-            const { error: insertError } = await supabase
-                .from('organiser_profiles')
-                .insert({
-                    user_id: userId,
-                    org_name: orgName,
-                    slug,
+            // The server creates the organiser profile (approved immediately) and promotes the role —
+            // neither can be done from the browser any more.
+            const res = await fetch('/api/organiser/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orgName,
+                    orgType,
                     description,
-                    website: website || null,
-                    vat_registered: vatRegistered,
-                    vat_number: vatRegistered ? vatNumber : null,
-                    organiser_type: orgType,
-                    is_approved: true,
-                    approved_at: new Date().toISOString(),
-                    terms_accepted_at: new Date().toISOString(),
-                    terms_version: termsVersion || TERMS_VERSION,
-                })
-
-            if (insertError) {
-                setError(insertError.message)
+                    website,
+                    vatRegistered,
+                    vatNumber,
+                    agreedTerms,
+                }),
+            })
+            const result = await res.json().catch(() => ({})) as { error?: string }
+            if (!res.ok) {
+                setError(result.error || 'Something went wrong. Please try again.')
                 setSubmitting(false)
                 return
             }
-
-            // Promote role to organiser immediately
-            await supabase
-                .from('profiles')
-                .update({ role: 'organiser' })
-                .eq('id', userId)
 
             // Notify support + send organiser welcome email (both best-effort)
             await Promise.all([

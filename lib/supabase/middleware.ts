@@ -69,6 +69,13 @@ export async function updateSession(request: NextRequest) {
         return redirectTo('/auth/login')
     }
 
+    // Guest (anonymous) sessions are real Supabase sessions that anyone can mint with the public
+    // anon key, so being "logged in" proves nothing. They must never reach privileged APIs.
+    // (24 Nov 2026: guest sessions were promoted to admin and used /api/admin/*.)
+    if (user?.is_anonymous && /^\/api\/(admin|organiser|promoter)(\/|$)/.test(pathname)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // No role checks needed for unauthenticated users on public/auth routes
     if (!user) {
         return supabaseResponse
