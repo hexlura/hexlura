@@ -30,6 +30,7 @@
     "@tiptap/extension-underline": "^3.35.0",
     "@tiptap/react": "^3.35.0",
     "@tiptap/starter-kit": "^3.35.0",
+    "@types/sanitize-html": "^2.16.2",
     "@types/turndown": "^5.0.6",
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
@@ -49,6 +50,7 @@
     "react-email": "^5.2.10",
     "recharts": "^3.8.0",
     "resend": "^6.9.3",
+    "sanitize-html": "^2.18.2",
     "stripe": "^20.4.1",
     "tailwind-merge": "^3.6.0",
     "turndown": "^7.2.4"

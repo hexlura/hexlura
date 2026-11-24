@@ -1,39 +1,54 @@
-import DOMPurify from 'isomorphic-dompurify'
+import sanitize from 'sanitize-html'
 
 // Stored rich text (event descriptions, legal documents) is written by organisers/admins and
 // rendered with dangerouslySetInnerHTML. Organisers write events straight from the browser, so the
 // stored value can be anything — it must be cleaned at render time, every time.
 //
+// Uses sanitize-html (pure JS). isomorphic-dompurify needs jsdom on the server, which fails to load
+// in Vercel serverless functions and took down every page that rendered rich text.
+//
 // The allowlist covers everything the TipTap editor produces (checked against live data).
 
-const ALLOWED_TAGS = [
-    'p', 'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 's', 'span',
-    'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'blockquote', 'a',
-]
-const ALLOWED_ATTR = ['href', 'class', 'style']
-
-let hooked = false
-function ensureLinkHook() {
-    if (hooked) return
-    hooked = true
-    // DOMPurify drops `target`, so set it here: external links open in a new tab (as the editor
-    // intends) without getting a handle on this page.
-    DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-        if (node.tagName === 'A' && /^https?:/i.test(node.getAttribute('href') || '')) {
-            node.setAttribute('target', '_blank')
-            node.setAttribute('rel', 'noopener noreferrer nofollow')
-        }
-    })
+const OPTIONS: sanitize.IOptions = {
+    allowedTags: [
+        'p', 'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 's', 'span',
+        'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'blockquote', 'a',
+    ],
+    allowedAttributes: {
+        '*': ['class', 'style'],
+        a: ['href'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    allowedSchemesAppliedToAttributes: ['href'],
+    allowProtocolRelative: false,
+    // Inline styles only for simple text formatting — no url(), positioning or overlays.
+    allowedStyles: {
+        '*': {
+            'color': [/^#[0-9a-f]{3,8}$/i, /^rgba?\([\d\s.,%]+\)$/i, /^[a-z]+$/i],
+            'background-color': [/^#[0-9a-f]{3,8}$/i, /^rgba?\([\d\s.,%]+\)$/i, /^[a-z]+$/i],
+            'text-align': [/^(left|right|center|justify)$/],
+            'font-weight': [/^(normal|bold|[1-9]00)$/],
+            'font-style': [/^(normal|italic)$/],
+            'text-decoration': [/^[a-z\s-]+$/],
+        },
+    },
+    transformTags: {
+        // External links open in a new tab without getting a handle on this page.
+        a: (tagName, attribs) => {
+            const href = attribs.href || ''
+            if (/^https?:/i.test(href)) {
+                return { tagName, attribs: { ...attribs, target: '_blank', rel: 'noopener noreferrer nofollow' } }
+            }
+            return { tagName, attribs }
+        },
+    },
 }
+// target/rel are only ever set by transformTags above, never taken from the input.
+OPTIONS.allowedAttributes = { ...(OPTIONS.allowedAttributes as Record<string, string[]>), a: ['href', 'target', 'rel'] }
 
 export function sanitizeRichText(html: string | null | undefined): string {
     if (!html) return ''
-    ensureLinkHook()
-    return DOMPurify.sanitize(html, {
-        ALLOWED_TAGS,
-        ALLOWED_ATTR,
-        ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|\/|#)/i,
-    })
+    return sanitize(html, OPTIONS)
 }
 
 /** Escape text for interpolation into a raw HTML string (emails, invoices). */
