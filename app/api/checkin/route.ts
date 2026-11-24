@@ -2,19 +2,10 @@ import { NextResponse, NextRequest } from 'next/server'
 import { getRequestUser } from '@/lib/supabase/getRequestUser'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveDoorStaffContext, isEventAssigned } from '@/lib/checkin/authorize'
-import { checkinLimiter, getIP } from '@/lib/rate-limit'
+import { checkinLimiter } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
     try {
-        const ip = getIP(req)
-        const { success } = checkinLimiter(ip)
-        if (!success) {
-            return NextResponse.json(
-                { error: 'Too many scan attempts. Please slow down.' },
-                { status: 429 }
-            )
-        }
-
         const body = await req.json()
         const { qr_token, booking_ref, booking_item_id, event_id } = body
 
@@ -25,6 +16,15 @@ export async function POST(req: NextRequest) {
         // Auth check — Bearer token (mobile app) or cookie session (web app)
         const user = await getRequestUser(req)
         if (!user) return NextResponse.json({ success: false, message: 'Unauthorized', code: 'INVALID' }, { status: 401 })
+
+        // Per staff member, not per IP: several scanners at one venue share the venue wifi's IP.
+        const { success } = await checkinLimiter(user.id)
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Too many scan attempts. Please slow down.' },
+                { status: 429 }
+            )
+        }
 
         const adminClient = createAdminClient()
 

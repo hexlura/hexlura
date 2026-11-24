@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     // behind the same NAT/office wifi shares it. The per-user check below is the one
     // that caps a single shopper's retries.
     const ip = getIP(request)
-    const { success } = checkoutLimiter(ip)
+    const { success } = await checkoutLimiter(ip)
     if (!success) {
         return NextResponse.json(
             { error: 'Too many requests. Please try again in a moment.' },
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: GUEST_CHECKOUT_DISABLED_MESSAGE }, { status: 403 })
     }
 
-    const { success: userOk } = checkoutUserLimiter(user.id)
+    const { success: userOk } = await checkoutUserLimiter(user.id)
     if (!userOk) {
         return NextResponse.json(
             { error: 'Too many requests. Please try again in a moment.' },

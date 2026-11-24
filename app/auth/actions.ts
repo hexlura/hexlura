@@ -6,6 +6,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendUserWelcomeEmail } from '@/lib/email'
 import { redirect } from 'next/navigation'
 import { safeNextPath } from '@/lib/safe-next'
+import { headers } from 'next/headers'
+import {
+    getIP, loginIpLimiter, loginEmailLimiter, signupIpLimiter,
+    resetIpLimiter, resetEmailLimiter, verifyEmailLimiter,
+} from '@/lib/rate-limit'
+
+const TOO_MANY = 'Too many attempts. Please wait a few minutes and try again.'
+const requestIP = () => getIP({ headers: headers() })
 
 export async function signUp(formData: FormData) {
     const supabase = createClient()
@@ -26,6 +34,10 @@ export async function signUp(formData: FormData) {
 
     if (password !== confirmPassword) {
         return { error: 'Passwords do not match.' }
+    }
+
+    if (!(await signupIpLimiter(requestIP())).success) {
+        return { error: TOO_MANY }
     }
 
     // Safe relative-path check to prevent open redirect
@@ -96,6 +108,13 @@ export async function signIn(formData: FormData) {
 
     if (!email || !password) {
         return { error: 'Email and password are required.' }
+    }
+
+    // Per IP and per account, so one machine can't spray many accounts and many machines
+    // can't hammer one account.
+    const [byIp, byEmail] = await Promise.all([loginIpLimiter(requestIP()), loginEmailLimiter(email.trim())])
+    if (!byIp.success || !byEmail.success) {
+        return { error: TOO_MANY }
     }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -181,6 +200,11 @@ export async function resetPassword(formData: FormData) {
         return { error: 'Email is required.' }
     }
 
+    const [byIp, byEmail] = await Promise.all([resetIpLimiter(requestIP()), resetEmailLimiter(email.trim())])
+    if (!byIp.success || !byEmail.success) {
+        return { error: TOO_MANY }
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/auth/update-password`,
     })
@@ -217,6 +241,10 @@ export async function updatePassword(formData: FormData) {
 
 export async function resendVerificationEmail(email: string, next?: string) {
     const supabase = createClient()
+
+    if (!email || !(await verifyEmailLimiter(email.trim())).success) {
+        return { error: TOO_MANY }
+    }
 
     // Safe relative-path check to prevent open redirect
     const safeNext = safeNextPath(next)
