@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getLatestLegalDocument } from '@/lib/legal'
 import { TERMS_VERSION } from '@/lib/terms'
 import { logAuditAction } from '@/lib/audit'
+import { Resend } from 'resend'
 
 // Organiser sign-up. This used to run in the browser (insert an approved organiser_profiles row,
 // then set profiles.role = 'organiser'), which meant any session could approve itself and promote
@@ -11,6 +12,11 @@ import { logAuditAction } from '@/lib/audit'
 // Behaviour is unchanged for real users: the organiser is approved immediately.
 
 const ORG_TYPES = ['individual', 'artist', 'club_venue', 'event_company', 'charity', 'education']
+const MONTHLY_EVENTS = ['1-2', '3-5', '6-10', '10+']
+
+function esc(value: string): string {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
 
 function toSlug(name: string) {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -122,6 +128,30 @@ export async function POST(request: NextRequest) {
     }
 
     await logAuditAction({ actorId: user.id, action: 'organiser_apply', entityType: 'organiser', entityId: organiserId })
+
+    // Tell support. This used to be a separate, unauthenticated endpoint that put raw form values
+    // into the email HTML; it now runs here, after the checks above, with every value escaped.
+    const role = text(body.role ?? '', 100) || ''
+    const monthlyEvents = MONTHLY_EVENTS.includes(String(body.monthlyEvents)) ? String(body.monthlyEvents) : ''
+    try {
+        const { error: mailErr } = await new Resend(process.env.RESEND_API_KEY || 'placeholder').emails.send({
+            from: 'Hexlura <noreply@hexlura.com>',
+            to: 'support@hexlura.com',
+            subject: `New Organiser Application: ${orgName.replace(/[\r\n]+/g, ' ')}`,
+            html: `
+                <h2>New Organiser Application</h2>
+                <p><strong>Organisation:</strong> ${esc(orgName)}</p>
+                <p><strong>Applicant:</strong> ${esc(user.email || '')}</p>
+                <p><strong>Role:</strong> ${esc(role || 'N/A')}</p>
+                <p><strong>Website:</strong> ${esc(website || 'N/A')}</p>
+                <p><strong>Monthly events:</strong> ${esc(monthlyEvents || 'N/A')}</p>
+                <p><strong>Description:</strong><br>${esc(description || '')}</p>
+            `,
+        })
+        if (mailErr) console.error('Organiser apply: support email failed:', mailErr.message)
+    } catch (err) {
+        console.error('Organiser apply: support email failed:', err)
+    }
 
     return NextResponse.json({ success: true })
 }
