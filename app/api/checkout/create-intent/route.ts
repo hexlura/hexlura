@@ -12,6 +12,7 @@ import { computeEligiblePence, type PromoCartLine } from '@/lib/promo-eligibilit
 import { isDeductionActive } from '@/lib/promoter-commission'
 import { isGuestCheckoutEnabled, GUEST_CHECKOUT_DISABLED_MESSAGE } from '@/lib/guest-checkout'
 import { parseCartLines, maxPerOrder } from '@/lib/checkout-items'
+import { findPromoByCode } from '@/lib/promo-lookup'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -192,11 +193,12 @@ export async function POST(request: NextRequest) {
     let promoCodeId: string | null = null
 
     if (promo_code) {
-        const { data: promo } = await supabase
-            .from('promo_codes')
-            .select('*')
-            .ilike('code', promo_code)
-            .single()
+        const { promo, error: promoError } = await findPromoByCode(promo_code)
+        if (promoError) {
+            // Don't silently charge full price when the code may well be valid.
+            console.error('Promo lookup failed at checkout:', promoError.message)
+            return NextResponse.json({ error: 'Could not apply your promo code. Please try again.' }, { status: 503 })
+        }
 
         if (promo) {
             // A ticket_type_id-scoped code only counts against that ticket type's
