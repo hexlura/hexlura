@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { promoLimiter, getIP } from '@/lib/rate-limit'
 import { computeEligiblePence } from '@/lib/promo-eligibility'
+import { findPromoByCode } from '@/lib/promo-lookup'
 
 interface ValidateRequest {
     code: string
@@ -32,11 +33,11 @@ export async function POST(request: NextRequest) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { data: promo } = await supabase
-        .from('promo_codes')
-        .select('*')
-        .ilike('code', code)
-        .single()
+    const { promo, error: promoError } = await findPromoByCode(code)
+    if (promoError) {
+        console.error('Promo lookup failed:', promoError.message)
+        return NextResponse.json({ valid: false, error: 'Could not check this code. Please try again.' }, { status: 500 })
+    }
 
     if (!promo) {
         return NextResponse.json({ valid: false, error: 'Invalid code' })
