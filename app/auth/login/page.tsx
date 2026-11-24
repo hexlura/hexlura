@@ -4,12 +4,13 @@ import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { safeNextPath } from '@/lib/safe-next'
 import { signIn, signInWithGoogle } from '../actions'
 
 function LoginContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const next = searchParams.get('next') || ''
+    const next = safeNextPath(searchParams.get('next'))
 
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)

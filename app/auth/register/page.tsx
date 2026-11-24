@@ -2,12 +2,13 @@
 
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
+import { safeNextPath } from '@/lib/safe-next'
 import { useSearchParams } from 'next/navigation'
 import { signUp, signInWithGoogle } from '../actions'
 
 function RegisterContent() {
     const searchParams = useSearchParams()
-    const next = searchParams.get('next') || ''
+    const next = safeNextPath(searchParams.get('next'))
 
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)

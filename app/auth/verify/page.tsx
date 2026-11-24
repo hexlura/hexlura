@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import { safeNextPath } from '@/lib/safe-next'
 import { useSearchParams } from 'next/navigation'
 import { resendVerificationEmail } from '../actions'
 import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents'
@@ -9,7 +10,7 @@ import { trackMetaEvent } from '@/components/analytics/MetaPixelEvents'
 function VerifyContent() {
     const searchParams = useSearchParams()
     const email = searchParams.get('email') || ''
-    const next = searchParams.get('next') || ''
+    const next = safeNextPath(searchParams.get('next'))
 
     const [cooldown, setCooldown] = useState(0)
     const [message, setMessage] = useState('')

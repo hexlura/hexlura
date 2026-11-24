@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendUserWelcomeEmail } from '@/lib/email'
 import { redirect } from 'next/navigation'
+import { safeNextPath } from '@/lib/safe-next'
 
 export async function signUp(formData: FormData) {
     const supabase = createClient()
@@ -28,7 +29,7 @@ export async function signUp(formData: FormData) {
     }
 
     // Safe relative-path check to prevent open redirect
-    const safeNext = next.startsWith('/') ? next : ''
+    const safeNext = safeNextPath(next)
 
     const callbackUrl = safeNext
         ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(safeNext)}`
@@ -110,7 +111,7 @@ export async function signIn(formData: FormData) {
     }
 
     // If a safe next param was supplied, honour it
-    const safeNext = next.startsWith('/') ? next : ''
+    const safeNext = safeNextPath(next)
     if (safeNext) {
         return { redirectTo: safeNext }
     }
@@ -218,7 +219,7 @@ export async function resendVerificationEmail(email: string, next?: string) {
     const supabase = createClient()
 
     // Safe relative-path check to prevent open redirect
-    const safeNext = next && next.startsWith('/') ? next : ''
+    const safeNext = safeNextPath(next)
     const callbackUrl = safeNext
         ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(safeNext)}`
         : `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`

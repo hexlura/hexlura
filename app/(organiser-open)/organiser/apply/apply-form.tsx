@@ -22,7 +22,8 @@ const ORG_TYPES: { value: OrgType; emoji: string; name: string; description: str
     { value: 'education', emoji: '🎓', name: 'Education', description: 'School, university, training provider or workshop host' },
 ]
 
-export function ApplyForm({ userEmail }: ApplyFormProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- props kept for the page; the server reads the email from the session
+export function ApplyForm(_props: ApplyFormProps) {
     const router = useRouter()
     const [orgType, setOrgType] = useState<OrgType | null>(null)
     const [orgName, setOrgName] = useState('')
@@ -62,6 +63,8 @@ export function ApplyForm({ userEmail }: ApplyFormProps) {
                     vatRegistered,
                     vatNumber,
                     agreedTerms,
+                    role,
+                    monthlyEvents,
                 }),
             })
             const result = await res.json().catch(() => ({})) as { error?: string }
@@ -71,19 +74,12 @@ export function ApplyForm({ userEmail }: ApplyFormProps) {
                 return
             }
 
-            // Notify support + send organiser welcome email (both best-effort)
-            await Promise.all([
-                fetch('/api/notifications/organiser-apply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orgName, role, website, description, monthlyEvents, email: userEmail }),
-                }).catch(() => {}),
-                fetch('/api/notifications/organiser-welcome', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orgName }),
-                }).catch(() => {}),
-            ])
+            // Support is notified by /api/organiser/apply itself. Welcome email is best-effort.
+            await fetch('/api/notifications/organiser-welcome', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orgName }),
+            }).catch(() => {})
 
             trackMetaEvent('Lead', { content_category: 'organiser_application' })
             router.push('/organiser')
