@@ -11,6 +11,7 @@ import { autoFollowOrganiser } from '@/lib/auto-follow'
 import { computeEligiblePence, type PromoCartLine } from '@/lib/promo-eligibility'
 import { isDeductionActive } from '@/lib/promoter-commission'
 import { isGuestCheckoutEnabled, GUEST_CHECKOUT_DISABLED_MESSAGE } from '@/lib/guest-checkout'
+import { parseCartLines, maxPerOrder } from '@/lib/checkout-items'
 
 interface CheckoutItem {
     ticket_type_id: string
@@ -43,11 +44,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json()) as CreateIntentRequest
-    const { event_id, items, promo_code, attendee_details, promoter_code } = body
+    const { event_id, promo_code, attendee_details, promoter_code } = body
 
-    if (!event_id || !items?.length || !attendee_details?.full_name || !attendee_details?.email) {
+    if (!event_id || !attendee_details?.full_name || !attendee_details?.email) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
+
+    // Quantities come from the client — only whole numbers ≥ 1, one line per ticket type.
+    // (A negative line could otherwise cancel out a positive one and make the order free.)
+    const parsed = parseCartLines(body.items)
+    if ('error' in parsed) {
+        return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
+    const items: CheckoutItem[] = parsed.lines
 
     const supabase = createClient()
 
@@ -132,6 +141,10 @@ export async function POST(request: NextRequest) {
 
         if (!ticketType.is_visible) {
             return NextResponse.json({ error: `Ticket not available: ${ticketType.name}` }, { status: 400 })
+        }
+
+        if (item.quantity > maxPerOrder(ticketType)) {
+            return NextResponse.json({ error: `You can buy up to ${maxPerOrder(ticketType)} of: ${ticketType.name}` }, { status: 400 })
         }
 
         // Check sale period
