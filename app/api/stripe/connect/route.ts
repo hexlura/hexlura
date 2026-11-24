@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { randomBytes } from 'crypto'
+import { CONNECT_STATE_COOKIE } from '@/lib/stripe-connect-state'
 
 export async function GET() {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
@@ -40,15 +42,28 @@ export async function GET() {
         return NextResponse.redirect(`${appUrl}/organiser/settings?error=stripe_connect_misconfigured`)
     }
 
+    // One-time random state, bound to this browser by an httpOnly cookie. The callback only accepts
+    // a code whose state matches the cookie, so a link carrying someone else's OAuth code (which
+    // would attach *their* Stripe account to this organiser) is rejected.
+    const state = randomBytes(32).toString('hex')
+
     const params = new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
         scope: 'read_write',
         redirect_uri: `${appUrl}/api/stripe/connect/callback`,
-        state: user.id,
+        state,
         'stripe_user[business_type]': 'individual',
         'stripe_user[country]': 'GB',
     })
 
-    return NextResponse.redirect(`https://connect.stripe.com/oauth/authorize?${params.toString()}`)
+    const res = NextResponse.redirect(`https://connect.stripe.com/oauth/authorize?${params.toString()}`)
+    res.cookies.set(CONNECT_STATE_COOKIE, `${user.id}.${state}`, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax', // sent on Stripe's top-level redirect back to us
+        path: '/api/stripe/connect',
+        maxAge: 15 * 60,
+    })
+    return res
 }
