@@ -15,7 +15,7 @@ interface ValidateRequest {
 
 export async function POST(request: NextRequest) {
     const ip = getIP(request)
-    const { success } = promoLimiter(ip)
+    const { success } = await promoLimiter(ip)
     if (!success) {
         return NextResponse.json(
             { error: 'Too many attempts. Please try again later.' },

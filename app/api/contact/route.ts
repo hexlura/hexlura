@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CONTACT_TOPICS, type ContactTopic } from '@/lib/contact'
+import { contactIpLimiter, getIP } from '@/lib/rate-limit'
 
 const VALID_TOPICS = CONTACT_TOPICS.map(t => t.value)
 
@@ -9,6 +10,10 @@ function isValidEmail(email: string) {
 }
 
 export async function POST(req: NextRequest) {
+    if (!(await contactIpLimiter(getIP(req))).success) {
+        return NextResponse.json({ error: 'Too many messages. Please try again later.' }, { status: 429 })
+    }
+
     const body = await req.json().catch(() => null)
     if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
 

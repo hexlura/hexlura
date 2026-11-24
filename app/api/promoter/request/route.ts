@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateUniqueReferralCode } from '@/lib/promoter-access'
-import { promoLimiter, getIP } from '@/lib/rate-limit'
+import { promoterRequestLimiter, getIP } from '@/lib/rate-limit'
 
 // "Promote this event" — a user asks the organiser for permission to promote.
 // Creates (or reuses) the caller's promoter profile and inserts a
@@ -11,7 +11,7 @@ import { promoLimiter, getIP } from '@/lib/rate-limit'
 // referral/commission machinery applies unchanged.
 export async function POST(request: NextRequest) {
     const ip = getIP(request)
-    const { success } = promoLimiter(ip)
+    const { success } = await promoterRequestLimiter(ip)
     if (!success) {
         return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }
