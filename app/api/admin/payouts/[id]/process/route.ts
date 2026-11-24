@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 import { sendOrganiserPayoutPaidEmail } from '@/lib/email'
 import { notifyAdmins } from '@/lib/notify-admins'
+import { maskAccountNumber } from '@/lib/bank-details'
+import { BANK_CHANGE_HOLD_DAYS, bankHold, formatHoldDate, parseHoldOverrideReason, recordHoldOverride } from '@/lib/bank-change-guard'
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
     const supabase = createClient()
@@ -19,8 +21,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     let force = false
     let overrideReason = ''
     let requestedMethod: string | null = null
+    let holdOverrideRaw: unknown = null
     try {
-        const body = await request.json() as { reference?: string; force?: boolean; override_reason?: string; method?: string }
+        const body = await request.json() as { reference?: string; force?: boolean; override_reason?: string; method?: string; override_bank_hold_reason?: string }
+        holdOverrideRaw = body.override_bank_hold_reason
         if (typeof body.method === 'string') requestedMethod = body.method
         if (typeof body.reference === 'string') reference = body.reference.trim()
         if (body.force === true) force = true
@@ -37,7 +41,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const { data: payout } = await adminClient
         .from('payouts')
-        .select('id, status, net_pence, organiser_id, event_id, organiser_profiles(stripe_account_id, payout_method, bank_sort_code, bank_account_number, org_name, user_id, identity_status, identity_verified_at), events(title)')
+        .select('id, status, net_pence, organiser_id, event_id, organiser_profiles(stripe_account_id, payout_method, bank_sort_code, bank_account_number, bank_details_changed_at, org_name, user_id, identity_status, identity_verified_at), events(title)')
         .eq('id', params.id)
         .single()
 
@@ -54,6 +58,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             payout_method: string
             bank_sort_code: string | null
             bank_account_number: string | null
+            bank_details_changed_at: string | null
             org_name: string
             user_id: string
             identity_status: string | null
@@ -88,6 +93,27 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const PROCESSABLE = ['pending', 'requested', 'failed']
     if (!PROCESSABLE.includes(p.status)) {
         return NextResponse.json({ error: `Payout is already ${p.status}` }, { status: 409 })
+    }
+
+    // Bank-change hold: for 7 days after an organiser's bank details change, nobody may pay them by bank
+    // transfer (this records a payment the admin has already sent, so the real control is that the new
+    // details are withheld from the screen — see the payouts page and /reveal-bank). Acting inside the
+    // window needs an audited reason, and every admin is alerted. Stripe Connect payouts go to the
+    // organiser's connected account, not these details, so they are unaffected.
+    let holdOverride: { reason: string; hold: ReturnType<typeof bankHold> } | null = null
+    if (payoutMethod === 'bank_transfer') {
+        const hold = bankHold(p.organiser_profiles?.bank_details_changed_at)
+        if (hold.held) {
+            const reason = parseHoldOverrideReason(holdOverrideRaw)
+            if (!reason) {
+                return NextResponse.json({
+                    error: `This organiser's bank details changed on ${formatHoldDate(hold.changedAt)}. Bank-transfer payouts are held for ${BANK_CHANGE_HOLD_DAYS} days (until ${formatHoldDate(hold.releasesAt)}). Confirm the change with the organiser, then override with a reason, or pay by Stripe.`,
+                    requires_bank_hold_override: true,
+                    held_until: hold.releasesAt,
+                }, { status: 409 })
+            }
+            holdOverride = { reason, hold }
+        }
     }
 
     // Checks that must pass BEFORE the payout is claimed, so a refusal leaves it untouched (not 'failed').
@@ -205,8 +231,32 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             reference: success ? finalReference : undefined,
             failure_reason: failureReason ?? undefined,
             identity_override: !identityVerified ? { reason: overrideReason } : undefined,
+            bank_hold_override: holdOverride ? { reason: holdOverride.reason, changed_at: holdOverride.hold.changedAt } : undefined,
         },
     })
+
+    // Alert every admin to any processed payout (and to a hold override), so a payout nobody expected is seen.
+    if (holdOverride) {
+        await recordHoldOverride({
+            actorId: user.id,
+            actorEmail: user.email,
+            entityType: 'organiser',
+            entityId: p.organiser_id,
+            label: p.organiser_profiles?.org_name ?? 'an organiser',
+            reason: holdOverride.reason,
+            hold: holdOverride.hold,
+            accountMasked: maskAccountNumber(p.organiser_profiles?.bank_account_number),
+            via: 'process',
+        })
+    }
+    if (success) {
+        await notifyAdmins({
+            type: 'payout_processed',
+            title: 'Payout processed',
+            body: `${user.email ?? 'An admin'} processed ${p.organiser_profiles?.org_name ?? 'an organiser'}'s payout of £${((p.net_pence || 0) / 100).toFixed(2)} by ${payoutMethod === 'stripe_connect' ? 'Stripe' : 'bank transfer'}.`,
+            link: '/admin/payouts',
+        })
+    }
 
     if (success && paidAt && p.organiser_profiles) {
         const { data: organiserUser } = await adminClient

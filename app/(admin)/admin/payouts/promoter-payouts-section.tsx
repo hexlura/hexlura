@@ -5,6 +5,7 @@ import { ThemedSelect } from '@/components/ui/ThemedSelect'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
+import { BankHoldGate, type RevealedBank } from '@/components/admin/BankHoldGate'
 
 export interface PromoterPayoutRow {
     id: string
@@ -16,6 +17,10 @@ export interface PromoterPayoutRow {
     created_at: string
     payout_method: string | null
     reference: string | null
+    /** Set while the bank details are on hold (changed in the last 7 days): the server withholds them. */
+    bank_hold_until?: string | null
+    /** Client-side: details were revealed early with a logged reason. */
+    bank_revealed?: boolean
     promoter_profiles: {
         id: string
         display_name: string
@@ -24,8 +29,20 @@ export interface PromoterPayoutRow {
         bank_account_name: string | null
         bank_sort_code: string | null
         bank_account_number: string | null
+        bank_details_changed_at?: string | null
         stripe_account_id: string | null
     } | null
+}
+
+// Fill in details the server withheld, after an admin revealed them with a logged reason.
+function withRevealed(p: PromoterPayoutRow, bank: RevealedBank): PromoterPayoutRow {
+    return {
+        ...p,
+        bank_revealed: true,
+        promoter_profiles: p.promoter_profiles
+            ? { ...p.promoter_profiles, bank_account_name: bank.name, bank_sort_code: bank.sortCode, bank_account_number: bank.accountNumber }
+            : p.promoter_profiles,
+    }
 }
 
 interface Props {
@@ -57,41 +74,61 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
     const [statusModal, setStatusModal] = useState<PromoterPayoutRow | null>(null)
     const [selectedStatus, setSelectedStatus] = useState('')
     const [referenceInput, setReferenceInput] = useState('')
+    // Reason an admin gives to act on bank details that changed in the last 7 days (audit-logged server-side).
+    const [holdReason, setHoldReason] = useState('')
     const [loading, setLoading] = useState<string | null>(null)
     const [toastMsg, setToastMsg] = useState<string | null>(null)
 
     function showToast(msg: string) {
         setToastMsg(msg)
-        setTimeout(() => setToastMsg(null), 4000)
+        setTimeout(() => setToastMsg(null), 6000)
     }
 
     async function handleProcessPayout(payout: PromoterPayoutRow) {
-        setLoading(payout.id)
         const isBankTransfer = (payout.payout_method ?? payout.promoter_profiles?.payout_method) !== 'stripe_connect'
+        // Bank details changed in the last 7 days: a bank-transfer payout needs a logged override reason.
+        const onHold = isBankTransfer && !!payout.bank_hold_until
+        if (onHold && holdReason.trim().length < 10) {
+            showToast('Bank details changed recently. Enter an override reason (min 10 characters) to pay by bank transfer.')
+            return
+        }
+        setLoading(payout.id)
         const ref = isBankTransfer ? (referenceInput.trim() || deriveReference(payout.id)) : undefined
+        const body: Record<string, string> = {}
+        if (ref) body.reference = ref
+        if (onHold) body.override_bank_hold_reason = holdReason.trim()
         const res = await fetch(`/api/admin/promoter-payouts/${payout.id}/process`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(ref ? { reference: ref } : {}),
+            body: JSON.stringify(body),
         })
         setLoading(null)
         if (res.ok) {
             showToast(`Promoter payout of ${formatPence(payout.net_pence)} processed`)
             setConfirmModal(null)
             setReferenceInput('')
+            setHoldReason('')
             router.refresh()
         } else {
-            showToast('Failed to process payout')
+            const err = await res.json().catch(() => null) as { error?: string } | null
+            showToast(err?.error ? `Not processed: ${err.error}` : 'Failed to process payout')
         }
     }
 
     async function handleStatusChange() {
         if (!statusModal || !selectedStatus) return
+        // Marking paid records money sent to the bank details on file: needs a logged reason inside the 7-day hold.
+        const onHold = selectedStatus === 'paid' && statusModal.status !== 'paid' && !!statusModal.bank_hold_until
+        if (onHold && holdReason.trim().length < 10) {
+            showToast('Bank details changed recently. Enter an override reason (min 10 characters) to mark this paid.')
+            return
+        }
         setLoading(statusModal.id)
-        const body: { status: string; reference?: string } = { status: selectedStatus }
+        const body: { status: string; reference?: string; override_bank_hold_reason?: string } = { status: selectedStatus }
         if (selectedStatus === 'paid') {
             body.reference = referenceInput.trim() || deriveReference(statusModal.id)
         }
+        if (onHold) body.override_bank_hold_reason = holdReason.trim()
         const res = await fetch(`/api/admin/promoter-payouts/${statusModal.id}/status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -103,9 +140,11 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
             setStatusModal(null)
             setSelectedStatus('')
             setReferenceInput('')
+            setHoldReason('')
             router.refresh()
         } else {
-            showToast('Failed to update status')
+            const err = await res.json().catch(() => null) as { error?: string } | null
+            showToast(err?.error ? `Not updated: ${err.error}` : 'Failed to update status')
         }
     }
 
@@ -250,6 +289,14 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                 ? 'This will trigger an automatic Stripe transfer.'
                                 : 'Mark as paid after sending the bank transfer manually.'}
                         </p>
+                        {(confirmModal.payout_method ?? confirmModal.promoter_profiles?.payout_method) !== 'stripe_connect' && confirmModal.bank_hold_until && (
+                            <BankHoldGate
+                                heldUntil={confirmModal.bank_hold_until}
+                                reason={holdReason}
+                                onReasonChange={setHoldReason}
+                                intro="Marking this paid records money sent to bank details that changed in the last 7 days. Confirm the change with the promoter first. To proceed before the hold ends, give a reason (saved in the audit log; every admin is alerted)."
+                            />
+                        )}
                         {(confirmModal.payout_method ?? confirmModal.promoter_profiles?.payout_method) !== 'stripe_connect' && (
                             <div className="mb-4">
                                 <label className="text-xs text-muted block mb-1.5">Bank Reference</label>
@@ -267,7 +314,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                             <Button variant="primary" size="md" onClick={() => handleProcessPayout(confirmModal)} disabled={loading === confirmModal.id}>
                                 {loading === confirmModal.id ? 'Processing...' : 'Confirm Payout'}
                             </Button>
-                            <Button variant="secondary" size="md" onClick={() => { setConfirmModal(null); setReferenceInput('') }}>Cancel</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setConfirmModal(null); setReferenceInput(''); setHoldReason('') }}>Cancel</Button>
                         </div>
                     </div>
                 </div>
@@ -279,6 +326,15 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                     <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="font-heading text-xl text-text mb-4">Promoter Payout Details</h3>
                         <p className="text-sm text-text font-medium mb-3">{bankModal.promoter_profiles?.display_name}</p>
+                        {bankModal.bank_hold_until && !bankModal.bank_revealed && (
+                            <BankHoldGate
+                                revealUrl={`/api/admin/promoter-payouts/${bankModal.id}/reveal-bank`}
+                                heldUntil={bankModal.bank_hold_until}
+                                reason={holdReason}
+                                onReasonChange={setHoldReason}
+                                onRevealed={bank => setBankModal(prev => (prev ? withRevealed(prev, bank) : prev))}
+                            />
+                        )}
                         {(bankModal.payout_method ?? bankModal.promoter_profiles?.payout_method) === 'stripe_connect' ? (
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
@@ -311,7 +367,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                             </div>
                         )}
                         <div className="mt-5">
-                            <Button variant="secondary" size="md" onClick={() => setBankModal(null)} className="w-full">Close</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setBankModal(null); setHoldReason('') }} className="w-full">Close</Button>
                         </div>
                     </div>
                 </div>
@@ -337,6 +393,14 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                                 <option value="failed">Failed</option>
                             </ThemedSelect>
                         </div>
+                        {selectedStatus === 'paid' && statusModal.status !== 'paid' && statusModal.bank_hold_until && (
+                            <BankHoldGate
+                                heldUntil={statusModal.bank_hold_until}
+                                reason={holdReason}
+                                onReasonChange={setHoldReason}
+                                intro="Marking this paid records money sent to bank details that changed in the last 7 days. Confirm the change with the promoter first. To record it before the hold ends, give a reason (saved in the audit log; every admin is alerted)."
+                            />
+                        )}
                         {selectedStatus === 'paid' && (
                             <div className="mb-4">
                                 <label className="text-xs text-muted block mb-1.5">Bank Reference</label>
@@ -359,7 +423,7 @@ export function PromoterPayoutsSection({ duePayouts, allPayouts }: Props) {
                             >
                                 {loading === statusModal.id ? 'Updating...' : 'Update Status'}
                             </Button>
-                            <Button variant="secondary" size="md" onClick={() => { setStatusModal(null); setSelectedStatus(''); setReferenceInput('') }}>Cancel</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setStatusModal(null); setSelectedStatus(''); setReferenceInput(''); setHoldReason('') }}>Cancel</Button>
                         </div>
                     </div>
                 </div>

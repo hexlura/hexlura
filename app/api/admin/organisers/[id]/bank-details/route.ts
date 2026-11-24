@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateBankDetails, maskAccountNumber } from '@/lib/bank-details'
 import { sendBankDetailsChangedEmail } from '@/lib/email'
+import { notifyAdmins } from '@/lib/notify-admins'
 
 // Admin updates an organiser's payout bank details (e.g. they asked support to change them).
 // A reason is required and kept in the audit log; the organiser is emailed so a change they did not
@@ -67,6 +68,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             changedBy: 'Hexlura',
         })
     }
+
+    // Tell every admin (not just the one who did it) — this is the change an intruder with an admin
+    // session would make first, and the others are the people who can spot it.
+    await notifyAdmins({
+        type: 'bank_details_changed',
+        title: 'Admin changed an organiser\'s bank details',
+        body: `${user.email ?? 'An admin'} changed ${organiser.org_name}'s payout bank details (now ending ${checked.values.bank_account_number.slice(-4)}). Reason: "${reason}". Bank-transfer payouts are held for 7 days.`,
+        link: `/admin/organisers/${organiser.id}`,
+    })
 
     return NextResponse.json({ success: true })
 }

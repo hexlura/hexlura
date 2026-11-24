@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/WarmButton'
 import { formatPence } from '@/lib/fees'
+import { BankHoldGate, type RevealedBank } from '@/components/admin/BankHoldGate'
 
 interface PayoutRow {
     id: string
@@ -23,6 +24,10 @@ interface PayoutRow {
     event_id: string | null
     /** Set when the organiser's bank details changed in the last 7 days (fraud check before paying). */
     bank_changed_at?: string | null
+    /** Set while the bank details are on hold (changed in the last 7 days): the server withholds them. */
+    bank_hold_until?: string | null
+    /** Client-side: details were revealed early with a logged reason. */
+    bank_revealed?: boolean
     organiser_profiles: {
         org_name: string
         payout_method?: string
@@ -61,6 +66,17 @@ function fmt(d: string) {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+// Fill in details the server withheld, after an admin revealed them with a logged reason.
+function withRevealed(p: PayoutRow, bank: RevealedBank): PayoutRow {
+    return {
+        ...p,
+        bank_revealed: true,
+        organiser_profiles: p.organiser_profiles
+            ? { ...p.organiser_profiles, bank_account_name: bank.name, bank_sort_code: bank.sortCode, bank_account_number: bank.accountNumber }
+            : p.organiser_profiles,
+    }
+}
+
 export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSize }: Props) {
     const router = useRouter()
     const pathname = usePathname()
@@ -72,6 +88,8 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
     const [selectedStatus, setSelectedStatus] = useState('')
     const [referenceInput, setReferenceInput] = useState('')
     const [overrideReason, setOverrideReason] = useState('')
+    // Reason an admin gives to act on bank details that changed in the last 7 days (audit-logged server-side).
+    const [holdReason, setHoldReason] = useState('')
     // Admin's per-payout choice of how to pay; keyed by payout id so it can never leak to another payout.
     const [methodChoice, setMethodChoice] = useState<{ id: string; method: 'stripe_connect' | 'bank_transfer' } | null>(null)
     const [processingAll, setProcessingAll] = useState(false)
@@ -104,9 +122,15 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             showToast('Override reason required for unverified organisers')
             return
         }
-        setLoading(payout.id)
         const method = methodFor(payout)
         const isBankTransfer = method === 'bank_transfer'
+        // Bank details changed in the last 7 days: a bank-transfer payout needs a logged override reason.
+        const onHold = isBankTransfer && !!payout.bank_hold_until
+        if (onHold && holdReason.trim().length < 10) {
+            showToast('Bank details changed recently. Enter an override reason (min 10 characters) to pay by bank transfer.', 8000)
+            return
+        }
+        setLoading(payout.id)
         const ref = isBankTransfer ? (referenceInput.trim() || deriveReference(payout.id)) : undefined
         const body: Record<string, unknown> = { method }
         if (ref) body.reference = ref
@@ -114,6 +138,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             body.force = true
             body.override_reason = overrideReason.trim()
         }
+        if (onHold) body.override_bank_hold_reason = holdReason.trim()
         const res = await fetch(`/api/admin/payouts/${payout.id}/process`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -125,6 +150,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             setConfirmModal(null)
             setReferenceInput('')
             setOverrideReason('')
+            setHoldReason('')
             setMethodChoice(null)
             router.refresh()
         } else {
@@ -136,10 +162,11 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
 
     async function handleProcessAll() {
         // Skip unverified organisers — admin must process those individually with an override
-        const eligible = duePayouts.filter(p => !!p.organiser_profiles?.identity_verified_at)
+        // Also skip bank-transfer payouts on a bank-change hold — those need a per-payout override reason.
+        const eligible = duePayouts.filter(p => !!p.organiser_profiles?.identity_verified_at && !(p.bank_hold_until && methodFor(p) === 'bank_transfer'))
         const skipped = duePayouts.length - eligible.length
         if (eligible.length === 0) {
-            showToast(`All ${duePayouts.length} due payouts are for unverified organisers — process them individually with an override.`)
+            showToast(`All ${duePayouts.length} due payouts are for unverified organisers or on a bank-change hold — process them individually with an override.`)
             return
         }
         setProcessingAll(true)
@@ -160,7 +187,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
         showToast(
             `${okCount} payout${okCount === 1 ? '' : 's'} processed — ${formatPence(okNet)} sent.`
             + (failed > 0 ? ` ${failed} FAILED — check each payout.` : '')
-            + (skipped > 0 ? ` ${skipped} skipped (unverified).` : ''),
+            + (skipped > 0 ? ` ${skipped} skipped (unverified or bank-change hold).` : ''),
         )
         router.refresh()
     }
@@ -175,8 +202,15 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             showToast('Override reason required for unverified organisers')
             return
         }
+        // Marking paid records money sent to the bank details on file: needs a logged reason inside the 7-day hold.
+        const onHold = transitioningToPaid && !!statusModal.bank_hold_until
+        if (onHold && holdReason.trim().length < 10) {
+            showToast('Bank details changed recently. Enter an override reason (min 10 characters) to mark this paid.', 8000)
+            return
+        }
         setLoading(statusModal.id)
         const body: Record<string, unknown> = { status: selectedStatus }
+        if (onHold) body.override_bank_hold_reason = holdReason.trim()
         if (selectedStatus === 'paid') {
             body.reference = referenceInput.trim() || deriveReference(statusModal.id)
         }
@@ -196,9 +230,11 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
             setSelectedStatus('')
             setReferenceInput('')
             setOverrideReason('')
+            setHoldReason('')
             router.refresh()
         } else {
-            showToast('Failed to update status')
+            const err = await res.json().catch(() => null) as { error?: string } | null
+            showToast(err?.error ? `Not updated: ${err.error}` : 'Failed to update status', 9000)
         }
     }
 
@@ -438,7 +474,16 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 ? 'This will send a real Stripe transfer from your available balance to their connected account.'
                                 : 'No Stripe transfer is sent. Pay the organiser from your bank first, then confirm here to mark it paid.'}
                         </p>
-                        {methodFor(confirmModal) === 'bank_transfer' && (
+                        {methodFor(confirmModal) === 'bank_transfer' && confirmModal.bank_hold_until && !confirmModal.bank_revealed && (
+                            <BankHoldGate
+                                revealUrl={`/api/admin/payouts/${confirmModal.id}/reveal-bank`}
+                                heldUntil={confirmModal.bank_hold_until}
+                                reason={holdReason}
+                                onReasonChange={setHoldReason}
+                                onRevealed={bank => setConfirmModal(prev => (prev ? withRevealed(prev, bank) : prev))}
+                            />
+                        )}
+                        {methodFor(confirmModal) === 'bank_transfer' && !(confirmModal.bank_hold_until && !confirmModal.bank_revealed) && (
                             <div className="mb-4 bg-background border border-border rounded-lg p-3 text-xs space-y-1">
                                 <div className="flex justify-between"><span className="text-muted">Account name</span><span className="text-text">{confirmModal.organiser_profiles?.bank_account_name || '—'}</span></div>
                                 <div className="flex justify-between"><span className="text-muted">Sort code</span><span className="text-text font-mono">{confirmModal.organiser_profiles?.bank_sort_code || '—'}</span></div>
@@ -484,7 +529,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             <Button variant="primary" size="md" onClick={() => handleProcessPayout(confirmModal)} disabled={loading === confirmModal.id}>
                                 {loading === confirmModal.id ? 'Processing...' : (!confirmModal.organiser_profiles?.identity_verified_at ? 'Override & Process' : 'Confirm Payout')}
                             </Button>
-                            <Button variant="secondary" size="md" onClick={() => { setConfirmModal(null); setReferenceInput(''); setOverrideReason(''); setMethodChoice(null) }}>Cancel</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setConfirmModal(null); setReferenceInput(''); setOverrideReason(''); setHoldReason(''); setMethodChoice(null) }}>Cancel</Button>
                         </div>
                     </div>
                 </div>
@@ -496,6 +541,15 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                     <div className="bg-card shadow-card rounded-2xl p-6 max-w-sm w-full">
                         <h3 className="font-heading text-xl text-text mb-4">Bank Details</h3>
                         <p className="text-sm text-text font-medium mb-3">{bankModal.organiser_profiles?.org_name}</p>
+                        {bankModal.bank_hold_until && !bankModal.bank_revealed && (
+                            <BankHoldGate
+                                revealUrl={`/api/admin/payouts/${bankModal.id}/reveal-bank`}
+                                heldUntil={bankModal.bank_hold_until}
+                                reason={holdReason}
+                                onReasonChange={setHoldReason}
+                                onRevealed={bank => setBankModal(prev => (prev ? withRevealed(prev, bank) : prev))}
+                            />
+                        )}
                         {bankModal.organiser_profiles?.payout_method === 'stripe_connect' ? (
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
@@ -548,7 +602,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                         )}
                         <Link href={`/admin/organisers/${bankModal.organiser_id}`} className="block mt-4 text-xs text-accent underline">Edit bank details →</Link>
                         <div className="mt-5">
-                            <Button variant="secondary" size="md" onClick={() => setBankModal(null)} className="w-full">Close</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setBankModal(null); setHoldReason('') }} className="w-full">Close</Button>
                         </div>
                     </div>
                 </div>
@@ -592,6 +646,14 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                                 <p className="text-[10px] text-muted mt-1">Paste the FPS/CHAPS ID from your bank, or leave as-is to use the auto reference. Sent to the organiser in their payout email.</p>
                             </div>
                         )}
+                        {selectedStatus === 'paid' && statusModal.status !== 'paid' && statusModal.bank_hold_until && (
+                            <BankHoldGate
+                                heldUntil={statusModal.bank_hold_until}
+                                reason={holdReason}
+                                onReasonChange={setHoldReason}
+                                intro="Marking this paid records money sent to bank details that changed in the last 7 days. Confirm the change with the organiser first. To record it before the hold ends, give a reason (saved in the audit log; every admin is alerted)."
+                            />
+                        )}
                         {((selectedStatus === 'paid' && statusModal.status !== 'paid') || (selectedStatus === 'requested' && statusModal.status !== 'requested')) && !statusModal.organiser_profiles?.identity_verified_at && (
                             <div className="mb-4 bg-warm-red/5 border border-warm-red/30 p-3 rounded-lg">
                                 <p className="text-xs text-accent font-medium mb-2">⚠ Organiser identity not verified</p>
@@ -614,7 +676,7 @@ export function PayoutsClient({ duePayouts, allPayouts, totalRows, page, pageSiz
                             >
                                 {loading === statusModal.id ? 'Updating...' : 'Update Status'}
                             </Button>
-                            <Button variant="secondary" size="md" onClick={() => { setStatusModal(null); setSelectedStatus(''); setReferenceInput(''); setOverrideReason('') }}>Cancel</Button>
+                            <Button variant="secondary" size="md" onClick={() => { setStatusModal(null); setSelectedStatus(''); setReferenceInput(''); setOverrideReason(''); setHoldReason('') }}>Cancel</Button>
                         </div>
                     </div>
                 </div>

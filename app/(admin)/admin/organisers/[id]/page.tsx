@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect, notFound } from 'next/navigation'
 import { OrganiserDetailClient } from './organiser-detail-client'
+import { bankHold } from '@/lib/bank-change-guard'
 
 export default async function AdminOrganiserDetailPage({ params }: { params: { id: string } }) {
     const supabase = createClient()
@@ -16,7 +17,7 @@ export default async function AdminOrganiserDetailPage({ params }: { params: { i
             id, org_name, slug, organiser_type, stripe_account_id, stripe_connect_allowed,
             stripe_charges_enabled, stripe_payouts_enabled, payout_method, is_approved,
             is_suspended, booking_fee_exempt, processing_fee_exempt, identity_status, created_at, approved_at, user_id,
-            bank_account_name, bank_sort_code, bank_account_number,
+            bank_account_name, bank_sort_code, bank_account_number, bank_details_changed_at,
             profiles!organiser_profiles_user_id_fkey (full_name, email)
         `)
         .eq('id', params.id)
@@ -44,8 +45,18 @@ export default async function AdminOrganiserDetailPage({ params }: { params: { i
         identity_status: 'processing' | 'verified' | 'requires_input' | 'canceled' | null
         created_at: string; approved_at: string | null; user_id: string
         bank_account_name: string | null; bank_sort_code: string | null; bank_account_number: string | null
+        bank_details_changed_at?: string | null
+        bank_hold_until?: string | null
         profiles: { full_name: string | null; email: string | null } | null
     }
 
-    return <OrganiserDetailClient organiser={organiser as unknown as OrganiserDetail} bankChanges={bankChanges} />
+    // For 7 days after the bank details change they are withheld here too (this page would otherwise be a
+    // way round the payouts-screen hold). Re-entering details is still possible and restarts the hold.
+    const raw = organiser as unknown as OrganiserDetail
+    const hold = bankHold(raw.bank_details_changed_at)
+    const view: OrganiserDetail = hold.held
+        ? { ...raw, bank_account_name: null, bank_sort_code: null, bank_account_number: null, bank_hold_until: hold.releasesAt }
+        : raw
+
+    return <OrganiserDetailClient organiser={view} bankChanges={bankChanges} />
 }

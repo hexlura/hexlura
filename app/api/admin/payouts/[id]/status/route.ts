@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditAction } from '@/lib/audit'
 import { sendOrganiserPayoutPaidEmail } from '@/lib/email'
+import { notifyAdmins } from '@/lib/notify-admins'
+import { maskAccountNumber } from '@/lib/bank-details'
+import { BANK_CHANGE_HOLD_DAYS, bankHold, formatHoldDate, parseHoldOverrideReason, recordHoldOverride } from '@/lib/bank-change-guard'
 
 const VALID_STATUSES = ['pending', 'requested', 'processing', 'paid', 'failed']
 
@@ -16,7 +19,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { data: adminProfile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
     if (!adminProfile || adminProfile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const body = await request.json() as { status: string; reference?: string; force?: boolean; override_reason?: string }
+    const body = await request.json() as { status: string; reference?: string; force?: boolean; override_reason?: string; override_bank_hold_reason?: string }
     const { status } = body
     const reference = typeof body.reference === 'string' ? body.reference.trim() : ''
     const force = body.force === true
@@ -28,7 +31,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const { data: payout } = await adminClient
         .from('payouts')
-        .select('id, status, net_pence, reference, organiser_profiles(org_name, user_id, identity_status, identity_verified_at), events(title)')
+        .select('id, status, net_pence, reference, organiser_id, organiser_profiles(org_name, user_id, identity_status, identity_verified_at, bank_details_changed_at, bank_account_number), events(title)')
         .eq('id', params.id)
         .single()
 
@@ -39,11 +42,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         status: string
         net_pence: number | null
         reference: string | null
+        organiser_id: string
         organiser_profiles: {
             org_name: string
             user_id: string
             identity_status: string | null
             identity_verified_at: string | null
+            bank_details_changed_at: string | null
+            bank_account_number: string | null
         } | null
         events: { title: string } | null
     }
@@ -70,6 +76,25 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
                 { error: 'Override requires a reason' },
                 { status: 400 },
             )
+        }
+    }
+
+    // Bank-change hold: marking a payout "paid" records money the admin has already sent by hand, to
+    // the bank details on file. For 7 days after those details change that needs an audited reason
+    // (and every admin is alerted) — see lib/bank-change-guard.ts.
+    let holdOverride: { reason: string; hold: ReturnType<typeof bankHold> } | null = null
+    if (transitioningToPaid) {
+        const hold = bankHold(p.organiser_profiles?.bank_details_changed_at)
+        if (hold.held) {
+            const reason = parseHoldOverrideReason(body.override_bank_hold_reason)
+            if (!reason) {
+                return NextResponse.json({
+                    error: `This organiser's bank details changed on ${formatHoldDate(hold.changedAt)}. Payouts to them are held for ${BANK_CHANGE_HOLD_DAYS} days (until ${formatHoldDate(hold.releasesAt)}). Confirm the change with the organiser, then override with a reason.`,
+                    requires_bank_hold_override: true,
+                    held_until: hold.releasesAt,
+                }, { status: 409 })
+            }
+            holdOverride = { reason, hold }
         }
     }
 
@@ -107,8 +132,31 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             to: status,
             reference: reference || undefined,
             identity_override: requiresIdentityGate && !identityVerified ? { reason: overrideReason } : undefined,
+            bank_hold_override: holdOverride ? { reason: holdOverride.reason, changed_at: holdOverride.hold.changedAt } : undefined,
         },
     })
+
+    if (holdOverride) {
+        await recordHoldOverride({
+            actorId: user.id,
+            actorEmail: user.email,
+            entityType: 'organiser',
+            entityId: p.organiser_id,
+            label: p.organiser_profiles?.org_name ?? 'an organiser',
+            reason: holdOverride.reason,
+            hold: holdOverride.hold,
+            accountMasked: maskAccountNumber(p.organiser_profiles?.bank_account_number),
+            via: 'status',
+        })
+    }
+    if (transitioningToPaid) {
+        await notifyAdmins({
+            type: 'payout_processed',
+            title: 'Payout marked as paid',
+            body: `${user.email ?? 'An admin'} marked ${p.organiser_profiles?.org_name ?? 'an organiser'}'s payout of £${((p.net_pence || 0) / 100).toFixed(2)} as paid.`,
+            link: '/admin/payouts',
+        })
+    }
 
     // Notify organiser only on the pending/requested/processing → paid transition
     if (status === 'paid' && p.status !== 'paid' && paidAt && p.organiser_profiles) {

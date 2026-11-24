@@ -15,6 +15,8 @@ interface OrganiserDetail {
     identity_status: IdentityStatus
     created_at: string; approved_at: string | null; user_id: string
     bank_account_name: string | null; bank_sort_code: string | null; bank_account_number: string | null
+    /** Set while the bank details are on hold (changed in the last 7 days): they are withheld by the server. */
+    bank_hold_until?: string | null
     profiles: { full_name: string | null; email: string | null } | null
 }
 
@@ -193,18 +195,23 @@ export function OrganiserDetailClient({ organiser, bankChanges }: { organiser: O
                     <h2 className="font-heading text-xl text-text">Bank details</h2>
                     {!editingBank && (
                         <button onClick={() => setEditingBank(true)} className="text-xs text-accent font-semibold hover:underline">
-                            {organiser.bank_account_number ? 'Edit' : 'Add'}
+                            {organiser.bank_account_number || organiser.bank_hold_until ? 'Edit' : 'Add'}
                         </button>
                     )}
                 </div>
                 <p className="text-xs text-muted mb-4">
                     Where a bank-transfer payout is sent. Every change needs a reason, is audit-logged, and the organiser is emailed.
                 </p>
+                {organiser.bank_hold_until && (
+                    <p className="text-xs text-accent bg-warm-red/5 border border-warm-red/30 rounded-lg p-2.5 mb-4">
+                        🔒 These details changed in the last 7 days and are withheld until {fmt(organiser.bank_hold_until)}. Confirm the change with the organiser before paying them by bank. They can be revealed early, with a logged reason, from the Payouts page.
+                    </p>
+                )}
                 {!editingBank ? (
                     <dl className="grid grid-cols-3 gap-4 text-sm border-t border-border pt-4">
-                        <div><dt className="text-xs text-muted">Account holder</dt><dd className="text-text">{organiser.bank_account_name || '—'}</dd></div>
-                        <div><dt className="text-xs text-muted">Sort code</dt><dd className="text-text font-mono">{organiser.bank_sort_code || '—'}</dd></div>
-                        <div><dt className="text-xs text-muted">Account number</dt><dd className="text-text font-mono">{organiser.bank_account_number || '—'}</dd></div>
+                        <div><dt className="text-xs text-muted">Account holder</dt><dd className="text-text">{organiser.bank_hold_until ? 'Withheld' : (organiser.bank_account_name || '—')}</dd></div>
+                        <div><dt className="text-xs text-muted">Sort code</dt><dd className="text-text font-mono">{organiser.bank_hold_until ? 'Withheld' : (organiser.bank_sort_code || '—')}</dd></div>
+                        <div><dt className="text-xs text-muted">Account number</dt><dd className="text-text font-mono">{organiser.bank_hold_until ? 'Withheld' : (organiser.bank_account_number || '—')}</dd></div>
                     </dl>
                 ) : (
                     <form onSubmit={saveBankDetails} className="space-y-3 border-t border-border pt-4">

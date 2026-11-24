@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { PayoutsClient } from './payouts-client'
 import { PromoterPayoutsSection, type PromoterPayoutRow } from './promoter-payouts-section'
+import { bankHold } from '@/lib/bank-change-guard'
 
 export default async function AdminPayoutsPage({
     searchParams,
@@ -30,7 +31,7 @@ export default async function AdminPayoutsPage({
     // Fetch pending payouts (auto-generated, cooldown passed) and requested payouts (organiser-requested)
     const { data: dueData } = await adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, status, scheduled_at, requested_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, bank_account_name, bank_sort_code, bank_account_number, stripe_account_id, identity_verified_at, profiles(full_name, email)), events(title, end_at, start_at)')
+        .select('id, gross_pence, net_pence, status, scheduled_at, requested_at, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, bank_account_name, bank_sort_code, bank_account_number, bank_details_changed_at, stripe_account_id, identity_verified_at, profiles(full_name, email)), events(title, end_at, start_at)')
         .in('status', ['pending', 'requested'])
 
     type PayoutWithRelated = {
@@ -45,7 +46,7 @@ export default async function AdminPayoutsPage({
         organiser_id: string
         event_id: string | null
         stripe_transfer_id: string | null
-        organiser_profiles: { org_name: string; payout_method?: string; bank_account_name?: string | null; bank_sort_code?: string | null; bank_account_number?: string | null; stripe_account_id?: string | null; identity_verified_at: string | null; profiles: { full_name: string | null; email: string | null } | null } | null
+        organiser_profiles: { org_name: string; payout_method?: string; bank_account_name?: string | null; bank_sort_code?: string | null; bank_account_number?: string | null; bank_details_changed_at?: string | null; stripe_account_id?: string | null; identity_verified_at: string | null; profiles: { full_name: string | null; email: string | null } | null } | null
         events: { title: string; end_at: string | null; start_at: string } | null
     }
 
@@ -74,7 +75,7 @@ export default async function AdminPayoutsPage({
     // JS instead of at the DB level.
     let query = adminClient
         .from('payouts')
-        .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, requested_at, paid_at, stripe_transfer_id, reference, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, bank_account_name, bank_sort_code, bank_account_number, stripe_account_id, identity_status, identity_verified_at), events(title)')
+        .select('id, gross_pence, net_pence, fee_pence, status, scheduled_at, requested_at, paid_at, stripe_transfer_id, reference, created_at, organiser_id, event_id, organiser_profiles(org_name, payout_method, bank_account_name, bank_sort_code, bank_account_number, bank_details_changed_at, stripe_account_id, identity_status, identity_verified_at), events(title)')
         .order('created_at', { ascending: false })
 
     if (searchParams.status && searchParams.status !== 'all') {
@@ -91,31 +92,38 @@ export default async function AdminPayoutsPage({
     // Promoter payouts (separate table)
     const { data: promoterPayoutsData } = await adminClient
         .from('promoter_payouts')
-        .select('id, gross_pence, net_pence, status, requested_at, paid_at, created_at, payout_method, reference, promoter_profiles(id, display_name, referral_code, payout_method, bank_account_name, bank_sort_code, bank_account_number, stripe_account_id)')
+        .select('id, gross_pence, net_pence, status, requested_at, paid_at, created_at, payout_method, reference, promoter_profiles(id, display_name, referral_code, payout_method, bank_account_name, bank_sort_code, bank_account_number, bank_details_changed_at, stripe_account_id)')
         .order('created_at', { ascending: false })
 
-    const allPromoterPayouts = (promoterPayoutsData || []) as unknown as PromoterPayoutRow[]
-    const duePromoterPayouts = allPromoterPayouts.filter(p => p.status === 'pending' || p.status === 'requested')
-
-    // Fraud check: was the organiser's bank account changed in the last 7 days? An attacker who gets into
-    // an organiser account would swap the bank details and then ask for a payout, so flag it before paying.
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const shownOrganiserIds = Array.from(new Set([...allDuePending, ...allPayouts].map(p => p.organiser_id)))
-    const bankChangedAt = new Map<string, string>()
-    if (shownOrganiserIds.length > 0) {
-        const { data: changeLogs, error: changeErr } = await adminClient
-            .from('audit_logs')
-            .select('entity_id, created_at')
-            .eq('action', 'update_bank_details')
-            .gte('created_at', weekAgo)
-            .in('entity_id', shownOrganiserIds)
-        if (changeErr) console.error('Bank change lookup failed:', changeErr.message)
-        for (const l of (changeLogs || []) as { entity_id: string; created_at: string }[]) {
-            const prev = bankChangedAt.get(l.entity_id)
-            if (!prev || l.created_at > prev) bankChangedAt.set(l.entity_id, l.created_at)
+    // Bank-change hold: for 7 days after an organiser's or promoter's bank details change (stamped by a
+    // database trigger, so no path can skip it) the new details are WITHHELD here — they never reach the
+    // browser — so nobody can pay an account the owner may not have set. An admin can reveal them early
+    // only with an audited reason (/reveal-bank), which alerts every admin. See lib/bank-change-guard.ts.
+    const withBankFlag = (p: PayoutWithRelated) => {
+        const org = p.organiser_profiles
+        const hold = bankHold(org?.bank_details_changed_at)
+        if (!hold.held || !org) return { ...p, bank_changed_at: null, bank_hold_until: null }
+        return {
+            ...p,
+            bank_changed_at: hold.changedAt,
+            bank_hold_until: hold.releasesAt,
+            organiser_profiles: { ...org, bank_account_name: null, bank_sort_code: null, bank_account_number: null },
         }
     }
-    const withBankFlag = (p: PayoutWithRelated) => ({ ...p, bank_changed_at: bankChangedAt.get(p.organiser_id) ?? null })
+
+    const withPromoterHold = (p: PromoterPayoutRow): PromoterPayoutRow => {
+        const promoter = p.promoter_profiles
+        const hold = bankHold(promoter?.bank_details_changed_at)
+        if (!hold.held || !promoter) return { ...p, bank_hold_until: null }
+        return {
+            ...p,
+            bank_hold_until: hold.releasesAt,
+            promoter_profiles: { ...promoter, bank_account_name: null, bank_sort_code: null, bank_account_number: null },
+        }
+    }
+
+    const allPromoterPayouts = ((promoterPayoutsData || []) as unknown as PromoterPayoutRow[]).map(withPromoterHold)
+    const duePromoterPayouts = allPromoterPayouts.filter(p => p.status === 'pending' || p.status === 'requested')
 
     return (
         <>
