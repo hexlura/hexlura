@@ -13,6 +13,7 @@ import { SeasonTop } from '@/components/season/SeasonTop';
 import { getHomeTheme } from '@/lib/home-theme';
 import { SEASONS } from '@/lib/home-theme-config';
 import RecommendedEvents from '@/components/home/RecommendedEvents';
+import AppDownloadButtons from '@/components/home/AppDownloadButtons';
 import { getPageControls, isSectionVisible } from '@/lib/page-controls/get-page-controls';
 import { PAGE_KEYS, HOME_SECTION_KEYS } from '@/lib/page-controls/constants';
 import { getListingFees, buyerTicketPrice } from '@/lib/fees';
@@ -376,6 +377,9 @@ export default async function HomePage() {
                     )}
                 </section>
             )}
+
+            {/* ── APP STORE BUTTONS ── */}
+            <AppDownloadButtons />
 
             {/* ── RECOMMENDED EVENTS (personalised, client-rendered) ── */}
             <RecommendedEvents />
