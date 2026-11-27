@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Don't advertise the framework to attackers (removes `X-Powered-By: Next.js`).
+    poweredByHeader: false,
     // pdfkit (used by @react-pdf/renderer for ticket PDFs) requires its standard
     // font files at runtime via a resolution path Next.js's output file tracing
     // doesn't statically detect, so they get silently dropped from the deployed
@@ -45,6 +47,9 @@ const nextConfig = {
                 headers: [
                     { key: 'X-Frame-Options', value: 'DENY' },
                     { key: 'X-Content-Type-Options', value: 'nosniff' },
+                    // Vercel sets a 2-year HSTS by default; set it explicitly to also cover
+                    // subdomains and opt into the browser preload list.
+                    { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
                     { key: 'X-XSS-Protection', value: '1; mode=block' },
                     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
                     { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
