@@ -62,14 +62,12 @@ export default async function HomePage() {
             .select('*, ticket_types(*)')
             .eq('status', 'published')
             .or(`end_at.gte.${now},end_at.is.null`)
-            .order('start_at', { ascending: true })
-            .limit(20),
+            .order('start_at', { ascending: true }),
         supabase
             .from('events')
             .select('*, ticket_types(*)')
             .eq('status', 'ended')
-            .order('start_at', { ascending: false })
-            .limit(10),
+            .order('start_at', { ascending: false }),
         supabase
             .from('cities')
             .select('*')
