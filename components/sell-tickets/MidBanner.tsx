@@ -87,7 +87,7 @@ export default function MidBanner({ ctaHref }: { ctaHref: string }) {
                 <>
                     <div className="inline-flex items-center gap-2 border border-hexred/50 text-hexred px-4 py-1.5 rounded-full font-mono text-xs uppercase tracking-widest mb-8">
                         <span className="w-1.5 h-1.5 rounded-full bg-hexred animate-pulse" />
-                        Zero commission, always
+                        0% commission, always
                     </div>
 
                     <h2 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.92] mb-8">
@@ -97,15 +97,15 @@ export default function MidBanner({ ctaHref }: { ctaHref: string }) {
                     </h2>
 
                     <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
-                        Every other platform takes a cut before you see a penny. Hexlura charges organisers
-                        nothing — the buyer&apos;s small booking fee is the only fee anywhere in the chain.
+                        Every other platform takes a cut before you see a penny. With Hexlura, you keep
+                        100% of your ticket price — a small booking fee is added at checkout for the buyer.
                     </p>
 
                     <Link
                         href={ctaHref}
                         className={`${styles.btnPrimary} inline-block bg-hexred text-white font-bold py-5 px-10 rounded-full uppercase tracking-wider text-sm shadow-[0_20px_50px_-12px_rgba(234,40,69,0.6)]`}
                     >
-                        Start selling commission-free
+                        Start selling, 0% commission
                     </Link>
                 </>
             </Reveal>

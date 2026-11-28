@@ -33,7 +33,7 @@ export default function PricingSection({ ctaHref }: { ctaHref: string }) {
                             CHOOSE YOUR <span className="text-white">ARSENAL.</span>
                         </h2>
                         <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                            Selling tickets is always free. Upgrade your toolkit to drive massive growth, run complex
+                            0% commission on every ticket you sell. Upgrade your toolkit to drive massive growth, run complex
                             campaigns, and dominate your marketing.
                         </p>
                     </div>
@@ -55,7 +55,7 @@ export default function PricingSection({ ctaHref }: { ctaHref: string }) {
                                 <li className="flex items-center gap-3"><span className="w-1.5 h-1.5 rounded-full bg-hexred" />Full buyer data access</li>
                             </ul>
                             <Link href={ctaHref} className="block w-full py-3 px-6 rounded-full border border-white/20 text-center font-bold text-sm hover:bg-white hover:text-hexdark transition-colors">
-                                Start Free
+                                Get Started
                             </Link>
                         </div>
 
