@@ -66,5 +66,5 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        submit_to_testflight: true
+        submit_to_testflight: false
         # Internal testers only for now: no Beta App Review needed, builds appear within minutes.
