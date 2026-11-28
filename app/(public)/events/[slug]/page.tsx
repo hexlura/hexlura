@@ -23,11 +23,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const supabase = createClient();
     const { data: event } = await supabase
         .from('events')
-        .select('title, description, banner_url, venue_name, start_at')
+        .select('title, description, banner_url, venue_name, start_at, is_unlisted')
         .eq('slug', params.slug)
         .single();
 
     if (!event) return { title: 'Event Not Found' };
+
+    // Unlisted events (demo/review events) stay reachable by direct link but must
+    // never be indexed or surfaced by search engines.
+    if (event.is_unlisted) {
+        return { title: event.title, robots: { index: false, follow: false } };
+    }
 
     const dateStr = new Intl.DateTimeFormat('en-GB', {
         weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',

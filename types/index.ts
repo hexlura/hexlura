@@ -71,6 +71,8 @@ export interface Event {
     status: 'draft' | 'published' | 'cancelled' | 'archived';
     ticket_availability: 'on_sale' | 'coming_soon';
     is_featured: boolean;
+    /** Published but hidden from public listings (demo / App Store review events). Admin-only. */
+    is_unlisted?: boolean;
     featured_order: number;
     min_age: number;
     max_tickets_per_order: number;

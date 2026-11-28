@@ -21,6 +21,7 @@ export default async function CityCards() {
                 .from('events')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'published')
+                .eq('is_unlisted', false)
                 .gt('start_at', now)
                 .ilike('venue_address', `%${name}%`)
             return count ?? 0

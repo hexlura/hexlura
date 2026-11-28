@@ -44,6 +44,7 @@ export async function GET() {
         .from('events')
         .select('*, ticket_types(*)')
         .eq('status', 'published')
+        .eq('is_unlisted', false)
         .in('category', topCategories)
         .or(`end_at.gte.${now},end_at.is.null`)
         .not('id', 'in', `(${bookedEventIds.join(',')})`)

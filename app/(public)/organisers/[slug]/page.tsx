@@ -104,6 +104,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .select('*, ticket_types(*)')
         .eq('organiser_id', organiser.id)
         .eq('status', 'published')
+        .eq('is_unlisted', false)
         .or(`end_at.gte.${now},end_at.is.null`)
         .order('start_at', { ascending: true })
         .limit(10);
@@ -114,6 +115,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .select('*, ticket_types(*)')
         .eq('organiser_id', organiser.id)
         .eq('status', 'ended')
+        .eq('is_unlisted', false)
         .order('start_at', { ascending: false })
         .limit(6);
 
@@ -133,6 +135,7 @@ export default async function OrganiserProfilePage({ params }: { params: { slug:
         .from('events')
         .select('*', { count: 'exact', head: true })
         .eq('organiser_id', organiser.id)
+        .eq('is_unlisted', false)
 
     // Follower count
     const { count: followerCount } = await supabase

@@ -56,18 +56,21 @@ export default async function HomePage() {
             .from('events')
             .select('id', { count: 'exact', head: true })
             .eq('status', 'published')
+            .eq('is_unlisted', false)
             .gte('start_at', now)
             .lte('start_at', weekAhead),
         supabase
             .from('events')
             .select('*, ticket_types(*)')
             .eq('status', 'published')
+            .eq('is_unlisted', false)
             .or(`end_at.gte.${now},end_at.is.null`)
             .order('start_at', { ascending: true }),
         supabase
             .from('events')
             .select('*, ticket_types(*)')
             .eq('status', 'ended')
+            .eq('is_unlisted', false)
             .order('start_at', { ascending: false }),
         supabase
             .from('cities')
@@ -83,6 +86,7 @@ export default async function HomePage() {
             .from('events')
             .select('id, title, slug, banner_url, start_at, end_at, venue_name, venue_address, category, organiser_id, ticket_types(price_pence)')
             .eq('status', 'published')
+            .eq('is_unlisted', false)
             .eq('is_featured', true)
             .or(`end_at.gte.${now},end_at.is.null`)
             .order('featured_order', { ascending: true }),

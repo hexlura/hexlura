@@ -102,6 +102,7 @@ export default function BrowseEventsClient() {
         .from('events')
         .select('*, organiser:organiser_profiles(*), ticket_types(*), venue_lat, venue_lng')
         .eq('status', 'published')
+        .eq('is_unlisted', false)
         .or(`end_at.gte.${new Date().toISOString()},end_at.is.null`)
 
       if (query) q = q.ilike('title', `%${query}%`)
